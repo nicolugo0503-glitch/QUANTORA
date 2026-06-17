@@ -71,7 +71,9 @@
   </div>
   <div class="disc">Live market data via Coinbase Exchange · for information only, not investment advice</div>
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span id="wlnote" style="font-size:13px;color:var(--mut)"></span><button class="refresh" id="refresh">↻ Refresh</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span id="wlnote" style="font-size:13px;color:var(--mut)"></span><div style="display:flex;gap:10px"><button class="refresh" id="brief" style="background:#0d0d0d;color:#fff;border-color:#0d0d0d">★ AI brief my watchlist</button><button class="refresh" id="refresh">↻ Refresh</button></div></div>
+
+  <div id="briefpanel" class="panel" style="display:none;margin-bottom:16px;padding:20px 24px"></div>
 
   <div class="panel">
     <table>
@@ -156,6 +158,37 @@ async function load(){
   render();
   document.getElementById('updated').textContent='Updated '+new Date().toISOString().substr(11,8)+' UTC';
 }
+function bstdev(a){const m=a.reduce((x,y)=>x+y,0)/a.length;return Math.sqrt(a.reduce((x,y)=>x+(y-m)*(y-m),0)/a.length);}
+function brsi(c,n){n=n||14;if(c.length<n+1)return 50;let g=0,l=0;for(let i=c.length-n;i<c.length;i++){const ch=c[i]-c[i-1];if(ch>=0)g+=ch;else l-=ch;}const ag=g/n,al=l/n;if(al===0)return 100;return 100-100/(1+ag/al);}
+function quickMetrics(d){
+  const c=d.spark; const ret30=(c[c.length-1]/c[0]-1)*100;
+  const lr=[];for(let i=1;i<c.length;i++)lr.push(Math.log(c[i]/c[i-1]));
+  const vol=bstdev(lr)*Math.sqrt(365)*100, r=brsi(c,14);
+  const w=Math.min(20,c.length), sma=c.slice(-w).reduce((x,y)=>x+y,0)/w;
+  let sig='NEUTRAL'; if(c[c.length-1]>sma&&ret30>0)sig='BULLISH'; else if(c[c.length-1]<sma&&ret30<0)sig='BEARISH';
+  return {ret30:ret30.toFixed(1),vol:vol.toFixed(0),rsi:r.toFixed(0),signal:sig};
+}
+async function genBrief(){
+  const panel=document.getElementById('briefpanel');
+  const picks=lastData.filter(d=>wl.has(d.sym));
+  panel.style.display='block';
+  if(!picks.length){ panel.innerHTML='<div style="color:var(--mut);font-size:14px">Star a few assets first (tap ★ on the rows), then I\'ll brief your watchlist.</div>'; return; }
+  panel.innerHTML='<div style="color:var(--mut);font-size:14px"><span class="spin"></span>Quantora AI is reading your watchlist…</div>';
+  const items=picks.map(d=>{const q=quickMetrics(d);return {name:d.name,symbol:d.sym,price:fmt(d.price),ret30:q.ret30,vol:q.vol,rsi:q.rsi,signal:q.signal};});
+  try{
+    const r=await fetch('/api/brief',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});
+    const j=await r.json();
+    if(j&&j.text){
+      const now=new Date().toISOString().substr(11,8);
+      panel.innerHTML='<h4 style="font-size:13px;color:var(--ink2);margin-bottom:8px;font-weight:600">★ Quantora AI · watchlist brief ('+picks.length+' assets)</h4><div style="font-size:14.5px;line-height:1.65;color:var(--ink2)">'+j.text.split(/\n\n+/).map(p=>'<p style="margin-bottom:10px">'+p.replace(/\n/g,' ').trim()+'</p>').join('')+'</div><div style="font-size:11px;color:var(--dim);margin-top:10px;font-family:var(--mono)">Written by Quantora AI (Llama 3.3) on live data · '+now+' UTC · not investment advice</div>';
+    } else if(j&&j.error==='no_key'){
+      panel.innerHTML='<div style="color:var(--mut);font-size:14px">AI brief needs GROQ_KEY in Vercel — the same key you added for the analyst.</div>';
+    } else {
+      panel.innerHTML='<div style="color:var(--mut);font-size:14px">Couldn\'t generate the brief right now. Try again in a moment.</div>';
+    }
+  }catch(e){ panel.innerHTML='<div style="color:var(--mut);font-size:14px">Couldn\'t reach the AI service. Try again.</div>'; }
+}
+document.getElementById('brief').onclick=genBrief;
 document.getElementById('refresh').onclick=load;
 load();
 setInterval(load,60000);
