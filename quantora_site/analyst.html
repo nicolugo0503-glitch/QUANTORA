@@ -91,6 +91,8 @@
   </div>
 
   <div class="group">
+    <div class="glabel" id="wllabel" style="display:none">★ Your watchlist · saved on this device</div>
+    <div class="chips" id="chips-wl"></div>
     <div class="glabel">Crypto · live now</div>
     <div class="chips" id="chips-crypto"></div>
     <div class="glabel">Stocks · live with your data key</div>
@@ -142,6 +144,19 @@ buildChips(document.getElementById('chips-crypto'),CRYPTO);
 buildChips(document.getElementById('chips-stock'),STOCKS);
 buildChips(document.getElementById('chips-etf'),ETFS);
 document.querySelector('#chips-crypto .chip').classList.add('active');
+const ALL=[...CRYPTO,...STOCKS,...ETFS];
+function getWL(){ try{ return JSON.parse(localStorage.getItem('quantora_watchlist')||'[]'); }catch(e){ return []; } }
+function saveWL(a){ try{ localStorage.setItem('quantora_watchlist', JSON.stringify(a)); }catch(e){} }
+function renderWatchlist(){
+  const wl=getWL().filter(s=>ALL.some(a=>a.sym===s));
+  const label=document.getElementById('wllabel'), el=document.getElementById('chips-wl');
+  if(!wl.length){ label.style.display='none'; el.innerHTML=''; return; }
+  label.style.display='';
+  el.innerHTML=wl.map(s=>`<span class="chip" data-sym="${s}" style="border-color:#e7d9b3;background:#fffdf5">★ ${s}</span>`).join('');
+  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ current=ALL.find(x=>x.sym===c.dataset.sym); document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); run(); });
+}
+function toggleCurrentWL(el){ let wl=getWL(); const s=current.sym; const has=wl.includes(s); wl = has ? wl.filter(x=>x!==s) : wl.concat(s); saveWL(wl); if(el) el.style.color = has ? '#d8d8de' : '#d9a24a'; renderWatchlist(); }
+renderWatchlist();
 
 const fmtUSD=v=>{
   if(v>=1000) return '$'+v.toLocaleString('en-US',{maximumFractionDigits:0});
@@ -221,7 +236,7 @@ function render(a,d){
   const srcLine=a.type==='crypto'?'Coinbase Exchange API · '+a.sym+'-USD':'Quantora backend (Twelve Data) · '+a.sym;
   out.innerHTML=`
     <div class="secttl">Verdict</div>
-    <div class="verdict"><span class="rating ${d.rclass}"><span class="rdot"></span>${d.rating}</span>
+    <div class="verdict"><span onclick="toggleCurrentWL(this)" style="float:right;cursor:pointer;font-size:20px;line-height:1;color:${getWL().includes(a.sym)?'#d9a24a':'#d8d8de'}" title="Save to watchlist">★</span><span class="rating ${d.rclass}"><span class="rdot"></span>${d.rating}</span>
       <h2>${a.name} · ${a.sym}${unit}</h2><div class="sub">${vs}</div>
       <div class="kpis">${kpis.map(k=>`<div class="kpi"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="d ${k.dc}">${k.d}</div></div>`).join('')}</div>
     </div>
