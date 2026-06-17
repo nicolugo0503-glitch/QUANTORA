@@ -95,6 +95,8 @@
     <div class="chips" id="chips-crypto"></div>
     <div class="glabel">Stocks · live with your data key</div>
     <div class="chips" id="chips-stock"></div>
+    <div class="glabel">Indices · commodities · bonds (ETFs)</div>
+    <div class="chips" id="chips-etf"></div>
   </div>
   <div class="disc">Crypto via Coinbase · Stocks via Quantora backend · computed analytics, not investment advice</div>
 
@@ -121,6 +123,12 @@ const STOCKS=[
   {type:'stock',sym:'MSFT',name:'Microsoft'},{type:'stock',sym:'TSLA',name:'Tesla'},
   {type:'stock',sym:'AMZN',name:'Amazon'},{type:'stock',sym:'GOOGL',name:'Alphabet'},
 ];
+const ETFS=[
+  {type:'etf',sym:'SPY',name:'S&P 500'},{type:'etf',sym:'QQQ',name:'Nasdaq 100'},
+  {type:'etf',sym:'DIA',name:'Dow Jones'},{type:'etf',sym:'IWM',name:'Russell 2000'},
+  {type:'etf',sym:'GLD',name:'Gold'},{type:'etf',sym:'SLV',name:'Silver'},
+  {type:'etf',sym:'USO',name:'Crude Oil'},{type:'etf',sym:'TLT',name:'20Y Treasuries'},
+];
 let chart=null, current=CRYPTO[0];
 function buildChips(el,list){
   el.innerHTML=list.map(a=>`<span class="chip" data-sym="${a.sym}">${a.sym}</span>`).join('');
@@ -132,6 +140,7 @@ function buildChips(el,list){
 }
 buildChips(document.getElementById('chips-crypto'),CRYPTO);
 buildChips(document.getElementById('chips-stock'),STOCKS);
+buildChips(document.getElementById('chips-etf'),ETFS);
 document.querySelector('#chips-crypto .chip').classList.add('active');
 
 const fmtUSD=v=>{
