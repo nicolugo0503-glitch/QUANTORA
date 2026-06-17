@@ -71,7 +71,7 @@
   </div>
   <div class="disc">Live market data via Coinbase Exchange · for information only, not investment advice</div>
 
-  <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="refresh" id="refresh">↻ Refresh</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span id="wlnote" style="font-size:13px;color:var(--mut)"></span><button class="refresh" id="refresh">↻ Refresh</button></div>
 
   <div class="panel">
     <table>
@@ -126,16 +126,18 @@ async function loadOne(a){
   return {...a, price, ch24:(price/prev-1)*100, ch7:(price/w7-1)*100, spark:closes.slice(-30)};
 }
 
-async function load(){
+function getWL(){ try{ return new Set(JSON.parse(localStorage.getItem('quantora_watchlist')||'[]')); }catch(e){ return new Set(); } }
+function saveWL(s){ try{ localStorage.setItem('quantora_watchlist', JSON.stringify([...s])); }catch(e){} }
+let wl=getWL(), lastData=[];
+function toggleWL(sym){ if(wl.has(sym)) wl.delete(sym); else wl.add(sym); saveWL(wl); render(); }
+function render(){
   const tbody=document.getElementById('rows');
-  tbody.innerHTML='<tr><td colspan="6"><div class="status"><span class="spin"></span>Loading live markets…</div></td></tr>';
-  const results=await Promise.allSettled(ASSETS.map(loadOne));
-  const ok=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
-  if(!ok.length){ tbody.innerHTML='<tr><td colspan="6"><div class="status">Couldn\'t reach the live feed (rate limit or network). Hit refresh in a moment.</div></td></tr>'; return; }
-  tbody.innerHTML=ok.map(d=>{
-    const up7=d.ch7>=0;
-    return `<tr onclick="location.href='/analyst.html'">
-      <td><div class="asset"><div class="tick">${d.sym}</div><div><div class="anm">${d.name}</div><div class="asub">${d.sym}-USD</div></div></div></td>
+  if(!lastData.length){ tbody.innerHTML='<tr><td colspan="6"><div class="status">Couldn\'t reach the live feed (rate limit or network). Hit refresh in a moment.</div></td></tr>'; document.getElementById('wlnote').textContent=''; return; }
+  const sorted=lastData.slice().sort((a,b)=>(wl.has(b.sym)?1:0)-(wl.has(a.sym)?1:0));
+  tbody.innerHTML=sorted.map(d=>{
+    const up7=d.ch7>=0, on=wl.has(d.sym);
+    return `<tr onclick="location.href='/analyst.html'" style="${on?'background:#fffdf5':''}">
+      <td><div class="asset"><span onclick="event.stopPropagation();toggleWL('${d.sym}')" style="cursor:pointer;font-size:17px;line-height:1;color:${on?'#d9a24a':'#d8d8de'}" title="Save to watchlist">★</span><div class="tick">${d.sym}</div><div><div class="anm">${d.name}</div><div class="asub">${d.sym}-USD</div></div></div></td>
       <td>${fmt(d.price)}</td>
       <td class="${d.ch24>=0?'pos':'neg'}">${pct(d.ch24)}</td>
       <td class="${d.ch7>=0?'pos':'neg'}">${pct(d.ch7)}</td>
@@ -143,6 +145,15 @@ async function load(){
       <td><span class="go">Analyze →</span></td>
     </tr>`;
   }).join('');
+  const n=lastData.filter(d=>wl.has(d.sym)).length;
+  document.getElementById('wlnote').textContent = n ? ('★ '+n+' in your watchlist · saved on this device') : 'Tap ★ to build a watchlist — it\'s remembered next time';
+}
+async function load(){
+  const tbody=document.getElementById('rows');
+  tbody.innerHTML='<tr><td colspan="6"><div class="status"><span class="spin"></span>Loading live markets…</div></td></tr>';
+  const results=await Promise.allSettled(ASSETS.map(loadOne));
+  lastData=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+  render();
   document.getElementById('updated').textContent='Updated '+new Date().toISOString().substr(11,8)+' UTC';
 }
 document.getElementById('refresh').onclick=load;
