@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Chart — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5;display:flex;flex-direction:column;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:20px;padding:16px 30px;border-bottom:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
+.head{padding:24px 30px 6px}
+.head h1{font-size:26px;font-weight:680;letter-spacing:-.5px}
+.head .sub{color:var(--mut);font-size:14.5px;margin-top:5px}
+.bar{display:flex;flex-wrap:wrap;gap:18px;padding:14px 30px 6px;align-items:center}
+.grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.grp .lbl{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);font-weight:600;margin-right:2px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:550;cursor:pointer;color:#333}
+.pill:hover{border-color:#bbb}
+.pill.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.chartwrap{flex:1 1 auto;min-height:520px;padding:14px 30px 8px}
+#tvchart{width:100%;height:100%;min-height:500px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.foot{padding:8px 30px 20px;font-size:11.5px;color:var(--mut)}
+@media(max-width:600px){.chartwrap{padding:10px 14px}.head,.bar,.foot{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/chart.html" class="link active">Chart</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link">Global</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <div class="right"><span class="dot"></span> Live · professional charts</div>
+</div>
+
+<div class="head">
+  <h1>Chart</h1>
+  <div class="sub">Institutional-grade live charting across every asset class — candles, indicators, and drawing tools. Pick an instrument to begin.</div>
+</div>
+
+<div class="bar" id="bar"></div>
+
+<div class="chartwrap"><div id="tvchart"></div></div>
+
+<div class="foot">Charts powered by TradingView · for information only, not investment advice</div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+var GROUPS=[
+  {label:'Crypto', items:[
+    {k:'BTC', s:'COINBASE:BTCUSD'},{k:'ETH', s:'COINBASE:ETHUSD'},{k:'SOL', s:'COINBASE:SOLUSD'},{k:'XRP', s:'COINBASE:XRPUSD'},{k:'DOGE', s:'COINBASE:DOGEUSD'}
+  ]},
+  {label:'Stocks', items:[
+    {k:'AAPL', s:'NASDAQ:AAPL'},{k:'NVDA', s:'NASDAQ:NVDA'},{k:'TSLA', s:'NASDAQ:TSLA'},{k:'SPY', s:'AMEX:SPY'},{k:'QQQ', s:'NASDAQ:QQQ'}
+  ]},
+  {label:'FX & Commodities', items:[
+    {k:'EUR/USD', s:'FX:EURUSD'},{k:'USD/JPY', s:'FX:USDJPY'},{k:'Gold', s:'OANDA:XAUUSD'},{k:'Silver', s:'OANDA:XAGUSD'},{k:'Oil', s:'TVC:USOIL'}
+  ]}
+];
+var current='COINBASE:BTCUSD';
+
+function buildBar(){
+  var bar=document.getElementById('bar');
+  bar.innerHTML=GROUPS.map(function(g){
+    return '<div class="grp"><span class="lbl">'+g.label+'</span>'+g.items.map(function(it){
+      return '<span class="pill" data-s="'+it.s+'">'+it.k+'</span>';
+    }).join('')+'</div>';
+  }).join('');
+  Array.prototype.forEach.call(bar.querySelectorAll('.pill'),function(p){
+    p.onclick=function(){ current=p.getAttribute('data-s'); markActive(); render(); };
+  });
+}
+function markActive(){
+  Array.prototype.forEach.call(document.querySelectorAll('.pill'),function(p){
+    p.classList.toggle('active', p.getAttribute('data-s')===current);
+  });
+}
+function render(){
+  var c=document.getElementById('tvchart');
+  c.innerHTML='';
+  if(typeof TradingView==='undefined'){ c.innerHTML='<div style="padding:30px;color:#6b7280;font-size:14px">Loading chart engine…</div>'; return; }
+  new TradingView.widget({
+    container_id:'tvchart',
+    symbol:current,
+    interval:'D',
+    timezone:'Etc/UTC',
+    theme:'light',
+    style:'1',
+    locale:'en',
+    toolbar_bg:'#ffffff',
+    enable_publishing:false,
+    hide_side_toolbar:false,
+    allow_symbol_change:true,
+    withdateranges:true,
+    studies:['RSI@tv-basicstudies'],
+    autosize:true
+  });
+}
+buildBar();
+markActive();
+function start(){ if(typeof TradingView!=='undefined'){ render(); } else { setTimeout(start,250); } }
+start();
+</script>
+</body>
+</html>
