@@ -78,7 +78,7 @@ function ago(ts){
 }
 async function feed(f){
   try{
-    var r=await fetch('https://api.rss2json.com/v1/api.json?count=12&rss_url='+encodeURIComponent(f.url));
+    var r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(f.url));
     var d=await r.json();
     if(d.status!=='ok'||!d.items) return [];
     return d.items.map(function(it){
