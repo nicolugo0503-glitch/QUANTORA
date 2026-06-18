@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Screener — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:18px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
+.wrap{max-width:1280px;margin:0 auto;padding:30px 24px 60px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.tabs{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:550;cursor:pointer;color:#333}
+.tab:hover{border-color:#bbb}
+.tab.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:16px;min-height:660px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/heatmap.html" class="link">Heatmap</a>
+  <a href="/screener.html" class="link active">Screener</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link">Global</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <div class="right"><span class="dot"></span> Live · market screener</div>
+</div>
+<div class="wrap">
+  <h1>Screener</h1>
+  <div class="sub">Filter the entire market — price, change, volume, market cap, and dozens of fundamentals. Find the movers before anyone tells you about them.</div>
+  <div class="tabs" id="tabs">
+    <span class="tab active" data-k="america">Stocks · US</span>
+    <span class="tab" data-k="crypto">Crypto</span>
+    <span class="tab" data-k="forex">Forex</span>
+  </div>
+  <div class="panel"><div id="sc" class="tradingview-widget-container" style="height:660px"></div></div>
+</div>
+
+<script>
+function loadScreener(market){
+  var c=document.getElementById('sc');
+  c.innerHTML='<div class="tradingview-widget-container__widget" style="height:660px"></div>';
+  var s=document.createElement('script');
+  s.type='text/javascript'; s.async=true;
+  s.src='https://s3.tradingview.com/external-embedding/embed-widget-screener.js';
+  var screen = market==='crypto' ? 'general' : (market==='forex' ? 'general' : 'most_capitalized');
+  s.innerHTML=JSON.stringify({width:'100%',height:'660',defaultColumn:'overview',defaultScreen:screen,market:market,showToolbar:true,colorTheme:'light',isTransparent:true,locale:'en'});
+  c.appendChild(s);
+}
+var tabs=document.getElementById('tabs');
+Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(t){
+  t.onclick=function(){
+    Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
+    t.classList.add('active');
+    loadScreener(t.getAttribute('data-k'));
+  };
+});
+loadScreener('america');
+</script>
+</body>
+</html>
