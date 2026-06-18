@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Ask</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5;display:flex;flex-direction:column;height:100vh}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:26px;padding:16px 30px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut)}
+.scroll{flex:1 1 auto;overflow-y:auto}
+.wrap{max-width:780px;margin:0 auto;padding:30px 24px 24px;display:flex;flex-direction:column;gap:18px}
+.intro h1{font-size:26px;font-weight:680;letter-spacing:-.5px}
+.intro p{color:var(--mut);font-size:15px;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;background:#fff;color:#333}
+.chip:hover{border-color:#bbb;background:var(--soft)}
+.msg{display:flex;gap:12px}
+.msg .who{width:30px;height:30px;border-radius:7px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.msg.user .who{background:#0a0a0a;color:#fff}
+.msg.ai .who{background:#000;color:#fff}
+.msg .body{font-size:15px;line-height:1.65;white-space:pre-wrap;padding-top:3px}
+.msg .body .badge{display:inline-block;font-size:11px;color:var(--mut);background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-bottom:7px;font-family:ui-monospace,Menlo,monospace}
+.composer{flex:0 0 auto;border-top:1px solid var(--line);padding:14px 24px 20px;background:#fff}
+.cbox{max-width:780px;margin:0 auto;display:flex;gap:10px;align-items:flex-end}
+textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:15px;outline:none;max-height:140px;min-height:46px}
+textarea:focus{border-color:#999}
+.send{background:#0a0a0a;color:#fff;border:none;border-radius:12px;padding:0 20px;height:46px;font-weight:600;font-size:14px;cursor:pointer}
+.send:disabled{opacity:.4;cursor:default}
+.foot{max-width:780px;margin:8px auto 0;font-size:11.5px;color:var(--mut);text-align:center}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link active">Ask</a>
+  <div class="right">AI · live data</div>
+</div>
+
+<div class="scroll" id="scroll">
+  <div class="wrap" id="thread">
+    <div class="intro">
+      <h1>Ask Quantora</h1>
+      <p>A conversational AI analyst, grounded in live market data. Mention a crypto ticker (BTC, ETH, SOL…) and it pulls the live price, trend, volatility, and RSI before answering.</p>
+      <div class="chips">
+        <span class="chip" onclick="ask(this.textContent)">Is BTC overbought right now?</span>
+        <span class="chip" onclick="ask(this.textContent)">Compare SOL and ETH momentum</span>
+        <span class="chip" onclick="ask(this.textContent)">Explain what RSI tells me</span>
+        <span class="chip" onclick="ask(this.textContent)">What is Value at Risk?</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="composer">
+  <div class="cbox">
+    <textarea id="q" placeholder="Ask anything about the markets…" rows="1"></textarea>
+    <button class="send" id="send">Send</button>
+  </div>
+  <div class="foot">Quantora AI (Llama 3.3) · grounds answers in live data where available · not investment advice</div>
+</div>
+
+<script>
+var SYMS=['BTC','ETH','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','BCH','UNI','ATOM'];
+var thread=document.getElementById('thread'), scroll=document.getElementById('scroll'), qbox=document.getElementById('q'), sendBtn=document.getElementById('send');
+var busy=false;
+
+function detectSym(text){
+  var up=text.toUpperCase();
+  for(var i=0;i<SYMS.length;i++){ if(new RegExp('\\b'+SYMS[i]+'\\b').test(up)) return SYMS[i]; }
+  return '';
+}
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function bubble(role, html){
+  var d=document.createElement('div'); d.className='msg '+role;
+  d.innerHTML='<div class="who">'+(role==='user'?'You':'Q')+'</div><div class="body">'+html+'</div>';
+  thread.appendChild(d); scroll.scrollTop=scroll.scrollHeight; return d.querySelector('.body');
+}
+function autosize(){ qbox.style.height='auto'; qbox.style.height=Math.min(qbox.scrollHeight,140)+'px'; }
+qbox.addEventListener('input',autosize);
+qbox.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); ask(qbox.value); } });
+sendBtn.onclick=function(){ ask(qbox.value); };
+
+function rsiCalc(closes){ if(closes.length<15) return null; var g=0,l=0; for(var i=closes.length-14;i<closes.length;i++){var d=closes[i]-closes[i-1]; if(d>=0)g+=d; else l-=d;} g/=14;l/=14; if(l===0)return 100; return 100-100/(1+g/l); }
+function rcalc(a,b){ return (a/b-1)*100; }
+async function liveCtx(sym){
+  try{
+    var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/candles?granularity=86400');
+    var c=await r.json();
+    if(!Array.isArray(c)||c.length<31) return null;
+    var nf=c.map(function(x){return x[4];});           // newest-first closes
+    var closes=nf.slice().reverse();                    // oldest-first
+    var price=nf[0];
+    var rets=[]; for(var i=1;i<closes.length;i++)rets.push(closes[i]/closes[i-1]-1);
+    var m=rets.reduce(function(a,b){return a+b;},0)/rets.length;
+    var v=0; rets.forEach(function(x){v+=(x-m)*(x-m);}); v=Math.sqrt(v/rets.length);
+    var volA=v*Math.sqrt(365)*100;
+    var peak=closes[0],mdd=0; closes.forEach(function(p){if(p>peak)peak=p;var dd=(p/peak-1);if(dd<mdd)mdd=dd;});
+    var rsi=rsiCalc(closes);
+    var fp=price>=1000?('$'+Math.round(price).toLocaleString()):(price>=1?('$'+price.toFixed(2)):('$'+price.toFixed(5)));
+    return 'LIVE '+sym+' (Coinbase, daily): price '+fp+', 24h '+rcalc(price,nf[1]).toFixed(2)+'%, 7d '+rcalc(price,nf[7]).toFixed(2)+'%, 30d '+rcalc(price,nf[30]).toFixed(2)+'%, RSI14 '+(rsi==null?'n/a':rsi.toFixed(0))+', annualized volatility '+volA.toFixed(0)+'%, max drawdown over the window '+(mdd*100).toFixed(0)+'%.';
+  }catch(e){ return null; }
+}
+
+async function ask(text){
+  text=(text||'').trim(); if(!text||busy) return;
+  qbox.value=''; autosize(); busy=true; sendBtn.disabled=true;
+  bubble('user', esc(text));
+  var body=bubble('ai','<span style="color:#9aa0aa">Pulling live data and thinking…</span>');
+  var sym=detectSym(text);
+  var ctx='';
+  if(sym){ var lc=await liveCtx(sym); if(lc) ctx=lc; else sym=''; }
+  try{
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:text,context:ctx})});
+    var d=await r.json();
+    if(d.error==='no_key'){ body.innerHTML='Ask Quantora needs the <code>GROQ_KEY</code> environment variable set in Vercel to run. Once it\'s in, this goes live instantly.'; }
+    else if(d.error||!d.text){ body.innerHTML='<span style="color:#c0341d">Could not get an answer just now. Try again.</span>'; }
+    else{
+      var badge=(sym&&ctx)?('<div class="badge">★ grounded on live '+sym+' data</div>'):'';
+      body.innerHTML=badge+esc(d.text||'');
+    }
+  }catch(e){ body.innerHTML='<span style="color:#c0341d">Network error. Try again.</span>'; }
+  busy=false; sendBtn.disabled=false; scroll.scrollTop=scroll.scrollHeight; qbox.focus();
+}
+</script>
+</body>
+</html>
