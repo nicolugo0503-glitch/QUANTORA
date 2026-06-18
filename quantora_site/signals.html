@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Signals — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:24px;padding:16px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:10}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1120px;margin:0 auto;padding:38px 30px 90px}
+h1{font-size:30px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:15px;margin-top:7px;max-width:720px}
+.src{color:var(--mut);font-size:12.5px;margin-top:10px}
+.read{border:1px solid var(--line);background:var(--soft);border-radius:14px;padding:22px 24px;margin:24px 0 6px}
+.read h3{font-size:13px;font-weight:650;letter-spacing:.02em;margin-bottom:10px}
+.read p{font-size:15px;line-height:1.65}
+.read .foot{color:var(--mut);font-size:12px;margin-top:12px;font-family:ui-monospace,Menlo,monospace}
+.toprow{display:grid;grid-template-columns:300px 1fr;gap:14px;margin-top:22px}
+.fng{border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.fng .g{font-size:13px;color:var(--mut);font-weight:550}
+.fng .v{font-size:46px;font-weight:720;letter-spacing:-1px;margin-top:4px}
+.fng .lab{font-size:14px;font-weight:650;margin-top:2px}
+.fng .bar{height:8px;border-radius:5px;background:linear-gradient(90deg,#c0341d,#d9a400,#0a7d33);margin-top:14px;position:relative}
+.fng .pin{position:absolute;top:-3px;width:14px;height:14px;border-radius:50%;background:#000;border:2px solid #fff;transform:translateX(-7px)}
+.sigcards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sig{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:#fff}
+.sig h4{font-size:12px;letter-spacing:.03em;color:var(--mut);font-weight:650;margin-bottom:10px;text-transform:uppercase}
+.sig .row{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+.sig .row b{font-weight:620}
+.sig .empty{font-size:13px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;margin-top:26px;font-size:14px}
+th,td{text-align:right;padding:11px 12px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}
+th:hover{color:var(--ink)}
+tbody tr:hover{background:var(--soft)}
+.tk{font-weight:620}
+.nm{color:var(--mut);font-size:12px;margin-left:7px}
+.up{color:var(--up)}.down{color:var(--down)}
+.tag{display:inline-block;font-size:10.5px;font-weight:650;padding:2px 7px;border-radius:999px;margin-left:6px}
+.tag.ob{background:#fdecea;color:#c0341d}
+.tag.os{background:#eaf6ee;color:#0a7d33}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+.hint{border:1px dashed #d7d7d7;border-radius:14px;padding:20px 22px;margin-top:8px;font-size:14px;color:#444;background:#fcfcfc;display:none}
+.hint code{background:#f1f1f1;padding:2px 6px;border-radius:5px;font-size:13px}
+@media(max-width:820px){.sigcards{grid-template-columns:1fr 1fr}.toprow{grid-template-columns:1fr}.wrap{padding:28px 16px 60px}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/signals.html" class="link active">Signals</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <div class="right"><span class="dot"></span> Live · scanning the market</div>
+</div>
+<div class="wrap">
+  <h1>Signals</h1>
+  <div class="sub">Quantora scans the whole crypto universe in real time — momentum, RSI, trend, and volatility on every asset — surfaces the standout setups, reads the Fear &amp; Greed index, and an AI head-of-signals writes what to watch.</div>
+  <div class="src">Live data via Coinbase Exchange &amp; alternative.me · for information only, not investment advice</div>
+
+  <div id="readwrap"></div>
+  <div id="hint" class="hint"></div>
+  <div class="toprow" id="toprow" style="display:none">
+    <div class="fng" id="fng"></div>
+    <div class="sigcards" id="sigcards"></div>
+  </div>
+  <div id="tablewrap"></div>
+  <div class="status" id="status">Scanning the market…</div>
+</div>
+
+<script>
+var UNI=['BTC','ETH','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','BCH','UNI','ATOM'];
+var NAME={BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XRP:'XRP',DOGE:'Dogecoin',ADA:'Cardano',AVAX:'Avalanche',LINK:'Chainlink',DOT:'Polkadot',LTC:'Litecoin',BCH:'Bitcoin Cash',UNI:'Uniswap',ATOM:'Cosmos'};
+var sortKey='r7', sortDir=-1, ROWS=[];
+
+function rsiCalc(closes){ if(closes.length<15) return null; var g=0,l=0; for(var i=closes.length-14;i<closes.length;i++){var d=closes[i]-closes[i-1]; if(d>=0)g+=d; else l-=d;} g/=14;l/=14; if(l===0)return 100; return 100-100/(1+g/l); }
+function smaN(a,n){ if(a.length<n) return null; var s=0; for(var i=a.length-n;i<a.length;i++)s+=a[i]; return s/n; }
+function rc(a,b){ return (a/b-1)*100; }
+function fp(p){ return p>=1000?('$'+Math.round(p).toLocaleString()):(p>=1?('$'+p.toFixed(2)):('$'+p.toFixed(4))); }
+function col(x){ return x>=0?'up':'down'; }
+function sgn(x){ return (x>=0?'+':'')+x.toFixed(2)+'%'; }
+
+async function scanOne(sym){
+  try{
+    var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/candles?granularity=86400');
+    var c=await r.json();
+    if(!Array.isArray(c)||c.length<31) return null;
+    var nf=c.map(function(x){return x[4];});
+    var closes=nf.slice().reverse();
+    var price=nf[0];
+    var rsi=rsiCalc(closes);
+    var sma20=smaN(closes,20);
+    var trend=sma20?(price>=sma20?1:-1):0;
+    var rets=[]; for(var i=1;i<closes.length;i++)rets.push(closes[i]/closes[i-1]-1);
+    var m=rets.reduce(function(a,b){return a+b;},0)/rets.length;
+    var v=0; rets.forEach(function(x){v+=(x-m)*(x-m);}); v=Math.sqrt(v/rets.length)*Math.sqrt(365)*100;
+    return {sym:sym,name:NAME[sym]||sym,price:price,r24:rc(price,nf[1]),r7:rc(price,nf[7]),r30:rc(price,nf[30]),rsi:rsi==null?50:rsi,trend:trend,vol:v};
+  }catch(e){ return null; }
+}
+
+async function getFNG(){
+  try{ var r=await fetch('https://api.alternative.me/fng/?limit=1'); var d=await r.json(); if(d&&d.data&&d.data[0]) return {value:parseInt(d.data[0].value,10),label:d.data[0].value_classification}; }catch(e){}
+  return null;
+}
+
+function renderFNG(f){
+  var el=document.getElementById('fng');
+  if(!f){ el.innerHTML='<div class="g">CRYPTO FEAR &amp; GREED</div><div class="v">—</div><div class="lab" style="color:#6b7280">unavailable</div>'; return; }
+  var c=f.value<25?'#c0341d':(f.value<45?'#d9a400':(f.value<55?'#6b7280':(f.value<75?'#0a7d33':'#0a7d33')));
+  el.innerHTML='<div class="g">CRYPTO FEAR &amp; GREED</div><div class="v" style="color:'+c+'">'+f.value+'</div><div class="lab" style="color:'+c+'">'+f.label+'</div>'+
+    '<div class="bar"><div class="pin" style="left:'+f.value+'%"></div></div>';
+}
+
+function renderSignals(){
+  var leaders=ROWS.slice().sort(function(a,b){return b.r7-a.r7;}).slice(0,4);
+  var laggards=ROWS.slice().sort(function(a,b){return a.r7-b.r7;}).slice(0,4);
+  var ob=ROWS.filter(function(x){return x.rsi>=70;}).sort(function(a,b){return b.rsi-a.rsi;});
+  var os=ROWS.filter(function(x){return x.rsi<=30;}).sort(function(a,b){return a.rsi-b.rsi;});
+  function rows(arr,fmt){ return arr.length?arr.map(fmt).join(''):'<div class="empty">None right now</div>'; }
+  var html='';
+  html+='<div class="sig"><h4>▲ Momentum leaders (7d)</h4>'+rows(leaders,function(x){return '<div class="row"><b>'+x.sym+'</b><span class="up">'+sgn(x.r7)+'</span></div>';})+'</div>';
+  html+='<div class="sig"><h4>▼ Laggards (7d)</h4>'+rows(laggards,function(x){return '<div class="row"><b>'+x.sym+'</b><span class="down">'+sgn(x.r7)+'</span></div>';})+'</div>';
+  html+='<div class="sig"><h4>Overbought · RSI&gt;70</h4>'+rows(ob,function(x){return '<div class="row"><b>'+x.sym+'</b><span>RSI '+x.rsi.toFixed(0)+'</span></div>';})+'</div>';
+  html+='<div class="sig"><h4>Oversold · RSI&lt;30</h4>'+rows(os,function(x){return '<div class="row"><b>'+x.sym+'</b><span>RSI '+x.rsi.toFixed(0)+'</span></div>';})+'</div>';
+  document.getElementById('sigcards').innerHTML=html;
+}
+
+function renderTable(){
+  var rows=ROWS.slice().sort(function(a,b){var x=a[sortKey],y=b[sortKey]; return (x<y?-1:x>y?1:0)*sortDir;});
+  var head='<table><thead><tr>'+
+    '<th data-k="sym">Asset</th><th data-k="price">Price</th><th data-k="r24">24h</th><th data-k="r7">7d</th><th data-k="r30">30d</th><th data-k="rsi">RSI(14)</th><th data-k="trend">Trend</th><th data-k="vol">Vol (ann.)</th></tr></thead><tbody>';
+  var body=rows.map(function(x){
+    var tag=x.rsi>=70?'<span class="tag ob">OB</span>':(x.rsi<=30?'<span class="tag os">OS</span>':'');
+    var tr=x.trend>0?'<span class="up">▲ up</span>':(x.trend<0?'<span class="down">▼ down</span>':'—');
+    return '<tr><td><span class="tk">'+x.sym+'</span><span class="nm">'+x.name+'</span></td>'+
+      '<td>'+fp(x.price)+'</td>'+
+      '<td class="'+col(x.r24)+'">'+sgn(x.r24)+'</td>'+
+      '<td class="'+col(x.r7)+'">'+sgn(x.r7)+'</td>'+
+      '<td class="'+col(x.r30)+'">'+sgn(x.r30)+'</td>'+
+      '<td>'+x.rsi.toFixed(0)+tag+'</td>'+
+      '<td>'+tr+'</td>'+
+      '<td>'+x.vol.toFixed(0)+'%</td></tr>';
+  }).join('');
+  document.getElementById('tablewrap').innerHTML=head+body+'</tbody></table>';
+  Array.prototype.forEach.call(document.querySelectorAll('th[data-k]'),function(th){
+    th.onclick=function(){ var k=th.getAttribute('data-k'); if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir=(k==='sym')?1:-1;} renderTable(); };
+  });
+}
+
+function scanText(){
+  return ROWS.slice().sort(function(a,b){return b.r7-a.r7;}).map(function(x){
+    return x.sym+': '+fp(x.price)+', 7d '+sgn(x.r7)+', 24h '+sgn(x.r24)+', RSI '+x.rsi.toFixed(0)+', trend '+(x.trend>0?'up':x.trend<0?'down':'flat')+', vol '+x.vol.toFixed(0)+'%';
+  }).join('\n');
+}
+
+async function run(){
+  var status=document.getElementById('status');
+  var res=await Promise.all(UNI.map(scanOne));
+  ROWS=res.filter(Boolean);
+  if(!ROWS.length){ status.textContent='Market scan is temporarily unavailable. Try again shortly.'; return; }
+  status.style.display='none';
+  document.getElementById('toprow').style.display='grid';
+  var f=await getFNG();
+  renderFNG(f);
+  renderSignals();
+  renderTable();
+  // AI brief
+  try{
+    var fngStr=f?(f.value+' ('+f.label+')'):'n/a';
+    var r=await fetch('/api/signals',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scan:scanText(),fng:fngStr})});
+    var d=await r.json();
+    var rw=document.getElementById('readwrap');
+    if(d.error==='no_key'){
+      document.getElementById('hint').style.display='block';
+      document.getElementById('hint').innerHTML='<strong>The scanner is live; the AI brief needs the <code>GROQ_KEY</code></strong> environment variable in Vercel. The signals, Fear &amp; Greed gauge, and table above are already running on live data.';
+    } else if(d.text){
+      rw.innerHTML='<div class="read"><h3>★ QUANTORA AI · SIGNALS BRIEF</h3><p>'+d.text.replace(/</g,'&lt;')+'</p>'+
+        '<div class="foot">Written by Quantora AI (Llama 3.3) on the live scan · not investment advice</div></div>';
+    }
+  }catch(e){}
+}
+run();
+</script>
+</body>
+</html>
