@@ -96,42 +96,19 @@ qbox.addEventListener('input',autosize);
 qbox.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); ask(qbox.value); } });
 sendBtn.onclick=function(){ ask(qbox.value); };
 
-function rsiCalc(closes){ if(closes.length<15) return null; var g=0,l=0; for(var i=closes.length-14;i<closes.length;i++){var d=closes[i]-closes[i-1]; if(d>=0)g+=d; else l-=d;} g/=14;l/=14; if(l===0)return 100; return 100-100/(1+g/l); }
-function rcalc(a,b){ return (a/b-1)*100; }
-async function liveCtx(sym){
-  try{
-    var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/candles?granularity=86400');
-    var c=await r.json();
-    if(!Array.isArray(c)||c.length<31) return null;
-    var nf=c.map(function(x){return x[4];});           // newest-first closes
-    var closes=nf.slice().reverse();                    // oldest-first
-    var price=nf[0];
-    var rets=[]; for(var i=1;i<closes.length;i++)rets.push(closes[i]/closes[i-1]-1);
-    var m=rets.reduce(function(a,b){return a+b;},0)/rets.length;
-    var v=0; rets.forEach(function(x){v+=(x-m)*(x-m);}); v=Math.sqrt(v/rets.length);
-    var volA=v*Math.sqrt(365)*100;
-    var peak=closes[0],mdd=0; closes.forEach(function(p){if(p>peak)peak=p;var dd=(p/peak-1);if(dd<mdd)mdd=dd;});
-    var rsi=rsiCalc(closes);
-    var fp=price>=1000?('$'+Math.round(price).toLocaleString()):(price>=1?('$'+price.toFixed(2)):('$'+price.toFixed(5)));
-    return 'LIVE '+sym+' (Coinbase, daily): price '+fp+', 24h '+rcalc(price,nf[1]).toFixed(2)+'%, 7d '+rcalc(price,nf[7]).toFixed(2)+'%, 30d '+rcalc(price,nf[30]).toFixed(2)+'%, RSI14 '+(rsi==null?'n/a':rsi.toFixed(0))+', annualized volatility '+volA.toFixed(0)+'%, max drawdown over the window '+(mdd*100).toFixed(0)+'%.';
-  }catch(e){ return null; }
-}
-
 async function ask(text){
   text=(text||'').trim(); if(!text||busy) return;
   qbox.value=''; autosize(); busy=true; sendBtn.disabled=true;
   bubble('user', esc(text));
-  var body=bubble('ai','<span style="color:#9aa0aa">Pulling live data and thinking…</span>');
+  var body=bubble('ai','<span style="color:#9aa0aa">Thinking…</span>');
   var sym=detectSym(text);
-  var ctx='';
-  if(sym){ var lc=await liveCtx(sym); if(lc) ctx=lc; else sym=''; }
   try{
-    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:text,context:ctx})});
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:text,symbol:sym})});
     var d=await r.json();
     if(d.error==='no_key'){ body.innerHTML='Ask Quantora needs the <code>GROQ_KEY</code> environment variable set in Vercel to run. Once it\'s in, this goes live instantly.'; }
-    else if(d.error||!d.text){ body.innerHTML='<span style="color:#c0341d">Could not get an answer just now. Try again.</span>'; }
+    else if(d.error){ body.innerHTML='<span style="color:#c0341d">Could not get an answer just now. Try again.</span>'; }
     else{
-      var badge=(sym&&ctx)?('<div class="badge">★ grounded on live '+sym+' data</div>'):'';
+      var badge=d.grounded?('<div class="badge">★ grounded on live '+d.symbol+' data</div>'):'';
       body.innerHTML=badge+esc(d.text||'');
     }
   }catch(e){ body.innerHTML='<span style="color:#c0341d">Network error. Try again.</span>'; }
