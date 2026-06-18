@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quantora · Stocks — Live</title>
+<title>Quantora · Global — Live</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -12,7 +12,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
 a{color:inherit;text-decoration:none}
-.nav{display:flex;align-items:center;gap:22px;padding:16px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:10}
+.nav{display:flex;align-items:center;gap:20px;padding:16px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:10;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
 .brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 .nav a.link{color:var(--mut);font-size:14px}
@@ -31,9 +31,11 @@ table{width:100%;border-collapse:collapse;margin-top:24px;font-size:14.5px}
 th,td{text-align:right;padding:13px 12px;border-bottom:1px solid var(--line)}
 th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600}
 th:first-child,td:first-child{text-align:left}
+td.cls{text-align:left}
 tbody tr:hover{background:var(--soft)}
 .tk{font-weight:650}
 .nm{color:var(--mut);font-size:12.5px;margin-left:8px}
+.pill{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;background:#f1f1f1;color:#555}
 .up{color:var(--up)}.down{color:var(--down)}
 .status{margin-top:26px;color:var(--mut);font-size:14px}
 .hint{border:1px dashed #d7d7d7;border-radius:14px;padding:22px 24px;margin-top:8px;font-size:14.5px;color:#444;background:#fcfcfc;display:none}
@@ -46,28 +48,31 @@ tbody tr:hover{background:var(--soft)}
   <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
   <a href="/platform.html" class="link">Platform</a>
   <a href="/markets.html" class="link">Markets</a>
-  <a href="/stocks.html" class="link active">Stocks</a>
-  <a href="/global.html" class="link">Global</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link active">Global</a>
   <a href="/signals.html" class="link">Signals</a>
   <a href="/news.html" class="link">News</a>
   <a href="/macro.html" class="link">Macro</a>
   <a href="/analyst.html" class="link">Analyst</a>
   <a href="/ask.html" class="link">Ask</a>
-  <div class="right"><span class="dot"></span> Live · US equities</div>
+  <div class="right"><span class="dot"></span> Live · FX &amp; commodities</div>
 </div>
 <div class="wrap">
-  <h1>Stocks</h1>
-  <div class="sub">The equity tape — live prices and moves on the index ETFs and megacaps that set the tone, read by Quantora's AI equities desk.</div>
-  <div class="src">Live equity data via Twelve Data · for information only, not investment advice</div>
+  <h1>Global</h1>
+  <div class="sub">The cross-asset tape — live currencies and commodities, the prices that move every market, read by Quantora's AI global macro desk.</div>
+  <div class="src">Live FX &amp; commodity data via Twelve Data · for information only, not investment advice</div>
 
   <div id="readwrap"></div>
   <div id="hint" class="hint"></div>
   <div id="tablewrap"></div>
-  <div id="status" class="status">Loading the equity tape…</div>
+  <div id="status" class="status">Loading the cross-asset tape…</div>
 </div>
 
 <script>
-function fp(p){ return '$'+p.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmt(x){
+  if(x.cls==='FX'){ return x.price>=50? x.price.toFixed(2): x.price.toFixed(4); }
+  return '$'+x.price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
 function sgn(x){ return (x>=0?'+':'')+x.toFixed(2)+'%'; }
 function col(x){ return x>=0?'up':'down'; }
 
@@ -77,29 +82,30 @@ async function load(){
   var readwrap=document.getElementById('readwrap');
   var hint=document.getElementById('hint');
   try{
-    var r=await fetch('/api/stocks');
+    var r=await fetch('/api/global');
     var d=await r.json();
     if(d.error==='no_key'){
       status.style.display='none';
       hint.style.display='block';
-      hint.innerHTML='<strong>The equity tape is built and waiting for its data key.</strong><br>It uses your <code>TWELVEDATA_KEY</code> (the same key the Analyst uses for stocks). Make sure it is set in Vercel &rarr; Environment Variables and this page goes fully live.';
+      hint.innerHTML='<strong>The cross-asset tape is built and waiting for its data key.</strong><br>It uses your <code>TWELVEDATA_KEY</code> (the same key Stocks and the Analyst use). Make sure it is set in Vercel &rarr; Environment Variables and this page goes fully live.';
       return;
     }
-    if(d.error || !d.rows || !d.rows.length){ status.textContent='The equity tape is temporarily unavailable. Try again shortly.'; return; }
+    if(d.error || !d.rows || !d.rows.length){ status.textContent='The cross-asset tape is temporarily unavailable. Try again shortly.'; return; }
     status.style.display='none';
     if(d.aiRead){
-      readwrap.innerHTML='<div class="read"><h3>&#9733; QUANTORA AI &middot; EQUITIES DESK</h3><p>'+d.aiRead.replace(/</g,'&lt;')+'</p>'+
+      readwrap.innerHTML='<div class="read"><h3>&#9733; QUANTORA AI &middot; GLOBAL MACRO DESK</h3><p>'+d.aiRead.replace(/</g,'&lt;')+'</p>'+
         '<div class="foot">Written by Quantora AI (Llama 3.3) on the live tape &middot; not investment advice</div></div>';
     }
-    var head='<table><thead><tr><th>Instrument</th><th>Price</th><th>Change</th></tr></thead><tbody>';
+    var head='<table><thead><tr><th>Instrument</th><th>Class</th><th>Price</th><th>Change</th></tr></thead><tbody>';
     var body=d.rows.map(function(x){
       return '<tr><td><span class="tk">'+x.symbol+'</span><span class="nm">'+x.name+'</span></td>'+
-        '<td>'+fp(x.price)+'</td>'+
+        '<td class="cls"><span class="pill">'+x.cls+'</span></td>'+
+        '<td>'+fmt(x)+'</td>'+
         '<td class="'+col(x.changePct)+'">'+sgn(x.changePct)+'</td></tr>';
     }).join('');
     tablewrap.innerHTML=head+body+'</tbody></table>';
   }catch(e){
-    status.textContent='Could not reach the equity tape. Try again shortly.';
+    status.textContent='Could not reach the cross-asset tape. Try again shortly.';
   }
 }
 load();
