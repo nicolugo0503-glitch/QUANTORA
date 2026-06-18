@@ -54,7 +54,7 @@ h1{font-size:30px;font-weight:680;letter-spacing:-.5px}
 <div class="wrap">
   <h1>News</h1>
   <div class="sub">The wire — live market headlines, read by Quantora's AI markets desk. Themes, sentiment, and what to watch, distilled in seconds.</div>
-  <div class="src">Live headlines via CryptoCompare · AI pulse by Quantora · for information only, not investment advice</div>
+  <div class="src">Live headlines via Cointelegraph, CoinDesk &amp; Decrypt · AI pulse by Quantora · for information only, not investment advice</div>
 
   <div id="readwrap"></div>
   <div id="feed" class="feed"></div>
@@ -62,6 +62,13 @@ h1{font-size:30px;font-weight:680;letter-spacing:-.5px}
 </div>
 
 <script>
+var FEEDS=[
+  {url:'https://cointelegraph.com/rss',name:'Cointelegraph'},
+  {url:'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml',name:'CoinDesk'},
+  {url:'https://decrypt.co/feed',name:'Decrypt'}
+];
+function strip(h){ var d=document.createElement('div'); d.innerHTML=h||''; return (d.textContent||'').replace(/\s+/g,' ').trim(); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function ago(ts){
   var s=Math.floor(Date.now()/1000)-ts;
   if(s<60) return 'just now';
@@ -69,31 +76,43 @@ function ago(ts){
   if(s<86400) return Math.floor(s/3600)+'h ago';
   return Math.floor(s/86400)+'d ago';
 }
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
+async function feed(f){
+  try{
+    var r=await fetch('https://api.rss2json.com/v1/api.json?count=12&rss_url='+encodeURIComponent(f.url));
+    var d=await r.json();
+    if(d.status!=='ok'||!d.items) return [];
+    return d.items.map(function(it){
+      return {title:it.title,source:f.name,url:it.link,ts:Math.floor(Date.parse(it.pubDate)/1000)||Math.floor(Date.now()/1000),body:strip(it.description).slice(0,200)};
+    });
+  }catch(e){ return []; }
+}
 async function load(){
   var status=document.getElementById('status');
-  var feed=document.getElementById('feed');
+  var feedEl=document.getElementById('feed');
   var readwrap=document.getElementById('readwrap');
+  var groups=await Promise.all(FEEDS.map(feed));
+  var all=[].concat.apply([],groups);
+  if(!all.length){ status.textContent='The wire is quiet right now. Try again shortly.'; return; }
+  all.sort(function(a,b){return b.ts-a.ts;});
+  var articles=all.slice(0,20);
+  status.style.display='none';
+  feedEl.innerHTML=articles.map(function(a){
+    return '<a class="item" href="'+encodeURI(a.url)+'" target="_blank" rel="noopener noreferrer">'+
+      '<div class="t">'+esc(a.title)+'</div>'+
+      '<div class="meta"><span class="s">'+esc(a.source)+'</span> · '+ago(a.ts)+' <span class="arw">&#8594;</span></div>'+
+      (a.body?'<div class="b">'+esc(a.body)+'…</div>':'')+
+      '</a>';
+  }).join('');
+  // AI market pulse
   try{
-    var r=await fetch('/api/news');
+    var heads=articles.slice(0,12).map(function(a,i){return (i+1)+'. '+a.title+' ('+a.source+')';}).join('\n');
+    var r=await fetch('/api/news',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({heads:heads})});
     var d=await r.json();
-    if(d.error || !d.articles || !d.articles.length){ status.textContent='The wire is quiet right now. Try again shortly.'; return; }
-    status.style.display='none';
     if(d.summary){
-      readwrap.innerHTML='<div class="read"><h3>★ QUANTORA AI · MARKET PULSE</h3><p>'+esc(d.summary)+'</p>'+
+      readwrap.innerHTML='<div class="read"><h3>&#9733; QUANTORA AI · MARKET PULSE</h3><p>'+esc(d.summary)+'</p>'+
         '<div class="foot">Written by Quantora AI (Llama 3.3) on the live wire · not investment advice</div></div>';
     }
-    feed.innerHTML=d.articles.map(function(a){
-      return '<a class="item" href="'+encodeURI(a.url)+'" target="_blank" rel="noopener noreferrer">'+
-        '<div class="t">'+esc(a.title)+'</div>'+
-        '<div class="meta"><span class="s">'+esc(a.source)+'</span> · '+ago(a.ts)+' <span class="arw">→</span></div>'+
-        (a.body?'<div class="b">'+esc(a.body)+'…</div>':'')+
-        '</a>';
-    }).join('');
-  }catch(e){
-    status.textContent='Could not reach the wire. Try again shortly.';
-  }
+  }catch(e){}
 }
 load();
 </script>
