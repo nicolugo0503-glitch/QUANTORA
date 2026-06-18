@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Pulse — Live Terminal</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:18px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
+.tape{border-bottom:1px solid var(--line)}
+.wrap{max-width:1240px;margin:0 auto;padding:26px 24px 70px}
+.head h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.head .sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.panel h4{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);font-weight:650;padding:14px 18px 8px}
+.panel .body{padding:0 8px 8px}
+.full{margin-top:16px}
+@media(max-width:880px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link active">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link">Global</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <div class="right"><span class="dot"></span> Live terminal</div>
+</div>
+
+<!-- TICKER TAPE -->
+<div class="tape">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {"symbols":[{"proName":"COINBASE:BTCUSD","title":"BTC"},{"proName":"COINBASE:ETHUSD","title":"ETH"},{"proName":"COINBASE:SOLUSD","title":"SOL"},{"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},{"proName":"FOREXCOM:NSXUSD","title":"Nasdaq 100"},{"proName":"OANDA:XAUUSD","title":"Gold"},{"proName":"TVC:USOIL","title":"Crude Oil"},{"proName":"FX:EURUSD","title":"EUR/USD"}],"showSymbolLogo":true,"isTransparent":true,"displayMode":"adaptive","colorTheme":"light","locale":"en"}
+    </script>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Pulse</h1>
+    <div class="sub">The whole market on one screen — live indices, crypto, FX and commodities, a market-cap heatmap, and the economic calendar that moves everything. This is the terminal.</div>
+  </div>
+
+  <div class="grid">
+    <!-- MARKET OVERVIEW -->
+    <div class="panel">
+      <h4>Market Overview</h4>
+      <div class="body">
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+          {"colorTheme":"light","dateRange":"12M","showChart":true,"locale":"en","largeChartUrl":"","isTransparent":true,"showSymbolLogo":true,"showFloatingTooltip":true,"width":"100%","height":"480","tabs":[{"title":"Indices","symbols":[{"s":"FOREXCOM:SPXUSD","d":"S&P 500"},{"s":"FOREXCOM:NSXUSD","d":"Nasdaq 100"},{"s":"FOREXCOM:DJI","d":"Dow 30"}],"originalTitle":"Indices"},{"title":"Crypto","symbols":[{"s":"COINBASE:BTCUSD","d":"Bitcoin"},{"s":"COINBASE:ETHUSD","d":"Ethereum"},{"s":"COINBASE:SOLUSD","d":"Solana"}],"originalTitle":"Crypto"},{"title":"Forex","symbols":[{"s":"FX:EURUSD","d":"EUR/USD"},{"s":"FX:USDJPY","d":"USD/JPY"},{"s":"FX:GBPUSD","d":"GBP/USD"}],"originalTitle":"Forex"},{"title":"Commodities","symbols":[{"s":"OANDA:XAUUSD","d":"Gold"},{"s":"OANDA:XAGUSD","d":"Silver"},{"s":"TVC:USOIL","d":"Crude Oil"}],"originalTitle":"Commodities"}]}
+          </script>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRYPTO HEATMAP -->
+    <div class="panel">
+      <h4>Crypto Heatmap</h4>
+      <div class="body">
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-crypto-coins-heatmap.js" async>
+          {"dataSource":"Crypto","blockSize":"market_cap_calc","blockColor":"change","locale":"en","symbolUrl":"","colorTheme":"light","hasTopBar":false,"isDataSetEnabled":false,"isZoomEnabled":true,"hasSymbolTooltip":true,"isMonoSize":false,"width":"100%","height":"480"}
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ECONOMIC CALENDAR -->
+  <div class="panel full">
+    <h4>Economic Calendar</h4>
+    <div class="body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+        {"colorTheme":"light","isTransparent":true,"width":"100%","height":"540","locale":"en","importanceFilter":"0,1","countryFilter":"us,eu,gb,jp,cn"}
+        </script>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
