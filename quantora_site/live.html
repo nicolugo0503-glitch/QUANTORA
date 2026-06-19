@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Live — Streaming Tape</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d;--upbg:#e7f6ec;--downbg:#fdecea}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;background:#bbb;display:inline-block}
+.dot.on{background:var(--up);box-shadow:0 0 0 0 rgba(10,125,51,.5);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(10,125,51,.45)}70%{box-shadow:0 0 0 7px rgba(10,125,51,0)}100%{box-shadow:0 0 0 0 rgba(10,125,51,0)}}
+.wrap{max-width:1080px;margin:0 auto;padding:34px 24px 70px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:740px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+table{width:100%;border-collapse:collapse;margin-top:22px;font-size:15px}
+th,td{text-align:right;padding:13px 14px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+.tk{font-weight:650}.nm{color:var(--mut);font-size:12px;margin-left:7px}
+.price{font-variant-numeric:tabular-nums;font-weight:620;border-radius:7px;transition:background-color .9s ease}
+.price.up{background:var(--upbg)}.price.down{background:var(--downbg)}
+.bidask{font-variant-numeric:tabular-nums;color:var(--mut);font-size:13px}
+.up{color:var(--up)}.down{color:var(--down)}
+.arrow{display:inline-block;width:12px}
+.status{margin-top:16px;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/live.html" class="link active">Live</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <div class="right"><span class="dot" id="dot"></span> <span id="connlbl">connecting…</span></div>
+</div>
+<div class="wrap">
+  <h1>Live Tape</h1>
+  <div class="sub">Real-time, tick-by-tick. Prices stream straight from the exchange and flash the instant they move — no refresh, no polling. The terminal feel.</div>
+  <div class="src">Live streaming via Coinbase websocket · for information only, not investment advice</div>
+
+  <table>
+    <thead><tr><th>Asset</th><th>Price</th><th>24h</th><th>Bid</th><th>Ask</th><th>Last move</th></tr></thead>
+    <tbody id="tape"></tbody>
+  </table>
+  <div class="status" id="status">Opening live stream…</div>
+</div>
+
+<script>
+var PRODUCTS=[
+  {id:'BTC-USD',name:'Bitcoin'},{id:'ETH-USD',name:'Ethereum'},{id:'SOL-USD',name:'Solana'},
+  {id:'XRP-USD',name:'XRP'},{id:'DOGE-USD',name:'Dogecoin'},{id:'ADA-USD',name:'Cardano'},
+  {id:'AVAX-USD',name:'Avalanche'},{id:'LINK-USD',name:'Chainlink'},{id:'DOT-USD',name:'Polkadot'},
+  {id:'LTC-USD',name:'Litecoin'},{id:'BCH-USD',name:'Bitcoin Cash'},{id:'UNI-USD',name:'Uniswap'}
+];
+var last={};
+function fp(p){ if(p>=1000) return '$'+p.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); if(p>=1) return '$'+p.toFixed(2); return '$'+p.toFixed(5); }
+function sym(id){ return id.split('-')[0]; }
+
+function buildRows(){
+  document.getElementById('tape').innerHTML=PRODUCTS.map(function(p){
+    var s=sym(p.id);
+    return '<tr id="r_'+s+'">'+
+      '<td><span class="tk">'+s+'</span><span class="nm">'+p.name+'</span></td>'+
+      '<td><span class="price" id="px_'+s+'">—</span></td>'+
+      '<td id="ch_'+s+'">—</td>'+
+      '<td class="bidask" id="bd_'+s+'">—</td>'+
+      '<td class="bidask" id="ak_'+s+'">—</td>'+
+      '<td id="mv_'+s+'">—</td></tr>';
+  }).join('');
+}
+
+function onTick(m){
+  var s=sym(m.product_id);
+  var price=parseFloat(m.price);
+  if(isNaN(price)) return;
+  var pxEl=document.getElementById('px_'+s); if(!pxEl) return;
+  pxEl.textContent=fp(price);
+  var prev=last[s];
+  if(prev!=null && price!==prev){
+    var up=price>prev;
+    pxEl.classList.remove('up','down'); void pxEl.offsetWidth; pxEl.classList.add(up?'up':'down');
+    var mv=document.getElementById('mv_'+s);
+    mv.innerHTML='<span class="'+(up?'up':'down')+'"><span class="arrow">'+(up?'▲':'▼')+'</span> '+fp(price)+'</span>';
+    setTimeout(function(){ pxEl.classList.remove('up','down'); }, 850);
+  }
+  last[s]=price;
+  if(m.open_24h){ var ch=(price/parseFloat(m.open_24h)-1)*100; var chEl=document.getElementById('ch_'+s); chEl.textContent=(ch>=0?'+':'')+ch.toFixed(2)+'%'; chEl.className=ch>=0?'up':'down'; }
+  if(m.best_bid) document.getElementById('bd_'+s).textContent=fp(parseFloat(m.best_bid));
+  if(m.best_ask) document.getElementById('ak_'+s).textContent=fp(parseFloat(m.best_ask));
+}
+
+var ws, retry=0;
+function connect(){
+  document.getElementById('connlbl').textContent='connecting…';
+  document.getElementById('dot').classList.remove('on');
+  try{ ws=new WebSocket('wss://ws-feed.exchange.coinbase.com'); }catch(e){ document.getElementById('status').textContent='Live stream unavailable in this browser.'; return; }
+  ws.onopen=function(){
+    retry=0;
+    ws.send(JSON.stringify({type:'subscribe', product_ids:PRODUCTS.map(function(p){return p.id;}), channels:['ticker']}));
+    document.getElementById('dot').classList.add('on');
+    document.getElementById('connlbl').textContent='LIVE · streaming';
+    document.getElementById('status').textContent='Connected — streaming live ticks from Coinbase.';
+  };
+  ws.onmessage=function(ev){ try{ var m=JSON.parse(ev.data); if(m.type==='ticker') onTick(m); }catch(e){} };
+  ws.onclose=function(){
+    document.getElementById('dot').classList.remove('on');
+    document.getElementById('connlbl').textContent='reconnecting…';
+    retry++; setTimeout(connect, Math.min(retry*1500, 8000));
+  };
+  ws.onerror=function(){ try{ ws.close(); }catch(e){} };
+}
+buildRows();
+connect();
+window.addEventListener('beforeunload',function(){ try{ ws&&ws.close(); }catch(e){} });
+</script>
+</body>
+</html>
