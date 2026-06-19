@@ -192,7 +192,7 @@ document.getElementById('airead').onclick=async function(){
   rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI · PORTFOLIO RISK READ</h3><p style="color:#9aa0aa">Analyzing your book…</p>';
   var ctx='PORTFOLIO (live, total value '+money(tv)+'):\n'+PFLAST.map(function(h){var w=tv>0?(h.value/tv*100):0; return '- '+h.sym+' ('+(h.type==='crypto'?'crypto':'stock')+'): value '+money(h.value)+' ('+w.toFixed(1)+'% of book), P&L '+money(h.pnl)+' ('+pct(h.pnlPct)+')';}).join('\n');
   try{
-    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:'Analyze this portfolio: concentration and diversification, which positions carry the most risk, and the overall risk posture. Be specific and cite weights.',context:ctx})});
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:ctx+'\n\nAnalyze this portfolio: concentration and diversification, which positions carry the most risk, and the overall risk posture. Be specific and cite weights. The live data is provided above; do not ask for it.'})});
     var d=await r.json();
     if(d.text){ rw.innerHTML='<h3>★ QUANTORA AI · PORTFOLIO RISK READ</h3><p>'+d.text.replace(/</g,'&lt;')+'</p><div class="foot">Written by Quantora AI (Llama 3.3) on your live book · not investment advice</div>'; }
     else if(d.error==='no_key'){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>The AI read needs the <code>GROQ_KEY</code> set in Vercel. Your live P&L above is already running.</p>'; }

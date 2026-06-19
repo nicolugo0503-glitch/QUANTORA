@@ -172,7 +172,7 @@ document.getElementById('brief').onclick=async function(){
   rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI · WATCHLIST BRIEF</h3><p style="color:#9aa0aa">Reading your list…</p>';
   var ctx='WATCHLIST (live):\n'+LAST.map(function(x){return '- '+x.sym+' ('+(x.type==='crypto'?'crypto':'stock')+'): '+money(x.price)+', 24h '+pc(x.r24)+', 7d '+pc(x.r7);}).join('\n');
   try{
-    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:'Give me a concise morning brief on this watchlist: the strongest and weakest names, notable moves, and what to watch.',context:ctx})});
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:ctx+'\n\nGive me a concise morning brief on this watchlist: the strongest and weakest names, notable moves, and what to watch. The live data is provided above; do not ask for it.'})});
     var d=await r.json();
     if(d.text){ rw.innerHTML='<h3>★ QUANTORA AI · WATCHLIST BRIEF</h3><p>'+d.text.replace(/</g,'&lt;')+'</p><div class="foot">Written by Quantora AI (Llama 3.3) on live data · not investment advice</div>'; }
     else if(d.error==='no_key'){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>The AI brief needs the <code>GROQ_KEY</code> set in Vercel. Your live watchlist above is already running.</p>'; }
