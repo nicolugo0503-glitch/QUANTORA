@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Watchlist — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1040px;margin:0 auto;padding:34px 24px 70px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:720px}
+.read{border:1px solid var(--line);background:var(--soft);border-radius:14px;padding:20px 22px;margin:20px 0 4px;display:none}
+.read h3{font-size:13px;font-weight:650;letter-spacing:.02em;margin-bottom:9px}
+.read p{font-size:15px;line-height:1.65}
+.read .foot{color:var(--mut);font-size:12px;margin-top:11px;font-family:ui-monospace,Menlo,monospace}
+.addbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--soft)}
+.addbar input,.addbar select{border:1px solid #d8d8d8;border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+.addbar input:focus,.addbar select:focus{border-color:#000}
+.addbar input.sym{width:120px;text-transform:uppercase}
+.addbar button{border:none;background:#000;color:#fff;border-radius:9px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.addbar button.alt{background:#fff;color:#000;border:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:#444}
+.chip:hover{border-color:#bbb}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
+th,td{text-align:right;padding:12px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+.tk{font-weight:650}.badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#f1f1f1;color:#555;margin-left:7px}
+.up{color:var(--up)}.down{color:var(--down)}
+.x{cursor:pointer;color:#bbb;font-weight:700}.x:hover{color:var(--down)}
+.empty{margin-top:30px;color:var(--mut);font-size:14.5px;text-align:center;border:1px dashed #d7d7d7;border-radius:14px;padding:40px 20px}
+.note{margin-top:14px;font-size:12px;color:var(--mut)}
+.a{color:#0a58ca;cursor:pointer}
+@media(max-width:680px){.spark{display:none}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/heatmap.html" class="link">Heatmap</a>
+  <a href="/screener.html" class="link">Screener</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link">Global</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/fundamentals.html" class="link">Fundamentals</a>
+  <a href="/calendar.html" class="link">Calendar</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <a href="/watchlist.html" class="link active">Watchlist</a>
+  <a href="/alerts.html" class="link">Alerts</a>
+  <div class="right"><span class="dot"></span> Live · your list</div>
+</div>
+<div class="wrap">
+  <h1>Watchlist</h1>
+  <div class="sub">The names you're tracking, live — price, trend, and 30-day shape at a glance. Add anything, then let the AI brief the whole list.</div>
+
+  <div id="readwrap" class="read"></div>
+
+  <div class="addbar">
+    <input class="sym" id="i_sym" placeholder="BTC / NVDA" autocomplete="off">
+    <select id="i_type"><option value="crypto">Crypto</option><option value="stock">Stock / ETF</option></select>
+    <button id="add">Add</button>
+    <button class="alt" id="brief">★ AI brief my list</button>
+    <button class="alt" id="refresh">↻ Refresh</button>
+  </div>
+  <div class="chips" id="quick"></div>
+
+  <div id="tablewrap"></div>
+  <div class="note" id="note"></div>
+</div>
+
+<script>
+var KEY='quantora_watch';
+var SEED=[{sym:'BTC',type:'crypto'},{sym:'ETH',type:'crypto'},{sym:'SOL',type:'crypto'},{sym:'NVDA',type:'stock'},{sym:'AAPL',type:'stock'}];
+function getW(){ try{ var v=JSON.parse(localStorage.getItem(KEY)); return Array.isArray(v)?v:SEED; }catch(e){ return SEED; } }
+function saveW(w){ localStorage.setItem(KEY, JSON.stringify(w)); }
+function money(n){ if(n==null||isNaN(n)) return '—'; var s=Math.abs(n)>=1?n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):n.toFixed(4); return '$'+s; }
+function pc(n){ return (n>=0?'+':'')+n.toFixed(2)+'%'; }
+function col(n){ return n>=0?'up':'down'; }
+
+async function dataCrypto(sym){
+  try{
+    var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/candles?granularity=86400');
+    var c=await r.json(); if(!Array.isArray(c)||c.length<8) return null;
+    var nf=c.map(function(x){return x[4];});
+    return {price:nf[0], r24:(nf[0]/nf[1]-1)*100, r7:(nf[0]/nf[7]-1)*100, spark:nf.slice(0,30).reverse()};
+  }catch(e){ return null; }
+}
+async function dataStock(sym){
+  try{
+    var r=await fetch('/api/quote?symbol='+encodeURIComponent(sym));
+    var d=await r.json(); if(!d||!d.closes||d.closes.length<8) return null;
+    var c=d.closes;
+    return {price:c[0], r24:(c[0]/c[1]-1)*100, r7:(c[0]/c[7]-1)*100, spark:c.slice(0,30).reverse()};
+  }catch(e){ return null; }
+}
+async function dataFor(w){ return w.type==='crypto'? dataCrypto(w.sym): dataStock(w.sym); }
+
+function spark(arr){
+  if(!arr||arr.length<2) return '';
+  var min=Math.min.apply(null,arr), max=Math.max.apply(null,arr), rng=(max-min)||1, W=120, H=30;
+  var pts=arr.map(function(v,i){ return (i/(arr.length-1)*W).toFixed(1)+','+(H-(v-min)/rng*H).toFixed(1); }).join(' ');
+  var color=arr[arr.length-1]>=arr[0]?'#0a7d33':'#c0341d';
+  return '<svg class="spark" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><polyline fill="none" stroke="'+color+'" stroke-width="1.5" points="'+pts+'"/></svg>';
+}
+
+var LAST=[];
+async function render(){
+  var w=getW();
+  var tablewrap=document.getElementById('tablewrap'), note=document.getElementById('note');
+  renderQuick();
+  if(!w.length){ tablewrap.innerHTML='<div class="empty">Your watchlist is empty. Add a symbol above.</div>'; note.textContent=''; return; }
+  note.textContent='Loading '+w.length+' names…';
+  var ds=await Promise.all(w.map(dataFor));
+  LAST=[];
+  var rows=w.map(function(it,i){
+    var d=ds[i];
+    if(d) LAST.push({sym:it.sym,type:it.type,price:d.price,r24:d.r24,r7:d.r7});
+    return '<tr>'+
+      '<td><span class="tk">'+it.sym+'</span><span class="badge">'+(it.type==='crypto'?'Crypto':'Stock')+'</span></td>'+
+      '<td>'+(d?money(d.price):'—')+'</td>'+
+      '<td class="'+(d?col(d.r24):'')+'">'+(d?pc(d.r24):'—')+'</td>'+
+      '<td class="'+(d?col(d.r7):'')+'">'+(d?pc(d.r7):'—')+'</td>'+
+      '<td>'+(d?spark(d.spark):'')+'</td>'+
+      '<td><a class="a" href="/chart.html" title="Open chart">chart</a> <span class="x" data-i="'+i+'">✕</span></td></tr>';
+  }).join('');
+  tablewrap.innerHTML='<table><thead><tr><th>Asset</th><th>Price</th><th>24h</th><th>7d</th><th class="spark">30-day</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  note.textContent='Updated '+new Date().toLocaleTimeString()+' · not investment advice';
+  Array.prototype.forEach.call(tablewrap.querySelectorAll('.x'),function(x){ x.onclick=function(){ var i=parseInt(x.getAttribute('data-i'),10); var a=getW(); a.splice(i,1); saveW(a); render(); }; });
+}
+
+function renderQuick(){
+  var have={}; getW().forEach(function(w){have[w.sym]=1;});
+  var sug=[{sym:'BTC',type:'crypto'},{sym:'ETH',type:'crypto'},{sym:'SOL',type:'crypto'},{sym:'XRP',type:'crypto'},{sym:'TSLA',type:'stock'},{sym:'MSFT',type:'stock'},{sym:'SPY',type:'stock'},{sym:'QQQ',type:'stock'}].filter(function(s){return !have[s.sym];});
+  var q=document.getElementById('quick');
+  q.innerHTML=sug.length?('<span style="font-size:12px;color:#6b7280;align-self:center">quick add:</span>'+sug.map(function(s){return '<span class="chip" data-s="'+s.sym+'" data-t="'+s.type+'">+ '+s.sym+'</span>';}).join('')):'';
+  Array.prototype.forEach.call(q.querySelectorAll('.chip'),function(c){ c.onclick=function(){ var a=getW(); a.push({sym:c.getAttribute('data-s'),type:c.getAttribute('data-t')}); saveW(a); render(); }; });
+}
+
+document.getElementById('add').onclick=function(){
+  var sym=document.getElementById('i_sym').value.trim().toUpperCase().replace(/[^A-Z0-9.]/g,''); var type=document.getElementById('i_type').value;
+  if(!sym) return; var a=getW(); if(!a.some(function(x){return x.sym===sym;})){ a.push({sym:sym,type:type}); saveW(a); }
+  document.getElementById('i_sym').value=''; render();
+};
+document.getElementById('refresh').onclick=render;
+document.getElementById('i_sym').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('add').click(); });
+
+document.getElementById('brief').onclick=async function(){
+  var rw=document.getElementById('readwrap');
+  if(!LAST.length){ return; }
+  rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI · WATCHLIST BRIEF</h3><p style="color:#9aa0aa">Reading your list…</p>';
+  var ctx='WATCHLIST (live):\n'+LAST.map(function(x){return '- '+x.sym+' ('+(x.type==='crypto'?'crypto':'stock')+'): '+money(x.price)+', 24h '+pc(x.r24)+', 7d '+pc(x.r7);}).join('\n');
+  try{
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:'Give me a concise morning brief on this watchlist: the strongest and weakest names, notable moves, and what to watch.',context:ctx})});
+    var d=await r.json();
+    if(d.text){ rw.innerHTML='<h3>★ QUANTORA AI · WATCHLIST BRIEF</h3><p>'+d.text.replace(/</g,'&lt;')+'</p><div class="foot">Written by Quantora AI (Llama 3.3) on live data · not investment advice</div>'; }
+    else if(d.error==='no_key'){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>The AI brief needs the <code>GROQ_KEY</code> set in Vercel. Your live watchlist above is already running.</p>'; }
+    else { rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Could not generate a brief just now. Try again.</p>'; }
+  }catch(e){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Network error. Try again.</p>'; }
+};
+render();
+</script>
+</body>
+</html>

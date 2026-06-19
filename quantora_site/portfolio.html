@@ -44,6 +44,11 @@ th:first-child,td:first-child{text-align:left}
 .x:hover{color:var(--down)}
 .empty{margin-top:30px;color:var(--mut);font-size:14.5px;text-align:center;border:1px dashed #d7d7d7;border-radius:14px;padding:40px 20px}
 .note{margin-top:14px;font-size:12px;color:var(--mut)}
+.read{border:1px solid var(--line);background:var(--soft);border-radius:14px;padding:20px 22px;margin-top:18px;display:none}
+.read h3{font-size:13px;font-weight:650;letter-spacing:.02em;margin-bottom:9px}
+.read p{font-size:15px;line-height:1.65}
+.read .foot{color:var(--mut);font-size:12px;margin-top:11px;font-family:ui-monospace,Menlo,monospace}
+.addbar button.ai{background:#fff;color:#000;border:1px solid var(--line)}
 @media(max-width:760px){.cards{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -66,6 +71,8 @@ th:first-child,td:first-child{text-align:left}
   <a href="/analyst.html" class="link">Analyst</a>
   <a href="/ask.html" class="link">Ask</a>
   <a href="/portfolio.html" class="link active">Portfolio</a>
+  <a href="/watchlist.html" class="link">Watchlist</a>
+  <a href="/alerts.html" class="link">Alerts</a>
   <div class="right"><span class="dot"></span> Live · your book</div>
 </div>
 <div class="wrap">
@@ -85,16 +92,19 @@ th:first-child,td:first-child{text-align:left}
     <input class="num" id="i_qty" type="number" step="any" placeholder="Quantity">
     <input class="num" id="i_cost" type="number" step="any" placeholder="Avg cost (price)">
     <button id="add">Add holding</button>
-    <button id="refresh" style="background:#fff;color:#000;border:1px solid var(--line)">↻ Refresh prices</button>
+    <button id="refresh" class="ai">↻ Refresh prices</button>
+    <button id="airead" class="ai">★ AI risk read</button>
     <div class="hint">Crypto priced via Coinbase · stocks &amp; ETFs via Twelve Data · holdings stored only in this browser</div>
   </div>
 
+  <div id="pread" class="read"></div>
   <div id="tablewrap"></div>
   <div class="note" id="note"></div>
 </div>
 
 <script>
 var KEY='quantora_portfolio';
+var PFLAST=[];
 function getPF(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){ return []; } }
 function savePF(p){ localStorage.setItem(KEY, JSON.stringify(p)); }
 function money(n){ if(n===null||n===undefined||isNaN(n)) return '—'; var s=Math.abs(n)>=1?n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):n.toFixed(4); return '$'+s; }
@@ -132,7 +142,7 @@ async function render(){
   }
   note.textContent='Pricing '+pf.length+' position'+(pf.length>1?'s':'')+'…';
   var prices=await Promise.all(pf.map(priceFor));
-  var totVal=0, totCost=0;
+  var totVal=0, totCost=0; PFLAST=[];
   var rows=pf.map(function(h,i){
     var price=prices[i];
     var qty=parseFloat(h.qty), cost=parseFloat(h.cost);
@@ -140,7 +150,7 @@ async function render(){
     var basis=cost*qty;
     var pnl=(value!=null)? value-basis : null;
     var pnlPct=(value!=null && basis>0)? (pnl/basis*100) : null;
-    if(value!=null){ totVal+=value; totCost+=basis; }
+    if(value!=null){ totVal+=value; totCost+=basis; PFLAST.push({sym:h.sym,type:h.type,value:value,pnl:pnl,pnlPct:pnlPct}); }
     return '<tr>'+
       '<td><span class="tk">'+h.sym+'</span><span class="badge">'+(h.type==='crypto'?'Crypto':'Stock')+'</span></td>'+
       '<td>'+qty+'</td>'+
@@ -175,6 +185,20 @@ document.getElementById('add').onclick=function(){
   render();
 };
 document.getElementById('refresh').onclick=render;
+document.getElementById('airead').onclick=async function(){
+  var rw=document.getElementById('pread');
+  if(!PFLAST.length){ rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Add some holdings first, then I\'ll analyze your book.</p>'; return; }
+  var tv=PFLAST.reduce(function(s,h){return s+(h.value||0);},0);
+  rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI · PORTFOLIO RISK READ</h3><p style="color:#9aa0aa">Analyzing your book…</p>';
+  var ctx='PORTFOLIO (live, total value '+money(tv)+'):\n'+PFLAST.map(function(h){var w=tv>0?(h.value/tv*100):0; return '- '+h.sym+' ('+(h.type==='crypto'?'crypto':'stock')+'): value '+money(h.value)+' ('+w.toFixed(1)+'% of book), P&L '+money(h.pnl)+' ('+pct(h.pnlPct)+')';}).join('\n');
+  try{
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:'Analyze this portfolio: concentration and diversification, which positions carry the most risk, and the overall risk posture. Be specific and cite weights.',context:ctx})});
+    var d=await r.json();
+    if(d.text){ rw.innerHTML='<h3>★ QUANTORA AI · PORTFOLIO RISK READ</h3><p>'+d.text.replace(/</g,'&lt;')+'</p><div class="foot">Written by Quantora AI (Llama 3.3) on your live book · not investment advice</div>'; }
+    else if(d.error==='no_key'){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>The AI read needs the <code>GROQ_KEY</code> set in Vercel. Your live P&L above is already running.</p>'; }
+    else { rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Could not analyze just now. Try again.</p>'; }
+  }catch(e){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Network error. Try again.</p>'; }
+};
 document.getElementById('i_cost').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('add').click(); });
 render();
 </script>

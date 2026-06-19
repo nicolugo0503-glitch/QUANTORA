@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Alerts — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1000px;margin:0 auto;padding:34px 24px 70px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:720px}
+.addbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--soft)}
+.addbar input,.addbar select{border:1px solid #d8d8d8;border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;outline:none;background:#fff}
+.addbar input:focus,.addbar select:focus{border-color:#000}
+.addbar input.sym{width:110px;text-transform:uppercase}.addbar input.num{width:130px}
+.addbar button{border:none;background:#000;color:#fff;border-radius:9px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.addbar .hint{font-size:12px;color:var(--mut);width:100%}
+table{width:100%;border-collapse:collapse;margin-top:22px;font-size:14px}
+th,td{text-align:right;padding:12px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+.tk{font-weight:650}.badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#f1f1f1;color:#555;margin-left:7px}
+.pill{display:inline-block;font-size:11px;font-weight:650;padding:3px 10px;border-radius:999px}
+.pill.hit{background:#eaf6ee;color:#0a7d33}.pill.watch{background:#fff5e6;color:#b97600}
+.x{cursor:pointer;color:#bbb;font-weight:700}.x:hover{color:var(--down)}
+.empty{margin-top:30px;color:var(--mut);font-size:14.5px;text-align:center;border:1px dashed #d7d7d7;border-radius:14px;padding:40px 20px}
+.note{margin-top:14px;font-size:12px;color:var(--mut)}
+@media(max-width:680px){.addbar input.num{width:46%}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/heatmap.html" class="link">Heatmap</a>
+  <a href="/screener.html" class="link">Screener</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link">Global</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/fundamentals.html" class="link">Fundamentals</a>
+  <a href="/calendar.html" class="link">Calendar</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <a href="/watchlist.html" class="link">Watchlist</a>
+  <a href="/alerts.html" class="link active">Alerts</a>
+  <div class="right"><span class="dot"></span> Live · price alerts</div>
+</div>
+<div class="wrap">
+  <h1>Alerts</h1>
+  <div class="sub">Set a price target on any asset and Quantora flags the moment it's crossed. Check it each morning — it watches the levels so you don't have to.</div>
+
+  <div class="addbar">
+    <input class="sym" id="i_sym" placeholder="BTC / AAPL" autocomplete="off">
+    <select id="i_type"><option value="crypto">Crypto</option><option value="stock">Stock / ETF</option></select>
+    <select id="i_dir"><option value="above">rises above</option><option value="below">falls below</option></select>
+    <input class="num" id="i_target" type="number" step="any" placeholder="Target price">
+    <button id="add">Set alert</button>
+    <button id="refresh" style="background:#fff;color:#000;border:1px solid var(--line)">↻ Check now</button>
+    <div class="hint">Crypto via Coinbase · stocks via Twelve Data · alerts stored only in this browser</div>
+  </div>
+
+  <div id="tablewrap"></div>
+  <div class="note" id="note"></div>
+</div>
+
+<script>
+var KEY='quantora_alerts';
+function getA(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){ return []; } }
+function saveA(a){ localStorage.setItem(KEY, JSON.stringify(a)); }
+function money(n){ if(n===null||n===undefined||isNaN(n)) return '—'; var s=Math.abs(n)>=1?n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):n.toFixed(4); return '$'+s; }
+
+async function priceCrypto(sym){ try{ var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/ticker'); var d=await r.json(); return d&&d.price?parseFloat(d.price):null; }catch(e){ return null; } }
+async function priceStock(sym){ try{ var r=await fetch('/api/quote?symbol='+encodeURIComponent(sym)); var d=await r.json(); return (d&&d.closes&&d.closes.length)?parseFloat(d.closes[0]):null; }catch(e){ return null; } }
+async function priceFor(a){ return a.type==='crypto'? priceCrypto(a.sym) : priceStock(a.sym); }
+
+async function render(){
+  var al=getA();
+  var tablewrap=document.getElementById('tablewrap');
+  var note=document.getElementById('note');
+  if(!al.length){ tablewrap.innerHTML='<div class="empty">No alerts yet. Set one above — e.g. <b>BTC</b> rises above <b>70000</b>.</div>'; note.textContent=''; return; }
+  note.textContent='Checking '+al.length+' alert'+(al.length>1?'s':'')+'…';
+  var prices=await Promise.all(al.map(priceFor));
+  var rows=al.map(function(a,i){
+    var p=prices[i];
+    var hit = (p!=null) && (a.dir==='above'? p>=a.target : p<=a.target);
+    var cond=(a.dir==='above'?'rises above ':'falls below ')+money(a.target);
+    return '<tr>'+
+      '<td><span class="tk">'+a.sym+'</span><span class="badge">'+(a.type==='crypto'?'Crypto':'Stock')+'</span></td>'+
+      '<td style="text-align:left">'+cond+'</td>'+
+      '<td>'+(p!=null?money(p):'—')+'</td>'+
+      '<td>'+(p==null?'<span class="pill watch">no data</span>':(hit?'<span class="pill hit">★ triggered</span>':'<span class="pill watch">watching</span>'))+'</td>'+
+      '<td><span class="x" data-i="'+i+'">✕</span></td></tr>';
+  }).join('');
+  tablewrap.innerHTML='<table><thead><tr><th>Asset</th><th>Condition</th><th>Current</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  var hits=prices.filter(function(p,i){ return p!=null && (al[i].dir==='above'? p>=al[i].target : p<=al[i].target); }).length;
+  note.textContent=(hits? (hits+' alert'+(hits>1?'s':'')+' triggered · ') : '')+'updated '+new Date().toLocaleTimeString()+' · not investment advice';
+  Array.prototype.forEach.call(tablewrap.querySelectorAll('.x'),function(x){ x.onclick=function(){ var i=parseInt(x.getAttribute('data-i'),10); var a=getA(); a.splice(i,1); saveA(a); render(); }; });
+}
+
+document.getElementById('add').onclick=function(){
+  var sym=document.getElementById('i_sym').value.trim().toUpperCase().replace(/[^A-Z0-9.]/g,'');
+  var type=document.getElementById('i_type').value, dir=document.getElementById('i_dir').value;
+  var target=parseFloat(document.getElementById('i_target').value);
+  if(!sym||!(target>0)){ document.getElementById('note').textContent='Enter a symbol and a positive target price.'; return; }
+  var a=getA(); a.push({sym:sym,type:type,dir:dir,target:target}); saveA(a);
+  document.getElementById('i_sym').value=''; document.getElementById('i_target').value='';
+  render();
+};
+document.getElementById('refresh').onclick=render;
+document.getElementById('i_target').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('add').click(); });
+render();
+</script>
+</body>
+</html>
