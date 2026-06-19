@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Brief — AI Morning Brief</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:title" content="Quantora — AI Morning Brief">
+<meta property="og:description" content="The market, read by AI on live data. Free.">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+h1{font-size:30px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:15px;margin-top:6px}
+.shared{margin-top:16px;font-size:13px;color:#444;background:#f3f7ff;border:1px solid #dbe6ff;border-radius:10px;padding:10px 14px;display:none}
+.card{border:1px solid var(--line);border-radius:18px;padding:30px 32px;margin-top:24px;background:linear-gradient(180deg,#ffffff,#fbfbfb)}
+.card .hd{display:flex;align-items:center;gap:10px;font-weight:680;font-size:17px}
+.card .hd .q{width:26px;height:26px;border-radius:7px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.card .kicker{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);font-weight:650;margin-top:18px}
+.card p{font-size:16.5px;line-height:1.72;margin-top:8px;white-space:pre-wrap}
+.card .foot{color:var(--mut);font-size:12px;margin-top:20px;font-family:ui-monospace,Menlo,monospace;border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btns button{border:none;border-radius:11px;padding:12px 20px;font-size:14.5px;font-weight:600;cursor:pointer}
+.btns .pri{background:#000;color:#fff}
+.btns .sec{background:#fff;color:#000;border:1px solid var(--line)}
+.btns button:disabled{opacity:.5;cursor:default}
+.copied{font-size:13px;color:var(--up);align-self:center;display:none}
+.status{margin-top:24px;color:var(--mut);font-size:14px}
+.tease{margin-top:18px;font-size:13.5px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/brief.html" class="link active">Brief</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <div class="right"><span class="dot"></span> Live · AI brief</div>
+</div>
+<div class="wrap">
+  <h1>Morning Brief</h1>
+  <div class="sub">The whole market, read by Quantora's AI on live data — in five sentences. Generate it, then share it anywhere.</div>
+  <div class="shared" id="shared"></div>
+
+  <div id="cardwrap"></div>
+  <div class="status" id="status">Generating today's brief…</div>
+
+  <div class="btns" id="btns" style="display:none">
+    <button class="pri" id="copy">⤴ Copy shareable link</button>
+    <button class="sec" id="regen">↻ New brief</button>
+    <span class="copied" id="copied">✓ Link copied — paste it anywhere</span>
+  </div>
+  <div class="tease" id="tease"></div>
+</div>
+
+<script>
+var CRYPTO=['BTC','ETH','SOL','XRP','DOGE'];
+function pc(n){ return (n>=0?'+':'')+n.toFixed(2)+'%'; }
+function fp(p){ return p>=1000?('$'+Math.round(p).toLocaleString()):(p>=1?('$'+p.toFixed(2)):('$'+p.toFixed(4))); }
+function enc(o){ try{ return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o))))); }catch(e){ return ''; } }
+function dec(s){ try{ return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(s))))); }catch(e){ return null; } }
+
+function renderCard(text, ts){
+  var d=new Date(ts||Date.now());
+  document.getElementById('cardwrap').innerHTML=
+    '<div class="card"><div class="hd"><span class="q">Q</span> Quantora · AI Morning Brief</div>'+
+    '<div class="kicker">The market, in five sentences</div>'+
+    '<p>'+text.replace(/</g,'&lt;')+'</p>'+
+    '<div class="foot"><span>Written by Quantora AI (Llama 3.3) on live data</span><span>'+d.toLocaleString()+'</span></div></div>';
+}
+
+async function crypto(sym){
+  try{
+    var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/candles?granularity=86400');
+    var c=await r.json(); if(!Array.isArray(c)||c.length<8) return null;
+    var nf=c.map(function(x){return x[4];});
+    return {sym:sym, price:nf[0], r24:(nf[0]/nf[1]-1)*100, r7:(nf[0]/nf[7]-1)*100};
+  }catch(e){ return null; }
+}
+
+async function gen(){
+  var status=document.getElementById('status'); status.style.display='block'; status.textContent='Pulling live data and writing the brief…';
+  document.getElementById('btns').style.display='none';
+  var lines=[];
+  var cr=(await Promise.all(CRYPTO.map(crypto))).filter(Boolean);
+  if(cr.length){ lines.push('CRYPTO: '+cr.map(function(a){return a.sym+' '+fp(a.price)+' (24h '+pc(a.r24)+', 7d '+pc(a.r7)+')';}).join('; ')); }
+  try{ var mr=await fetch('/api/macro'); var md=await mr.json(); if(md&&md.indicators&&md.indicators.length){ lines.push('MACRO (Fed): '+md.indicators.map(function(it){return it.name+' '+it.value+(it.unit||'');}).join('; ')); } }catch(e){}
+  var ctx='LIVE MARKET DATA:\n'+lines.join('\n');
+  var q=ctx+'\n\nYou are Quantora. Write a punchy, shareable "Morning Brief" in exactly 4 to 5 sentences capturing what the market is doing right now: crypto leaders and laggards, the macro backdrop if present, and the overall risk tone. Confident and specific, cite figures, no hype, no disclaimers, no preamble.';
+  try{
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:q})});
+    var d=await r.json();
+    if(d.error==='no_key'){ status.textContent='The AI brief needs the GROQ_KEY set in Vercel. Once it is in, this generates instantly.'; return; }
+    if(!d.text){ status.textContent='Could not generate the brief just now. Try again.'; return; }
+    status.style.display='none';
+    var ts=Date.now();
+    renderCard(d.text, ts);
+    document.getElementById('btns').style.display='flex';
+    document.getElementById('tease').textContent='Like it? Hit copy and post it — every share brings the next reader to Quantora.';
+    window.__brief={t:d.text, ts:ts};
+  }catch(e){ status.textContent='Network error. Try again.'; }
+}
+
+document.getElementById('regen').onclick=function(){ history.replaceState(null,'','/brief.html'); document.getElementById('shared').style.display='none'; gen(); };
+document.getElementById('copy').onclick=function(){
+  if(!window.__brief) return;
+  var url=location.origin+'/brief.html?s='+enc(window.__brief);
+  var done=function(){ var c=document.getElementById('copied'); c.style.display='inline'; setTimeout(function(){c.style.display='none';},4000); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done,function(){ prompt('Copy this link:', url); }); }
+  else { prompt('Copy this link:', url); }
+};
+
+// shared view
+var params=new URLSearchParams(location.search);
+if(params.get('s')){
+  var o=dec(params.get('s'));
+  if(o&&o.t){
+    document.getElementById('status').style.display='none';
+    var sh=document.getElementById('shared'); sh.style.display='block'; sh.innerHTML='You\'re viewing a shared Quantora brief. <a href="/brief.html" style="color:#0a58ca;font-weight:600">Generate today\'s live brief →</a>';
+    renderCard(o.t, o.ts);
+    window.__brief=o;
+    var b=document.getElementById('btns'); b.style.display='flex';
+    document.getElementById('regen').textContent='↻ Generate live brief';
+  } else { gen(); }
+} else { gen(); }
+</script>
+</body>
+</html>
