@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · DEX — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:15px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1160px;margin:0 auto;padding:34px 24px 70px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.bar{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;align-items:center}
+.bar input{border:1px solid #d8d8d8;border-radius:10px;padding:10px 13px;font-size:14.5px;font-family:inherit;outline:none;width:240px}
+.bar input:focus{border-color:#000}
+.bar button{border:none;background:#000;color:#fff;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 13px;font-size:12.5px;cursor:pointer;color:#444}
+.chip:hover{border-color:#bbb}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
+th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.03em;color:var(--mut);text-transform:uppercase;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--soft)}
+.pair{font-weight:620}.q{color:var(--mut)}
+.badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#f1f1f1;color:#555}
+.up{color:var(--up)}.down{color:var(--down)}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+@media(max-width:760px){.liq,.fdv{display:none}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/dex.html" class="link active">DEX</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <div class="right"><span class="dot"></span> Live · DEX pairs</div>
+</div>
+<div class="wrap">
+  <h1>DEX</h1>
+  <div class="sub">The decentralized tape — live pairs across every chain and DEX, ranked by 24h volume. Search any token to see where it's actually trading on-chain.</div>
+  <div class="src">Live data via Dexscreener · for information only, not investment advice</div>
+
+  <div class="bar">
+    <input id="q" placeholder="Search a token (e.g. SOL, PEPE, WIF)" autocomplete="off">
+    <button id="go">Search</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div id="tablewrap"></div>
+  <div class="status" id="status">Loading DEX pairs…</div>
+</div>
+
+<script>
+var PRESETS=['SOL','ETH','PEPE','WIF','BONK','DOGE','SHIB','LINK'];
+function bn(n){ if(n==null||isNaN(n)) return '—'; var a=Math.abs(n); if(a>=1e9) return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6) return '$'+(n/1e6).toFixed(2)+'M'; if(a>=1e3) return '$'+(n/1e3).toFixed(1)+'K'; return '$'+Math.round(n); }
+function px(n){ if(n==null||isNaN(n)) return '—'; if(n>=1) return '$'+n.toLocaleString(undefined,{maximumFractionDigits:4}); return '$'+n.toPrecision(4); }
+function pc(n){ if(n==null||isNaN(n)) return '—'; return (n>=0?'+':'')+n.toFixed(2)+'%'; }
+function col(n){ return n>=0?'up':'down'; }
+
+function renderChips(){
+  var c=document.getElementById('chips');
+  c.innerHTML=PRESETS.map(function(s){return '<span class="chip" data-s="'+s+'">'+s+'</span>';}).join('');
+  Array.prototype.forEach.call(c.querySelectorAll('.chip'),function(ch){ ch.onclick=function(){ document.getElementById('q').value=ch.getAttribute('data-s'); search(); }; });
+}
+async function search(){
+  var q=document.getElementById('q').value.trim(); if(!q) return;
+  var status=document.getElementById('status'); status.style.display='block'; status.textContent='Searching "'+q+'" across all DEXs…';
+  document.getElementById('tablewrap').innerHTML='';
+  try{
+    var d=await (await fetch('https://api.dexscreener.com/latest/dex/search?q='+encodeURIComponent(q))).json();
+    var pairs=(d&&d.pairs)||[];
+    pairs=pairs.filter(function(p){return p.volume&&p.volume.h24;}).sort(function(a,b){return (b.volume.h24||0)-(a.volume.h24||0);}).slice(0,30);
+    if(!pairs.length){ status.textContent='No active pairs found for "'+q+'".'; return; }
+    status.style.display='none';
+    var head='<table><thead><tr><th>Pair</th><th>Chain</th><th>DEX</th><th>Price</th><th>24h</th><th class="liq">Liquidity</th><th>Volume 24h</th></tr></thead><tbody>';
+    var body=pairs.map(function(p){
+      var ch=p.priceChange&&p.priceChange.h24;
+      return '<tr><td><span class="pair">'+(p.baseToken&&p.baseToken.symbol||'?')+'</span><span class="q">/'+(p.quoteToken&&p.quoteToken.symbol||'?')+'</span></td>'+
+        '<td><span class="badge">'+(p.chainId||'—')+'</span></td>'+
+        '<td>'+(p.dexId||'—')+'</td>'+
+        '<td>'+px(parseFloat(p.priceUsd))+'</td>'+
+        '<td class="'+col(ch)+'">'+pc(ch)+'</td>'+
+        '<td class="liq">'+bn(p.liquidity&&p.liquidity.usd)+'</td>'+
+        '<td>'+bn(p.volume&&p.volume.h24)+'</td></tr>';
+    }).join('');
+    document.getElementById('tablewrap').innerHTML=head+body+'</tbody></table>';
+  }catch(e){ status.textContent='Could not reach the DEX feed. Try again shortly.'; }
+}
+document.getElementById('go').onclick=search;
+document.getElementById('q').addEventListener('keydown',function(e){ if(e.key==='Enter') search(); });
+renderChips();
+document.getElementById('q').value='SOL';
+search();
+</script>
+</body>
+</html>

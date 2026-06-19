@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Chain — Live On-Chain</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:15px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1080px;margin:0 auto;padding:34px 24px 70px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:740px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:22px}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:#fff}
+.card .l{font-size:12px;color:var(--mut);font-weight:550}
+.card .v{font-size:23px;font-weight:680;letter-spacing:-.4px;margin-top:6px}
+.card .s{font-size:12px;margin-top:3px;color:var(--mut)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.panel h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);font-weight:650;margin-bottom:12px}
+.feerow{display:flex;justify-content:space-between;font-size:14.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.feerow:last-child{border-bottom:none}.feerow b{font-weight:650}
+.bar{height:9px;border-radius:6px;background:#eee;overflow:hidden;margin-top:10px}
+.bar > span{display:block;height:100%;background:#0a0a0a}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+.up{color:var(--up)}.down{color:var(--down)}
+@media(max-width:820px){.cards{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link active">Chain</a>
+  <a href="/dex.html" class="link">DEX</a>
+  <a href="/chart.html" class="link">Chart</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <div class="right"><span class="dot"></span> Live · Bitcoin network</div>
+</div>
+<div class="wrap">
+  <h1>Chain</h1>
+  <div class="sub">Straight from the Bitcoin network — block height, fees, mempool congestion, hashrate, and the next difficulty adjustment. The raw plumbing, live.</div>
+  <div class="src">Live on-chain data via mempool.space · for information only, not investment advice</div>
+
+  <div class="cards" id="cards"></div>
+  <div class="row2">
+    <div class="panel"><h3>Recommended fees (sat/vB)</h3><div id="fees"></div></div>
+    <div class="panel"><h3>Next difficulty adjustment</h3><div id="diff"></div></div>
+  </div>
+  <div class="status" id="status">Reading the chain…</div>
+</div>
+
+<script>
+function num(n){ return n==null||isNaN(n)?'—':Math.round(n).toLocaleString(); }
+async function j(u){ var r=await fetch(u); return r.json(); }
+async function load(){
+  var status=document.getElementById('status');
+  try{
+    var price=null; try{ var tk=await j('https://api.exchange.coinbase.com/products/BTC-USD/ticker'); price=tk&&tk.price?parseFloat(tk.price):null; }catch(e){}
+    var height=await j('https://mempool.space/api/blocks/tip/height');
+    var mp=await j('https://mempool.space/api/mempool');
+    var fees=await j('https://mempool.space/api/v1/fees/recommended');
+    var diff=await j('https://mempool.space/api/v1/difficulty-adjustment');
+    var hr=null; try{ hr=await j('https://mempool.space/api/v1/mining/hashrate/3d'); }catch(e){}
+    status.style.display='none';
+    var mpMB=mp&&mp.vsize?(mp.vsize/1e6).toFixed(1):'—';
+    var eh=hr&&hr.currentHashrate?(hr.currentHashrate/1e18).toFixed(0):'—';
+    document.getElementById('cards').innerHTML=
+      '<div class="card"><div class="l">BTC price</div><div class="v">'+(price?'$'+Math.round(price).toLocaleString():'—')+'</div><div class="s">spot, Coinbase</div></div>'+
+      '<div class="card"><div class="l">Block height</div><div class="v">'+num(height)+'</div><div class="s">latest block</div></div>'+
+      '<div class="card"><div class="l">Mempool</div><div class="v">'+num(mp&&mp.count)+'</div><div class="s">'+mpMB+' MB unconfirmed</div></div>'+
+      '<div class="card"><div class="l">Hashrate</div><div class="v">'+eh+' EH/s</div><div class="s">3-day average</div></div>';
+
+    document.getElementById('fees').innerHTML=
+      '<div class="feerow"><span>No-priority (fastest)</span><b>'+(fees.fastestFee||'—')+'</b></div>'+
+      '<div class="feerow"><span>Half hour</span><b>'+(fees.halfHourFee||'—')+'</b></div>'+
+      '<div class="feerow"><span>One hour</span><b>'+(fees.hourFee||'—')+'</b></div>'+
+      '<div class="feerow"><span>Economy</span><b>'+(fees.economyFee||'—')+'</b></div>'+
+      '<div class="feerow"><span>Minimum</span><b>'+(fees.minimumFee||'—')+'</b></div>';
+
+    var prog=diff.progressPercent!=null?diff.progressPercent.toFixed(1):'—';
+    var chg=diff.difficultyChange!=null?diff.difficultyChange:null;
+    document.getElementById('diff').innerHTML=
+      '<div class="feerow"><span>Estimated change</span><b class="'+(chg>=0?'up':'down')+'">'+(chg!=null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'—')+'</b></div>'+
+      '<div class="feerow"><span>Blocks remaining</span><b>'+num(diff.remainingBlocks)+'</b></div>'+
+      '<div class="feerow"><span>Epoch progress</span><b>'+prog+'%</b></div>'+
+      '<div class="bar"><span style="width:'+(prog==='—'?0:prog)+'%"></span></div>'+
+      '<div class="s" style="font-size:12px;color:#6b7280;margin-top:10px">Difficulty retargets every 2,016 blocks (~2 weeks).</div>';
+  }catch(e){ status.textContent='Could not reach the chain feed. Try again shortly.'; }
+}
+load();
+</script>
+</body>
+</html>

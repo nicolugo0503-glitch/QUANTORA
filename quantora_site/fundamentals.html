@@ -45,6 +45,8 @@ h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
   <a href="/live.html" class="link">Live</a>
   <a href="/coins.html" class="link">Coins</a>
   <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/dex.html" class="link">DEX</a>
   <a href="/chart.html" class="link">Chart</a>
   <a href="/heatmap.html" class="link">Heatmap</a>
   <a href="/screener.html" class="link">Screener</a>
@@ -84,6 +86,8 @@ h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
   </div>
 
   <div class="panel full"><h4>Financials</h4><div class="body"><div id="w_fin" class="tradingview-widget-container"></div></div></div>
+
+  <div class="panel full" style="margin-top:16px"><h4>Recent SEC Filings</h4><div class="body" style="padding:6px 18px 16px"><div id="filings">—</div></div></div>
 </div>
 
 <script>
@@ -98,6 +102,18 @@ function buildAll(sym){
   mkWidget('w_ta','https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js',{interval:'1D',width:'100%',isTransparent:true,height:'440',symbol:sym,showIntervalTabs:true,displayMode:'single',locale:'en',colorTheme:'light'});
   mkWidget('w_prof','https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js',{width:'100%',height:'440',colorTheme:'light',isTransparent:true,symbol:sym,locale:'en'});
   mkWidget('w_fin','https://s3.tradingview.com/external-embedding/embed-widget-financials.js',{colorTheme:'light',isTransparent:true,largeChartUrl:'',displayMode:'regular',width:'100%',height:'500',symbol:sym,locale:'en'});
+  loadFilings(sym);
+}
+function loadFilings(sym){
+  var t=((sym.split(':')[1])||'').toUpperCase();
+  var el=document.getElementById('filings'); if(!el) return;
+  el.innerHTML='<span style="color:#9aa0aa;font-size:13.5px">Loading filings…</span>';
+  fetch('/api/filings?ticker='+encodeURIComponent(t)).then(function(r){return r.json();}).then(function(d){
+    if(d.error||!d.filings||!d.filings.length){ el.innerHTML='<span style="color:#6b7280;font-size:13px">Live SEC filings available for AAPL, NVDA, MSFT, TSLA, AMZN, GOOGL, META.</span>'; return; }
+    el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:13.5px">'+d.filings.map(function(f){
+      return '<tr style="border-bottom:1px solid #ececec"><td style="padding:9px 6px;text-align:left"><b>'+f.form+'</b></td><td style="padding:9px 6px;text-align:left;color:#6b7280">'+f.date+'</td><td style="padding:9px 6px;text-align:left;color:#6b7280">'+(f.desc||'').slice(0,64)+'</td><td style="padding:9px 6px;text-align:right"><a href="'+f.url+'" target="_blank" rel="noopener noreferrer" style="color:#0a58ca">open &#8594;</a></td></tr>';
+    }).join('')+'</table>';
+  }).catch(function(){ el.innerHTML='<span style="color:#6b7280;font-size:13px">Could not load filings.</span>'; });
 }
 var tabs=document.getElementById('tabs');
 Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(t){

@@ -12,7 +12,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
 a{color:inherit;text-decoration:none}
-.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.nav{display:flex;align-items:center;gap:15px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
 .brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 .nav a.link{color:var(--mut);font-size:14px}
@@ -21,24 +21,25 @@ a{color:inherit;text-decoration:none}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
 .wrap{max-width:1120px;margin:0 auto;padding:34px 24px 70px}
 h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
-.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:740px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
 .src{color:var(--mut);font-size:12px;margin-top:9px}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:22px}
+.tabs{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:550;cursor:pointer;color:#333}
+.tab:hover{border-color:#bbb}.tab.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:20px}
 .card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:#fff}
-.card .l{font-size:12px;color:var(--mut);font-weight:550}
-.card .v{font-size:23px;font-weight:680;letter-spacing:-.4px;margin-top:6px}
-.card .s{font-size:12.5px;margin-top:3px;color:var(--mut)}
-.cols{display:grid;grid-template-columns:1fr 1.4fr;gap:18px;margin-top:24px}
+.card .l{font-size:12px;color:var(--mut);font-weight:550}.card .v{font-size:22px;font-weight:680;letter-spacing:-.4px;margin-top:6px}.card .s{font-size:12px;margin-top:3px;color:var(--mut)}
+.cols{display:grid;grid-template-columns:1fr 1.4fr;gap:18px;margin-top:20px}
 .panel h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);font-weight:650;margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
 th,td{text-align:right;padding:10px 9px;border-bottom:1px solid var(--line)}
 th{font-size:11px;letter-spacing:.03em;color:var(--mut);text-transform:uppercase;font-weight:600}
 th:first-child,td:first-child{text-align:left}
 tbody tr:hover{background:var(--soft)}
-.nm{font-weight:620}.tag{font-size:11px;color:var(--mut);margin-left:6px}
-.badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#f1f1f1;color:#555}
+.nm{font-weight:620}.badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#f1f1f1;color:#555}
 .up{color:var(--up)}.down{color:var(--down)}
-.status{margin-top:26px;color:var(--mut);font-size:14px}
+.apy{font-weight:700;color:#0a7d33}
+.status{margin-top:24px;color:var(--mut);font-size:14px}
 @media(max-width:860px){.cards{grid-template-columns:1fr 1fr}.cols{grid-template-columns:1fr}}
 </style>
 </head>
@@ -46,13 +47,12 @@ tbody tr:hover{background:var(--soft)}
 <div class="nav">
   <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
   <a href="/platform.html" class="link">Platform</a>
-  <a href="/pulse.html" class="link">Pulse</a>
   <a href="/markets.html" class="link">Markets</a>
-  <a href="/live.html" class="link">Live</a>
   <a href="/coins.html" class="link">Coins</a>
   <a href="/defi.html" class="link active">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/dex.html" class="link">DEX</a>
   <a href="/chart.html" class="link">Chart</a>
-  <a href="/signals.html" class="link">Signals</a>
   <a href="/news.html" class="link">News</a>
   <a href="/analyst.html" class="link">Analyst</a>
   <a href="/ask.html" class="link">Ask</a>
@@ -61,47 +61,79 @@ tbody tr:hover{background:var(--soft)}
 </div>
 <div class="wrap">
   <h1>DeFi</h1>
-  <div class="sub">Where the on-chain money actually sits — total value locked across every chain and protocol, live. The picture Bloomberg doesn't have.</div>
+  <div class="sub">Where the on-chain money actually sits and moves — TVL, yields, stablecoins, and protocol revenue. The picture Bloomberg doesn't have.</div>
   <div class="src">Live data via DefiLlama · for information only, not investment advice</div>
 
-  <div class="cards" id="cards"></div>
-  <div class="cols">
-    <div class="panel"><h3>Top chains by TVL</h3><div id="chains"></div></div>
-    <div class="panel"><h3>Top protocols by TVL</h3><div id="protos"></div></div>
+  <div class="tabs" id="tabs">
+    <span class="tab active" data-k="overview">Overview</span>
+    <span class="tab" data-k="yields">Yields</span>
+    <span class="tab" data-k="stables">Stablecoins</span>
+    <span class="tab" data-k="fees">Fees &amp; Revenue</span>
   </div>
+  <div id="view"></div>
   <div class="status" id="status">Loading on-chain data…</div>
 </div>
 
 <script>
-function bn(n){ if(n==null||isNaN(n)) return '—'; var a=Math.abs(n); if(a>=1e12) return '$'+(n/1e12).toFixed(2)+'T'; if(a>=1e9) return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; return '$'+Math.round(n).toLocaleString(); }
+function bn(n){ if(n==null||isNaN(n)) return '—'; var a=Math.abs(n); if(a>=1e12) return '$'+(n/1e12).toFixed(2)+'T'; if(a>=1e9) return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; if(a>=1e3) return '$'+(n/1e3).toFixed(0)+'K'; return '$'+Math.round(n); }
 function pc(n){ if(n==null||isNaN(n)) return '—'; return (n>=0?'+':'')+n.toFixed(2)+'%'; }
 function col(n){ return n>=0?'up':'down'; }
+async function j(u){ return (await fetch(u)).json(); }
+var cache={};
 
-async function load(){
-  var status=document.getElementById('status');
-  try{
-    var chains=await (await fetch('https://api.llama.fi/v2/chains')).json();
-    var protos=await (await fetch('https://api.llama.fi/protocols')).json();
-    if(!Array.isArray(chains)||!Array.isArray(protos)){ status.textContent='On-chain feed unavailable. Try again shortly.'; return; }
-    status.style.display='none';
-    var total=chains.reduce(function(s,c){return s+(c.tvl||0);},0);
-    var topChains=chains.slice().sort(function(a,b){return (b.tvl||0)-(a.tvl||0);});
-    document.getElementById('cards').innerHTML=
-      '<div class="card"><div class="l">Total DeFi TVL</div><div class="v">'+bn(total)+'</div><div class="s">value locked on-chain</div></div>'+
-      '<div class="card"><div class="l">Chains tracked</div><div class="v">'+chains.length+'</div><div class="s">live across DeFi</div></div>'+
-      '<div class="card"><div class="l">Protocols</div><div class="v">'+protos.length.toLocaleString()+'</div><div class="s">apps tracked</div></div>'+
-      '<div class="card"><div class="l">Largest chain</div><div class="v">'+(topChains[0]?topChains[0].name:'—')+'</div><div class="s">'+(topChains[0]?bn(topChains[0].tvl)+' TVL':'')+'</div></div>';
-
-    document.getElementById('chains').innerHTML='<table><thead><tr><th>Chain</th><th>TVL</th><th>Share</th></tr></thead><tbody>'+
-      topChains.slice(0,12).map(function(c){return '<tr><td class="nm">'+c.name+'</td><td>'+bn(c.tvl)+'</td><td>'+(total?((c.tvl/total*100).toFixed(1)+'%'):'—')+'</td></tr>';}).join('')+'</tbody></table>';
-
-    var topP=protos.filter(function(p){return p.tvl>0;}).sort(function(a,b){return (b.tvl||0)-(a.tvl||0);}).slice(0,15);
-    document.getElementById('protos').innerHTML='<table><thead><tr><th>Protocol</th><th>Category</th><th>TVL</th><th>1d</th><th>7d</th></tr></thead><tbody>'+
-      topP.map(function(p){return '<tr><td><span class="nm">'+p.name+'</span></td><td><span class="badge">'+(p.category||'—')+'</span></td><td>'+bn(p.tvl)+'</td>'+
-        '<td class="'+col(p.change_1d)+'">'+pc(p.change_1d)+'</td><td class="'+col(p.change_7d)+'">'+pc(p.change_7d)+'</td></tr>';}).join('')+'</tbody></table>';
-  }catch(e){ status.textContent='Could not reach the on-chain feed. Try again shortly.'; }
+async function showOverview(){
+  var v=document.getElementById('view'); v.innerHTML='<div class="status">Loading TVL…</div>';
+  if(!cache.chains){ cache.chains=await j('https://api.llama.fi/v2/chains'); cache.protos=await j('https://api.llama.fi/protocols'); }
+  var chains=cache.chains, protos=cache.protos;
+  var total=chains.reduce(function(s,c){return s+(c.tvl||0);},0);
+  var tc=chains.slice().sort(function(a,b){return (b.tvl||0)-(a.tvl||0);});
+  var cards='<div class="cards">'+
+    '<div class="card"><div class="l">Total DeFi TVL</div><div class="v">'+bn(total)+'</div><div class="s">value locked on-chain</div></div>'+
+    '<div class="card"><div class="l">Chains</div><div class="v">'+chains.length+'</div><div class="s">tracked live</div></div>'+
+    '<div class="card"><div class="l">Protocols</div><div class="v">'+protos.length.toLocaleString()+'</div><div class="s">apps tracked</div></div>'+
+    '<div class="card"><div class="l">Largest chain</div><div class="v">'+(tc[0]?tc[0].name:'—')+'</div><div class="s">'+(tc[0]?bn(tc[0].tvl):'')+'</div></div></div>';
+  var topP=protos.filter(function(p){return p.tvl>0;}).sort(function(a,b){return (b.tvl||0)-(a.tvl||0);}).slice(0,15);
+  v.innerHTML=cards+'<div class="cols"><div class="panel"><h3>Top chains by TVL</h3><table><thead><tr><th>Chain</th><th>TVL</th><th>Share</th></tr></thead><tbody>'+
+    tc.slice(0,12).map(function(c){return '<tr><td class="nm">'+c.name+'</td><td>'+bn(c.tvl)+'</td><td>'+(total?(c.tvl/total*100).toFixed(1)+'%':'—')+'</td></tr>';}).join('')+'</tbody></table></div>'+
+    '<div class="panel"><h3>Top protocols by TVL</h3><table><thead><tr><th>Protocol</th><th>Category</th><th>TVL</th><th>1d</th><th>7d</th></tr></thead><tbody>'+
+    topP.map(function(p){return '<tr><td class="nm">'+p.name+'</td><td><span class="badge">'+(p.category||'—')+'</span></td><td>'+bn(p.tvl)+'</td><td class="'+col(p.change_1d)+'">'+pc(p.change_1d)+'</td><td class="'+col(p.change_7d)+'">'+pc(p.change_7d)+'</td></tr>';}).join('')+'</tbody></table></div></div>';
 }
-load();
+async function showYields(){
+  var v=document.getElementById('view'); v.innerHTML='<div class="status">Loading 16,000+ yield pools…</div>';
+  if(!cache.yields){ var d=await j('https://yields.llama.fi/pools'); cache.yields=(d&&d.data)||[]; }
+  var pools=cache.yields.filter(function(p){return p.tvlUsd>1e7 && p.apy>0 && p.apy<200;}).sort(function(a,b){return (b.tvlUsd||0)-(a.tvlUsd||0);}).slice(0,25);
+  v.innerHTML='<div class="panel"><h3>Top yield pools (by TVL, &gt;$10M)</h3><table><thead><tr><th>Pool</th><th>Project</th><th>Chain</th><th>TVL</th><th>APY</th></tr></thead><tbody>'+
+    pools.map(function(p){return '<tr><td class="nm">'+p.symbol+'</td><td>'+p.project+'</td><td><span class="badge">'+p.chain+'</span></td><td>'+bn(p.tvlUsd)+'</td><td class="apy">'+p.apy.toFixed(2)+'%</td></tr>';}).join('')+'</tbody></table></div>';
+}
+async function showStables(){
+  var v=document.getElementById('view'); v.innerHTML='<div class="status">Loading stablecoins…</div>';
+  if(!cache.stables){ var d=await j('https://stablecoins.llama.fi/stablecoins?includePrices=true'); cache.stables=(d&&d.peggedAssets)||[]; }
+  var s=cache.stables.map(function(a){ var c=(a.circulating&&(a.circulating.peggedUSD||a.circulating.peggedVAR))||0; return {name:a.name,symbol:a.symbol,price:a.price,circ:c,peg:a.pegType}; }).sort(function(a,b){return b.circ-a.circ;}).slice(0,18);
+  var totalS=s.reduce(function(t,x){return t+x.circ;},0);
+  v.innerHTML='<div class="cards"><div class="card"><div class="l">Stablecoin supply (top 18)</div><div class="v">'+bn(totalS)+'</div><div class="s">circulating</div></div></div>'+
+    '<div class="panel" style="margin-top:16px"><h3>Top stablecoins by circulating supply</h3><table><thead><tr><th>Stablecoin</th><th>Symbol</th><th>Price</th><th>Circulating</th><th>Share</th></tr></thead><tbody>'+
+    s.map(function(x){return '<tr><td class="nm">'+x.name+'</td><td><span class="badge">'+x.symbol+'</span></td><td>'+(x.price?'$'+x.price.toFixed(4):'—')+'</td><td>'+bn(x.circ)+'</td><td>'+(totalS?(x.circ/totalS*100).toFixed(1)+'%':'—')+'</td></tr>';}).join('')+'</tbody></table></div>';
+}
+async function showFees(){
+  var v=document.getElementById('view'); v.innerHTML='<div class="status">Loading protocol fees…</div>';
+  if(!cache.fees){ cache.fees=await j('https://api.llama.fi/overview/fees'); }
+  var f=cache.fees;
+  var top=(f.protocols||[]).filter(function(p){return p.total24h>0;}).sort(function(a,b){return (b.total24h||0)-(a.total24h||0);}).slice(0,20);
+  v.innerHTML='<div class="cards">'+
+    '<div class="card"><div class="l">Fees · 24h</div><div class="v">'+bn(f.total24h)+'</div><div class="s">paid by users</div></div>'+
+    '<div class="card"><div class="l">Fees · 7d</div><div class="v">'+bn(f.total7d)+'</div><div class="s">last week</div></div>'+
+    '<div class="card"><div class="l">Protocols earning</div><div class="v">'+((f.protocols&&f.protocols.length)||'—')+'</div><div class="s">tracked</div></div>'+
+    '<div class="card"><div class="l">Top earner 24h</div><div class="v">'+(top[0]?top[0].name:'—')+'</div><div class="s">'+(top[0]?bn(top[0].total24h):'')+'</div></div></div>'+
+    '<div class="panel" style="margin-top:16px"><h3>Top protocols by fees (24h)</h3><table><thead><tr><th>Protocol</th><th>Category</th><th>Fees 24h</th><th>Fees 7d</th></tr></thead><tbody>'+
+    top.map(function(p){return '<tr><td class="nm">'+p.name+'</td><td><span class="badge">'+(p.category||'—')+'</span></td><td>'+bn(p.total24h)+'</td><td>'+bn(p.total7d)+'</td></tr>';}).join('')+'</tbody></table></div>';
+}
+var R={overview:showOverview,yields:showYields,stables:showStables,fees:showFees};
+var tabs=document.getElementById('tabs');
+Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(t){
+  t.onclick=function(){ Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(x){x.classList.remove('active');}); t.classList.add('active'); document.getElementById('status').style.display='none'; R[t.getAttribute('data-k')](); };
+});
+document.getElementById('status').style.display='none';
+showOverview();
 </script>
 </body>
 </html>
