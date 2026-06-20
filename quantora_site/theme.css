@@ -1,0 +1,135 @@
+/* ============================================================
+   QUANTORA · TRILLION-DOLLAR DESIGN SYSTEM
+   Refined-minimal, white, OpenAI/Linear/Stripe-grade.
+   Re-skins every page through shared tokens + classes.
+   Loaded AFTER each page's inline <style>, so it wins.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#ffffff;
+  --bg2:#fbfbfc;
+  --ink:#0b0d12;
+  --ink2:#3a4150;
+  --mut:#697586;
+  --line:#e9eaee;
+  --line2:#f1f2f4;
+  --soft:#f7f8fa;
+  --card:#ffffff;
+  --paper:#ffffff; --paper2:#fbfbfc;
+  --up:#0a7d33; --green:#0a7d33; --upbg:#eafaf0;
+  --down:#c0341d; --red:#c0341d; --redbg:#fdeeeb;
+  --amber:#b86e00;
+  --accent:#3358ff; --blue:#3358ff;
+  --accent-soft:#eef1ff;
+  --r:14px;
+  --shadow:0 1px 2px rgba(16,24,40,.04), 0 12px 28px -14px rgba(16,24,40,.12);
+  --shadow-lg:0 2px 4px rgba(16,24,40,.05), 0 28px 56px -22px rgba(16,24,40,.20);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans)!important;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  letter-spacing:-.011em;
+  font-feature-settings:'cv05' 1,'ss01' 1,'cv11' 1;
+}
+::selection{background:rgba(51,88,255,.16);color:var(--ink)}
+
+/* ---- typography rhythm ---- */
+h1,h2,h3,h4{letter-spacing:-.022em;font-weight:650;color:var(--ink)}
+h1{letter-spacing:-.032em}
+.eyebrow,.kicker{
+  text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:650;
+  color:var(--mut)!important;
+}
+.secttl{letter-spacing:-.02em;font-weight:650}
+.sub,.muted,.foot{color:var(--mut)}
+
+/* ---- numerics: tabular mono for that terminal-grade precision ---- */
+.num,.v,.k,.price,.val,.vl{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;letter-spacing:-.01em}
+.mono{font-family:var(--mono)}
+
+/* ---- panels & cards: layered soft depth ---- */
+.panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  transition:box-shadow .35s cubic-bezier(.2,.7,.2,1),border-color .35s;
+}
+.panel:hover{box-shadow:var(--shadow-lg);border-color:#e2e3e9}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,border-color .3s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#e2e3e9}
+
+/* ---- pills / buttons ---- */
+.pill{
+  font-weight:550;letter-spacing:-.01em;border-radius:999px;
+  transition:transform .2s ease,box-shadow .25s ease,background .25s ease;
+}
+.pill:hover{transform:translateY(-1px)}
+a.pill,.pill.solid,.pill.primary{
+  background:var(--ink)!important;color:#fff!important;border:0!important;
+  box-shadow:0 1px 2px rgba(16,24,40,.16),0 8px 20px -8px rgba(11,13,18,.4);
+}
+a.pill:hover{box-shadow:0 2px 6px rgba(16,24,40,.2),0 14px 30px -10px rgba(11,13,18,.5)}
+
+/* ---- tabs / status / dots ---- */
+.tab{transition:color .2s,background .2s,border-color .2s;border-radius:10px}
+.tab.active,.active{color:var(--ink)}
+.dot{box-shadow:0 0 0 0 rgba(10,125,51,.4)}
+.status .dot,.dot.live{animation:qpulse 2s infinite}
+@keyframes qpulse{0%{box-shadow:0 0 0 0 rgba(10,125,51,.4)}70%{box-shadow:0 0 0 7px rgba(10,125,51,0)}100%{box-shadow:0 0 0 0 rgba(10,125,51,0)}}
+
+/* ---- links ---- */
+a{transition:color .2s ease}
+
+/* ---- refined scrollbars ---- */
+*{scrollbar-width:thin;scrollbar-color:#d4d7de transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:#d4d7de;border-radius:99px;border:3px solid #fff;background-clip:padding-box}
+*::-webkit-scrollbar-thumb:hover{background:#b9bdc8;background-clip:padding-box}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* ---- entrance: subtle, premium ---- */
+@keyframes qrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   Shared nav (qnav from nav.js) — premium refinements
+   ============================================================ */
+.qnav{
+  background:rgba(255,255,255,.78)!important;
+  backdrop-filter:saturate(180%) blur(14px)!important;
+  -webkit-backdrop-filter:saturate(180%) blur(14px)!important;
+  border-bottom:1px solid var(--line)!important;
+  box-shadow:0 1px 0 rgba(16,24,40,.02),0 8px 24px -20px rgba(16,24,40,.3);
+  padding:10px 26px!important;
+}
+.qnav .qbrand{font-weight:700!important;letter-spacing:-.02em}
+.qnav .qbrand .qq{
+  background:linear-gradient(135deg,#15171d,#0b0d12)!important;
+  box-shadow:0 2px 8px -2px rgba(11,13,18,.5);
+}
+.qnav a.qtop,.qnav .qtop{font-weight:500!important;letter-spacing:-.01em;transition:background .2s,color .2s}
+.qnav .qtop.active{color:var(--accent)!important;font-weight:600!important}
+.qnav .qitem.open .qtop,.qnav a.qtop:hover,.qnav .qtop:hover{background:#f2f3f7!important;color:var(--ink)!important}
+.qnav .qmenu{
+  border:1px solid var(--line)!important;border-radius:14px!important;
+  box-shadow:var(--shadow-lg)!important;padding:7px!important;
+  animation:qrise .16s ease;
+}
+.qnav .qmenu a{border-radius:9px!important;font-weight:480}
+.qnav .qmenu a:hover{background:var(--accent-soft)!important;color:var(--accent)!important}
+.qnav .qmenu a.active{background:var(--accent-soft)!important;color:var(--accent)!important}
+.qnav .qright .qdot{box-shadow:0 0 0 3px rgba(10,125,51,.12)}
