@@ -58,6 +58,7 @@ body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',-apple-system
 .hrow .n{color:var(--mut)}.hrow .v{font-weight:600}
 .chartwrap{position:relative;height:240px;margin:6px -8px 0}
 #spark{display:block;width:100%;height:100%}
+.chartwrap #spark{opacity:0;transition:opacity 1s ease}.chartwrap.shown #spark{opacity:1}
 .up{color:var(--up)}.dn{color:var(--down)}
 /* stat grid */
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
@@ -160,7 +161,7 @@ var revealed=false;function reveal(){if(revealed)return;revealed=true;$('boot').
 setTimeout(reveal,5200);
 
 /* count-up */
-function countTo(el,target,fmt){var start=performance.now(),from=el._v||target*0.985;el._v=target;function f(t){var k=Math.min(1,(t-start)/650);var e=1-Math.pow(1-k,3);var v=from+(target-from)*e;el.textContent=fmt(v);if(k<1)requestAnimationFrame(f)}requestAnimationFrame(f)}
+function countTo(el,target,fmt){if(el==null||target==null||isNaN(target))return;el.textContent=fmt(target);var start=performance.now(),from=el._v!=null?el._v:target*0.985;el._v=target;function f(t){var k=Math.min(1,(t-start)/650);var e=1-Math.pow(1-k,3);el.textContent=fmt(from+(target-from)*e);if(k<1)requestAnimationFrame(f)}requestAnimationFrame(f)}
 
 /* ===== hero chart ===== */
 var closes=[],liveP=null,o24=null;
@@ -186,9 +187,9 @@ function drawChart(p){
 function animateChart(){anim=0;function f(){anim=Math.min(1,anim+0.03);drawChart(anim);if(anim<1)requestAnimationFrame(f)}requestAnimationFrame(f)}
 fetch('https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=3600').then(r=>r.json()).then(function(a){
  if(!Array.isArray(a)||!a.length)throw 0;
- closes=a.map(c=>c[4]).reverse();var last=a[0];
+ closes=a.map(c=>c[4]).reverse();
  $('h-hi').textContent=usd(Math.max.apply(null,a.map(c=>c[2])),0);
- animateChart();
+ drawChart(1);var w=document.querySelector('.chartwrap');if(w)w.classList.add('shown');
 }).catch(()=>{});
 window.addEventListener('resize',function(){if(closes.length)drawChart(1)});
 
