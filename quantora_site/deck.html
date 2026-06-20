@@ -3,58 +3,59 @@
 <title>Quantora · Command Deck</title>
 <link rel="icon" href="/favicon.svg">
 <style>
-:root{--bg:#05070d;--pan:#0b0f1a;--pan2:#0e1320;--line:#1b2236;--dim:#6b7690;--txt:#e8eefc;--grn:#27d07f;--red:#ff5b6e;--cy:#39d4ff;--am:#ffc24b}
+:root{--bg:#ffffff;--pan:#ffffff;--pan2:#fafbfc;--line:#ececec;--dim:#6b7280;--txt:#0a0a0a;--grn:#0a7d33;--red:#d4333f}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
 /* boot */
-#boot{position:fixed;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 30%,#0a1426 0%,#05070d 70%);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease}
+#boot{position:fixed;inset:0;background:#fff;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s ease}
 #boot.gone{opacity:0;pointer-events:none}
-.bwrap{width:min(640px,90vw)}
-.btitle{font-weight:700;letter-spacing:.5em;font-size:13px;color:var(--cy);text-align:center;margin-bottom:6px}
-.bsub{text-align:center;color:var(--dim);font-size:12px;margin-bottom:26px;letter-spacing:.18em}
-.bline{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.04);opacity:0;transform:translateY(6px);animation:bin .35s forwards}
+.bwrap{width:min(560px,90vw)}
+.btitle{font-weight:700;letter-spacing:.5em;font-size:13px;color:#0a0a0a;text-align:center;margin-bottom:6px}
+.bsub{text-align:center;color:var(--dim);font-size:11.5px;margin-bottom:24px;letter-spacing:.18em}
+.bline{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:8px 2px;border-bottom:1px solid #f1f1f1;opacity:0;transform:translateY(6px);animation:bin .35s forwards}
 @keyframes bin{to{opacity:1;transform:none}}
-.bsys{color:#aebbd6}.bst{font-weight:600}
-.bst.wait{color:var(--am)}.bst.on{color:var(--grn)}.bst.off{color:var(--red)}
-.bbar{height:3px;background:#141b2e;border-radius:3px;margin-top:24px;overflow:hidden}
-.bbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--grn));transition:width .3s}
-.bhint{text-align:center;color:#3c485f;font-size:11px;margin-top:18px;letter-spacing:.1em}
+.bsys{color:#444}.bst{font-weight:600;font-size:12px;letter-spacing:.08em}
+.bst.wait{color:#b9bec9}.bst.on{color:var(--grn)}.bst.off{color:var(--red)}
+.bbar{height:3px;background:#f0f0f0;border-radius:3px;margin-top:22px;overflow:hidden}
+.bbar i{display:block;height:100%;width:0;background:#0a0a0a;transition:width .3s}
+.bhint{text-align:center;color:#aab0bd;font-size:11px;margin-top:16px;letter-spacing:.1em}
 /* header */
-.top{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(5,7,13,.86);backdrop-filter:blur(10px);z-index:50}
-.brandc{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:#fff;text-decoration:none}
-.brandc .qq{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--cy),#1f7bff);color:#001;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.top{display:flex;align-items:center;gap:13px;padding:11px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);z-index:50}
+.brandc{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px;color:#0a0a0a;text-decoration:none}
+.brandc .qq{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 .kicker{color:var(--dim);font-size:11px;letter-spacing:.22em;font-weight:600}
 .allon{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--grn);font-weight:600}
-.allon .pdot{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 0 rgba(39,208,127,.6);animation:pulse 1.8s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(39,208,127,.5)}70%{box-shadow:0 0 0 9px rgba(39,208,127,0)}100%{box-shadow:0 0 0 0 rgba(39,208,127,0)}}
-.tnav{display:flex;gap:4px;margin-left:18px;flex-wrap:wrap}
-.tnav a{color:var(--dim);font-size:12.5px;text-decoration:none;padding:5px 9px;border-radius:7px}
-.tnav a:hover{background:#121a2c;color:#fff}
+.allon .pdot{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 0 rgba(10,125,51,.5);animation:pulse 1.9s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(10,125,51,.4)}70%{box-shadow:0 0 0 9px rgba(10,125,51,0)}100%{box-shadow:0 0 0 0 rgba(10,125,51,0)}}
+.tnav{display:flex;gap:2px;margin-left:16px;flex-wrap:wrap}
+.tnav a{color:#444;font-size:13.5px;text-decoration:none;padding:6px 11px;border-radius:9px}
+.tnav a:hover{background:#f3f3f3;color:#0a0a0a}
 @media(max-width:760px){.tnav,.kicker{display:none}}
 /* grid */
 .deck{padding:16px;display:grid;grid-template-columns:repeat(12,1fr);gap:12px;max-width:1500px;margin:0 auto}
-.card{background:linear-gradient(180deg,var(--pan),var(--pan2));border:1px solid var(--line);border-radius:14px;padding:14px 15px;min-height:104px;position:relative;overflow:hidden}
-.card h3{margin:0 0 10px;font-size:10.5px;letter-spacing:.16em;color:var(--dim);font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:7px}
-.card h3 .d{width:6px;height:6px;border-radius:50%;background:#33405e}
-.card.live h3 .d{background:var(--grn);box-shadow:0 0 8px var(--grn)}
+.card{background:var(--pan);border:1px solid var(--line);border-radius:15px;padding:15px 16px;min-height:104px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(10,12,20,.03)}
+.card h3{margin:0 0 11px;font-size:10.5px;letter-spacing:.15em;color:#9aa0aa;font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.card h3 .d{width:6px;height:6px;border-radius:50%;background:#d6dae2}
+.card.live h3 .d{background:var(--grn);box-shadow:0 0 7px rgba(10,125,51,.45)}
 .c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c12{grid-column:span 12}
 @media(max-width:1100px){.c3{grid-column:span 4}.c4{grid-column:span 6}.c5{grid-column:span 6}.c7{grid-column:span 12}}
 @media(max-width:680px){.deck{grid-template-columns:repeat(2,1fr)}.card{grid-column:span 2!important}}
-.big{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1}
-.sub{color:var(--dim);font-size:12px;margin-top:7px}
+.big{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1;color:#0a0a0a}
+.sub{color:var(--dim);font-size:12.5px;margin-top:8px}
 .up{color:var(--grn)}.dn{color:var(--red)}
-.flash{animation:fl .6s}@keyframes fl{0%{background:rgba(57,212,255,.14)}100%{background:transparent}}
-.row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13.5px}
-.row:last-child{border-bottom:0}.row .nm{color:#b9c4dc}.row .vl{font-weight:600}
-.gauge{height:7px;border-radius:6px;background:linear-gradient(90deg,#ff5b6e,#ffc24b,#27d07f);position:relative;margin:14px 0 6px}
-.gauge i{position:absolute;top:-4px;width:3px;height:15px;background:#fff;border-radius:2px;transform:translateX(-50%)}
-.tk{grid-column:span 12;background:#080b14;border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden;height:40px;display:flex;align-items:center}
-.tk .lbl{flex:0 0 auto;padding:0 14px;height:100%;display:flex;align-items:center;background:#0e1424;color:var(--cy);font-size:11px;font-weight:700;letter-spacing:.12em;border-right:1px solid var(--line)}
-.tk .strip{white-space:nowrap;animation:scroll 60s linear infinite;font-size:13px;color:#c7d2e8}
-.tk .strip a{color:#c7d2e8;text-decoration:none;margin:0 26px}
-@keyframes scroll{from{transform:translateX(60vw)}to{transform:translateX(-100%)}}
-.muted{color:#46526c;font-size:12px}
+.flash{animation:fl .6s}@keyframes fl{0%{background:rgba(10,125,51,.09)}100%{background:transparent}}
+.row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #f4f4f4;font-size:13.5px}
+.row:last-child{border-bottom:0}.row .nm{color:#5b6275}.row .vl{font-weight:600;color:#161a22}
+.gauge{height:7px;border-radius:6px;background:linear-gradient(90deg,#e5544f,#e8b54a,#27a35e);position:relative;margin:15px 0 7px}
+.gauge i{position:absolute;top:-4px;width:3px;height:15px;background:#0a0a0a;border-radius:2px;transform:translateX(-50%)}
+.tk{grid-column:span 12;background:var(--pan2);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden;height:40px;display:flex;align-items:center}
+.tk .lbl{flex:0 0 auto;padding:0 14px;height:100%;display:flex;align-items:center;background:#f1f3f6;color:#0a0a0a;font-size:10.5px;font-weight:700;letter-spacing:.12em;border-right:1px solid var(--line)}
+.tk .strip{white-space:nowrap;animation:scroll 62s linear infinite;font-size:13px;color:#3a4252;padding-left:30px}
+.tk .strip a{color:#3a4252;text-decoration:none;margin:0 26px}
+.tk .strip a:hover{color:#0a0a0a}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.muted{color:#aab0bd;font-size:12.5px}
 </style></head><body>
 
 <div id="boot">
@@ -90,7 +91,7 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Bl
   <div class="card c5" id="card-eq"><h3><span class="d"></span>Equities</h3><div id="eq"><div class="muted">loading…</div></div></div>
   <div class="card c7" id="card-macro"><h3><span class="d"></span>Macro · FRED</h3><div id="macro" style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px"><div class="muted">loading…</div></div></div>
 
-  <div class="tk"><div class="lbl mono">◰ NEWSWIRE</div><div class="strip" id="news">loading headlines…</div></div>
+  <div class="tk"><div class="lbl mono">NEWSWIRE</div><div class="strip" id="news">loading headlines…</div></div>
 </div>
 
 <script>
@@ -100,7 +101,6 @@ function big(n){if(n==null||isNaN(n))return '—';n=Number(n);var a=Math.abs(n);
 function pct(p){if(p==null||isNaN(p))return '';var c=p>=0?'up':'dn';var s=p>=0?'+':'';return '<span class="'+c+'">'+s+Number(p).toFixed(2)+'%</span>'}
 function setLive(id){var c=$('card-'+id);if(c)c.classList.add('live')}
 
-/* ---- boot sequence ---- */
 var SYS=[
  ['btc','Coinbase price feed'],['cap','Global market cap'],['fng','Sentiment index'],
  ['chain','Bitcoin network node'],['defi','DefiLlama TVL'],['eq','Equities desk'],
@@ -114,9 +114,8 @@ SYS.forEach(function(s,i){
 });
 function mark(id,ok){var r=rows[id];if(!r||r.dataset.set)return;r.dataset.set=1;r.textContent=ok?'ONLINE':'STANDBY';r.className='bst '+(ok?'on':'off');done++;$('bbar').style.width=Math.round(done/SYS.length*100)+'%';if(done>=SYS.length)setTimeout(reveal,500)}
 var revealed=false;function reveal(){if(revealed)return;revealed=true;$('boot').classList.add('gone')}
-setTimeout(reveal,6500); // safety: never hang
+setTimeout(reveal,6500);
 
-/* ---- live crypto via Coinbase websocket ---- */
 (function(){
  var map={'BTC-USD':'btc','ETH-USD':'eth','SOL-USD':'sol'},open={};
  try{
@@ -131,20 +130,17 @@ setTimeout(reveal,6500); // safety: never hang
  }catch(e){mark('btc',false)}
 })();
 
-/* ---- CoinGecko global ---- */
 fetch('https://api.coingecko.com/api/v3/global').then(r=>r.json()).then(function(j){
  var d=j.data;$('cap').textContent=big(d.total_market_cap.usd);
  $('cap-c').innerHTML=pct(d.market_cap_change_percentage_24h_usd)+' · BTC dom '+d.market_cap_percentage.btc.toFixed(1)+'%';
  setLive('cap');mark('cap',true);
 }).catch(()=>mark('cap',false));
 
-/* ---- Fear & Greed ---- */
 fetch('https://api.alternative.me/fng/').then(r=>r.json()).then(function(j){
  var v=+j.data[0].value,l=j.data[0].value_classification;
  $('fng').textContent=v;$('fng-l').textContent=l;$('fng-n').style.left=v+'%';setLive('fng');mark('fng',true);
 }).catch(()=>mark('fng',false));
 
-/* ---- Bitcoin network (mempool.space) ---- */
 Promise.all([
  fetch('https://mempool.space/api/blocks/tip/height').then(r=>r.text()),
  fetch('https://mempool.space/api/v1/fees/recommended').then(r=>r.json()),
@@ -156,35 +152,30 @@ Promise.all([
  setLive('chain');mark('chain',true);
 }).catch(()=>mark('chain',false));
 
-/* ---- DeFi TVL (DefiLlama) ---- */
 fetch('https://api.llama.fi/v2/chains').then(r=>r.json()).then(function(a){
  var tvl=a.reduce((s,c)=>s+(c.tvl||0),0);$('defi').textContent=big(tvl);
  var eth=a.find(c=>c.name==='Ethereum');$('defi-c').innerHTML='across '+a.length+' chains'+(eth?' · ETH '+big(eth.tvl):'');
  setLive('defi');mark('defi',true);
 }).catch(()=>mark('defi',false));
 
-/* ---- Equities (/api/stocks) ---- */
 fetch('/api/stocks').then(r=>r.json()).then(function(j){
  var rows=(j.rows||[]).slice(0,6);if(!rows.length)throw 0;
  $('eq').innerHTML=rows.map(r=>'<div class="row"><span class="nm">'+r.symbol+'</span><span class="vl">'+usd(r.price,2)+' &nbsp;'+pct(r.changePct)+'</span></div>').join('');
  setLive('eq');mark('eq',true);
 }).catch(()=>{$('eq').innerHTML='<div class="muted">feed unavailable</div>';mark('eq',false)});
 
-/* ---- Macro (/api/macro) ---- */
 fetch('/api/macro').then(r=>r.json()).then(function(j){
  var ind=(j.indicators||[]).slice(0,8);if(!ind.length)throw 0;
  $('macro').innerHTML=ind.map(function(x){var ch=x.change!=null?' '+pct(x.change):'';return '<div class="row"><span class="nm">'+x.name+'</span><span class="vl">'+x.value+(x.unit||'')+ch+'</span></div>'}).join('');
  setLive('macro');mark('macro',true);
 }).catch(()=>{$('macro').innerHTML='<div class="muted">feed unavailable</div>';mark('macro',false)});
 
-/* ---- Newswire ---- */
 fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent('https://cointelegraph.com/rss')).then(r=>r.json()).then(function(j){
  var items=(j.items||[]).slice(0,12);if(!items.length)throw 0;
- $('news').innerHTML=items.map(i=>'<a href="'+i.link+'" target="_blank" rel="noopener">› '+i.title+'</a>').join('');
+ $('news').innerHTML=items.map(i=>'<a href="'+i.link+'" target="_blank" rel="noopener">'+i.title+'</a>').join('');
  mark('news',true);
 }).catch(()=>{$('news').textContent='newswire offline';mark('news',false)});
 
-/* easter egg: double-click anywhere to re-run the boot */
 document.addEventListener('dblclick',function(){revealed=false;$('boot').classList.remove('gone')});
 </script>
 </body></html>
