@@ -21,6 +21,7 @@
   var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
 
   var NAV = [
+    { label: 'Command', href: '/deck.html' },
     { label: 'Pulse', href: '/pulse.html' },
     { label: 'Brief', href: '/brief.html' },
     { label: 'Markets', items: [['Markets tape', '/markets.html'], ['Live stream', '/live.html'], ['Coins', '/coins.html'], ['Stocks', '/stocks.html'], ['Global FX & Commodities', '/global.html'], ['Chart', '/chart.html'], ['Heatmap', '/heatmap.html'], ['Screener', '/screener.html']] },
