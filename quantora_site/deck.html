@@ -49,9 +49,9 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Bl
 .row:last-child{border-bottom:0}.row .nm{color:#5b6275}.row .vl{font-weight:600;color:#161a22}
 .gauge{height:7px;border-radius:6px;background:linear-gradient(90deg,#e5544f,#e8b54a,#27a35e);position:relative;margin:15px 0 7px}
 .gauge i{position:absolute;top:-4px;width:3px;height:15px;background:#0a0a0a;border-radius:2px;transform:translateX(-50%)}
-.tk{grid-column:span 12;background:var(--pan2);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden;height:40px;display:flex;align-items:center}
-.tk .lbl{flex:0 0 auto;padding:0 14px;height:100%;display:flex;align-items:center;background:#f1f3f6;color:#0a0a0a;font-size:10.5px;font-weight:700;letter-spacing:.12em;border-right:1px solid var(--line)}
-.tk .strip{white-space:nowrap;animation:scroll 62s linear infinite;font-size:13px;color:#3a4252;padding-left:30px}
+.tk{grid-column:span 12;background:var(--pan2);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden;height:40px;position:relative;display:flex;align-items:center}
+.tk .lbl{position:absolute;left:0;top:0;bottom:0;z-index:3;padding:0 16px;display:flex;align-items:center;background:#f1f3f6;color:#0a0a0a;font-size:10.5px;font-weight:700;letter-spacing:.12em;border-right:1px solid var(--line)}
+.tk .strip{white-space:nowrap;animation:scroll 62s linear infinite;font-size:13px;color:#3a4252;padding-left:150px}
 .tk .strip a{color:#3a4252;text-decoration:none;margin:0 26px}
 .tk .strip a:hover{color:#0a0a0a}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
