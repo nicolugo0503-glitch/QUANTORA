@@ -19,22 +19,23 @@ module.exports = async (req, res) => {
   ];
   const start = new Date(); start.setMonth(start.getMonth() - 31);
   const sd = start.toISOString().slice(0, 10);
+  const fetchOne = async (s) => {
+    const u = 'https://api.stlouisfed.org/fred/series/observations?series_id=' + s.id +
+      '&api_key=' + KEY + '&file_type=json&observation_start=' + sd +
+      '&frequency=m&aggregation_method=avg&sort_order=asc';
+    try {
+      const j = await (await fetch(u)).json();
+      const pts = (j.observations || [])
+        .filter(o => o.value !== '.' && o.value !== '')
+        .map(o => ({ d: o.date.slice(0, 7), v: +(+o.value).toFixed(2) }));
+      if (pts.length < 2) return null;
+      const latest = pts[pts.length - 1].v, prev = pts[pts.length - 2].v;
+      return { id: s.id, name: s.name, unit: s.unit, latest, change: +(latest - prev).toFixed(2), points: pts };
+    } catch (e) { return null; }
+  };
   try {
-    const out = [];
-    for (const s of SERIES) {
-      const u = 'https://api.stlouisfed.org/fred/series/observations?series_id=' + s.id +
-        '&api_key=' + KEY + '&file_type=json&observation_start=' + sd +
-        '&frequency=m&aggregation_method=avg&sort_order=asc';
-      try {
-        const j = await (await fetch(u)).json();
-        const pts = (j.observations || [])
-          .filter(o => o.value !== '.' && o.value !== '')
-          .map(o => ({ d: o.date.slice(0, 7), v: +(+o.value).toFixed(2) }));
-        if (pts.length < 2) continue;
-        const latest = pts[pts.length - 1].v, prev = pts[pts.length - 2].v;
-        out.push({ id: s.id, name: s.name, unit: s.unit, latest, change: +(latest - prev).toFixed(2), points: pts });
-      } catch (e) {}
-    }
+    const settled = await Promise.all(SERIES.map(fetchOne));
+    const out = settled.filter(x => x);
     if (!out.length) { res.status(200).json({ error: 'feed' }); return; }
     res.status(200).json({ indicators: out });
   } catch (e) { res.status(200).json({ error: 'feed' }); }
