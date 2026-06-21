@@ -55,6 +55,7 @@
 
   function big(n){if(n==null||isNaN(n))return '—';n=+n;var a=Math.abs(n);if(a>=1e12)return '$'+(n/1e12).toFixed(2)+'T';if(a>=1e9)return '$'+(n/1e9).toFixed(1)+'B';if(a>=1e6)return '$'+(n/1e6).toFixed(1)+'M';return '$'+Math.round(n).toLocaleString();}
   function usd0(n){return (n==null||isNaN(n))?'—':'$'+Math.round(n).toLocaleString();}
+  function pxf(n){if(n==null||isNaN(n))return '—';n=+n;if(n>=100)return '$'+Math.round(n).toLocaleString();if(n>=1)return '$'+n.toFixed(2);return '$'+n.toFixed(4);}
   function usd2(n){return (n==null||isNaN(n))?'—':'$'+(+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
   function pctv(n){return (n==null||isNaN(n))?'—':(+n).toFixed(2)+'%';}
   function numv(n){return (n==null||isNaN(n))?'—':(+n).toFixed(2);}
@@ -97,7 +98,7 @@
       if(f.type==='cb'){
         var closes=[];
         fetch('https://api.exchange.coinbase.com/products/'+f.product+'/candles?granularity=3600').then(function(r){return r.json();}).then(function(a){if(!Array.isArray(a)||!a.length){fallback();return;}closes=a.map(function(c){return c[4];}).reverse();area(closes);hero.classList.add('shown');}).catch(fallback);
-        try{var ws=new WebSocket('wss://ws-feed.exchange.coinbase.com');ws.onopen=function(){ws.send(JSON.stringify({type:'subscribe',product_ids:[f.product],channels:['ticker']}));};ws.onmessage=function(e){var m=JSON.parse(e.data);if(m.type!=='ticker')return;var p=+m.price,o=+m.open_24h,ch=o?((p-o)/o*100):0;setM(f.label,usd0(p),(ch>=0?'▲ +':'▼ ')+Math.abs(ch).toFixed(2)+'%',ch>=0?'up':'dn');if(closes.length){closes[closes.length-1]=p;area(closes);}};}catch(e){}
+        try{var ws=new WebSocket('wss://ws-feed.exchange.coinbase.com');ws.onopen=function(){ws.send(JSON.stringify({type:'subscribe',product_ids:[f.product],channels:['ticker']}));};ws.onmessage=function(e){var m=JSON.parse(e.data);if(m.type!=='ticker')return;var p=+m.price,o=+m.open_24h,ch=o?((p-o)/o*100):0;setM(f.label,pxf(p),(ch>=0?'▲ +':'▼ ')+Math.abs(ch).toFixed(2)+'%',ch>=0?'up':'dn');if(closes.length){closes[closes.length-1]=p;area(closes);}};}catch(e){}
         window.addEventListener('resize',function(){size();area(closes);});
       } else if(f.type==='series'){
         fetch(f.url).then(function(r){return r.json();}).then(function(j){var m=MAP[f.map](j);if(!m){fallback();return;}area(m.points);hero.classList.add('shown');var ch=(m.points&&m.points.length>1)?((m.points[m.points.length-1]-m.points[0])/Math.abs(m.points[0]||1)*100):null;var sub=m.sub||(ch!=null?(ch>=0?'▲ +':'▼ ')+Math.abs(ch).toFixed(1)+'% range':'');setM(f.label,FMT[m.fmt](m.value),sub,(ch!=null&&!m.sub)?(ch>=0?'up':'dn'):'');window.addEventListener('resize',function(){size();area(m.points);});}).catch(fallback);
