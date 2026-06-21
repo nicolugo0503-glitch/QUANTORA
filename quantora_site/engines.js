@@ -491,7 +491,24 @@ function varBacktest(returns,conf,window){
 }
 Q.varBacktest=varBacktest;
 
-Q.version='1.6';
+
+/* ================= STRESS / SCENARIO ================= */
+function stressTest(positions,scen){
+  var pnl=0,total=0,byClass={};
+  for(var i=0;i<positions.length;i++){ var p=positions[i], r=(scen[p.cls]!=null?scen[p.cls]:0); var d=p.value*r; pnl+=d; total+=p.value; byClass[p.cls]=(byClass[p.cls]||0)+d; }
+  return {pnl:pnl, total:total, pnlPct:total?pnl/total:0, byClass:byClass};
+}
+Q.stressTest=stressTest;
+
+/* ================= CORRELATION MATRIX ================= */
+function corrMatrix(series){
+  var n=series.length, M=[], i, j;
+  for(i=0;i<n;i++){ M[i]=[]; for(j=0;j<n;j++){ M[i][j]= i===j?1:correlation(series[i],series[j]); } }
+  return M;
+}
+Q.corrMatrix=corrMatrix;
+
+Q.version='1.7';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

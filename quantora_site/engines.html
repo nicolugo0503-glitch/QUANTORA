@@ -235,8 +235,43 @@ Crypto,20,60</textarea></div>
     </div>
   </div>
 
+  <div class="flag" style="margin-top:22px">
+    <div class="top">
+      <span class="t">Stress test</span>
+      <span class="tag">Scenario P&amp;L</span>
+      <span class="vrf">portfolio shock under historical crash scenarios</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>Positions — name,class,value</label><textarea id="ss_pos" style="width:100%;min-height:120px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11.5px;border:1px solid var(--line);border-radius:9px;padding:9px">S&amp;P 500,Equity,50000
+Treasuries,Bonds,30000
+Gold,Gold,10000
+Bitcoin,Crypto,10000</textarea></div>
+        <div style="font-size:11px;color:var(--mut)">Classes: Equity, Bonds, Gold, Crypto, Cash, RealEstate</div>
+      </div>
+      <div class="out">
+        <div id="ss_chart" style="width:100%"></div>
+        <div class="cr" id="ss_metrics" style="border-top:1px solid var(--line);padding-top:11px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
+    <div id="cvxPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Bond convexity</span>
+        <span class="badge">price vs yield</span>
+        <span id="cvxNote" style="font-size:11.5px;color:var(--mut);margin-left:auto"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center">
+        <div>
+          <div class="row2"><div class="fld"><label>Coupon %</label><input id="cvx_c" type="number" value="5" step="any"></div><div class="fld"><label>Yield %</label><input id="cvx_y" type="number" value="6" step="any"></div></div>
+          <div class="fld"><label>Years to maturity</label><input id="cvx_n" type="number" value="20" step="any"></div>
+        </div>
+        <div id="cvx_chart" style="width:100%"></div>
+      </div>
+    </div>
     <div class="grid" id="g_rates"></div>
   </div>
   <div class="sec">
@@ -253,6 +288,19 @@ Crypto,20,60</textarea></div>
           <div class="row2"><div class="fld"><label>Alpha</label><input id="garch_a" type="number" value="0.08" step="any"></div><div class="fld"><label>Beta</label><input id="garch_b" type="number" value="0.90" step="any"></div></div>
         </div>
         <div id="garch_chart" style="width:100%"></div>
+      </div>
+    </div>
+    <div id="corrPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Correlation heatmap</span>
+        <span class="badge">N assets</span>
+      </div>
+      <div style="display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:start">
+        <div class="fld" style="margin:0"><label>Series — label: r,r,r (one per line)</label><textarea id="corr_in" style="width:100%;min-height:120px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:8px;padding:7px">SPX: 0.01,-0.02,0.015,0.005,-0.01,0.02,-0.008
+TLT: -0.004,0.012,-0.006,0.002,0.006,-0.009,0.003
+GLD: 0.002,0.004,0.001,-0.003,0.005,-0.002,0.006
+BTC: 0.03,-0.05,0.04,0.01,-0.03,0.05,-0.02</textarea></div>
+        <div id="corr_chart" style="width:100%"></div>
       </div>
     </div>
     <div class="grid" id="g_risk"></div>
@@ -956,6 +1004,90 @@ buildCard(document.getElementById('g_risk'),{
   compute:function(v){ var a=parseNums(v.r); if(a.length<=v.w+3) return [{l:'Note',v:'need > window+3 obs'}]; var bt=Q.varBacktest(a,parseFloat(v.c),v.w);
     return [{l:'Breaches',v:bt.breaches+'/'+bt.observations},{l:'Breach rate',v:pct(bt.breachRate,1)},{l:'Expected',v:pct(bt.expected,1)},{l:'Kupiec',v:bt.pass?'pass':'fail',cls:bt.pass?'up':'down'}]; }
 });
+
+/* ===== STRESS TEST ===== */
+var SCENARIOS=[
+  {name:'2008 GFC', r:{Equity:-0.38,Bonds:0.05,Gold:0.04,Crypto:-0.55,Cash:0,RealEstate:-0.40}},
+  {name:'2020 COVID', r:{Equity:-0.34,Bonds:0.03,Gold:-0.03,Crypto:-0.50,Cash:0,RealEstate:-0.25}},
+  {name:'2022 inflation', r:{Equity:-0.20,Bonds:-0.15,Gold:0.00,Crypto:-0.65,Cash:0,RealEstate:-0.18}},
+  {name:'Rates +100bp', r:{Equity:-0.03,Bonds:-0.07,Gold:-0.01,Crypto:-0.05,Cash:0,RealEstate:-0.06}},
+  {name:'Risk-off (-2σ)', r:{Equity:-0.10,Bonds:0.02,Gold:0.03,Crypto:-0.20,Cash:0,RealEstate:-0.08}},
+  {name:'Melt-up (+1σ)', r:{Equity:0.08,Bonds:-0.01,Gold:0.00,Crypto:0.20,Cash:0,RealEstate:0.05}}
+];
+function drawStress(){
+  var pos=document.getElementById('ss_pos').value.split(/\n/).map(function(l){return l.split(',');}).filter(function(a){return a.length>=3&&!isNaN(parseFloat(a[2]));})
+    .map(function(a){return {name:(a[0]||'').trim(),cls:(a[1]||'').trim(),value:parseFloat(a[2])};});
+  if(!pos.length){ document.getElementById('ss_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter positions.</span>'; document.getElementById('ss_metrics').innerHTML=''; return; }
+  var res=SCENARIOS.map(function(sc){ var r=Q.stressTest(pos,sc.r); return {name:sc.name, pnl:r.pnl, pct:r.pnlPct}; });
+  var W=520,H=235,padL=110,padR=60,padV=14, n=res.length, rowH=(H-2*padV)/n;
+  var mx=Math.max.apply(null,res.map(function(r){return Math.abs(r.pct);}))||0.01;
+  var zeroX=padL+(W-padL-padR)*0.5;
+  function bw(pct){ return (pct/mx)*((W-padL-padR)/2); }
+  var bars=res.map(function(r,i){ var y=padV+i*rowH+rowH*0.18, h=rowH*0.64; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#d23a2c':'#0a8a3b';
+    return '<text x="'+(padL-8)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10.5" fill="#374151" text-anchor="end">'+r.name+'</text>'+
+      '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.abs(w).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.7" rx="2"/>'+
+      '<text x="'+(w<0?(x-4):(x+Math.abs(w)+4)).toFixed(1)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10" fill="'+col+'" text-anchor="'+(w<0?'end':'start')+'" font-family="JetBrains Mono,monospace">'+(r.pct*100).toFixed(1)+'%</text>'; }).join('');
+  document.getElementById('ss_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+zeroX+'" y1="'+padV+'" x2="'+zeroX+'" y2="'+(H-padV)+'" stroke="#d0d0d0"/>'+bars+'</svg>';
+  var worst=res.reduce(function(a,b){return b.pct<a.pct?b:a;});
+  var tot=pos.reduce(function(a,b){return a+b.value;},0);
+  document.getElementById('ss_metrics').innerHTML=
+    '<div class="r"><div class="rl">Portfolio value</div><div class="rv">'+fmt(tot,0)+'</div></div>'+
+    '<div class="r"><div class="rl">Worst scenario</div><div class="rv down">'+worst.name+'</div></div>'+
+    '<div class="r"><div class="rl">Worst-case P&L</div><div class="rv down">'+fmt(worst.pnl,0)+' ('+(worst.pct*100).toFixed(1)+'%)</div></div>';
+}
+document.getElementById('ss_pos').addEventListener('input',drawStress); drawStress();
+
+/* ===== BOND CONVEXITY ===== */
+function drawCvx(){
+  var c=(parseFloat(document.getElementById('cvx_c').value)||0)/100, y0=(parseFloat(document.getElementById('cvx_y').value)||0)/100, n=parseFloat(document.getElementById('cvx_n').value)||10;
+  if(!(n>0&&y0>0)){ return; }
+  var P0=Q.bondPrice(100,c,y0,n,1), ba=Q.bondAnalytics(100,c,y0,n,1);
+  var xs=[],actual=[],lin=[];
+  for(var dbp=-300;dbp<=300;dbp+=20){ var dy=dbp/10000; xs.push(dbp); actual.push(Q.bondPrice(100,c,y0+dy,n,1)); lin.push(P0*(1-ba.modified*dy)); }
+  var W=520,H=170,pad=34;
+  var all=actual.concat(lin); var ymin=Math.min.apply(null,all), ymax=Math.max.apply(null,all); var yp=(ymax-ymin)*0.08||1; ymin-=yp; ymax+=yp;
+  function px(i){ return pad+i/(xs.length-1)*(W-2*pad); }
+  function py(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
+  function poly(arr){ return arr.map(function(v,i){return px(i).toFixed(1)+','+py(v).toFixed(1);}).join(' '); }
+  var midX=px((xs.length-1)/2);
+  document.getElementById('cvx_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
+    '<line x1="'+midX.toFixed(1)+'" y1="'+pad+'" x2="'+midX.toFixed(1)+'" y2="'+(H-pad)+'" stroke="#eee"/>'+
+    '<polyline points="'+poly(lin)+'" fill="none" stroke="#9aa0aa" stroke-width="1.5" stroke-dasharray="5 3"/>'+
+    '<polyline points="'+poly(actual)+'" fill="none" stroke="#6366f1" stroke-width="2.2"/>'+
+    '<text x="'+pad+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280">−300bp</text>'+
+    '<text x="'+(W-pad)+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280" text-anchor="end">+300bp</text>'+
+    '<text x="'+(pad+4)+'" y="'+(pad+2)+'" font-size="9" fill="#6366f1">actual price</text>'+
+    '<text x="'+(pad+4)+'" y="'+(pad+13)+'" font-size="9" fill="#9aa0aa">duration estimate</text>'+
+    '</svg>';
+  document.getElementById('cvxNote').textContent='price '+P0.toFixed(2)+' · dur '+ba.modified.toFixed(2)+' · cvx '+ba.convexity.toFixed(1);
+}
+['cvx_c','cvx_y','cvx_n'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawCvx); }); drawCvx();
+
+/* ===== CORRELATION HEATMAP ===== */
+function corrColor(v){ // -1 red -> 0 white -> +1 indigo
+  if(v>=0){ var t=v; return 'rgba(99,102,241,'+(0.12+0.78*t).toFixed(3)+')'; }
+  var u=-v; return 'rgba(210,58,44,'+(0.12+0.78*u).toFixed(3)+')';
+}
+function drawCorr(){
+  var rows=document.getElementById('corr_in').value.split(/\n/).filter(function(l){return l.trim();});
+  var labels=[],series=[];
+  rows.forEach(function(l){ var idx=l.indexOf(':'); var lab=idx>=0?l.slice(0,idx).trim():('S'+(labels.length+1)); var nums=parseNums(idx>=0?l.slice(idx+1):l); if(nums.length>=2){ labels.push(lab); series.push(nums); } });
+  var host=document.getElementById('corr_chart');
+  var minLen=Math.min.apply(null,series.map(function(s){return s.length;}));
+  if(series.length<2||minLen<2){ host.innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter 2+ series with 2+ points.</span>'; return; }
+  series=series.map(function(s){return s.slice(0,minLen);});
+  var M=Q.corrMatrix(series), n=labels.length;
+  var cell=Math.min(54,Math.floor(360/n)), pad=54, W=pad+n*cell+10, H=pad+n*cell+10;
+  var g='';
+  for(var i=0;i<n;i++){ for(var j=0;j<n;j++){ var v=M[i][j]; var x=pad+j*cell, y=pad+i*cell;
+    g+='<rect x="'+x+'" y="'+y+'" width="'+(cell-2)+'" height="'+(cell-2)+'" fill="'+corrColor(v)+'" rx="3"/>'+
+      '<text x="'+(x+cell/2-1)+'" y="'+(y+cell/2+3)+'" font-size="'+(cell>40?10:8)+'" fill="#111" text-anchor="middle" font-family="JetBrains Mono,monospace">'+v.toFixed(2)+'</text>'; }
+    g+='<text x="'+(pad-6)+'" y="'+(pad+i*cell+cell/2+3)+'" font-size="10" fill="#374151" text-anchor="end">'+labels[i]+'</text>';
+    g+='<text x="'+(pad+i*cell+cell/2)+'" y="'+(pad-8)+'" font-size="10" fill="#374151" text-anchor="middle">'+labels[i]+'</text>';
+  }
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+g+'</svg>';
+}
+document.getElementById('corr_in').addEventListener('input',drawCorr); drawCorr();
 
 calcOptions();
 </script>
