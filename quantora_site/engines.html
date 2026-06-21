@@ -435,13 +435,14 @@ function buildCard(host,cfg){
     var w=f.full?' full':'';
     if(f.type==='textarea') return '<div class="fld full"><label>'+f.label+'</label><textarea data-k="'+f.k+'">'+(f.val||'')+'</textarea></div>';
     if(f.type==='select') return '<div class="fld'+w+'"><label>'+f.label+'</label><select data-k="'+f.k+'">'+f.opts.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('')+'</select></div>';
+    if(f.type==='text') return '<div class="fld'+w+'"><label>'+f.label+'</label><input type="text" data-k="'+f.k+'" value="'+(f.val||'')+'"></div>';
     return '<div class="fld'+w+'"><label>'+f.label+'</label><input type="number" step="any" data-k="'+f.k+'" value="'+f.val+'"></div>';
   }).join('');
   el.innerHTML='<div class="ct">'+cfg.title+'</div><div class="cd">'+cfg.desc+'</div><div class="ci">'+inputsHtml+'</div><div class="cr"></div>';
   host.appendChild(el);
   var inEls=el.querySelectorAll('[data-k]'), crEl=el.querySelector('.cr');
   function run(){
-    var v={}; inEls.forEach(function(i){ v[i.getAttribute('data-k')]=(i.tagName==='TEXTAREA'||i.tagName==='SELECT')?i.value:parseFloat(i.value); });
+    var v={}; inEls.forEach(function(i){ var raw=(i.tagName==='TEXTAREA'||i.tagName==='SELECT'||i.type==='text'); v[i.getAttribute('data-k')]=raw?i.value:parseFloat(i.value); });
     var out; try{ out=cfg.compute(v); }catch(e){ out=[]; }
     crEl.innerHTML=(out||[]).map(function(o){
       return '<div class="r"><div class="rl">'+o.l+'</div><div class="rv '+(o.cls||'')+'">'+o.v+'</div></div>';
@@ -1287,7 +1288,7 @@ buildCard(document.getElementById('g_rates'),{
 });
 buildCard(document.getElementById('g_risk'),{
   title:'Black–Litterman', desc:'Blend market-equilibrium returns with a view. Weights, vols, and one bullish view on asset 1.',
-  inputs:[{k:'w',label:'Market weights',val:'0.6,0.3,0.1'},{k:'vol',label:'Vols %',val:'16,6,15'},{k:'rho',label:'Avg corr',val:0.2},{k:'lam',label:'Risk aversion',val:2.5},{k:'view',label:'View on asset 1 (ret %)',val:12},{k:'conf',label:'Confidence',val:0.6}],
+  inputs:[{k:'w',label:'Market weights',type:'text',val:'0.6,0.3,0.1'},{k:'vol',label:'Vols %',type:'text',val:'16,6,15'},{k:'rho',label:'Avg corr',val:0.2},{k:'lam',label:'Risk aversion',val:2.5},{k:'view',label:'View on asset 1 (ret %)',val:12},{k:'conf',label:'Confidence',val:0.6}],
   compute:function(v){ var w=parseNums(v.w), vols=parseNums(v.vol).map(function(x){return x/100;}); if(w.length<2||w.length!==vols.length) return [{l:'Note',v:'check inputs'}];
     var Sig=Q.covFromVolCorr(vols,v.rho); var views=isFinite(v.view)?[{asset:0,ret:v.view/100,confidence:v.conf}]:[];
     var bl=Q.blackLitterman(w,Sig,v.lam,views,0.05);
