@@ -20,6 +20,7 @@
   '@media(max-width:820px){.qnav .qright{display:none}}';
   var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   var lk = document.createElement('link'); lk.rel='stylesheet'; lk.href='/theme.css?v=2'; (document.head || document.documentElement).appendChild(lk);
+  var hj=document.createElement('script'); hj.src='/hero.js?v=2'; hj.async=false; (document.head || document.documentElement).appendChild(hj);
 
   var NAV = [
     { label: 'Command', href: '/deck.html' },

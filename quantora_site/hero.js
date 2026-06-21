@@ -1,5 +1,6 @@
 /* Quantora · generative hero-art engine. Animated flow-field data-art banner per module. */
 (function(){
+  if(window.__qheroLoaded)return;window.__qheroLoaded=true;
   var CFG={
     '/pulse.html':   {t:'Pulse',        s:'The whole market on one screen, live.',                a:['#6366f1','#8b5cf6','#22d3ee']},
     '/markets.html': {t:'Markets',       s:'Live prices, moves and trend across every asset.',     a:['#4f7cff','#6366f1','#22d3ee']},
