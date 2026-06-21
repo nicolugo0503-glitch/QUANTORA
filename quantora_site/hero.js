@@ -19,6 +19,7 @@
     '/chart.html':   {t:'Chart',   s:'Professional charting, every instrument.', a:['#6366f1','#22d3ee','#8b5cf6'], feed:cb('ETH-USD','ETH / USD')},
     '/live.html':    {t:'Live',    s:'Every print, streaming in real time.', a:['#10b981','#22d3ee','#6366f1'], feed:cb('SOL-USD','SOL / USD')},
     '/dex.html':     {t:'DEX',     s:'Real-time decentralized exchange flow.', a:['#10b981','#14b8a6','#22d3ee'], feed:cb('UNI-USD','UNI / USD')},
+    '/funding.html': {t:'Funding', s:'Perp funding rates and open interest, live.', a:['#ef4444','#8b5cf6','#22d3ee'], feed:cb('BTC-USD','BTC perp ref')},
     '/news.html':    {t:'News',    s:'The wire that moves capital.', a:['#8b5cf6','#6366f1','#ec4899'], feed:met(FNG,'fng','Market sentiment')},
     '/alerts.html':  {t:'Alerts',  s:'Never miss the move that matters.', a:['#f59e0b','#ec4899','#8b5cf6'], feed:met(FNG,'fng','Market sentiment')},
     '/signals.html': {t:'Signals', s:'Momentum, trend and risk, computed live.', a:['#ec4899','#8b5cf6','#6366f1'], feed:cb('BTC-USD','BTC')},

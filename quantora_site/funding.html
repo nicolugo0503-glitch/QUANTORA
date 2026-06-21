@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Funding — Live Perps</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:15px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1160px;margin:0 auto;padding:34px 24px 70px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.sum{display:flex;gap:30px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:16px 22px;margin-top:20px;background:var(--soft)}
+.sum .s{display:flex;flex-direction:column}
+.sum .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.sum .v{font-size:19px;font-weight:750;margin-top:3px;letter-spacing:-.02em}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
+th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.03em;color:var(--mut);text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--soft)}
+.tk{font-weight:650}.q{color:var(--mut);font-weight:500}
+.up{color:var(--up)}.down{color:var(--down)}
+.fpos{color:#0a8a3b;font-weight:600}.fneg{color:#d23a2c;font-weight:600}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+.note{margin-top:12px;font-size:12px;color:var(--mut)}
+@media(max-width:760px){.apr,.vol{display:none}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/dex.html" class="link">DEX</a>
+  <a href="/funding.html" class="link active">Funding</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <div class="right"><span class="dot"></span> Live · perp funding &amp; OI</div>
+</div>
+<div class="wrap">
+  <h1>Funding</h1>
+  <div class="sub">The derivatives tape — live perpetual funding rates and open interest across the market. Positive funding = longs paying shorts (crowded longs); negative = shorts paying longs. Ranked by open interest.</div>
+  <div class="src">Live data via Bybit · for information only, not investment advice</div>
+
+  <div id="sumwrap"></div>
+  <div id="tablewrap"></div>
+  <div class="status" id="status">Loading the derivatives tape…</div>
+  <div class="note">Funding shown per 8h interval and annualized (×3×365). Open interest in USD notional.</div>
+</div>
+
+<script>
+function big(n){ if(n==null||isNaN(n)) return '—'; var a=Math.abs(n); if(a>=1e12)return '$'+(n/1e12).toFixed(2)+'T'; if(a>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(1)+'M'; if(a>=1e3)return '$'+(n/1e3).toFixed(1)+'K'; return '$'+Math.round(n); }
+function px(n){ if(n==null||isNaN(n))return '—'; if(n>=1)return '$'+n.toLocaleString(undefined,{maximumFractionDigits:2}); return '$'+n.toPrecision(4); }
+function pct(n){ if(n==null||isNaN(n))return '—'; return (n>=0?'+':'')+n.toFixed(2)+'%'; }
+function fr(n){ return (n>=0?'+':'')+n.toFixed(4)+'%'; }
+function col(n){ return n>=0?'up':'down'; }
+function fcol(n){ return n>=0?'fpos':'fneg'; }
+var ROWS=[], sortKey='oi', sortDir=-1;
+
+async function load(){
+  var status=document.getElementById('status');
+  try{
+    var d=await (await fetch('https://api.bybit.com/v5/market/tickers?category=linear')).json();
+    var list=(d&&d.result&&d.result.list)||[];
+    ROWS=list.filter(function(x){return /USDT$/.test(x.symbol) && parseFloat(x.openInterestValue)>0;}).map(function(x){
+      var f=parseFloat(x.fundingRate)*100;
+      return {sym:x.symbol.replace(/USDT$/,''), price:parseFloat(x.lastPrice), chg:parseFloat(x.price24hPcnt)*100, f8:f, apr:f*3*365, oi:parseFloat(x.openInterestValue), vol:parseFloat(x.turnover24h)};
+    });
+    if(!ROWS.length){ status.textContent='Derivatives tape unavailable right now. Try again shortly.'; return; }
+    ROWS.sort(function(a,b){return b.oi-a.oi;}); ROWS=ROWS.slice(0,30);
+    status.style.display='none';
+    renderSummary(); renderTable();
+  }catch(e){ status.textContent='Could not reach the derivatives feed. Try again shortly.'; }
+}
+function renderSummary(){
+  var totOI=ROWS.reduce(function(s,x){return s+x.oi;},0);
+  var totVol=ROWS.reduce(function(s,x){return s+x.vol;},0);
+  var avgF=ROWS.reduce(function(s,x){return s+x.f8;},0)/ROWS.length;
+  var pos=ROWS.filter(function(x){return x.f8>=0;}).length;
+  document.getElementById('sumwrap').innerHTML='<div class="sum">'+
+    '<div class="s"><span class="l">Open interest (top 30)</span><span class="v">'+big(totOI)+'</span></div>'+
+    '<div class="s"><span class="l">24h volume</span><span class="v">'+big(totVol)+'</span></div>'+
+    '<div class="s"><span class="l">Avg funding (8h)</span><span class="v '+fcol(avgF)+'">'+fr(avgF)+'</span></div>'+
+    '<div class="s"><span class="l">Funding bias</span><span class="v">'+pos+' long / '+(ROWS.length-pos)+' short</span></div></div>';
+}
+function renderTable(){
+  var rows=ROWS.slice().sort(function(a,b){var x=a[sortKey],y=b[sortKey];return (x<y?-1:x>y?1:0)*sortDir;});
+  var head='<table><thead><tr>'+
+    '<th data-k="sym">Perp</th><th data-k="price">Price</th><th data-k="chg">24h</th>'+
+    '<th data-k="f8">Funding 8h</th><th data-k="apr" class="apr">Funding APR</th>'+
+    '<th data-k="oi">Open Interest</th><th data-k="vol" class="vol">24h Volume</th></tr></thead><tbody>';
+  var body=rows.map(function(x){
+    return '<tr><td><span class="tk">'+x.sym+'</span><span class="q"> ·USDT perp</span></td>'+
+      '<td>'+px(x.price)+'</td>'+
+      '<td class="'+col(x.chg)+'">'+pct(x.chg)+'</td>'+
+      '<td class="'+fcol(x.f8)+'">'+fr(x.f8)+'</td>'+
+      '<td class="apr '+fcol(x.apr)+'">'+pct(x.apr)+'</td>'+
+      '<td>'+big(x.oi)+'</td>'+
+      '<td class="vol">'+big(x.vol)+'</td></tr>';
+  }).join('');
+  document.getElementById('tablewrap').innerHTML=head+body+'</tbody></table>';
+  Array.prototype.forEach.call(document.querySelectorAll('th[data-k]'),function(th){
+    th.onclick=function(){ var k=th.getAttribute('data-k'); if(sortKey===k)sortDir*=-1; else {sortKey=k;sortDir=(k==='sym')?1:-1;} renderTable(); };
+  });
+}
+load();
+setInterval(load, 60000);
+</script>
+  <script src="/nav.js"></script>
+</body>
+</html>
