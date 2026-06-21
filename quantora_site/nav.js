@@ -27,6 +27,7 @@
     { label: 'The Delta', href: '/delta.html' },
     { label: 'Pulse', href: '/pulse.html' },
     { label: 'Engines', href: '/engines.html' },
+    { label: 'Intel', href: '/intel.html' },
     { label: 'Brief', href: '/brief.html' },
     { label: 'Markets', items: [['Markets tape', '/markets.html'], ['Live stream', '/live.html'], ['Coins', '/coins.html'], ['Stocks', '/stocks.html'], ['Global FX & Commodities', '/global.html'], ['Chart', '/chart.html'], ['Heatmap', '/heatmap.html'], ['Screener', '/screener.html']] },
     { label: 'On-Chain', items: [['DeFi', '/defi.html'], ['Bitcoin Chain', '/chain.html'], ['DEX', '/dex.html'], ['Perps · Funding', '/funding.html'], ['Token Unlocks', '/unlocks.html'], ['Staking', '/staking.html'], ['Layer 2s', '/l2.html'], ['Wallet', '/wallet.html'], ['Signals', '/signals.html']] },
