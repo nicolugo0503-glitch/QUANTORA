@@ -87,10 +87,15 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
   <h1>Engines</h1>
   <p class="sub">Real quant math — not data, not a demo. Every engine below is a verified formula that runs entirely in your browser. No API, no key, no rate limit. Each one is unit-tested against published reference values.</p>
   <div class="badges">
-    <span class="badge"><span class="g">●</span> 30+ engines</span>
+    <span class="badge"><span class="g">●</span> 90+ engines</span>
     <span class="badge">Unit-tested</span>
     <span class="badge">Runs in-browser</span>
     <span class="badge">Free · no login</span>
+  </div>
+  <div id="engBar" style="position:sticky;top:0;z-index:60;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <input id="engSearch" type="text" placeholder="Search engines — e.g. option, VaR, duration, sharpe…" autocomplete="off" style="flex:1;min-width:200px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:14px;font-family:inherit;color:var(--ink)">
+    <div id="engLinks" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    <span id="engCount" style="font-size:11.5px;color:var(--mut);font-family:'JetBrains Mono',monospace"></span>
   </div>
 
   <!-- FLAGSHIP: OPTIONS -->
@@ -1521,6 +1526,46 @@ buildCard(document.getElementById('g_risk'),{
 });
 
 calcOptions();
+
+buildCard(document.getElementById('g_rates'),{
+  title:'Swaption (Black-76)', desc:'Payer/receiver swaption priced with Black-76 on the forward swap rate times the annuity.',
+  inputs:[{k:'fwd',label:'Fwd swap rate %',val:4.5},{k:'k',label:'Strike %',val:4.5},{k:'v',label:'Vol %',val:25},{k:'T',label:'Expiry (yr)',val:2},{k:'ann',label:'Annuity (PV01 sum)',val:4.2},{k:'side',label:'Side',type:'select',opts:[['payer','Payer'],['receiver','Receiver']]}],
+  compute:function(v){ var px=Q.swaptionBlack76(v.fwd/100,v.k/100,v.v/100,v.T,v.ann,v.side==='payer'); return [{l:'Swaption value',v:fmt(px*100,3)+' (per 100 notional)'},{l:'In bp of notional',v:fmt(px*1e4,0)+' bps'}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'CDaR', desc:'Conditional drawdown at risk — average of the worst-tail drawdowns (Chekhlov–Uryasev).',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.03,0.02,-0.04,-0.03,0.01,-0.02,0.04,0.02,0.03,-0.05,-0.02,0.03,0.04,-0.06,0.02'},{k:'c',label:'Confidence',type:'select',opts:[['0.95','95%'],['0.99','99%']]}],
+  compute:function(v){ var r=parseNums(v.r); if(r.length<4) return []; var cd=Q.cdar(r,parseFloat(v.c)); return [{l:'CDaR',v:pct(cd.cdar,1),cls:'down'},{l:'Max drawdown',v:pct(cd.maxDD,1),cls:'down'}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'STARR ratio', desc:'Return per unit of tail risk (mean return ÷ CVaR) — a downside-aware Sharpe.',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.02,0.01,0.03,-0.01,0.02,0.018,0.025,-0.005,0.022,0.012,-0.03,0.019'},{k:'c',label:'Confidence',type:'select',opts:[['0.95','95%'],['0.99','99%']]}],
+  compute:function(v){ var r=parseNums(v.r); if(r.length<4) return []; var s=Q.starr(r,parseFloat(v.c)); return [{l:'STARR',v:isFinite(s)?fmt(s,3):'∞',cls:s>0?'up':'down'}]; }
+});
+
+/* ===== SEARCH + SECTION NAV ===== */
+(function(){
+  var secs=[].slice.call(document.querySelectorAll('.sec'));
+  var links=document.getElementById('engLinks'), search=document.getElementById('engSearch'), countEl=document.getElementById('engCount');
+  function slug(t){ return t.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+  secs.forEach(function(sec){ var h=sec.querySelector('h2'); if(!h) return; var id='sec-'+slug(h.textContent); sec.id=id;
+    var a=document.createElement('a'); a.href='#'+id; a.textContent=h.textContent.replace(/&amp;/g,'&').split(' ')[0];
+    a.style.cssText='font-size:11.5px;font-weight:600;color:var(--mut);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;text-decoration:none';
+    a.addEventListener('click',function(e){ e.preventDefault(); window.scrollTo({top:sec.offsetTop-70,behavior:'smooth'}); });
+    links.appendChild(a);
+  });
+  var allCards=[].slice.call(document.querySelectorAll('.card'));
+  function totalCount(){ return allCards.length; }
+  countEl.textContent=totalCount()+' cards';
+  search.addEventListener('input',function(){
+    var q=this.value.trim().toLowerCase(), shown=0;
+    allCards.forEach(function(c){ var t=(c.querySelector('.ct')?c.querySelector('.ct').textContent:'')+' '+(c.querySelector('.cd')?c.querySelector('.cd').textContent:''); var hit=!q||t.toLowerCase().indexOf(q)>=0; c.style.display=hit?'':'none'; if(hit) shown++; });
+    // hide section if all its cards hidden AND a query is active
+    secs.forEach(function(sec){ if(!q){ sec.style.display=''; return; } var cards=sec.querySelectorAll('.card'); if(!cards.length){ return; } var anyVisible=[].slice.call(cards).some(function(c){return c.style.display!=='none';}); sec.style.display=anyVisible?'':'none'; });
+    countEl.textContent=q?(shown+' match'+(shown===1?'':'es')):(totalCount()+' cards');
+  });
+})();
+
 </script>
 </body>
 </html>

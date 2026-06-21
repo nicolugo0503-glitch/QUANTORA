@@ -766,7 +766,23 @@ function drawdownAnalytics(returns){
 }
 Q.drawdownAnalytics=drawdownAnalytics;
 
-Q.version='2.3';
+
+/* ================= SWAPTION (Black-76) + CDaR + STARR ================= */
+function swaptionBlack76(forwardSwapRate,strike,vol,T,annuity,payer){
+  var b=black76(forwardSwapRate,strike,T,0,vol);
+  return (payer===false? b.put : b.call)*annuity;
+}
+function cdar(returns,conf){
+  conf=conf||0.95; var eq=1,peak=1,depths=[],i;
+  for(i=0;i<returns.length;i++){ eq*=1+returns[i]; if(eq>peak) peak=eq; depths.push(Math.max(0,1-eq/peak)); }
+  depths.sort(function(a,b){return b-a;}); var m=Math.max(1,Math.ceil((1-conf)*depths.length)), sum=0;
+  for(i=0;i<m;i++) sum+=depths[i];
+  return {cdar:sum/m, maxDD:depths[0]};
+}
+function starr(returns,conf){ conf=conf||0.95; var cv=histCVaR(returns,conf); return cv!==0? mean(returns)/cv : Infinity; }
+Q.swaptionBlack76=swaptionBlack76; Q.cdar=cdar; Q.starr=starr;
+
+Q.version='2.4';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
