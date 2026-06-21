@@ -1318,8 +1318,19 @@ buildCard(document.getElementById('g_equity'),{
   fetch('/api/fredseries').then(function(r){return r.json();}).then(function(j){
     if(!j.indicators){ note.textContent='unavailable'; return; }
     var by={}; j.indicators.forEach(function(i){ by[i.id]=i; });
-    var TEN=[['DGS1MO','1M',1/12],['DGS3MO','3M',0.25],['DGS2','2Y',2],['DGS5','5Y',5],['DGS10','10Y',10],['DGS30','30Y',30]];
-    var pts=[]; TEN.forEach(function(t){ if(by[t[0]]&&by[t[0]].latest!=null) pts.push({lab:t[1],y:by[t[0]].latest,T:t[2]}); });
+    function v(id){ return by[id]&&by[id].latest!=null?by[id].latest:null; }
+    var pts=[];
+    // short end: 1M/3M if present, else Fed Funds as policy-rate proxy
+    if(v('DGS1MO')!=null) pts.push({lab:'1M',y:v('DGS1MO'),T:1/12});
+    if(v('DGS3MO')!=null) pts.push({lab:'3M',y:v('DGS3MO'),T:0.25});
+    else if(!pts.length && v('FEDFUNDS')!=null) pts.push({lab:'FedFunds',y:v('FEDFUNDS'),T:0.1});
+    // 2Y: direct or derived from 10Y minus 10Y-2Y spread
+    var twoY = v('DGS2')!=null ? v('DGS2') : (v('DGS10')!=null&&v('T10Y2Y')!=null ? +(v('DGS10')-v('T10Y2Y')).toFixed(2) : null);
+    if(twoY!=null) pts.push({lab:'2Y',y:twoY,T:2});
+    if(v('DGS5')!=null) pts.push({lab:'5Y',y:v('DGS5'),T:5});
+    if(v('DGS10')!=null) pts.push({lab:'10Y',y:v('DGS10'),T:10});
+    if(v('DGS30')!=null) pts.push({lab:'30Y',y:v('DGS30'),T:30});
+    pts.sort(function(a,b){return a.T-b.T;});
     if(pts.length<3){ note.textContent='insufficient tenors'; return; }
     var W=520,H=200,pad=38,n=pts.length;
     var ys=pts.map(function(p){return p.y;}); var ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys); var yp=(ymax-ymin)*0.18||0.2; ymin-=yp; ymax+=yp;
