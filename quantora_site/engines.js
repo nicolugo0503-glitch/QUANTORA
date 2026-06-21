@@ -192,7 +192,15 @@ function positionSize(equity,riskFrac,entry,stop){ var r=Math.abs(entry-stop); v
 function kelly(p,avgWin,avgLoss,fraction){ fraction=fraction==null?1:fraction; var b=avgWin/avgLoss, q=1-p; var f=(b*p-q)/b; return Math.max(0,f)*fraction; }
 Q.fundingAPR=fundingAPR; Q.fundingAPY=fundingAPY; Q.liqPrice=liqPrice; Q.impermanentLoss=impermanentLoss; Q.basisAnnualized=basisAnnualized; Q.aprToApy=aprToApy; Q.dcaAverage=dcaAverage; Q.positionSize=positionSize; Q.kelly=kelly;
 
-Q.version='1.0';
+
+/* ================= ADDED ENGINES ================= */
+function probITM(S,K,T,r,q,sig){ var d2=Q.bsm(S,K,T,r,q,sig).d2; return {call:normCdf(d2), put:normCdf(-d2)}; }
+function markowitz2(s1,s2,rho){ var cov=rho*s1*s2; var w1=(s2*s2-cov)/(s1*s1+s2*s2-2*cov); var w2=1-w1; var v=w1*w1*s1*s1+w2*w2*s2*s2+2*w1*w2*cov; return {w1:w1,w2:w2,vol:Math.sqrt(v)}; }
+function sqrtImpact(Q_,V,sigma,price,Y){ Y=Y==null?1:Y; var f=Y*sigma*Math.sqrt(Q_/V); return {frac:f, bps:f*1e4, dollar:f*price*Q_}; }
+function almgrenChriss(X,T,N,lambda,sigma,eta,gamma){ var tau=T/N; var etaT=eta-0.5*gamma*tau; var kappa=Math.sqrt(lambda*sigma*sigma/etaT); var sh=Math.sinh(kappa*T); var hold=[],tr=[],j; for(j=0;j<=N;j++){ var t=j*tau; hold.push(X*Math.sinh(kappa*(T-t))/sh); } for(j=1;j<=N;j++) tr.push(hold[j-1]-hold[j]); return {kappa:kappa, halfLife:1/kappa, holdings:hold, trades:tr}; }
+Q.probITM=probITM; Q.markowitz2=markowitz2; Q.sqrtImpact=sqrtImpact; Q.almgrenChriss=almgrenChriss;
+
+Q.version='1.1';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

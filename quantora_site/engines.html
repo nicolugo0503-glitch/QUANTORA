@@ -152,6 +152,10 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
     <h2>Crypto &amp; derivatives risk</h2>
     <div class="grid" id="g_crypto"></div>
   </div>
+  <div class="sec">
+    <h2>Execution &amp; sizing</h2>
+    <div class="grid" id="g_exec"></div>
+  </div>
 
   <p class="foot">All outputs are computed from the inputs you enter using standard published formulas (Black–Scholes–Merton, Hull; Fabozzi duration/convexity; Estrella–Mishkin recession probit; Merton structural credit; Almgren–Chriss; Uniswap-v2 impermanent loss). They are mathematical tools for analysis and education, not investment advice. Quantora is not a registered investment adviser or broker-dealer.</p>
 </div>
@@ -330,6 +334,91 @@ buildCard(document.getElementById('g_crypto'),{
   compute:function(v){ var ps=Q.positionSize(v.eq,v.risk/100,v.e,v.s);
     return [{l:'Size (units)',v:fmt(ps.units,1)},{l:'Notional',v:fmt(ps.notional,0)},{l:'Risk $',v:fmt(ps.riskDollars,0),cls:'down'}]; }
 });
+
+/* ---- ADDED: more engines ---- */
+// Options: probability ITM
+buildCard(document.getElementById('g_rates'),{
+  title:'Option probability ITM', desc:'Risk-neutral chance a European option expires in the money (N(d2)).',
+  inputs:[{k:'S',label:'Spot',val:100},{k:'K',label:'Strike',val:110},{k:'D',label:'Days',val:90},{k:'v',label:'Vol %',val:30},{k:'r',label:'Rate %',val:5},{k:'q',label:'Div %',val:0}],
+  compute:function(v){ var p=Q.probITM(v.S,v.K,v.D/365,v.r/100,v.q/100,v.v/100); return [{l:'Call ITM',v:pct(p.call,1),cls:'up'},{l:'Put ITM',v:pct(p.put,1),cls:'down'}]; }
+});
+
+// Risk: beta + correlation
+buildCard(document.getElementById('g_risk'),{
+  title:'Beta &amp; correlation', desc:'Sensitivity and correlation of an asset vs a benchmark return series.',
+  inputs:[{k:'a',label:'Asset returns',type:'textarea',val:'0.010,-0.020,0.015,0.005,-0.010'},{k:'b',label:'Benchmark returns',type:'textarea',val:'0.008,-0.015,0.012,0.000,-0.005'}],
+  compute:function(v){ var a=parseNums(v.a),b=parseNums(v.b); if(a.length<3||a.length!==b.length) return [{l:'Note',v:'len mismatch'}];
+    return [{l:'Beta',v:fmt(Q.beta(a,b),2)},{l:'Correlation',v:fmt(Q.correlation(a,b),3)}]; }
+});
+// Risk: min-variance portfolio
+buildCard(document.getElementById('g_risk'),{
+  title:'Min-variance portfolio', desc:'Global minimum-variance weights for two assets (Markowitz).',
+  inputs:[{k:'s1',label:'Vol 1 %',val:20},{k:'s2',label:'Vol 2 %',val:30},{k:'rho',label:'Correlation',val:0.25}],
+  compute:function(v){ var m=Q.markowitz2(v.s1/100,v.s2/100,v.rho); return [{l:'Weight 1',v:pct(m.w1,1)},{l:'Weight 2',v:pct(m.w2,1)},{l:'Port vol',v:pct(m.vol,1)}]; }
+});
+
+// Macro: Sahm rule
+buildCard(document.getElementById('g_macro'),{
+  title:'Sahm rule', desc:'Real-time recession trigger from the rise in unemployment (≥0.50pp).',
+  inputs:[{k:'u',label:'Monthly unemployment % (oldest→newest, 15+)',type:'textarea',val:'3.5,3.6,3.5,3.4,3.5,3.6,3.7,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3'}],
+  compute:function(v){ var u=parseNums(v.u); if(u.length<15) return [{l:'Note',v:'need 15+ months'}]; var s=Q.sahmRule(u);
+    return [{l:'Sahm value',v:fmt(s.value,2)},{l:'Status',v:s.triggered?'TRIGGERED':'clear',cls:s.triggered?'down':'up'}]; }
+});
+
+// Credit: CDS triangle
+buildCard(document.getElementById('g_macro'),{
+  title:'CDS spread ↔ PD', desc:'Credit triangle: fair spread from hazard & recovery, plus implied default probability.',
+  inputs:[{k:'sp',label:'CDS spread (bps)',val:150},{k:'rec',label:'Recovery %',val:40},{k:'T',label:'Horizon (yr)',val:5}],
+  compute:function(v){ var o=Q.pdFromSpread(v.sp/1e4,v.rec/100,v.T); return [{l:'Hazard λ',v:pct(o.hazard,2)},{l:'PD over '+v.T+'y',v:pct(o.pd,1),cls:'down'}]; }
+});
+
+// Corp: WACC / CAPM
+buildCard(document.getElementById('g_corp'),{
+  title:'WACC &amp; CAPM', desc:'Cost of equity (CAPM) and blended cost of capital — the discount-rate builder.',
+  inputs:[{k:'rf',label:'Risk-free %',val:4},{k:'beta',label:'Beta',val:1.2},{k:'erp',label:'Equity prem %',val:5},{k:'E',label:'Equity val',val:600},{k:'D',label:'Debt val',val:400},{k:'rd',label:'Cost debt %',val:6},{k:'tax',label:'Tax %',val:25}],
+  compute:function(v){ var re=Q.capm(v.rf/100,v.beta,v.erp/100); var w=Q.wacc(v.E,v.D,re,v.rd/100,v.tax/100); return [{l:'Cost of equity',v:pct(re,2)},{l:'WACC',v:pct(w,2)}]; }
+});
+// Corp: Gordon DDM
+buildCard(document.getElementById('g_corp'),{
+  title:'Dividend discount (Gordon)', desc:'Fair value of a stock from its dividend, required return and growth.',
+  inputs:[{k:'d0',label:'Current dividend',val:2},{k:'r',label:'Required return %',val:8},{k:'g',label:'Growth %',val:3}],
+  compute:function(v){ if(v.r/100<=v.g/100) return [{l:'Note',v:'r must exceed g'}]; return [{l:'Fair value',v:fmt(Q.gordon(v.d0,v.r/100,v.g/100),2)}]; }
+});
+
+// Crypto: basis carry
+buildCard(document.getElementById('g_crypto'),{
+  title:'Basis / cash-and-carry', desc:'Annualized return from the spot-vs-futures spread (market-neutral carry).',
+  inputs:[{k:'spot',label:'Spot',val:50000},{k:'fut',label:'Futures',val:51000},{k:'d',label:'Days to expiry',val:90}],
+  compute:function(v){ var a=Q.basisAnnualized(v.spot,v.fut,v.d); return [{l:'Raw basis',v:pct(v.fut/v.spot-1,2)},{l:'Annualized',v:pct(a,2),cls:a>0?'up':'down'}]; }
+});
+// Crypto: staking APY
+buildCard(document.getElementById('g_crypto'),{
+  title:'Staking APR → APY', desc:'Compounded yield from a stated annual staking rate.',
+  inputs:[{k:'apr',label:'APR %',val:8},{k:'n',label:'Compounds/yr',val:365}],
+  compute:function(v){ return [{l:'APR',v:pct(v.apr/100,2)},{l:'APY',v:pct(Q.aprToApy(v.apr/100,v.n),2),cls:'up'}]; }
+});
+// Crypto: DCA
+buildCard(document.getElementById('g_crypto'),{
+  title:'DCA average cost', desc:'True average entry from fixed-dollar buys at different prices.',
+  inputs:[{k:'p',label:'Prices (comma sep)',type:'textarea',val:'10,20,15,12,18'},{k:'amt',label:'$ per buy',val:100}],
+  compute:function(v){ var ps=parseNums(v.p); if(!ps.length) return []; var buys=ps.map(function(x){return {amount:v.amt,price:x};}); var d=Q.dcaAverage(buys);
+    return [{l:'Avg cost',v:fmt(d.avgCost,2)},{l:'Units',v:fmt(d.units,3)},{l:'Spent',v:fmt(d.spent,0)}]; }
+});
+
+// Execution: market impact
+buildCard(document.getElementById('g_exec'),{
+  title:'Market impact', desc:'Estimated slippage of an order via the square-root impact model.',
+  inputs:[{k:'Q',label:'Order size (sh)',val:50000},{k:'V',label:'Daily volume',val:5000000},{k:'sig',label:'Daily vol %',val:2},{k:'px',label:'Price',val:50}],
+  compute:function(v){ var si=Q.sqrtImpact(v.Q,v.V,v.sig/100,v.px,1); return [{l:'Impact',v:fmt(si.bps,1)+' bps',cls:'down'},{l:'Est cost',v:fmt(si.dollar,0)}]; }
+});
+// Execution: Almgren-Chriss
+buildCard(document.getElementById('g_exec'),{
+  title:'Optimal execution', desc:'Almgren–Chriss schedule: trade half-life & front-loading from risk aversion.',
+  inputs:[{k:'X',label:'Shares',val:1000000},{k:'T',label:'Horizon (days)',val:5},{k:'N',label:'Slices',val:10},{k:'lam',label:'Risk aversion (e-6)',val:2},{k:'sig',label:'Vol %',val:2}],
+  compute:function(v){ var ac=Q.almgrenChriss(v.X,v.T,v.N,v.lam*1e-6,v.sig/100,2.5e-6,2.5e-7);
+    return [{l:'Half-life (days)',v:fmt(ac.halfLife,2)},{l:'First slice',v:pct(ac.trades[0]/v.X,1)},{l:'Last slice',v:pct(ac.trades[ac.trades.length-1]/v.X,1)}]; }
+});
+// Kelly already in crypto; add Kelly into exec too for sizing grouping? keep single.
 
 calcOptions();
 </script>
