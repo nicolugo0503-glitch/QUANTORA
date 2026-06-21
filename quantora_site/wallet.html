@@ -104,7 +104,8 @@ async function load(){
       return {sym:(t.token&&t.token.symbol)||'?', name:(t.token&&t.token.name)||'', bal:bal, price:rate, mc:mc, val:(rate!=null?bal*rate:null)};
     }).filter(function(r){
       if(r.val==null||r.val<1) return false;
-      return r.mc>0 || MAJ[(r.sym||'').toUpperCase()];   // only real, priced tokens (drop spam airdrops)
+      if(r.price!=null && r.price<0.005 && r.bal>1e6) return false;   // spam pattern: huge supply x micro price
+      return r.mc>0 || MAJ[(r.sym||'').toUpperCase()];                 // and must be a real, priced token
     }).sort(function(a,b){return b.val-a.val;});
     var tokTotal=rows.reduce(function(s,r){return s+r.val;},0);
     var total=(nativeUSD||0)+tokTotal;
