@@ -30,6 +30,6 @@ module.exports = async (req, res) => {
       if (t) aiRead = t.trim();
     } catch (e) {}
   }
-  res.setHeader('Cache-Control', 's-maxage=300');
+  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
   res.status(200).json({ rows: rows, aiRead: aiRead });
 };

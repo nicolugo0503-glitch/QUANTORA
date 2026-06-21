@@ -1,6 +1,5 @@
 // Quantora backend - secure stock-data proxy (Vercel serverless function).
-// The API key lives in a Vercel Environment Variable (TWELVEDATA_KEY),
-// so it is never exposed in the public site or in client code.
+// API key lives in Vercel env (TWELVEDATA_KEY); never exposed client-side.
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const symbol = String((req.query && req.query.symbol) || '').toUpperCase().trim();
@@ -24,7 +23,7 @@ module.exports = async (req, res) => {
     const vals = d.values.slice().reverse();
     const closes = vals.map(function (v) { return parseFloat(v.close); }).filter(function (n) { return !isNaN(n); });
     const dates = vals.map(function (v) { return v.datetime; });
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     res.status(200).json({ symbol: symbol, closes: closes, dates: dates });
   } catch (e) {
     res.status(200).json({ error: 'fetch', message: 'Upstream feed unavailable.' });
