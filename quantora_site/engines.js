@@ -366,7 +366,65 @@ function bondLadder(bonds){
 }
 Q.garch11=garch11; Q.bondLadder=bondLadder;
 
-Q.version='1.4';
+
+/* ================= LINEAR ALGEBRA ================= */
+function matInv(A){
+  var n=A.length, M=[], i, j, k;
+  for(i=0;i<n;i++){ M[i]=[]; for(j=0;j<n;j++) M[i][j]=A[i][j]; for(j=0;j<n;j++) M[i][n+j]=(i===j)?1:0; }
+  for(i=0;i<n;i++){
+    var piv=M[i][i], pr=i;
+    for(k=i+1;k<n;k++) if(Math.abs(M[k][i])>Math.abs(piv)){ piv=M[k][i]; pr=k; }
+    if(Math.abs(piv)<1e-14) throw new Error('singular');
+    if(pr!==i){ var tmp=M[i]; M[i]=M[pr]; M[pr]=tmp; }
+    var d=M[i][i]; for(j=0;j<2*n;j++) M[i][j]/=d;
+    for(k=0;k<n;k++){ if(k===i) continue; var fct=M[k][i]; for(j=0;j<2*n;j++) M[k][j]-=fct*M[i][j]; }
+  }
+  var inv=[]; for(i=0;i<n;i++){ inv[i]=[]; for(j=0;j<n;j++) inv[i][j]=M[i][n+j]; }
+  return inv;
+}
+function matVec(A,v){ var n=A.length, r=[]; for(var i=0;i<n;i++){ var s=0; for(var j=0;j<v.length;j++) s+=A[i][j]*v[j]; r.push(s); } return r; }
+function vdot(a,b){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+Q.matInv=matInv;
+
+/* ================= MONTE CARLO PATHS (FAN) ================= */
+function mcGBMPaths(S0,mu,sig,T,steps,paths,seed){
+  var rng=seed!=null?mulberry32(seed):Math.random, dt=T/steps, sdt=Math.sqrt(dt);
+  var cols=[]; for(var t=0;t<=steps;t++) cols.push([]);
+  var samples=[], i, t;
+  for(i=0;i<paths;i++){
+    var S=S0, path=(i<8)?[S0]:null; cols[0].push(S0);
+    for(t=1;t<=steps;t++){ S*=Math.exp((mu-0.5*sig*sig)*dt+sig*sdt*randn(rng)); cols[t].push(S); if(path) path.push(S); }
+    if(path) samples.push(path);
+  }
+  function band(arr,p){ var a=arr.slice().sort(function(x,y){return x-y;}); return a[Math.min(a.length-1,Math.floor(p*a.length))]; }
+  var p5=[],p25=[],p50=[],p75=[],p95=[],times=[];
+  for(t=0;t<=steps;t++){ times.push(T*t/steps); p5.push(band(cols[t],0.05)); p25.push(band(cols[t],0.25)); p50.push(band(cols[t],0.5)); p75.push(band(cols[t],0.75)); p95.push(band(cols[t],0.95)); }
+  return {times:times, p5:p5, p25:p25, p50:p50, p75:p75, p95:p95, samples:samples};
+}
+Q.mcGBMPaths=mcGBMPaths;
+
+/* ================= EFFICIENT FRONTIER (N-asset) ================= */
+function covFromVolCorr(vols,rho){
+  var n=vols.length, S=[]; for(var i=0;i<n;i++){ S[i]=[]; for(var j=0;j<n;j++) S[i][j]=(i===j)?vols[i]*vols[i]:rho*vols[i]*vols[j]; } return S;
+}
+function efficientFrontier(mu,Sigma,rf){
+  rf=rf||0; var n=mu.length, inv=matInv(Sigma), ones=[]; for(var i=0;i<n;i++) ones.push(1);
+  var invOnes=matVec(inv,ones), invMu=matVec(inv,mu);
+  var A=vdot(ones,invOnes), B=vdot(ones,invMu), C=vdot(mu,invMu), D=A*C-B*B;
+  // GMV
+  var wG=invOnes.map(function(x){return x/A;}), retG=B/A, volG=Math.sqrt(1/A);
+  // Tangency
+  var ex=mu.map(function(m){return m-rf;}), invEx=matVec(inv,ex), den=vdot(ones,invEx);
+  var wT=invEx.map(function(x){return x/den;}), retT=vdot(wT,mu), volT=Math.sqrt(vdot(wT,matVec(Sigma,wT)));
+  var sharpeT=(retT-rf)/volT;
+  // frontier curve
+  var lo=Math.min.apply(null,mu), hi=Math.max.apply(null,mu), fr=[];
+  for(var k=0;k<=40;k++){ var mp=lo+(hi-lo)*k/40; var varp=(A*mp*mp-2*B*mp+C)/D; fr.push({ret:mp, vol:Math.sqrt(Math.max(varp,0))}); }
+  return {gmv:{w:wG, ret:retG, vol:volG}, tangency:{w:wT, ret:retT, vol:volT, sharpe:sharpeT}, frontier:fr, A:A, B:B, C:C, D:D};
+}
+Q.covFromVolCorr=covFromVolCorr; Q.efficientFrontier=efficientFrontier;
+
+Q.version='1.5';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

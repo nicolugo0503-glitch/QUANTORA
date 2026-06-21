@@ -183,6 +183,30 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
     </div>
   </div>
 
+  <div class="flag" style="margin-top:22px">
+    <div class="top">
+      <span class="t">Efficient frontier</span>
+      <span class="tag">Markowitz · N-asset</span>
+      <span class="vrf"><span class="c">✓ verified</span> · global min-variance + tangency portfolio</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>Assets — name,return%,vol%</label><textarea id="ef_assets" style="width:100%;min-height:96px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11.5px;border:1px solid var(--line);border-radius:9px;padding:9px">Equities,8,16
+Bonds,4,6
+Gold,6,15
+Crypto,20,60</textarea></div>
+        <div class="row2">
+          <div class="fld"><label>Avg correlation</label><input id="ef_rho" type="number" value="0.2" step="any"></div>
+          <div class="fld"><label>Risk-free %</label><input id="ef_rf" type="number" value="4" step="any"></div>
+        </div>
+      </div>
+      <div class="out">
+        <div id="ef_chart" style="width:100%"></div>
+        <div class="cr" id="ef_metrics" style="border-top:1px solid var(--line);padding-top:11px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
     <div class="grid" id="g_rates"></div>
@@ -635,36 +659,63 @@ buildCard(document.getElementById('g_corp'),{
   compute:function(v){ var fv=Q.futureValue(v.pmt,v.r/100,v.y,12,v.pv); var contrib=v.pmt*12*v.y+v.pv; return [{l:'Future value',v:fmt(fv,0),cls:'up'},{l:'Contributed',v:fmt(contrib,0)},{l:'Growth',v:fmt(fv-contrib,0),cls:'up'}]; }
 });
 
-/* ===== MONTE CARLO SIMULATOR ===== */
-function drawMC(){
-  var S=parseFloat(document.getElementById('mc_S').value)||100;
-  var mu=(parseFloat(document.getElementById('mc_mu').value)||0)/100;
-  var v=(parseFloat(document.getElementById('mc_v').value)||0)/100;
-  var D=parseFloat(document.getElementById('mc_D').value)||252;
-  var paths=Math.min(200000,Math.max(1000,parseFloat(document.getElementById('mc_paths').value)||50000));
-  var T=D/365;
-  var sim=Q.mcGBM(S,mu,v,T,paths);
-  // histogram
-  var t=sim.terminals, lo=sim.p5*0.9, hi=sim.p95*1.05, nb=44;
-  var bins=new Array(nb).fill(0), i;
+/* ===== MONTE CARLO SIMULATOR (paths + distribution) ===== */
+var MC_MODE='paths';
+function mcInputs(){ return { S:parseFloat(document.getElementById('mc_S').value)||100, mu:(parseFloat(document.getElementById('mc_mu').value)||0)/100, v:(parseFloat(document.getElementById('mc_v').value)||0)/100, D:parseFloat(document.getElementById('mc_D').value)||252, paths:Math.min(200000,Math.max(1000,parseFloat(document.getElementById('mc_paths').value)||50000)) }; }
+function drawMCFan(){
+  var p=mcInputs(), T=p.D/365, steps=Math.min(120,Math.max(20,Math.round(p.D/5)));
+  var fan=Q.mcGBMPaths(p.S,p.mu,p.v,T,steps,Math.min(4000,p.paths),undefined);
+  var W=520,H=240,pad=34, n=fan.times.length;
+  var lo=Math.min.apply(null,fan.p5), hi=Math.max.apply(null,fan.p95);
+  var yp=(hi-lo)*0.06; lo-=yp; hi+=yp;
+  function px(i){ return pad+i/(n-1)*(W-2*pad); }
+  function py(y){ return H-pad-(y-lo)/(hi-lo)*(H-2*pad); }
+  function poly(arr){ return arr.map(function(y,i){return px(i).toFixed(1)+','+py(y).toFixed(1);}).join(' '); }
+  // band p5-p95 as filled area, p25-p75 darker
+  function area(top,bot){ var u=top.map(function(y,i){return px(i).toFixed(1)+','+py(y).toFixed(1);}); var d=bot.map(function(y,i){return px(i).toFixed(1)+','+py(y).toFixed(1);}).reverse(); return u.concat(d).join(' '); }
+  var samples=fan.samples.map(function(pth){ return '<polyline points="'+poly(pth)+'" fill="none" stroke="#9aa0aa" stroke-width="0.6" opacity="0.5"/>'; }).join('');
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
+    '<polygon points="'+area(fan.p95,fan.p5)+'" fill="#6366f1" opacity="0.10"/>'+
+    '<polygon points="'+area(fan.p75,fan.p25)+'" fill="#6366f1" opacity="0.18"/>'+
+    samples+
+    '<polyline points="'+poly(fan.p50)+'" fill="none" stroke="#0a0a0a" stroke-width="2"/>'+
+    '<line x1="'+pad+'" y1="'+py(p.S).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(p.S).toFixed(1)+'" stroke="#d0d0d0" stroke-dasharray="4 4"/>'+
+    '<text x="'+(W-pad)+'" y="'+(py(fan.p95[n-1])-2).toFixed(1)+'" font-size="9" fill="#6366f1" text-anchor="end" font-family="JetBrains Mono,monospace">95%</text>'+
+    '<text x="'+(W-pad)+'" y="'+(py(fan.p5[n-1])+9).toFixed(1)+'" font-size="9" fill="#6366f1" text-anchor="end" font-family="JetBrains Mono,monospace">5%</text>'+
+    '</svg>';
+  document.getElementById('mc_chart').innerHTML=svg;
+  document.getElementById('mc_metrics').innerHTML=
+    '<div class="r"><div class="rl">Median end</div><div class="rv">'+fmt(fan.p50[n-1],2)+'</div></div>'+
+    '<div class="r"><div class="rl">90% cone</div><div class="rv">'+fmt(fan.p5[n-1],1)+'–'+fmt(fan.p95[n-1],1)+'</div></div>'+
+    '<div class="r"><div class="rl">Horizon</div><div class="rv">'+p.D+'d</div></div>';
+}
+function drawMCHist(){
+  var p=mcInputs(), T=p.D/365, sim=Q.mcGBM(p.S,p.mu,p.v,T,p.paths);
+  var t=sim.terminals, lo=sim.p5*0.9, hi=sim.p95*1.05, nb=44, bins=new Array(nb).fill(0), i;
   for(i=0;i<t.length;i++){ if(t[i]<lo||t[i]>hi) continue; var b=Math.min(nb-1,Math.floor((t[i]-lo)/(hi-lo)*nb)); bins[b]++; }
-  var maxB=Math.max.apply(null,bins);
-  var W=520,H=240,pad=30, bw=(W-2*pad)/nb;
+  var maxB=Math.max.apply(null,bins), W=520,H=240,pad=30, bw=(W-2*pad)/nb;
   function px(x){ return pad+(x-lo)/(hi-lo)*(W-2*pad); }
   var bars='';
-  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0; var x=pad+i*bw; var binMid=lo+(i+0.5)/nb*(hi-lo); var col=binMid>=S?'#0a8a3b':'#d23a2c';
+  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0, x=pad+i*bw, binMid=lo+(i+0.5)/nb*(hi-lo), col=binMid>=p.S?'#0a8a3b':'#d23a2c';
     bars+='<rect x="'+x.toFixed(1)+'" y="'+(H-pad-h).toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.55"/>'; }
   function vline(xv,c,lab){ var X=px(xv); if(X<pad||X>W-pad) return ''; return '<line x1="'+X.toFixed(1)+'" y1="'+pad+'" x2="'+X.toFixed(1)+'" y2="'+(H-pad)+'" stroke="'+c+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+X.toFixed(1)+'" y="'+(pad-4)+'" font-size="9" fill="'+c+'" text-anchor="middle" font-family="JetBrains Mono,monospace">'+lab+'</text>'; }
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+
-    vline(S,'#6366f1','spot')+vline(sim.p50,'#0a0a0a','median')+vline(sim.p5,'#d23a2c','5%')+vline(sim.p95,'#0a8a3b','95%')+
-    '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/></svg>';
-  document.getElementById('mc_chart').innerHTML=svg;
+  document.getElementById('mc_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+vline(p.S,'#6366f1','spot')+vline(sim.p50,'#0a0a0a','median')+vline(sim.p5,'#d23a2c','5%')+vline(sim.p95,'#0a8a3b','95%')+'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/></svg>';
   document.getElementById('mc_metrics').innerHTML=
     '<div class="r"><div class="rl">Median</div><div class="rv">'+fmt(sim.p50,2)+'</div></div>'+
     '<div class="r"><div class="rl">90% range</div><div class="rv">'+fmt(sim.p5,1)+'–'+fmt(sim.p95,1)+'</div></div>'+
     '<div class="r"><div class="rl">P(gain)</div><div class="rv '+(sim.probUp>=0.5?'up':'down')+'">'+pct(sim.probUp,1)+'</div></div>'+
     '<div class="r"><div class="rl">Mean</div><div class="rv">'+fmt(sim.mean,2)+'</div></div>';
 }
+function drawMC(){ if(MC_MODE==='paths') drawMCFan(); else drawMCHist(); }
+// inject toggle
+(function(){ var host=document.getElementById('mc_chart');
+  var bar=document.createElement('div'); bar.style.cssText='display:flex;gap:6px;margin-bottom:8px';
+  bar.innerHTML='<button id="mc_tp" style="font-size:11.5px;font-weight:650;border:1px solid var(--line);border-radius:7px;padding:5px 11px;background:#0a0a0a;color:#fff;cursor:pointer">Paths</button><button id="mc_td" style="font-size:11.5px;font-weight:650;border:1px solid var(--line);border-radius:7px;padding:5px 11px;background:#fff;color:var(--ink);cursor:pointer">Distribution</button>';
+  host.parentNode.insertBefore(bar,host);
+  function set(m){ MC_MODE=m; document.getElementById('mc_tp').style.background=m==='paths'?'#0a0a0a':'#fff'; document.getElementById('mc_tp').style.color=m==='paths'?'#fff':'var(--ink)'; document.getElementById('mc_td').style.background=m==='dist'?'#0a0a0a':'#fff'; document.getElementById('mc_td').style.color=m==='dist'?'#fff':'var(--ink)'; drawMC(); }
+  document.getElementById('mc_tp').addEventListener('click',function(e){e.preventDefault();set('paths');});
+  document.getElementById('mc_td').addEventListener('click',function(e){e.preventDefault();set('dist');});
+})();
 ['mc_S','mc_mu','mc_v','mc_D'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawMC); });
 document.getElementById('mc_run').addEventListener('click',function(e){ e.preventDefault(); drawMC(); });
 drawMC();
@@ -751,6 +802,52 @@ buildCard(document.getElementById('g_rates'),{
     var L=Q.bondLadder(bonds);
     return [{l:'Bonds',v:L.count},{l:'Total value',v:fmt(L.totalValue,1)},{l:'Wtd duration',v:fmt(L.wDuration,2)},{l:'Avg yield',v:pct(L.avgYield,2)},{l:'Annual income',v:fmt(L.annualIncome,2)},{l:'Portfolio DV01',v:fmt(L.totalDV01,3)}]; }
 });
+
+/* ===== EFFICIENT FRONTIER ===== */
+function drawEF(){
+  var rows=document.getElementById('ef_assets').value.split(/\n/).map(function(l){return l.split(',');}).filter(function(a){return a.length>=3&&!isNaN(parseFloat(a[1]));});
+  var names=rows.map(function(a){return (a[0]||'').trim();});
+  var mu=rows.map(function(a){return parseFloat(a[1])/100;});
+  var vols=rows.map(function(a){return parseFloat(a[2])/100;});
+  var rho=parseFloat(document.getElementById('ef_rho').value)||0;
+  var rf=(parseFloat(document.getElementById('ef_rf').value)||0)/100;
+  if(mu.length<2){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter at least 2 assets.</span>'; document.getElementById('ef_metrics').innerHTML=''; return; }
+  var Sig=Q.covFromVolCorr(vols,rho), ef;
+  try{ ef=Q.efficientFrontier(mu,Sig,rf); }catch(e){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Singular covariance — adjust correlation.</span>'; return; }
+  var W=520,H=250,pad=38;
+  var allVol=ef.frontier.map(function(p){return p.vol;}).concat(vols).concat([0,ef.tangency.vol]);
+  var allRet=ef.frontier.map(function(p){return p.ret;}).concat(mu).concat([rf,ef.tangency.ret]);
+  var xmin=0, xmax=Math.max.apply(null,allVol)*1.1;
+  var ymin=Math.min.apply(null,allRet), ymax=Math.max.apply(null,allRet); var yp=(ymax-ymin)*0.1||0.01; ymin-=yp; ymax+=yp;
+  function px(x){ return pad+(x-xmin)/(xmax-xmin)*(W-2*pad); }
+  function py(y){ return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad); }
+  var fr=ef.frontier.map(function(p){return px(p.vol).toFixed(1)+','+py(p.ret).toFixed(1);}).join(' ');
+  // capital market line: from (0,rf) through tangency, extended
+  var slope=(ef.tangency.ret-rf)/ef.tangency.vol;
+  var cmlX=xmax, cmlY=rf+slope*cmlX;
+  var assetDots=names.map(function(nm,i){ return '<circle cx="'+px(vols[i]).toFixed(1)+'" cy="'+py(mu[i]).toFixed(1)+'" r="4" fill="#9aa0aa"/><text x="'+(px(vols[i])+6).toFixed(1)+'" y="'+(py(mu[i])+3).toFixed(1)+'" font-size="9" fill="#6b7280">'+nm+'</text>'; }).join('');
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
+    '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/>'+
+    '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/>'+
+    '<text x="'+(W-pad)+'" y="'+(H-pad+14)+'" font-size="9" fill="#6b7280" text-anchor="end">volatility →</text>'+
+    '<text x="'+pad+'" y="'+(pad-6)+'" font-size="9" fill="#6b7280">return ↑</text>'+
+    '<line x1="'+px(0).toFixed(1)+'" y1="'+py(rf).toFixed(1)+'" x2="'+px(cmlX).toFixed(1)+'" y2="'+py(cmlY).toFixed(1)+'" stroke="#0a8a3b" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>'+
+    '<polyline points="'+fr+'" fill="none" stroke="#6366f1" stroke-width="2"/>'+
+    assetDots+
+    '<circle cx="'+px(ef.gmv.vol).toFixed(1)+'" cy="'+py(ef.gmv.ret).toFixed(1)+'" r="5" fill="#0a0a0a"/><text x="'+(px(ef.gmv.vol)+7).toFixed(1)+'" y="'+(py(ef.gmv.ret)-5).toFixed(1)+'" font-size="9" fill="#0a0a0a" font-weight="700">GMV</text>'+
+    '<circle cx="'+px(ef.tangency.vol).toFixed(1)+'" cy="'+py(ef.tangency.ret).toFixed(1)+'" r="5" fill="#0a8a3b"/><text x="'+(px(ef.tangency.vol)+7).toFixed(1)+'" y="'+(py(ef.tangency.ret)-5).toFixed(1)+'" font-size="9" fill="#0a8a3b" font-weight="700">Tangency</text>'+
+    '</svg>';
+  document.getElementById('ef_chart').innerHTML=svg;
+  var wT=ef.tangency.w.map(function(w,i){return names[i]+' '+pct(w,0);}).join(' · ');
+  document.getElementById('ef_metrics').innerHTML=
+    '<div class="r"><div class="rl">Max-Sharpe return</div><div class="rv up">'+pct(ef.tangency.ret,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Max-Sharpe vol</div><div class="rv">'+pct(ef.tangency.vol,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Sharpe</div><div class="rv up">'+fmt(ef.tangency.sharpe,2)+'</div></div>'+
+    '<div class="r"><div class="rl">Min-var vol</div><div class="rv">'+pct(ef.gmv.vol,1)+'</div></div>'+
+    '<div class="r" style="flex-basis:100%"><div class="rl">Tangency weights</div><div class="rv" style="font-size:12px">'+wT+'</div></div>';
+}
+['ef_assets','ef_rho','ef_rf'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawEF); });
+drawEF();
 
 calcOptions();
 </script>
