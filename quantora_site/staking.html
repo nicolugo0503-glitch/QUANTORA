@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Staking — Live Yields</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · Staking — live yields"><meta property="og:description" content="Live liquid-staking and restaking yields across ETH, SOL and more — APR, TVL, ranked.">
+<meta property="og:url" content="https://www.usequantora.com/staking.html"><meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="Live liquid-staking and restaking yields across ETH, SOL and more — APR, TVL, ranked, via Lido and DefiLlama.">
+<link rel="canonical" href="https://www.usequantora.com/staking.html">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a8a3b;--down:#d23a2c;--acc:#6366f1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1080px;margin:0 auto;padding:34px 24px 80px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.head{display:flex;gap:30px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin-top:20px;background:var(--soft)}
+.head .s{display:flex;flex-direction:column}.head .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}.head .v{font-size:26px;font-weight:780;margin-top:3px;letter-spacing:-.02em}
+.head .spark{margin-left:auto}
+table{width:100%;border-collapse:collapse;margin-top:22px;font-size:14px}
+th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.03em;color:var(--mut);text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}th:nth-child(2),td:nth-child(2){text-align:left}th:nth-child(3),td:nth-child(3){text-align:left}
+tbody tr:hover{background:var(--soft)}
+.tk{font-weight:650}.q{color:var(--mut)}
+.badge{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#f1f1f1;color:#555}
+.apy{font-weight:700;color:var(--up)}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+@media(max-width:680px){.chain,.tvl{display:none}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/staking.html" class="link active">Staking</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/l2.html" class="link">Layer 2s</a>
+  <a href="/unlocks.html" class="link">Unlocks</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <div class="right"><span class="dot"></span> Live · staking yields</div>
+</div>
+<div class="wrap">
+  <h1>Staking</h1>
+  <div class="sub">What your assets earn on-chain — live liquid-staking and restaking yields across ETH, Solana and beyond, ranked by size. The risk-free-ish rate of crypto.</div>
+  <div class="src">ETH staking via Lido · yields via DefiLlama · for information only, not investment advice</div>
+
+  <div id="headwrap"></div>
+  <div id="tablewrap"></div>
+  <div class="status" id="status">Loading staking yields…</div>
+</div>
+
+<script>
+function big(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(1)+'M'; if(a>=1e3)return '$'+(n/1e3).toFixed(0)+'K'; return '$'+Math.round(n); }
+function spark(arr){ if(!arr||arr.length<2)return ''; var min=Math.min.apply(null,arr),max=Math.max.apply(null,arr),rng=(max-min)||1,W=150,H=42; var X=function(i){return (i/(arr.length-1)*W).toFixed(1);},Y=function(v){return (H-4-(v-min)/rng*(H-8)).toFixed(1);}; var ln=arr.map(function(v,i){return X(i)+','+Y(v);}).join(' '); return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="display:block"><polyline fill="none" stroke="#0a8a3b" stroke-width="1.8" points="'+ln+'"/></svg>'; }
+var PROJ={'lido':1,'rocket-pool':1,'jito':1,'marinade-liquid-staking':1,'binance-staked-eth':1,'stader':1,'frax-ether':1,'mantle-staked-eth':1,'coinbase-wrapped-staked-eth':1,'sanctum':1,'stakewise-v3':1,'swell-liquid-staking':1,'ether.fi-stake':1,'etherfi-liquid':1,'kelp-dao':1,'renzo':1,'puffer-finance':1,'dinero-(pirex-eth)':1,'jupiter-staked-sol':1,'origin-ether':1,'bedrock':1};
+var SYM=/^(STETH|WSTETH|RETH|CBETH|WBETH|SFRXETH|FRXETH|MSOL|JITOSOL|BNSOL|JUPSOL|OSETH|SWETH|ANKRETH|EZETH|WEETH|RSETH|PUFETH|METH|LSETH|OETH|UNIETH|INETH)$/i;
+var ROWS=[], sortKey='tvl', sortDir=-1;
+async function loadHead(){
+  try{
+    var last=await (await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/last')).json();
+    var sma=await (await fetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma')).json();
+    var apr=last&&last.data&&last.data.apr;
+    var ser=(sma&&sma.data&&sma.data.aprs||[]).map(function(x){return x.apr;});
+    document.getElementById('headwrap').innerHTML='<div class="head">'+
+      '<div class="s"><span class="l">ETH staking · Lido stETH</span><span class="v">'+(apr!=null?apr.toFixed(2)+'%':'—')+'</span></div>'+
+      '<div class="s"><span class="l">7-day avg trend</span><span class="v" style="font-size:14px;color:var(--mut);font-weight:600">smoothed APR</span></div>'+
+      '<div class="spark">'+spark(ser.slice(-30))+'</div></div>';
+  }catch(e){}
+}
+function renderTable(){
+  var rows=ROWS.slice().sort(function(a,b){var x=a[sortKey],y=b[sortKey];if(typeof x==='string')return x.localeCompare(y)*sortDir;return (x<y?-1:x>y?1:0)*sortDir;});
+  var head='<table><thead><tr><th data-k="sym">Asset</th><th data-k="proj">Protocol</th><th data-k="chain" class="chain">Chain</th><th data-k="apy">APY</th><th data-k="tvl" class="tvl">TVL</th></tr></thead><tbody>';
+  var body=rows.map(function(r){
+    return '<tr><td><span class="tk">'+r.sym+'</span></td>'+
+      '<td>'+r.proj.replace(/-/g,' ')+'</td>'+
+      '<td class="chain"><span class="badge">'+r.chain+'</span></td>'+
+      '<td class="apy">'+r.apy.toFixed(2)+'%</td>'+
+      '<td class="tvl">'+big(r.tvl)+'</td></tr>';
+  }).join('');
+  document.getElementById('tablewrap').innerHTML=head+body+'</tbody></table>';
+  Array.prototype.forEach.call(document.querySelectorAll('th[data-k]'),function(th){ th.onclick=function(){ var k=th.getAttribute('data-k'); if(sortKey===k)sortDir*=-1; else {sortKey=k;sortDir=(k==='sym'||k==='proj'||k==='chain')?1:-1;} renderTable(); }; });
+}
+async function loadPools(){
+  var status=document.getElementById('status');
+  try{
+    var d=await (await fetch('https://yields.llama.fi/pools')).json();
+    var pools=(d.data||[]).filter(function(p){
+      var ok=(PROJ[p.project]||SYM.test(p.symbol||''));
+      return ok && p.tvlUsd>3e6 && p.apy>0 && p.apy<40;
+    });
+    // dedup by symbol+project, keep highest tvl
+    var seen={}; var out=[];
+    pools.sort(function(a,b){return b.tvlUsd-a.tvlUsd;});
+    pools.forEach(function(p){var k=(p.symbol+'|'+p.project).toLowerCase(); if(!seen[k]){seen[k]=1;out.push({sym:(p.symbol||'?').toUpperCase(),proj:p.project,chain:p.chain,apy:p.apy,tvl:p.tvlUsd});}});
+    ROWS=out.slice(0,24);
+    if(!ROWS.length){ status.textContent='Staking yields unavailable right now. Try again shortly.'; return; }
+    status.style.display='none';
+    renderTable();
+  }catch(e){ status.textContent='Could not reach the staking feed. Try again shortly.'; }
+}
+loadHead(); loadPools();
+setInterval(loadPools, 300000);
+</script>
+  <footer class="qfoot" style="max-width:1080px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Yields are variable and not guaranteed. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
+<script defer src="/_vercel/insights/script.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>

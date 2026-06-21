@@ -26,6 +26,7 @@
     '/predictions.html': {t:'Predictions', s:'What the crowd is betting on, priced live.', a:['#8b5cf6','#ec4899','#6366f1'], feed:{type:'glow'}},
     '/delta.html':   {t:'The Delta', s:'What changed across markets, and why.', a:['#6366f1','#8b5cf6','#22d3ee'], feed:{type:'glow'}},
     '/unlocks.html': {t:'Token Unlocks', s:'The supply hitting the market next.', a:['#6366f1','#ec4899','#8b5cf6'], feed:{type:'glow'}},
+    '/staking.html': {t:'Staking', s:'What your assets earn on-chain, live.', a:['#0a8a3b','#14b8a6','#6366f1'], feed:{type:'glow'}},
     '/news.html':    {t:'News',    s:'The wire that moves capital.', a:['#8b5cf6','#6366f1','#ec4899'], feed:met(FNG,'fng','Market sentiment')},
     '/alerts.html':  {t:'Alerts',  s:'Never miss the move that matters.', a:['#f59e0b','#ec4899','#8b5cf6'], feed:met(FNG,'fng','Market sentiment')},
     '/signals.html': {t:'Signals', s:'Momentum, trend and risk, computed live.', a:['#ec4899','#8b5cf6','#6366f1'], feed:cb('BTC-USD','BTC')},
