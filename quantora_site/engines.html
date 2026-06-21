@@ -1325,7 +1325,7 @@ document.getElementById('bt_btc').addEventListener('click',function(e){
 function infOr(x,d){ return isFinite(x)?fmt(x,d):'∞'; }
 buildCard(document.getElementById('g_risk'),{
   title:'Optimized allocation', desc:'Find weights that maximize Sortino, Calmar or Sharpe. One asset return series per line.',
-  inputs:[{k:'a',label:'Assets — label: r,r,r',type:'textarea',val:'Stocks: 0.02,-0.03,0.04,-0.01,0.03,-0.05,0.04,0.02,-0.02,0.03,0.01,-0.04\nBonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.007\nGold: 0.01,0.02,-0.01,0.0,0.015,-0.02,0.01,0.005,0.02,-0.01,0.0,0.012'},{k:'obj',label:'Objective',type:'select',opts:[['sortino','Max Sortino'],['calmar','Max Calmar'],['sharpe','Max Sharpe']]},{k:'p',label:'Periods/yr',val:12}],
+  inputs:[{k:'a',label:'Assets — label: r,r,r',type:'textarea',val:'Stocks: 0.02,-0.03,0.04,-0.01,0.03,-0.05,0.04,0.02,-0.02,0.03,0.01,-0.04\nBonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.007\nGold: 0.01,0.02,-0.01,0.0,0.015,-0.02,0.01,0.005,0.02,-0.01,0.0,0.012'},{k:'obj',label:'Objective',type:'select',opts:[['sortino','Max Sortino'],['calmar','Max Calmar'],['sharpe','Max Sharpe'],['omega','Max Omega']]},{k:'p',label:'Periods/yr',val:12}],
   compute:function(v){ var rows=v.a.split(/\n/).filter(function(l){return l.trim();}); var names=[],series=[]; rows.forEach(function(l){var idx=l.indexOf(':');var nums=parseNums(idx>=0?l.slice(idx+1):l);if(nums.length>=3){names.push(idx>=0?l.slice(0,idx).trim():('A'+names.length));series.push(nums);}}); if(series.length<1) return [];
     var al=Q.optimizeAllocation(series,v.obj,v.p,{samples:9000}); var out=al.weights.map(function(w,i){return {l:names[i],v:pct(w,0),cls:'up'};});
     out.push({l:'Sortino',v:infOr(al.sortino,2)}); out.push({l:'Calmar',v:infOr(al.calmar,2)}); return out; }
@@ -1487,6 +1487,37 @@ buildCard(document.getElementById('g_risk'),{
   title:'Hit rate', desc:'Fraction of periods with a positive return (win rate).',
   inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.03,-0.01,0.04,-0.02,0.025,-0.015,0.02,0.01,-0.005,0.018'}],
   compute:function(v){ var r=parseNums(v.r); if(!r.length) return []; return [{l:'Hit rate',v:pct(Q.hitRate(r),0),cls:Q.hitRate(r)>=0.5?'up':'down'},{l:'Periods',v:r.length}]; }
+});
+
+/* ===== RISK / ALLOCATION CARDS (v2.3) ===== */
+buildCard(document.getElementById('g_risk'),{
+  title:'Risk parity', desc:'Equal-risk-contribution weights (ERC) plus naive inverse-vol. Vols and average correlation.',
+  inputs:[{k:'v',label:'Vols % (comma)',type:'text',val:'16,8,20,12'},{k:'rho',label:'Avg correlation',val:0.2}],
+  compute:function(v){ var vols=parseNums(v.v).map(function(x){return x/100;}); if(vols.length<2) return []; var rp=Q.riskParity(vols,v.rho);
+    return rp.erc.map(function(w,i){return {l:'Asset '+(i+1)+' ERC',v:pct(w,0),cls:'up'};}); }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Maximum diversification', desc:'Weights that maximize the diversification ratio (weighted vol ÷ portfolio vol).',
+  inputs:[{k:'v',label:'Vols % (comma)',type:'text',val:'15,14,16,18'},{k:'rho',label:'Avg correlation',val:0.25}],
+  compute:function(v){ var vols=parseNums(v.v).map(function(x){return x/100;}); if(vols.length<2) return []; var md=Q.maxDiversification(vols,v.rho);
+    var out=md.weights.map(function(w,i){return {l:'Asset '+(i+1),v:pct(w,0)};}); out.push({l:'Diversification',v:fmt(md.diversificationRatio,2),cls:'up'}); return out; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Treynor–Black', desc:'Active-portfolio weights from each bet’s alpha ÷ residual variance, plus the combined information ratio.',
+  inputs:[{k:'al',label:'Alphas % (comma)',type:'text',val:'2,4,-1,3'},{k:'rv',label:'Residual vols % (comma)',type:'text',val:'10,10,8,12'}],
+  compute:function(v){ var al=parseNums(v.al).map(function(x){return x/100;}), rv=parseNums(v.rv).map(function(x){return Math.pow(x/100,2);}); if(al.length<2||al.length!==rv.length) return [{l:'Note',v:'check lengths'}];
+    var assets=al.map(function(a,i){return {alpha:a,resVar:rv[i]};}); var tb=Q.treynorBlack(assets);
+    var out=tb.weights.map(function(w,i){return {l:'Bet '+(i+1)+' wt',v:pct(w,0),cls:w>=0?'up':'down'};}); out.push({l:'Info ratio',v:fmt(tb.infoRatio,2),cls:'up'}); return out; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Fundamental law', desc:'Active-management law: information ratio = skill (IC) × √breadth × transfer coefficient.',
+  inputs:[{k:'ic',label:'Info coefficient',val:0.05},{k:'br',label:'Breadth (bets/yr)',val:100},{k:'tc',label:'Transfer coeff',val:1}],
+  compute:function(v){ var ir=Q.fundamentalLaw(v.ic,v.br,v.tc); return [{l:'Information ratio',v:fmt(ir,2),cls:ir>0.5?'up':''},{l:'Implied ann. alpha',v:pct(ir*0.1,1)}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Drawdown analytics', desc:'Max drawdown, longest time underwater and current drawdown from a return series.',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.03,0.02,-0.04,-0.03,0.01,-0.02,0.04,0.02,0.03,-0.05,-0.02,0.03,0.04,0.02'}],
+  compute:function(v){ var r=parseNums(v.r); if(r.length<3) return []; var d=Q.drawdownAnalytics(r); return [{l:'Max drawdown',v:pct(d.maxDD,1),cls:'down'},{l:'Longest underwater',v:d.longestUnderwater+' periods'},{l:'Current DD',v:pct(d.currentDD,1),cls:d.currentDD<0?'down':'up'}]; }
 });
 
 calcOptions();

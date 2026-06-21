@@ -602,7 +602,7 @@ function matScale(A,s){ return A.map(function(r){return r.map(function(x){return
 /* ================= SORTINO/CALMAR-OPTIMIZED ALLOCATION ================= */
 function optimizeAllocation(series,objective,P,opts){
   opts=opts||{}; objective=objective||'sortino'; P=P||252; var n=series.length, N=opts.samples||16000, rng=opts.seed!=null?mulberry32(opts.seed):Math.random, i,k;
-  function ratio(w){ var pr=portfolioReturns(series,w); var r; if(objective==='calmar') r=calmar(pr,P); else if(objective==='sharpe') r=sharpe(pr,0,P); else r=sortino(pr,0,P); if(!isFinite(r)) r=1e6+mean(pr)*1e6; return r; }
+  function ratio(w){ var pr=portfolioReturns(series,w); var r; if(objective==='calmar') r=calmar(pr,P); else if(objective==='sharpe') r=sharpe(pr,0,P); else if(objective==='omega') r=omega(pr,0); else r=sortino(pr,0,P); if(!isFinite(r)) r=1e6+mean(pr)*1e6; return r; }
   var best=null,bw=null;
   for(k=0;k<N;k++){ var w=[],sw=0; for(i=0;i<n;i++){ var x=-Math.log(rng()||1e-12); w.push(x); sw+=x; } for(i=0;i<n;i++) w[i]/=sw; var r=ratio(w); if(!isNaN(r)&&(best===null||r>best)){ best=r; bw=w; } }
   if(!bw){ bw=series.map(function(){return 1/n;}); }
@@ -722,7 +722,51 @@ function captureRatios(returns,bench){
 function hitRate(returns){ var w=0; for(var i=0;i<returns.length;i++) if(returns[i]>0) w++; return w/returns.length; }
 Q.m2=m2; Q.captureRatios=captureRatios; Q.hitRate=hitRate;
 
-Q.version='2.2';
+
+/* ================= RISK PARITY + MAX DIVERSIFICATION ================= */
+function riskParity(vols,corr){
+  var n=vols.length, Sig=covFromVolCorr(vols,corr), i;
+  var inv=vols.map(function(v){return 1/v;}), si=inv.reduce(function(a,b){return a+b;},0);
+  var naive=inv.map(function(x){return x/si;});
+  var w=new Array(n).fill(1/n);
+  for(var it=0;it<3000;it++){
+    var Sw=matVec(Sig,w), rc=w.map(function(wi,i2){return wi*Sw[i2];});
+    var tot=rc.reduce(function(a,b){return a+b;},0), tgt=tot/n;
+    var nw=w.map(function(wi,i2){return wi*Math.sqrt(tgt/(rc[i2]||1e-12));});
+    var ns=nw.reduce(function(a,b){return a+b;},0); nw=nw.map(function(x){return x/ns;});
+    var diff=0; for(i=0;i<n;i++) diff+=Math.abs(nw[i]-w[i]); w=nw; if(diff<1e-12) break;
+  }
+  return {naive:naive, erc:w};
+}
+function maxDiversification(vols,corr,opts){
+  opts=opts||{}; var n=vols.length, Sig=covFromVolCorr(vols,corr), rng=mulberry32(opts.seed||7), i,k;
+  function dr(w){ var num=0; for(i=0;i<n;i++) num+=w[i]*vols[i]; var pv=_portVol(w,Sig); return pv?num/pv:0; }
+  var best=null,bw=null;
+  for(k=0;k<12000;k++){ var w=[],sw=0; for(i=0;i<n;i++){var x=-Math.log(rng()||1e-12);w.push(x);sw+=x;} for(i=0;i<n;i++)w[i]/=sw; var d=dr(w); if(best===null||d>best){best=d;bw=w;} }
+  bw=_refine(bw.slice(),dr);
+  return {weights:bw, diversificationRatio:dr(bw)};
+}
+Q.riskParity=riskParity; Q.maxDiversification=maxDiversification;
+
+/* ================= TREYNOR-BLACK + FUNDAMENTAL LAW ================= */
+function treynorBlack(assets){
+  var raw=assets.map(function(a){return a.alpha/a.resVar;}), s=raw.reduce(function(a,b){return a+b;},0);
+  var w=raw.map(function(x){return x/s;}), ir2=0;
+  for(var i=0;i<assets.length;i++) ir2+=assets[i].alpha*assets[i].alpha/assets[i].resVar;
+  return {weights:w, infoRatio:Math.sqrt(ir2)};
+}
+function fundamentalLaw(ic,breadth,tc){ tc=tc==null?1:tc; return ic*Math.sqrt(breadth)*tc; }
+Q.treynorBlack=treynorBlack; Q.fundamentalLaw=fundamentalLaw;
+
+/* ================= DRAWDOWN ANALYTICS ================= */
+function drawdownAnalytics(returns){
+  var eq=1,peak=1,maxDD=0,uw=0,maxUW=0,i;
+  for(i=0;i<returns.length;i++){ eq*=1+returns[i]; if(eq>=peak){peak=eq;uw=0;} else {uw++; var dd=eq/peak-1; if(dd<maxDD)maxDD=dd; if(uw>maxUW)maxUW=uw;} }
+  return {maxDD:maxDD, longestUnderwater:maxUW, currentDD:eq/peak-1};
+}
+Q.drawdownAnalytics=drawdownAnalytics;
+
+Q.version='2.3';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
