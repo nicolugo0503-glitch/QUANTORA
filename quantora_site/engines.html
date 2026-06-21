@@ -256,6 +256,29 @@ Bitcoin,Crypto,10000</textarea></div>
     </div>
   </div>
 
+  <div class="flag" style="margin-top:22px">
+    <div class="top">
+      <span class="t">Portfolio backtester</span>
+      <span class="tag">Equity curve &amp; drawdown</span>
+      <span class="vrf">build a portfolio from return series + weights</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>Assets — label: r,r,r (decimals)</label><textarea id="bt_assets" style="width:100%;min-height:96px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:9px;padding:8px">Stocks: 0.02,-0.03,0.04,-0.01,0.03,-0.05,0.04,0.02,-0.02,0.03,0.01,-0.04,0.05,-0.02,0.03
+Bonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.007,-0.002,0.004,0.003</textarea></div>
+        <div class="fld"><label>Weights (match order, sum ~1)</label><input id="bt_w" type="text" value="0.6, 0.4" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;font-family:'JetBrains Mono',monospace;font-size:12px"></div>
+        <div class="fld"><label>Periods / year</label><input id="bt_p" type="number" value="12" step="1"></div>
+      </div>
+      <div class="out">
+        <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:4px">Equity curve</div>
+        <div id="bt_eq" style="width:100%"></div>
+        <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:10px 0 4px">Underwater (drawdown)</div>
+        <div id="bt_dd" style="width:100%"></div>
+        <div class="cr" id="bt_metrics" style="border-top:1px solid var(--line);padding-top:11px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
     <div id="cvxPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
@@ -1184,6 +1207,53 @@ buildCard(document.getElementById('g_crypto'),{
   title:'Covered interest parity', desc:'No-arbitrage forward FX rate from the interest-rate differential.',
   inputs:[{k:'s',label:'Spot FX',val:1.20},{k:'rd',label:'Domestic %',val:4},{k:'rf',label:'Foreign %',val:1},{k:'d',label:'Days',val:180}],
   compute:function(v){ var fwd=Q.forwardFX(v.s,v.rd/100,v.rf/100,v.d/365); return [{l:'Forward FX',v:fmt(fwd,4)},{l:'Fwd points',v:fmt((fwd-v.s)*10000,0)}]; }
+});
+
+/* ===== PORTFOLIO BACKTESTER ===== */
+function drawBT(){
+  var rows=document.getElementById('bt_assets').value.split(/\n/).filter(function(l){return l.trim();});
+  var series=[]; rows.forEach(function(l){ var idx=l.indexOf(':'); var nums=parseNums(idx>=0?l.slice(idx+1):l); if(nums.length>=2) series.push(nums); });
+  var w=parseNums(document.getElementById('bt_w').value); var P=parseFloat(document.getElementById('bt_p').value)||12;
+  var eqHost=document.getElementById('bt_eq'), ddHost=document.getElementById('bt_dd'), met=document.getElementById('bt_metrics');
+  if(!series.length){ eqHost.innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter return series.</span>'; ddHost.innerHTML=''; met.innerHTML=''; return; }
+  if(w.length!==series.length){ w=series.map(function(){return 1/series.length;}); }
+  var pr=Q.portfolioReturns(series,w), bt=Q.backtest(pr,P);
+  function area(host,arr,color,fillNeg){
+    var W=520,H=120,pad=26, n=arr.length;
+    var ymin=Math.min.apply(null,arr), ymax=Math.max.apply(null,arr); if(fillNeg){ ymax=Math.max(0,ymax); } var yp=(ymax-ymin)*0.08||0.01; ymin-=yp; ymax+=yp;
+    function X(i){ return pad+i/(n-1)*(W-2*pad); }
+    function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
+    var line=arr.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
+    var poly='';
+    if(fillNeg){ var base=Y(0); poly='<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+line+' '+X(n-1).toFixed(1)+','+base.toFixed(1)+'" fill="'+color+'" opacity="0.15"/>'; }
+    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+poly+'<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
+  }
+  area(eqHost,bt.equity,'#0a0a0a',false);
+  area(ddHost,bt.drawdown,'#d23a2c',true);
+  met.innerHTML=
+    '<div class="r"><div class="rl">Total return</div><div class="rv '+(bt.totalReturn>=0?'up':'down')+'">'+pct(bt.totalReturn,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Ann. return</div><div class="rv">'+pct(bt.annReturn,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Ann. vol</div><div class="rv">'+pct(bt.vol,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Sharpe</div><div class="rv '+(bt.sharpe>=1?'up':'')+'">'+fmt(bt.sharpe,2)+'</div></div>'+
+    '<div class="r"><div class="rl">Max drawdown</div><div class="rv down">'+pct(bt.maxDD,1)+'</div></div>';
+}
+['bt_assets','bt_w','bt_p'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawBT); }); drawBT();
+
+/* ===== FRAUD / BANKRUPTCY + PSR CARDS ===== */
+buildCard(document.getElementById('g_equity'),{
+  title:'Beneish M-score', desc:'Earnings-manipulation detector from 8 financial ratios. M > −1.78 flags likely manipulation.',
+  inputs:[{k:'DSRI',label:'DSRI',val:1.0},{k:'GMI',label:'GMI',val:1.0},{k:'AQI',label:'AQI',val:1.0},{k:'SGI',label:'SGI',val:1.0},{k:'DEPI',label:'DEPI',val:1.0},{k:'SGAI',label:'SGAI',val:1.0},{k:'LVGI',label:'LVGI',val:1.0},{k:'TATA',label:'TATA',val:0.0}],
+  compute:function(v){ var m=Q.beneishM(v); return [{l:'M-score',v:fmt(m.m,2),cls:m.flag?'down':'up'},{l:'Verdict',v:m.flag?'manipulation risk':'likely clean'}]; }
+});
+buildCard(document.getElementById('g_equity'),{
+  title:'Ohlson O-score', desc:'Bankruptcy probability from the balance sheet (logit model).',
+  inputs:[{k:'ta',label:'Total assets',val:100},{k:'tl',label:'Total liabs',val:50},{k:'wc',label:'Working capital',val:20},{k:'cl',label:'Current liabs',val:25},{k:'ca',label:'Current assets',val:50},{k:'ni',label:'Net income',val:5},{k:'ffo',label:'Funds from ops',val:15},{k:'nip',label:'Prior net income',val:5}],
+  compute:function(v){ var o=Q.ohlsonO(v.ta,v.tl,v.wc,v.cl,v.ca,v.ni,v.ffo,v.nip,1); return [{l:'O-score',v:fmt(o.o,2)},{l:'P(bankruptcy)',v:pct(o.prob,1),cls:o.prob>0.5?'down':'up'}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Probabilistic Sharpe', desc:'Confidence that the true Sharpe exceeds a benchmark, adjusted for skew & fat tails (Bailey–López de Prado).',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.02,0.01,0.03,-0.01,0.02,0.018,0.025,-0.005,0.022,0.012,0.019,-0.008'},{k:'sr',label:'Benchmark SR (per period)',val:0}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<4) return []; var ps=Q.probabilisticSharpe(a,v.sr); return [{l:'Sharpe (per period)',v:fmt(ps.sr,3)},{l:'PSR',v:pct(ps.psr,1),cls:ps.psr>0.95?'up':''}]; }
 });
 
 calcOptions();

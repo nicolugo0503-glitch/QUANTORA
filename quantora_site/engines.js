@@ -556,7 +556,44 @@ function futureFair(spot,r,q,T){ return spot*Math.exp((r-q)*T); }
 function forwardFX(spot,rd,rf,T){ return spot*Math.exp((rd-rf)*T); }
 Q.digitalOption=digitalOption; Q.futureFair=futureFair; Q.forwardFX=forwardFX;
 
-Q.version='1.8';
+
+/* ================= BACKTESTER ================= */
+function portfolioReturns(series,weights){
+  var n=Math.min.apply(null,series.map(function(s){return s.length;})), out=[], t, i;
+  for(t=0;t<n;t++){ var r=0; for(i=0;i<series.length;i++) r+=(weights[i]||0)*series[i][t]; out.push(r); }
+  return out;
+}
+function backtest(returns,P){
+  P=P||252; var eq=[1], dd=[0], peak=1, i;
+  for(i=0;i<returns.length;i++){ var v=eq[eq.length-1]*(1+returns[i]); eq.push(v); if(v>peak) peak=v; dd.push(v/peak-1); }
+  var vol=stdev(returns)*Math.sqrt(P), annRet=mean(returns)*P;
+  return {equity:eq, drawdown:dd, totalReturn:eq[eq.length-1]-1, annReturn:annRet, vol:vol, sharpe:vol?annRet/vol:0, maxDD:Math.min.apply(null,dd)};
+}
+Q.portfolioReturns=portfolioReturns; Q.backtest=backtest;
+
+/* ================= FRAUD / BANKRUPTCY ================= */
+function beneishM(d){
+  var M=-4.84+0.92*d.DSRI+0.528*d.GMI+0.404*d.AQI+0.892*d.SGI+0.115*d.DEPI-0.172*d.SGAI+4.679*d.TATA-0.327*d.LVGI;
+  return {m:M, flag:M>-1.78};
+}
+function ohlsonO(TA,TL,WC,CL,CA,NI,FFO,niPrev,gnp){
+  gnp=gnp||1;
+  var X=TL>TA?1:0, Y=(NI<0&&niPrev<0)?1:0, chg=(NI-niPrev)/(Math.abs(NI)+Math.abs(niPrev)||1);
+  var o=-1.32-0.407*Math.log(TA/gnp)+6.03*(TL/TA)-1.43*(WC/TA)+0.0757*(CL/CA)-1.72*X-2.37*(NI/TA)-1.83*(FFO/TL)+0.285*Y-0.521*chg;
+  return {o:o, prob:1/(1+Math.exp(-o)), flag:o>0.5};
+}
+Q.beneishM=beneishM; Q.ohlsonO=ohlsonO;
+
+/* ================= PROBABILISTIC SHARPE ================= */
+function probabilisticSharpe(returns,srStar){
+  srStar=srStar||0; var sr=mean(returns)/stdev(returns), n=returns.length;
+  var sk=skewness(returns), ku=kurtosis(returns)+3;
+  var denom=Math.sqrt(1-sk*sr+(ku-1)/4*sr*sr);
+  return {sr:sr, psr:normCdf((sr-srStar)*Math.sqrt(n-1)/denom)};
+}
+Q.probabilisticSharpe=probabilisticSharpe;
+
+Q.version='1.9';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
