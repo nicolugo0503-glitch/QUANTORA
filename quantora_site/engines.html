@@ -291,6 +291,20 @@ Bonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.00
       </div>
       <div id="yc_chart" style="width:100%"></div>
     </div>
+    <div id="krdPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Key-rate durations</span>
+        <span class="badge">curve risk decomposition</span>
+        <span id="krdNote" style="font-size:11.5px;color:var(--mut);margin-left:auto"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center">
+        <div>
+          <div class="row2"><div class="fld"><label>Coupon %</label><input id="krd_c" type="number" value="5" step="any"></div><div class="fld"><label>Years</label><input id="krd_n" type="number" value="5" step="1"></div></div>
+          <div class="fld"><label>Par rates % (1y,2y,…)</label><input id="krd_par" type="text" value="3,3.5,4,4.3,4.5" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px"></div>
+        </div>
+        <div id="krd_chart" style="width:100%"></div>
+      </div>
+    </div>
     <div id="cvxPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
         <span style="font-size:14px;font-weight:680">Bond convexity</span>
@@ -334,6 +348,33 @@ TLT: -0.004,0.012,-0.006,0.002,0.006,-0.009,0.003
 GLD: 0.002,0.004,0.001,-0.003,0.005,-0.002,0.006
 BTC: 0.03,-0.05,0.04,0.01,-0.03,0.05,-0.02</textarea></div>
         <div id="corr_chart" style="width:100%"></div>
+      </div>
+    </div>
+    <div id="rsPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Rolling Sharpe</span>
+        <span class="badge">stability over time</span>
+        <span id="rsNote" style="font-size:11.5px;color:var(--mut);margin-left:auto"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center">
+        <div>
+          <div class="fld" style="margin-bottom:8px"><label>Returns</label><textarea id="rs_r" style="width:100%;min-height:64px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:8px;padding:7px">0.03,0.02,-0.01,0.04,0.01,-0.02,0.03,0.02,0.01,-0.03,0.02,0.04,0.01,-0.01,0.03,0.02,-0.04,0.01,0.03,0.02,0.01,-0.02,0.03,0.05</textarea></div>
+          <div class="row2"><div class="fld"><label>Window</label><input id="rs_w" type="number" value="6" step="1"></div><div class="fld"><label>Periods/yr</label><input id="rs_p" type="number" value="12" step="1"></div></div>
+        </div>
+        <div id="rs_chart" style="width:100%"></div>
+      </div>
+    </div>
+    <div id="calPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Monthly returns calendar</span>
+        <span class="badge">year × month heatmap</span>
+      </div>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start">
+        <div>
+          <div class="fld" style="margin-bottom:8px"><label>Monthly returns %</label><textarea id="cal_r" style="width:100%;min-height:64px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:8px;padding:7px">3,2,-1,4,1,-2,3,2,1,-3,2,4,1,-1,3,2,-4,1,3,2,1,-2,3,5,2,-3,1,4,2,-1,3,1,-2,4,2,3</textarea></div>
+          <div class="fld"><label>Start year</label><input id="cal_y" type="number" value="2024" step="1"></div>
+        </div>
+        <div id="cal_chart" style="width:100%"></div>
       </div>
     </div>
     <div class="grid" id="g_risk"></div>
@@ -1378,6 +1419,74 @@ buildCard(document.getElementById('g_risk'),{
   inputs:[{k:'s',label:'scenarios: prob,pnl%',type:'textarea',val:'0.80,1.5\n0.12,-4\n0.06,-12\n0.02,-30'},{k:'c',label:'Confidence',type:'select',opts:[['0.95','95%'],['0.99','99%']]}],
   compute:function(v){ var rows=v.s.split(/\n/).map(function(l){return parseNums(l);}).filter(function(a){return a.length>=2;}).map(function(a){return {prob:a[0],pnl:a[1]/100};}); if(rows.length<2) return [];
     var sv=Q.scenarioVaR(rows,parseFloat(v.c)); return [{l:'Expected',v:pct(sv.expected,2),cls:sv.expected<0?'down':'up'},{l:'Scenario VaR',v:pct(sv.var,1),cls:'down'},{l:'Expected shortfall',v:pct(sv.es,1),cls:'down'},{l:'Worst',v:pct(sv.worst,1),cls:'down'}]; }
+});
+
+/* ===== KEY-RATE DURATIONS ===== */
+function drawKRD(){
+  var c=(parseFloat(document.getElementById('krd_c').value)||0)/100, n=Math.max(1,Math.round(parseFloat(document.getElementById('krd_n').value)||5));
+  var pr=parseNums(document.getElementById('krd_par').value).map(function(x){return x/100;}); if(pr.length<n){ var last=pr[pr.length-1]||0.04; while(pr.length<n) pr.push(last); }
+  var taus=pr.slice(0,n).map(function(){return 1;}); var bc=Q.bootstrapCurve(pr.slice(0,n),taus);
+  var kr=Q.keyRateDuration(100,c,n,bc.zeros);
+  var W=520,H=170,padL=30,padB=24,padT=14, bw=(W-padL-10)/kr.krd.length;
+  var mx=Math.max.apply(null,kr.krd.map(function(d){return Math.abs(d.krd);}))||1;
+  var bars=kr.krd.map(function(d,i){ var h=Math.abs(d.krd)/mx*(H-padT-padB); var x=padL+i*bw+bw*0.15, y=H-padB-h;
+    return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.7).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="#6366f1" opacity="0.75" rx="2"/>'+
+      '<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(y-3).toFixed(1)+'" font-size="8.5" fill="#374151" text-anchor="middle" font-family="JetBrains Mono,monospace">'+d.krd.toFixed(2)+'</text>'+
+      '<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(H-padB+12).toFixed(1)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+d.tenor+'y</text>'; }).join('');
+  document.getElementById('krd_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+padL+'" y1="'+(H-padB)+'" x2="'+(W-10)+'" y2="'+(H-padB)+'" stroke="#d0d0d0"/>'+bars+'</svg>';
+  document.getElementById('krdNote').textContent='total duration '+kr.total.toFixed(2)+' · price '+kr.base.toFixed(2);
+}
+['krd_c','krd_n','krd_par'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawKRD); }); drawKRD();
+
+/* ===== ROLLING SHARPE ===== */
+function drawRS(){
+  var R=parseNums(document.getElementById('rs_r').value), w=Math.max(2,parseInt(document.getElementById('rs_w').value)||6), P=parseFloat(document.getElementById('rs_p').value)||12;
+  var host=document.getElementById('rs_chart');
+  if(R.length<w+1){ host.innerHTML='<span style="color:var(--mut);font-size:12px">Need > window returns.</span>'; document.getElementById('rsNote').textContent=''; return; }
+  var rs=Q.rollingSharpe(R,w,P).map(function(d){return d.sharpe;});
+  var W=520,H=150,pad=30,n=rs.length;
+  var ymin=Math.min.apply(null,rs.concat([0])), ymax=Math.max.apply(null,rs.concat([0])); var yp=(ymax-ymin)*0.1||0.5; ymin-=yp; ymax+=yp;
+  function X(i){ return pad+i/(n-1)*(W-2*pad); }
+  function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
+  var line=rs.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="#d0d0d0" stroke-dasharray="4 4"/><polyline points="'+line+'" fill="none" stroke="#6366f1" stroke-width="2"/></svg>';
+  document.getElementById('rsNote').textContent='latest '+rs[rs.length-1].toFixed(2)+' · '+w+'-period window';
+}
+['rs_r','rs_w','rs_p'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawRS); }); drawRS();
+
+/* ===== MONTHLY RETURNS CALENDAR ===== */
+function calColor(v){ if(v>=0) return 'rgba(10,138,59,'+(0.12+Math.min(1,v/0.08)*0.8).toFixed(3)+')'; return 'rgba(210,58,44,'+(0.12+Math.min(1,-v/0.08)*0.8).toFixed(3)+')'; }
+function drawCal(){
+  var R=parseNums(document.getElementById('cal_r').value).map(function(x){return x/100;}); var y0=parseInt(document.getElementById('cal_y').value)||2024;
+  var host=document.getElementById('cal_chart'); if(!R.length){ host.innerHTML=''; return; }
+  var years=Math.ceil(R.length/12), M=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  var cw=36,ch=24,padL=42,padT=18, W=padL+12*cw+30, H=padT+years*ch+6;
+  var cells='';
+  for(var yi=0;yi<years;yi++){ for(var mi=0;mi<12;mi++){ var idx=yi*12+mi; if(idx>=R.length) break; var x=padL+mi*cw,y=padT+yi*ch;
+    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+calColor(R[idx])+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="8" fill="#111" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(R[idx]*100).toFixed(0)+'</text>'; }
+    cells+='<text x="'+(padL-5)+'" y="'+(padT+yi*ch+ch/2+3)+'" font-size="9" fill="#374151" text-anchor="end">'+(y0+yi)+'</text>'; }
+  for(var m2=0;m2<12;m2++) cells+='<text x="'+(padL+m2*cw+cw/2)+'" y="'+(padT-5)+'" font-size="8.5" fill="#6b7280" text-anchor="middle">'+M[m2]+'</text>';
+  // annual totals
+  for(var yi2=0;yi2<years;yi2++){ var tot=1; for(var mi2=0;mi2<12;mi2++){ var ix=yi2*12+mi2; if(ix<R.length) tot*=1+R[ix]; } cells+='<text x="'+(padL+12*cw+6)+'" y="'+(padT+yi2*ch+ch/2+3)+'" font-size="9" fill="'+((tot-1)>=0?'#0a8a3b':'#d23a2c')+'" font-family="JetBrains Mono,monospace">'+((tot-1)*100).toFixed(0)+'%</text>'; }
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+cells+'</svg>';
+}
+['cal_r','cal_y'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawCal); }); drawCal();
+
+/* ===== M2 / CAPTURE / HIT RATE CARDS ===== */
+buildCard(document.getElementById('g_risk'),{
+  title:'Modigliani M²', desc:'Risk-adjusted return scaled to the benchmark’s volatility — directly comparable to the benchmark.',
+  inputs:[{k:'r',label:'Portfolio returns',type:'textarea',val:'0.03,0.02,-0.01,0.04,0.01,-0.02,0.03,0.02'},{k:'b',label:'Benchmark returns',type:'textarea',val:'0.02,0.015,-0.005,0.025,0.008,-0.01,0.02,0.012'},{k:'p',label:'Periods/yr',val:12}],
+  compute:function(v){ var r=parseNums(v.r),b=parseNums(v.b); if(r.length<3||r.length!==b.length) return [{l:'Note',v:'check lengths'}]; return [{l:'M² (ann.)',v:pct(Q.m2(r,b,0,v.p),1)},{l:'vs bench ann.',v:pct(Q.mean(b)*v.p,1)}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Capture ratios', desc:'Share of benchmark gains captured in up months vs losses in down months. <100% down is good.',
+  inputs:[{k:'r',label:'Portfolio returns',type:'textarea',val:'0.03,-0.01,0.04,-0.02,0.025,-0.015,0.02,0.01'},{k:'b',label:'Benchmark returns',type:'textarea',val:'0.025,-0.02,0.03,-0.03,0.02,-0.02,0.018,0.012'}],
+  compute:function(v){ var r=parseNums(v.r),b=parseNums(v.b); if(r.length<3||r.length!==b.length) return [{l:'Note',v:'check lengths'}]; var c=Q.captureRatios(r,b); return [{l:'Up capture',v:pct(c.up,0),cls:c.up>1?'up':''},{l:'Down capture',v:pct(c.down,0),cls:c.down<1?'up':'down'}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Hit rate', desc:'Fraction of periods with a positive return (win rate).',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.03,-0.01,0.04,-0.02,0.025,-0.015,0.02,0.01,-0.005,0.018'}],
+  compute:function(v){ var r=parseNums(v.r); if(!r.length) return []; return [{l:'Hit rate',v:pct(Q.hitRate(r),0),cls:Q.hitRate(r)>=0.5?'up':'down'},{l:'Periods',v:r.length}]; }
 });
 
 calcOptions();

@@ -690,7 +690,39 @@ function volSurfaceGrid(skew,curv,shortVol,longVol,lambda,moneyness,mats){
 }
 Q.volSurfaceGrid=volSurfaceGrid;
 
-Q.version='2.1';
+
+/* ================= KEY-RATE DURATIONS ================= */
+function keyRateDuration(face,coupon,n,zeros,bump){
+  bump=bump||0.0001;
+  var base=bondPriceFromCurve(face,coupon,n,zeros), out=[];
+  for(var t=0;t<n;t++){
+    var up=zeros.slice(); up[t]+=bump; var dn=zeros.slice(); dn[t]-=bump;
+    var krd=-(bondPriceFromCurve(face,coupon,n,up)-bondPriceFromCurve(face,coupon,n,dn))/(2*base*bump);
+    out.push({tenor:t+1, krd:krd});
+  }
+  return {base:base, krd:out, total:out.reduce(function(a,b){return a+b.krd;},0)};
+}
+Q.keyRateDuration=keyRateDuration;
+
+/* ================= ROLLING SHARPE ================= */
+function rollingSharpe(returns,window,P){
+  window=window||12; P=P||12; var out=[];
+  for(var i=window;i<=returns.length;i++){ var seg=returns.slice(i-window,i); out.push({i:i, sharpe:sharpe(seg,0,P)}); }
+  return out;
+}
+Q.rollingSharpe=rollingSharpe;
+
+/* ================= M2 (MODIGLIANI) + CAPTURE + HIT RATE ================= */
+function m2(returns,bench,rfA,P){ rfA=rfA||0; P=P||12; var srp=(mean(returns)*P-rfA)/(stdev(returns)*Math.sqrt(P)); var sb=stdev(bench)*Math.sqrt(P); return rfA+srp*sb; }
+function captureRatios(returns,bench){
+  var upP=0,upB=0,dnP=0,dnB=0,nu=0,nd=0;
+  for(var i=0;i<bench.length;i++){ if(bench[i]>0){ upP+=returns[i]; upB+=bench[i]; nu++; } else if(bench[i]<0){ dnP+=returns[i]; dnB+=bench[i]; nd++; } }
+  return { up: upB!==0?(upP/nu)/(upB/nu):0, down: dnB!==0?(dnP/nd)/(dnB/nd):0 };
+}
+function hitRate(returns){ var w=0; for(var i=0;i<returns.length;i++) if(returns[i]>0) w++; return w/returns.length; }
+Q.m2=m2; Q.captureRatios=captureRatios; Q.hitRate=hitRate;
+
+Q.version='2.2';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
