@@ -20,6 +20,8 @@
     '/live.html':    {t:'Live',    s:'Every print, streaming in real time.', a:['#10b981','#22d3ee','#6366f1'], feed:cb('SOL-USD','SOL / USD')},
     '/dex.html':     {t:'DEX',     s:'Real-time decentralized exchange flow.', a:['#10b981','#14b8a6','#22d3ee'], feed:cb('UNI-USD','UNI / USD')},
     '/funding.html': {t:'Funding', s:'Perp funding rates and open interest, live.', a:['#ef4444','#8b5cf6','#22d3ee'], feed:cb('BTC-USD','BTC perp ref')},
+    '/l2.html':      {t:'Layer 2s', s:'The Ethereum scaling economy, live.', a:['#6366f1','#22d3ee','#14b8a6'], feed:met('https://l2beat.com/api/scaling/summary','l2tvs','Total value secured')},
+    '/events.html':  {t:'Global Events', s:'World market news and tone, live.', a:['#8b5cf6','#6366f1','#ec4899'], feed:{type:'glow'}},
     '/news.html':    {t:'News',    s:'The wire that moves capital.', a:['#8b5cf6','#6366f1','#ec4899'], feed:met(FNG,'fng','Market sentiment')},
     '/alerts.html':  {t:'Alerts',  s:'Never miss the move that matters.', a:['#f59e0b','#ec4899','#8b5cf6'], feed:met(FNG,'fng','Market sentiment')},
     '/signals.html': {t:'Signals', s:'Momentum, trend and risk, computed live.', a:['#ec4899','#8b5cf6','#6366f1'], feed:cb('BTC-USD','BTC')},
@@ -51,7 +53,8 @@
     blocks:function(a){if(!Array.isArray(a)||!a.length)return null;return{points:a.map(function(b){return b.tx_count;}).reverse(),value:a[0].height,fmt:'int',sub:'live · mempool.space'};},
     cgcap:function(j){var d=j.data;if(!d)return null;return{value:d.total_market_cap.usd,fmt:'big',sub:(d.market_cap_change_percentage_24h_usd>=0?'+':'')+d.market_cap_change_percentage_24h_usd.toFixed(2)+'% 24h',dir:d.market_cap_change_percentage_24h_usd>=0?'up':'dn'};},
     cgvol:function(j){var d=j.data;if(!d)return null;return{value:d.total_volume.usd,fmt:'big',sub:'24h volume'};},
-    fng:function(j){if(!j.data||!j.data[0])return null;var v=+j.data[0].value;return{value:v,fmt:'int',sub:j.data[0].value_classification,dir:v>=50?'up':'dn'};}
+    fng:function(j){if(!j.data||!j.data[0])return null;var v=+j.data[0].value;return{value:v,fmt:'int',sub:j.data[0].value_classification,dir:v>=50?'up':'dn'};},
+    l2tvs:function(j){var pr=j.projects||{};var t=0,c=0;Object.keys(pr).forEach(function(k){var v=pr[k].tvs&&pr[k].tvs.breakdown&&pr[k].tvs.breakdown.total;if(v){t+=v;c++;}});if(!t)return null;return{value:t,fmt:'big',sub:c+' networks secured'};}
   };
 
   var FULLCSS=

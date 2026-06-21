@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Layer 2s — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 24px 80px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.panel{border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-top:20px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.panel .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.panel .v{font-size:30px;font-weight:780;letter-spacing:-.03em;margin-top:4px}
+.panel .chartwrap{height:120px;margin-top:8px}
+#tvchart{width:100%;height:120px;display:block}
+.row3{display:flex;gap:30px;flex-wrap:wrap;margin-top:6px}
+.row3 .s .l{font-size:10px}.row3 .s .vv{font-size:16px;font-weight:700;margin-top:2px}
+table{width:100%;border-collapse:collapse;margin-top:22px;font-size:14px}
+th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.03em;color:var(--mut);text-transform:uppercase;font-weight:600;cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}th:nth-child(2),td:nth-child(2){text-align:left}th:nth-child(3),td:nth-child(3){text-align:left}
+tbody tr:hover{background:var(--soft)}
+.tk{font-weight:650}.badge{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#f1f1f1;color:#555}
+.stg{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+.stg2{background:#eafaf0;color:#0a7d33}.stg1{background:#eef1ff;color:#3358ff}.stg0{background:#fff4e6;color:#b86e00}.stgx{background:#f1f1f1;color:#777}
+.bar{height:6px;background:#eef0f4;border-radius:4px;overflow:hidden;width:90px;margin-left:auto;margin-top:5px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#22d3ee)}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+@media(max-width:760px){.cat,.vol{display:none}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/dex.html" class="link">DEX</a>
+  <a href="/funding.html" class="link">Funding</a>
+  <a href="/l2.html" class="link active">Layer 2s</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <div class="right"><span class="dot"></span> Live · L2 ecosystem</div>
+</div>
+<div class="wrap">
+  <h1>Layer 2s</h1>
+  <div class="sub">The Ethereum scaling ecosystem — total value secured across every rollup, ranked, with each chain's maturity stage. The L2 economy at a glance, from L2BEAT.</div>
+  <div class="src">Live L2 data via L2BEAT · for information only, not investment advice</div>
+
+  <div class="panel">
+    <div class="l">Total value secured · all L2s</div>
+    <div class="v" id="totaltvs">—</div>
+    <div class="chartwrap"><canvas id="tvchart"></canvas></div>
+    <div class="row3" id="row3"></div>
+  </div>
+  <div id="tablewrap"></div>
+  <div class="status" id="status">Loading the L2 ecosystem…</div>
+</div>
+
+<script>
+function big(n){ if(n==null||isNaN(n)) return '—'; var a=Math.abs(n); if(a>=1e12)return '$'+(n/1e12).toFixed(2)+'T'; if(a>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(1)+'M'; return '$'+Math.round(n).toLocaleString(); }
+var ROWS=[], sortKey='tvs', sortDir=-1;
+function stageClass(s){ s=(s||'').toLowerCase(); if(s.indexOf('2')>=0)return 'stg2'; if(s.indexOf('1')>=0)return 'stg1'; if(s.indexOf('0')>=0)return 'stg0'; return 'stgx'; }
+function stageText(p){ var s=p.stage; if(!s)return '—'; if(typeof s==='string')return s; return s.stage||s.name||'—'; }
+
+function drawChart(data){
+  var cv=document.getElementById('tvchart'),cx=cv.getContext('2d');
+  var r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),W=r.width,H=r.height;
+  cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,W,H);
+  var pts=data.map(function(d){return d[1]+d[2]+d[3];}); if(pts.length<2)return;
+  var lo=Math.min.apply(null,pts),hi=Math.max.apply(null,pts),pad=(hi-lo)*0.1||1;lo-=pad;hi+=pad;
+  var X=function(i){return i/(pts.length-1)*W;},Y=function(v){return H-(v-lo)/(hi-lo)*(H-8)-4;};
+  var gf=cx.createLinearGradient(0,0,0,H);gf.addColorStop(0,'rgba(99,102,241,.20)');gf.addColorStop(1,'rgba(99,102,241,0)');
+  cx.beginPath();cx.moveTo(0,H);for(var i=0;i<pts.length;i++)cx.lineTo(X(i),Y(pts[i]));cx.lineTo(W,H);cx.closePath();cx.fillStyle=gf;cx.fill();
+  cx.beginPath();for(var i=0;i<pts.length;i++){i?cx.lineTo(X(i),Y(pts[i])):cx.moveTo(X(i),Y(pts[i]));}
+  var g=cx.createLinearGradient(0,0,W,0);g.addColorStop(0,'#6366f1');g.addColorStop(1,'#22d3ee');cx.strokeStyle=g;cx.lineWidth=2.2;cx.lineJoin='round';cx.stroke();
+}
+function renderTable(){
+  var rows=ROWS.slice().sort(function(a,b){var x=a[sortKey],y=b[sortKey];if(typeof x==='string')return x.localeCompare(y)*sortDir;return (x<y?-1:x>y?1:0)*sortDir;});
+  var max=Math.max.apply(null,ROWS.map(function(r){return r.tvs;}))||1;
+  var head='<table><thead><tr><th data-k="name">Network</th><th data-k="cat" class="cat">Type</th><th data-k="stage">Stage</th><th data-k="tvs">Value secured</th><th>Share</th></tr></thead><tbody>';
+  var body=rows.map(function(x){
+    return '<tr><td><span class="tk">'+x.name+'</span></td>'+
+      '<td class="cat"><span class="badge">'+x.cat+'</span></td>'+
+      '<td><span class="stg '+stageClass(x.stage)+'">'+x.stage+'</span></td>'+
+      '<td>'+big(x.tvs)+'</td>'+
+      '<td><div class="bar"><i style="width:'+(x.tvs/max*100).toFixed(0)+'%"></i></div></td></tr>';
+  }).join('');
+  document.getElementById('tablewrap').innerHTML=head+body+'</tbody></table>';
+  Array.prototype.forEach.call(document.querySelectorAll('th[data-k]'),function(th){ th.onclick=function(){ var k=th.getAttribute('data-k'); if(sortKey===k)sortDir*=-1; else {sortKey=k;sortDir=(k==='name'||k==='cat'||k==='stage')?1:-1;} renderTable(); }; });
+}
+async function load(){
+  var status=document.getElementById('status');
+  try{
+    var j=await (await fetch('https://l2beat.com/api/scaling/summary')).json();
+    var pr=j.projects||{};
+    ROWS=Object.keys(pr).map(function(k){var p=pr[k];var tvs=p.tvs&&p.tvs.breakdown&&p.tvs.breakdown.total; return {name:p.name, cat:p.category||p.type||'—', stage:stageText(p), tvs:+tvs};}).filter(function(x){return x.tvs>0;});
+    if(!ROWS.length){ status.textContent='L2 data unavailable right now. Try again shortly.'; return; }
+    ROWS.sort(function(a,b){return b.tvs-a.tvs;});
+    var total=ROWS.reduce(function(s,x){return s+x.tvs;},0);
+    ROWS=ROWS.slice(0,30);
+    document.getElementById('totaltvs').textContent=big(total);
+    var top=ROWS[0];
+    document.getElementById('row3').innerHTML='<div class="s"><div class="l">Networks</div><div class="vv">'+Object.keys(pr).length+'</div></div>'+
+      '<div class="s"><div class="l">Largest</div><div class="vv">'+top.name+' · '+big(top.tvs)+'</div></div>'+
+      '<div class="s"><div class="l">Top-10 share</div><div class="vv">'+(ROWS.slice(0,10).reduce(function(s,x){return s+x.tvs;},0)/total*100).toFixed(0)+'%</div></div>';
+    if(j.chart&&j.chart.data){ var d=j.chart.data.slice(-90); drawChart(d); window.addEventListener('resize',function(){drawChart(d);}); }
+    status.style.display='none';
+    renderTable();
+  }catch(e){ status.textContent='Could not reach the L2 feed. Try again shortly.'; }
+}
+load();
+setInterval(load, 120000);
+</script>
+  <script src="/nav.js"></script>
+</body>
+</html>
