@@ -23,6 +23,7 @@
     '/l2.html':      {t:'Layer 2s', s:'The Ethereum scaling economy, live.', a:['#6366f1','#22d3ee','#14b8a6'], feed:met('https://l2beat.com/api/scaling/summary','l2tvs','Total value secured')},
     '/events.html':  {t:'Global Events', s:'World market news and tone, live.', a:['#8b5cf6','#6366f1','#ec4899'], feed:{type:'glow'}},
     '/wallet.html':  {t:'Wallet', s:'Any wallet, any chain, valued live.', a:['#14b8a6','#6366f1','#8b5cf6'], feed:cb('ETH-USD','ETH / USD')},
+    '/predictions.html': {t:'Predictions', s:'What the crowd is betting on, priced live.', a:['#8b5cf6','#ec4899','#6366f1'], feed:{type:'glow'}},
     '/news.html':    {t:'News',    s:'The wire that moves capital.', a:['#8b5cf6','#6366f1','#ec4899'], feed:met(FNG,'fng','Market sentiment')},
     '/alerts.html':  {t:'Alerts',  s:'Never miss the move that matters.', a:['#f59e0b','#ec4899','#8b5cf6'], feed:met(FNG,'fng','Market sentiment')},
     '/signals.html': {t:'Signals', s:'Momentum, trend and risk, computed live.', a:['#ec4899','#8b5cf6','#6366f1'], feed:cb('BTC-USD','BTC')},

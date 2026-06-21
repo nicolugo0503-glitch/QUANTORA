@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Predictions — Live Odds</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · Predictions — Live Odds"><meta property="og:description" content="Live prediction-market odds — elections, macro, crypto and more — as real-time probabilities.">
+<meta property="og:url" content="https://www.usequantora.com/predictions.html"><meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="Live prediction-market odds — elections, macro, crypto and more — as real-time probabilities, via Polymarket.">
+<link rel="canonical" href="https://www.usequantora.com/predictions.html">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d;--acc:#6366f1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 24px 80px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.sum{display:flex;gap:30px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:16px 22px;margin-top:20px;background:var(--soft)}
+.sum .s{display:flex;flex-direction:column}.sum .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}.sum .v{font-size:19px;font-weight:750;margin-top:3px;letter-spacing:-.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin-top:22px}
+.card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s}
+.card:hover{transform:translateY(-3px);box-shadow:0 16px 38px -22px rgba(16,24,40,.26);border-color:#e2e3e9}
+.card .qst{font-size:14.5px;font-weight:600;line-height:1.4;min-height:40px}
+.prob{display:flex;align-items:baseline;gap:8px;margin-top:13px}
+.prob .pc{font-size:30px;font-weight:780;letter-spacing:-.03em}
+.prob .ou{font-size:12.5px;color:var(--mut);font-weight:600}
+.bar{height:7px;border-radius:5px;background:#eef0f4;overflow:hidden;margin-top:9px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#22d3ee)}
+.meta{display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--mut)}
+.meta .vol{font-weight:600;color:#444}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+@media(max-width:560px){.wrap{padding:28px 16px 60px}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/predictions.html" class="link active">Predictions</a>
+  <a href="/events.html" class="link">Global Events</a>
+  <div class="right"><span class="dot"></span> Live · prediction markets</div>
+</div>
+<div class="wrap">
+  <h1>Predictions</h1>
+  <div class="sub">What the crowd is actually betting on — live prediction-market odds across elections, macro, crypto, tech and sports, as real-time probabilities ranked by 24h volume. The market's view of the future, priced in real money.</div>
+  <div class="src">Live odds via Polymarket · for information only, not investment advice</div>
+
+  <div id="sumwrap"></div>
+  <div id="grid" class="grid"></div>
+  <div id="status" class="status">Loading live odds…</div>
+</div>
+
+<script>
+function bn(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e9)return '$'+(n/1e9).toFixed(1)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(1)+'M'; if(a>=1e3)return '$'+(n/1e3).toFixed(0)+'K'; return '$'+Math.round(n); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pj(x){ if(Array.isArray(x))return x; try{return JSON.parse(x);}catch(e){return [];} }
+function dt(s){ var d=new Date(s); if(isNaN(d))return ''; return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+async function load(){
+  var status=document.getElementById('status');
+  try{
+    var p=await (await fetch('https://gamma-api.polymarket.com/markets?limit=60&active=true&closed=false&order=volume24hr&ascending=false')).json();
+    var arr=Array.isArray(p)?p:(p.data||[]);
+    var rows=arr.map(function(m){
+      var outs=pj(m.outcomes), prices=pj(m.outcomePrices).map(parseFloat);
+      if(!outs.length||outs.length!==prices.length) return null;
+      var idx=0;
+      if(outs[0]==='Yes'){ idx=0; } else { idx=prices.indexOf(Math.max.apply(null,prices)); }
+      var pct=prices[idx]*100; if(isNaN(pct)) return null;
+      var noPct=outs.length===2?prices[1-idx]*100:null;
+      return {q:m.question, out:outs[idx], pct:pct, noPct:noPct, vol24:m.volume24hr||0, end:m.endDate, slug:m.slug};
+    }).filter(function(r){return r&&r.vol24>0;});
+    rows.sort(function(a,b){return b.vol24-a.vol24;}); rows=rows.slice(0,30);
+    if(!rows.length){ status.textContent='No active markets right now. Try again shortly.'; return; }
+    status.style.display='none';
+    var totVol=rows.reduce(function(s,r){return s+r.vol24;},0);
+    document.getElementById('sumwrap').innerHTML='<div class="sum"><div class="s"><span class="l">Live markets</span><span class="v">'+rows.length+'</span></div>'+
+      '<div class="s"><span class="l">24h volume</span><span class="v">'+bn(totVol)+'</span></div>'+
+      '<div class="s"><span class="l">Most traded</span><span class="v" style="font-size:14px;font-weight:600;max-width:420px">'+esc(rows[0].q.slice(0,70))+'</span></div></div>';
+    document.getElementById('grid').innerHTML=rows.map(function(r){
+      var href=r.slug?('https://polymarket.com/event/'+r.slug):'https://polymarket.com';
+      return '<a class="card" href="'+href+'" target="_blank" rel="noopener noreferrer">'+
+        '<div class="qst">'+esc(r.q)+'</div>'+
+        '<div class="prob"><span class="pc">'+r.pct.toFixed(0)+'%</span><span class="ou">'+esc(r.out)+(r.noPct!=null&&r.out==='Yes'?' · No '+r.noPct.toFixed(0)+'%':'')+'</span></div>'+
+        '<div class="bar"><i style="width:'+r.pct.toFixed(0)+'%"></i></div>'+
+        '<div class="meta"><span class="vol">'+bn(r.vol24)+' 24h</span><span>'+(r.end?'ends '+dt(r.end):'')+'</span></div></a>';
+    }).join('');
+  }catch(e){ status.textContent='Could not reach the prediction-market feed. Try again shortly.'; }
+}
+load();
+setInterval(load, 90000);
+</script>
+  <footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
+<script defer src="/_vercel/insights/script.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>
