@@ -9,6 +9,10 @@ module.exports = async (req, res) => {
     { id: 'T10Y2Y', name: '10Y–2Y Spread', unit: '%' },
     { id: 'T10Y3M', name: '10Y–3M Spread', unit: '%' },
     { id: 'DGS3MO', name: '3-Month Treasury', unit: '%' },
+    { id: 'DGS1MO', name: '1-Month Treasury', unit: '%' },
+    { id: 'DGS2', name: '2-Year Treasury', unit: '%' },
+    { id: 'DGS5', name: '5-Year Treasury', unit: '%' },
+    { id: 'DGS30', name: '30-Year Treasury', unit: '%' },
     { id: 'T10YIE', name: 'Inflation (10Y breakeven)', unit: '%' },
     { id: 'UNRATE', name: 'Unemployment', unit: '%' },
     { id: 'VIXCLS', name: 'VIX (volatility)', unit: '' }

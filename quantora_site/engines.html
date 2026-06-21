@@ -231,6 +231,8 @@ Crypto,20,60</textarea></div>
         <div id="vs_skewchart" style="width:100%"></div>
         <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:12px 0 4px">Term structure — vol vs maturity</div>
         <div id="vs_termchart" style="width:100%"></div>
+        <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:12px 0 4px">Surface grid — strikes × maturities</div>
+        <div id="vs_grid" style="width:100%"></div>
       </div>
     </div>
   </div>
@@ -281,6 +283,14 @@ Bonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.00
 
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
+    <div id="ycPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px;background:linear-gradient(180deg,#fafaff,#fff)">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Live Treasury yield curve</span>
+        <span class="badge" style="background:#eef0ff"><span class="g">●</span> from FRED</span>
+        <span id="ycNote" style="font-size:11.5px;color:var(--mut);margin-left:auto">loading…</span>
+      </div>
+      <div id="yc_chart" style="width:100%"></div>
+    </div>
     <div id="cvxPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
         <span style="font-size:14px;font-weight:680">Bond convexity</span>
@@ -1300,6 +1310,63 @@ buildCard(document.getElementById('g_equity'),{
   compute:function(v){ var rows=v.a.split(/\n/).map(function(l){return l.split(',');}).filter(function(a){return a.length>=3&&!isNaN(parseFloat(a[1]));}).map(function(a){return {name:a[0].trim(),value:parseFloat(a[1]),momentum:parseFloat(a[2])};}); if(rows.length<2) return [];
     var wv=Math.min(1,Math.max(0,v.wv)); var fr=Q.factorRank(rows,wv,1-wv);
     return fr.map(function(x,i){return {l:(i+1)+'. '+x.name,v:fmt(x.score,2),cls:x.score>0?'up':'down'};}); }
+});
+
+/* ===== LIVE YIELD CURVE ===== */
+(function(){
+  var host=document.getElementById('yc_chart'), note=document.getElementById('ycNote'); if(!host) return;
+  fetch('/api/fredseries').then(function(r){return r.json();}).then(function(j){
+    if(!j.indicators){ note.textContent='unavailable'; return; }
+    var by={}; j.indicators.forEach(function(i){ by[i.id]=i; });
+    var TEN=[['DGS1MO','1M',1/12],['DGS3MO','3M',0.25],['DGS2','2Y',2],['DGS5','5Y',5],['DGS10','10Y',10],['DGS30','30Y',30]];
+    var pts=[]; TEN.forEach(function(t){ if(by[t[0]]&&by[t[0]].latest!=null) pts.push({lab:t[1],y:by[t[0]].latest,T:t[2]}); });
+    if(pts.length<3){ note.textContent='insufficient tenors'; return; }
+    var W=520,H=200,pad=38,n=pts.length;
+    var ys=pts.map(function(p){return p.y;}); var ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys); var yp=(ymax-ymin)*0.18||0.2; ymin-=yp; ymax+=yp;
+    function X(i){ return pad+i/(n-1)*(W-2*pad); }
+    function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
+    var line=pts.map(function(p,i){return X(i).toFixed(1)+','+Y(p.y).toFixed(1);}).join(' ');
+    var dots=pts.map(function(p,i){return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.y).toFixed(1)+'" r="3.5" fill="#6366f1"/><text x="'+X(i).toFixed(1)+'" y="'+(Y(p.y)-7).toFixed(1)+'" font-size="9" fill="#374151" text-anchor="middle" font-family="JetBrains Mono,monospace">'+p.y.toFixed(2)+'</text><text x="'+X(i).toFixed(1)+'" y="'+(H-pad+14)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+p.lab+'</text>';}).join('');
+    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/><polyline points="'+line+'" fill="none" stroke="#6366f1" stroke-width="2"/>'+dots+'</svg>';
+    var sp=(by.DGS10&&by.DGS3MO)?(by.DGS10.latest-by.DGS3MO.latest):null;
+    note.textContent=(sp!=null?('10Y–3M '+sp.toFixed(2)+'% · '+(sp<0?'inverted':'normal')+' · '):'')+'as of '+(by.DGS10?by.DGS10.points[by.DGS10.points.length-1].d:'latest');
+  }).catch(function(){ note.textContent='unavailable'; });
+})();
+
+/* ===== VOL SURFACE GRID ===== */
+function gridColor(v,lo,hi){ var t=(v-lo)/(hi-lo||1); t=Math.max(0,Math.min(1,t)); return 'rgba(99,102,241,'+(0.12+0.8*t).toFixed(3)+')'; }
+function drawVSGrid(){
+  var host=document.getElementById('vs_grid'); if(!host) return;
+  var skew=parseFloat(document.getElementById('vs_skew').value)||0, curv=parseFloat(document.getElementById('vs_curv').value)||0;
+  var sh=(parseFloat(document.getElementById('vs_short').value)||0)/100, lg=(parseFloat(document.getElementById('vs_long').value)||0)/100, lam=parseFloat(document.getElementById('vs_lam').value)||1;
+  var ks=[-0.2,-0.1,0,0.1,0.2], mats=[0.08,0.25,0.5,1,2];
+  var g=Q.volSurfaceGrid(skew,curv,sh,lg,lam,ks,mats);
+  var flat=[]; g.forEach(function(r){r.forEach(function(x){flat.push(x);});}); var lo=Math.min.apply(null,flat),hi=Math.max.apply(null,flat);
+  var cw=78,ch=26,padL=46,padT=20, W=padL+ks.length*cw+6, H=padT+mats.length*ch+6;
+  var matLab=['1M','3M','6M','1Y','2Y'], kLab=['-20%','-10%','ATM','+10%','+20%'];
+  var cells='';
+  for(var i=0;i<mats.length;i++){ for(var j=0;j<ks.length;j++){ var x=padL+j*cw,y=padT+i*ch;
+    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+gridColor(g[i][j],lo,hi)+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="9.5" fill="#111" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(g[i][j]*100).toFixed(1)+'</text>'; }
+    cells+='<text x="'+(padL-5)+'" y="'+(padT+i*ch+ch/2+3)+'" font-size="9" fill="#374151" text-anchor="end">'+matLab[i]+'</text>'; }
+  for(var j2=0;j2<ks.length;j2++) cells+='<text x="'+(padL+j2*cw+cw/2)+'" y="'+(padT-6)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+kLab[j2]+'</text>';
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+cells+'</svg>';
+}
+['vs_skew','vs_curv','vs_short','vs_long','vs_lam'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('input',drawVSGrid); });
+drawVSGrid();
+
+/* ===== NEW CARDS (v2.1) ===== */
+buildCard(document.getElementById('g_risk'),{
+  title:'Black–Litterman (long-only)', desc:'Blend equilibrium + view, then solve realistic long-only max-Sharpe weights.',
+  inputs:[{k:'w',label:'Market weights',type:'text',val:'0.4,0.35,0.25'},{k:'vol',label:'Vols %',type:'text',val:'15,14,16'},{k:'rho',label:'Avg corr',val:0.15},{k:'lam',label:'Risk aversion',val:3},{k:'view',label:'View on asset 1 (ret %)',val:14},{k:'conf',label:'Confidence',val:0.7}],
+  compute:function(v){ var w=parseNums(v.w), vols=parseNums(v.vol).map(function(x){return x/100;}); if(w.length<2||w.length!==vols.length) return [{l:'Note',v:'check inputs'}];
+    var Sig=Q.covFromVolCorr(vols,v.rho); var views=isFinite(v.view)?[{asset:0,ret:v.view/100,confidence:v.conf}]:[];
+    var bl=Q.blackLittermanLO(w,Sig,v.lam,views,0.05,0); return bl.weights.map(function(x,i){return {l:'Asset '+(i+1)+' wt',v:pct(x,0),cls:'up'};}); }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Scenario VaR', desc:'Probability-weighted VaR & expected shortfall across discrete scenarios. One per line: probability,pnl%',
+  inputs:[{k:'s',label:'scenarios: prob,pnl%',type:'textarea',val:'0.80,1.5\n0.12,-4\n0.06,-12\n0.02,-30'},{k:'c',label:'Confidence',type:'select',opts:[['0.95','95%'],['0.99','99%']]}],
+  compute:function(v){ var rows=v.s.split(/\n/).map(function(l){return parseNums(l);}).filter(function(a){return a.length>=2;}).map(function(a){return {prob:a[0],pnl:a[1]/100};}); if(rows.length<2) return [];
+    var sv=Q.scenarioVaR(rows,parseFloat(v.c)); return [{l:'Expected',v:pct(sv.expected,2),cls:sv.expected<0?'down':'up'},{l:'Scenario VaR',v:pct(sv.var,1),cls:'down'},{l:'Expected shortfall',v:pct(sv.es,1),cls:'down'},{l:'Worst',v:pct(sv.worst,1),cls:'down'}]; }
 });
 
 calcOptions();

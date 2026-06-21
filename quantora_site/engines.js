@@ -658,7 +658,39 @@ function factorRank(assets,wValue,wMom){ wValue=wValue==null?0.5:wValue; wMom=wM
 }
 Q.crossZ=crossZ; Q.factorRank=factorRank;
 
-Q.version='2.0';
+
+/* ================= LONG-ONLY BLACK-LITTERMAN ================= */
+function blackLittermanLO(wMkt,Sigma,lambda,views,tau,rf){
+  rf=rf||0; var bl=blackLitterman(wMkt,Sigma,lambda,views,tau), mu=bl.posterior, n=mu.length;
+  function sh(w){ var r=0,i; for(i=0;i<n;i++) r+=w[i]*mu[i]; var v=_portVol(w,Sigma); return v?(r-rf)/v:-1e9; }
+  var best=null,bw=null,rng=mulberry32(123),i,k;
+  for(k=0;k<14000;k++){ var w=[],sw=0; for(i=0;i<n;i++){ var x=-Math.log(rng()||1e-12); w.push(x); sw+=x; } for(i=0;i<n;i++) w[i]/=sw; var r=sh(w); if(best===null||r>best){ best=r; bw=w; } }
+  bw=_refine(bw.slice(),sh);
+  return {posterior:mu, equilibrium:bl.equilibrium, weights:bw};
+}
+Q.blackLittermanLO=blackLittermanLO;
+
+/* ================= SCENARIO-WEIGHTED VaR ================= */
+function scenarioVaR(scenarios,conf){
+  conf=conf||0.95; var tp=0,i; for(i=0;i<scenarios.length;i++) tp+=scenarios[i].prob;
+  var sc=scenarios.map(function(s){return {prob:s.prob/tp, pnl:s.pnl};}).sort(function(a,b){return a.pnl-b.pnl;});
+  var exp=0; for(i=0;i<sc.length;i++) exp+=sc[i].prob*sc[i].pnl;
+  var alpha=1-conf, cum=0, varv=-sc[sc.length-1].pnl, esNum=0, esDen=0;
+  for(i=0;i<sc.length;i++){ cum+=sc[i].prob; if(cum>=alpha && varv===-sc[sc.length-1].pnl){ varv=-sc[i].pnl; } }
+  // ES: prob-weighted mean of losses in the worst alpha mass
+  var need=alpha, j=0;
+  while(need>1e-12 && j<sc.length){ var take=Math.min(sc[j].prob,need); esNum+=take*sc[j].pnl; esDen+=take; need-=take; j++; }
+  return {expected:exp, var:varv, es:esDen? -esNum/esDen : varv, worst:sc[0].pnl};
+}
+Q.scenarioVaR=scenarioVaR;
+
+/* ================= VOL SURFACE GRID ================= */
+function volSurfaceGrid(skew,curv,shortVol,longVol,lambda,moneyness,mats){
+  var grid=[]; for(var i=0;i<mats.length;i++){ var level=longVol+(shortVol-longVol)*Math.exp(-lambda*mats[i]); var row=[]; for(var j=0;j<moneyness.length;j++){ var k=moneyness[j]; row.push(level - skew*k + curv*k*k); } grid.push(row); } return grid;
+}
+Q.volSurfaceGrid=volSurfaceGrid;
+
+Q.version='2.1';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
