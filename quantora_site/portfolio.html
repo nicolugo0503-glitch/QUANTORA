@@ -50,6 +50,19 @@ th:first-child,td:first-child{text-align:left}
 .read .foot{color:var(--mut);font-size:12px;margin-top:11px;font-family:ui-monospace,Menlo,monospace}
 .addbar button.ai{background:#fff;color:#000;border:1px solid var(--line)}
 @media(max-width:760px){.cards{grid-template-columns:1fr 1fr}}
+
+.alloc{display:flex;gap:28px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin:18px 0;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.alloc .dwrap{position:relative;flex:0 0 auto}
+.alloc .dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.alloc .dc .dl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.alloc .dc .dv{font-size:18px;font-weight:750;letter-spacing:-.02em}
+.alloc .leg{display:grid;grid-template-columns:1fr 1fr;gap:7px 26px;font-size:13px;flex:1;min-width:240px}
+.alloc .leg .li{display:flex;align-items:center;gap:8px}
+.alloc .leg .sw{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.alloc .leg .nm{font-weight:600}
+.alloc .leg .pc{margin-left:auto;color:var(--mut);font-variant-numeric:tabular-nums}
+.alloc .ct{width:100%;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:2px}
+@media(max-width:560px){.alloc .leg{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -104,6 +117,7 @@ th:first-child,td:first-child{text-align:left}
   </div>
 
   <div id="pread" class="read"></div>
+  <div id="alloc"></div>
   <div id="tablewrap"></div>
   <div class="note" id="note"></div>
 </div>
@@ -134,12 +148,25 @@ async function priceStock(sym){
 }
 async function priceFor(h){ return h.type==='crypto'? priceCrypto(h.sym) : priceStock(h.sym); }
 
+function donut(items){
+  var tot=items.reduce(function(s,x){return s+x.value;},0); if(tot<=0) return '';
+  var cols=['#6366f1','#22d3ee','#10b981','#f59e0b','#ec4899','#8b5cf6','#0ea5e9','#fb7185','#14b8a6','#94a3b8'];
+  var sorted=items.slice().sort(function(a,b){return b.value-a.value;});
+  var r=56,sw=18,cx=72,C=2*Math.PI*r,off=0;
+  var rings=sorted.map(function(x,i){var frac=x.value/tot,dash=frac*C;var seg='<circle cx="72" cy="72" r="'+r+'" fill="none" stroke="'+cols[i%cols.length]+'" stroke-width="'+sw+'" stroke-dasharray="'+dash.toFixed(2)+' '+(C-dash).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 72 72)"/>';off+=dash;return seg;}).join('');
+  var leg=sorted.map(function(x,i){var p=(x.value/tot*100);return '<div class="li"><span class="sw" style="background:'+cols[i%cols.length]+'"></span><span class="nm">'+x.sym+'</span><span class="pc">'+p.toFixed(1)+'%</span></div>';}).join('');
+  return '<div class="ct">Allocation by market value</div>'+
+    '<div class="dwrap"><svg width="144" height="144" viewBox="0 0 144 144">'+rings+'</svg>'+
+    '<div class="dc"><span class="dl">Total</span><span class="dv">'+money(tot)+'</span></div></div>'+
+    '<div class="leg">'+leg+'</div>';
+}
 async function render(){
   var pf=getPF();
   var tablewrap=document.getElementById('tablewrap');
   var note=document.getElementById('note');
   if(!pf.length){
     tablewrap.innerHTML='<div class="empty">No holdings yet. Add your first position above — e.g. <b>BTC</b>, Crypto, 0.5, 60000.</div>';
+    var al0=document.getElementById('alloc'); if(al0)al0.innerHTML='';
     document.getElementById('tot_val').textContent='$0';
     document.getElementById('tot_cost').textContent='$0';
     document.getElementById('tot_pnl').textContent='$0';
@@ -167,6 +194,7 @@ async function render(){
       '<td class="'+(pnlPct!=null?col(pnlPct):'')+'">'+(pnlPct!=null?pct(pnlPct):'—')+'</td>'+
       '<td><span class="x" data-i="'+i+'">✕</span></td></tr>';
   }).join('');
+  var al=document.getElementById('alloc'); if(al) al.innerHTML=PFLAST.length?donut(PFLAST):'';
   tablewrap.innerHTML='<table><thead><tr><th>Asset</th><th>Qty</th><th>Avg cost</th><th>Price</th><th>Value</th><th>P&amp;L</th><th>Return</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
   var totPnl=totVal-totCost;
   var totRet=totCost>0? (totPnl/totCost*100) : 0;
