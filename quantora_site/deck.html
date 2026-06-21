@@ -97,7 +97,21 @@ body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',-apple-system
 .bbar{height:3px;background:#eef0f4;border-radius:3px;overflow:hidden}
 .bbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));transition:width .25s}
 .bstat{margin-top:12px;font-size:11.5px;color:var(--mut);height:14px}
-</style></head><body>
+</style><meta property="og:type" content="website">
+<meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · Command Deck">
+<meta property="og:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<meta property="og:url" content="https://www.usequantora.com/deck.html">
+<meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Quantora · Command Deck">
+<meta name="twitter:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<link rel="canonical" href="https://www.usequantora.com/deck.html">
+</head><body>
 
 <div class="aurora"><b></b><b></b><b></b></div><div class="grain"></div>
 
@@ -220,4 +234,6 @@ fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent('https:
 
 document.addEventListener('dblclick',function(){revealed=false;prog=0;si=0;$('boot').classList.remove('gone');$('bbar').style.width='0%';clearInterval(bt);bt=setInterval(function(){prog=Math.min(100,prog+14);$('bbar').style.width=prog+'%';if(prog>=100){clearInterval(bt);setTimeout(reveal,400)}},170)});
 </script>
+<footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate; verify before acting. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
+<script defer src="/_vercel/insights/script.js"></script>
 </body></html>
