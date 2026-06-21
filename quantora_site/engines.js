@@ -283,7 +283,63 @@ Q.altmanZ=altmanZ; Q.dupont=dupont; Q.multiples=multiples; Q.piotroskiF=piotrosk
 Q.cagr=cagr; Q.treynor=treynor; Q.calmar=calmar; Q.omega=omega; Q.informationRatio=informationRatio; Q.jensenAlpha=jensenAlpha;
 Q.forwardRate=forwardRate; Q.mortgage=mortgage; Q.futureValue=futureValue;
 
-Q.version='1.2';
+
+/* ================= MONTE CARLO ================= */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function randn(rng){ var u1=rng()||1e-12, u2=rng(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
+function mcGBM(S0,mu,sig,T,paths,seed){
+  var rng=seed!=null?mulberry32(seed):Math.random, t=[], i;
+  for(i=0;i<paths;i++){ var z=randn(rng); t.push(S0*Math.exp((mu-0.5*sig*sig)*T+sig*Math.sqrt(T)*z)); }
+  t.sort(function(a,b){return a-b;});
+  function pct(p){ return t[Math.min(t.length-1,Math.floor(p*t.length))]; }
+  var up=0; for(i=0;i<t.length;i++) if(t[i]>S0) up++;
+  return {terminals:t, mean:mean(t), p5:pct(0.05), p25:pct(0.25), p50:pct(0.5), p75:pct(0.75), p95:pct(0.95), probUp:up/t.length, min:t[0], max:t[t.length-1]};
+}
+function mcOption(S0,K,T,r,q,sig,paths,isCall,seed){
+  var rng=seed!=null?mulberry32(seed):Math.random, sum=0, i;
+  for(i=0;i<paths;i++){ var z=randn(rng), ST=S0*Math.exp((r-q-0.5*sig*sig)*T+sig*Math.sqrt(T)*z); sum+=isCall?Math.max(ST-K,0):Math.max(K-ST,0); }
+  return Math.exp(-r*T)*sum/paths;
+}
+Q.mcGBM=mcGBM; Q.mcOption=mcOption;
+
+/* ================= SWAPS & CURVE ================= */
+function bootstrapCurve(parRates,taus){
+  // parRates: annualized par (coupon) rates per tenor; taus: year fraction of each period (e.g. all 1)
+  var DF=[], zeros=[], i, j;
+  for(i=0;i<parRates.length;i++){
+    var c=parRates[i], sumPrev=0;
+    for(j=0;j<i;j++) sumPrev+=DF[j]*taus[j];
+    var df=(1-c*sumPrev)/(1+c*taus[i]);
+    DF.push(df);
+    var T=0; for(j=0;j<=i;j++) T+=taus[j];
+    zeros.push(Math.pow(1/df,1/T)-1);
+  }
+  return {DF:DF, zeros:zeros};
+}
+function parSwapRate(DF,taus){
+  var n=DF.length, ann=0; for(var i=0;i<n;i++) ann+=DF[i]*taus[i];
+  return (1-DF[n-1])/ann;
+}
+function swapValue(notional,fixedRate,DF,taus,payFixed){
+  var n=DF.length, ann=0; for(var i=0;i<n;i++) ann+=DF[i]*taus[i];
+  var floatLeg=1-DF[n-1], fixedLeg=fixedRate*ann;
+  var v=notional*(floatLeg-fixedLeg);
+  return payFixed===false?-v:v;
+}
+Q.bootstrapCurve=bootstrapCurve; Q.parSwapRate=parSwapRate; Q.swapValue=swapValue;
+
+/* ================= VOLATILITY & SIGNALS ================= */
+function ewmaVol(returns,lambda,P){
+  lambda=lambda==null?0.94:lambda; P=P||252;
+  var v=returns[0]*returns[0];
+  for(var i=1;i<returns.length;i++) v=lambda*v+(1-lambda)*returns[i]*returns[i];
+  return {daily:Math.sqrt(v), annual:Math.sqrt(v)*Math.sqrt(P)};
+}
+function expectedMove(S,sig,days){ var m=S*sig*Math.sqrt(days/365); return {move:m, low:S-m, high:S+m, pct:m/S}; }
+function zScore(series){ var mu=mean(series), sd=stdev(series); return (series[series.length-1]-mu)/sd; }
+Q.ewmaVol=ewmaVol; Q.expectedMove=expectedMove; Q.zScore=zScore;
+
+Q.version='1.3';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

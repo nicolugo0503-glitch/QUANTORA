@@ -157,6 +157,32 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
     </div>
   </div>
 
+  <div class="flag" style="margin-top:22px">
+    <div class="top">
+      <span class="t">Monte Carlo simulator</span>
+      <span class="tag">GBM · 50k paths</span>
+      <span class="vrf"><span class="c">✓ verified</span> · converges to Black–Scholes</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>Spot price</label><input id="mc_S" type="number" value="100" step="any"></div>
+        <div class="row2">
+          <div class="fld"><label>Exp. return %/yr</label><input id="mc_mu" type="number" value="8" step="any"></div>
+          <div class="fld"><label>Volatility %/yr</label><input id="mc_v" type="number" value="25" step="any"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Horizon (days)</label><input id="mc_D" type="number" value="252" step="1"></div>
+          <div class="fld"><label>Paths</label><input id="mc_paths" type="number" value="50000" step="1000"></div>
+        </div>
+        <button class="miniBtn" id="mc_run" style="margin-top:4px">↻ re-run simulation</button>
+      </div>
+      <div class="out">
+        <div id="mc_chart" style="width:100%"></div>
+        <div class="cr" id="mc_metrics" style="border-top:1px solid var(--line);padding-top:11px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
     <div class="grid" id="g_rates"></div>
@@ -599,6 +625,70 @@ buildCard(document.getElementById('g_corp'),{
   title:'Savings growth (FV)', desc:'Future value of regular contributions at a given return.',
   inputs:[{k:'pmt',label:'Monthly contribution',val:500},{k:'r',label:'Annual return %',val:7},{k:'y',label:'Years',val:20},{k:'pv',label:'Starting balance',val:0}],
   compute:function(v){ var fv=Q.futureValue(v.pmt,v.r/100,v.y,12,v.pv); var contrib=v.pmt*12*v.y+v.pv; return [{l:'Future value',v:fmt(fv,0),cls:'up'},{l:'Contributed',v:fmt(contrib,0)},{l:'Growth',v:fmt(fv-contrib,0),cls:'up'}]; }
+});
+
+/* ===== MONTE CARLO SIMULATOR ===== */
+function drawMC(){
+  var S=parseFloat(document.getElementById('mc_S').value)||100;
+  var mu=(parseFloat(document.getElementById('mc_mu').value)||0)/100;
+  var v=(parseFloat(document.getElementById('mc_v').value)||0)/100;
+  var D=parseFloat(document.getElementById('mc_D').value)||252;
+  var paths=Math.min(200000,Math.max(1000,parseFloat(document.getElementById('mc_paths').value)||50000));
+  var T=D/365;
+  var sim=Q.mcGBM(S,mu,v,T,paths);
+  // histogram
+  var t=sim.terminals, lo=sim.p5*0.9, hi=sim.p95*1.05, nb=44;
+  var bins=new Array(nb).fill(0), i;
+  for(i=0;i<t.length;i++){ if(t[i]<lo||t[i]>hi) continue; var b=Math.min(nb-1,Math.floor((t[i]-lo)/(hi-lo)*nb)); bins[b]++; }
+  var maxB=Math.max.apply(null,bins);
+  var W=520,H=240,pad=30, bw=(W-2*pad)/nb;
+  function px(x){ return pad+(x-lo)/(hi-lo)*(W-2*pad); }
+  var bars='';
+  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0; var x=pad+i*bw; var binMid=lo+(i+0.5)/nb*(hi-lo); var col=binMid>=S?'#0a8a3b':'#d23a2c';
+    bars+='<rect x="'+x.toFixed(1)+'" y="'+(H-pad-h).toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.55"/>'; }
+  function vline(xv,c,lab){ var X=px(xv); if(X<pad||X>W-pad) return ''; return '<line x1="'+X.toFixed(1)+'" y1="'+pad+'" x2="'+X.toFixed(1)+'" y2="'+(H-pad)+'" stroke="'+c+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+X.toFixed(1)+'" y="'+(pad-4)+'" font-size="9" fill="'+c+'" text-anchor="middle" font-family="JetBrains Mono,monospace">'+lab+'</text>'; }
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+
+    vline(S,'#6366f1','spot')+vline(sim.p50,'#0a0a0a','median')+vline(sim.p5,'#d23a2c','5%')+vline(sim.p95,'#0a8a3b','95%')+
+    '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/></svg>';
+  document.getElementById('mc_chart').innerHTML=svg;
+  document.getElementById('mc_metrics').innerHTML=
+    '<div class="r"><div class="rl">Median</div><div class="rv">'+fmt(sim.p50,2)+'</div></div>'+
+    '<div class="r"><div class="rl">90% range</div><div class="rv">'+fmt(sim.p5,1)+'–'+fmt(sim.p95,1)+'</div></div>'+
+    '<div class="r"><div class="rl">P(gain)</div><div class="rv '+(sim.probUp>=0.5?'up':'down')+'">'+pct(sim.probUp,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Mean</div><div class="rv">'+fmt(sim.mean,2)+'</div></div>';
+}
+['mc_S','mc_mu','mc_v','mc_D'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawMC); });
+document.getElementById('mc_run').addEventListener('click',function(e){ e.preventDefault(); drawMC(); });
+drawMC();
+
+/* ===== NEW CARDS (v1.3) ===== */
+buildCard(document.getElementById('g_rates'),{
+  title:'Interest-rate swap', desc:'Par swap rate & mark-to-market value of a fixed-for-floating swap (flat curve).',
+  inputs:[{k:'not',label:'Notional',val:1000000},{k:'fix',label:'Fixed rate %',val:4.5},{k:'cv',label:'Curve rate %',val:5},{k:'y',label:'Years',val:5}],
+  compute:function(v){ var n=Math.max(1,Math.round(v.y)); var DF=[],taus=[]; for(var i=1;i<=n;i++){ DF.push(1/Math.pow(1+v.cv/100,i)); taus.push(1); }
+    var par=Q.parSwapRate(DF,taus); var val=Q.swapValue(v.not,v.fix/100,DF,taus,true);
+    return [{l:'Par swap rate',v:pct(par,3)},{l:'MTM (pay fixed)',v:fmt(val,0),cls:val>=0?'up':'down'}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Curve bootstrap', desc:'Zero (spot) rates implied by a set of par/coupon rates.',
+  inputs:[{k:'par',label:'Par rates % (1y,2y,3y…)',type:'textarea',val:'3,3.5,4,4.3,4.5'}],
+  compute:function(v){ var pr=parseNums(v.par).map(function(x){return x/100;}); if(pr.length<1) return []; var taus=pr.map(function(){return 1;}); var bc=Q.bootstrapCurve(pr,taus);
+    var z=bc.zeros; return [{l:'Zero 1y',v:pct(z[0],3)},{l:'Zero '+z.length+'y',v:pct(z[z.length-1],3)}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'EWMA volatility', desc:'RiskMetrics exponentially-weighted volatility forecast from returns.',
+  inputs:[{k:'r',label:'Daily returns (decimals)',type:'textarea',val:'0.012,-0.020,0.015,-0.005,0.020,-0.030,0.025,0.010,-0.008,0.018'},{k:'lam',label:'Lambda (decay)',val:0.94}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<2) return []; var e=Q.ewmaVol(a,v.lam); return [{l:'Daily vol',v:pct(e.daily,2)},{l:'Annualized',v:pct(e.annual,1)}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Pairs / spread z-score', desc:'How many std-devs the latest spread sits from its mean (mean-reversion signal).',
+  inputs:[{k:'s',label:'Spread series',type:'textarea',val:'1.0,1.2,0.9,1.1,1.3,1.5,2.0'}],
+  compute:function(v){ var a=parseNums(v.s); if(a.length<3) return []; var z=Q.zScore(a); return [{l:'Z-score',v:fmt(z,2),cls:Math.abs(z)>2?'down':''},{l:'Signal',v:z>2?'short spread':(z<-2?'long spread':'neutral')}]; }
+});
+buildCard(document.getElementById('g_crypto'),{
+  title:'Expected move', desc:'1-sigma expected price range over a horizon from implied volatility.',
+  inputs:[{k:'S',label:'Spot',val:100},{k:'v',label:'Vol %',val:60},{k:'d',label:'Days',val:30}],
+  compute:function(v){ var m=Q.expectedMove(v.S,v.v/100,v.d); return [{l:'±1σ move',v:fmt(m.move,2)+' ('+pct(m.pct,1)+')'},{l:'Range',v:fmt(m.low,1)+'–'+fmt(m.high,1)}]; }
 });
 
 calcOptions();
