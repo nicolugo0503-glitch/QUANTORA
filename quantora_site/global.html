@@ -27,15 +27,17 @@ h1{font-size:30px;font-weight:680;letter-spacing:-.5px}
 .read h3{font-size:13px;font-weight:650;letter-spacing:.02em;margin-bottom:10px}
 .read p{font-size:15px;line-height:1.65}
 .read .foot{color:var(--mut);font-size:12px;margin-top:12px;font-family:ui-monospace,Menlo,monospace}
-table{width:100%;border-collapse:collapse;margin-top:24px;font-size:14.5px}
-th,td{text-align:right;padding:13px 12px;border-bottom:1px solid var(--line)}
-th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600}
-th:first-child,td:first-child{text-align:left}
-td.cls{text-align:left}
-tbody tr:hover{background:var(--soft)}
-.tk{font-weight:650}
-.nm{color:var(--mut);font-size:12.5px;margin-left:8px}
-.pill{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;background:#f1f1f1;color:#555}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;margin-top:24px}
+.card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s}
+.card:hover{transform:translateY(-3px);box-shadow:0 16px 38px -22px rgba(16,24,40,.26);border-color:#e2e3e9}
+.card .ch{display:flex;align-items:center;gap:8px}
+.card .tk{font-weight:700;font-size:15px}
+.card .pill{margin-left:auto;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.pill.FX{background:#eef1ff;color:#3358ff}.pill.Commodity{background:#fff4e6;color:#b86e00}.pill.Bonds{background:#eafaf0;color:#0a7d33}
+.card .nm{color:var(--mut);font-size:12px;margin-top:3px}
+.card .pr{font-size:24px;font-weight:750;letter-spacing:-.02em;margin-top:12px;font-variant-numeric:tabular-nums}
+.card .cg{font-size:13px;font-weight:650;margin-top:3px}
+.card .spark{margin-top:10px;width:100%;height:42px;display:block}
 .up{color:var(--up)}.down{color:var(--down)}
 .status{margin-top:26px;color:var(--mut);font-size:14px}
 .hint{border:1px dashed #d7d7d7;border-radius:14px;padding:22px 24px;margin-top:8px;font-size:14.5px;color:#444;background:#fcfcfc;display:none}
@@ -79,49 +81,38 @@ tbody tr:hover{background:var(--soft)}
 
   <div id="readwrap"></div>
   <div id="hint" class="hint"></div>
-  <div id="tablewrap"></div>
+  <div id="grid" class="grid"></div>
   <div id="status" class="status">Loading the cross-asset tape…</div>
 </div>
 
 <script>
-function fmt(x){
-  if(x.cls==='FX'){ return x.price>=50? x.price.toFixed(2): x.price.toFixed(4); }
-  return '$'+x.price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-}
+function pr(x){ return '$'+x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function sgn(x){ return (x>=0?'+':'')+x.toFixed(2)+'%'; }
 function col(x){ return x>=0?'up':'down'; }
-
+function spark(pts){
+  if(!pts||pts.length<2) return '';
+  var min=Math.min.apply(null,pts),max=Math.max.apply(null,pts),rng=(max-min)||1,W=220,H=42;
+  var X=function(i){return (i/(pts.length-1)*W).toFixed(1);},Y=function(v){return (H-4-(v-min)/rng*(H-8)).toFixed(1);};
+  var up=pts[pts.length-1]>=pts[0],c=up?'#0a7d33':'#c0341d';
+  var ln=pts.map(function(v,i){return X(i)+','+Y(v);}).join(' ');
+  var id='s'+Math.random().toString(36).slice(2,7);
+  return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c+'" stop-opacity="0.16"/><stop offset="1" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs><polygon fill="url(#'+id+')" points="0,'+H+' '+ln+' '+W+','+H+'"/><polyline fill="none" stroke="'+c+'" stroke-width="1.7" stroke-linejoin="round" points="'+ln+'"/></svg>';
+}
 async function load(){
-  var status=document.getElementById('status');
-  var tablewrap=document.getElementById('tablewrap');
-  var readwrap=document.getElementById('readwrap');
-  var hint=document.getElementById('hint');
+  var status=document.getElementById('status'),grid=document.getElementById('grid'),hint=document.getElementById('hint');
   try{
-    var r=await fetch('/api/global');
-    var d=await r.json();
-    if(d.error==='no_key'){
-      status.style.display='none';
-      hint.style.display='block';
-      hint.innerHTML='<strong>The cross-asset tape is built and waiting for its data key.</strong><br>It uses your <code>TWELVEDATA_KEY</code> (the same key Stocks and the Analyst use). Make sure it is set in Vercel &rarr; Environment Variables and this page goes fully live.';
-      return;
-    }
-    if(d.error || !d.rows || !d.rows.length){ status.textContent='The cross-asset tape is temporarily unavailable. Try again shortly.'; return; }
+    var d=await (await fetch('/api/world')).json();
+    if(d.error==='nokey'){ status.style.display='none'; hint.style.display='block'; hint.innerHTML='<strong>The cross-asset tape is built and waiting for its data key.</strong><br>It uses your <code>TWELVEDATA_KEY</code> (same key Stocks uses). Set it in Vercel and this page goes fully live.'; return; }
+    if(d.error || !d.assets || !d.assets.length){ status.textContent='The cross-asset tape is temporarily unavailable. Try again shortly.'; return; }
     status.style.display='none';
-    if(d.aiRead){
-      readwrap.innerHTML='<div class="read"><h3>&#9733; QUANTORA AI &middot; GLOBAL MACRO DESK</h3><p>'+d.aiRead.replace(/</g,'&lt;')+'</p>'+
-        '<div class="foot">Written by Quantora AI (Llama 3.3) on the live tape &middot; not investment advice</div></div>';
-    }
-    var head='<table><thead><tr><th>Instrument</th><th>Class</th><th>Price</th><th>Change</th></tr></thead><tbody>';
-    var body=d.rows.map(function(x){
-      return '<tr><td><span class="tk">'+x.symbol+'</span><span class="nm">'+x.name+'</span></td>'+
-        '<td class="cls"><span class="pill">'+x.cls+'</span></td>'+
-        '<td>'+fmt(x)+'</td>'+
-        '<td class="'+col(x.changePct)+'">'+sgn(x.changePct)+'</td></tr>';
+    grid.innerHTML=d.assets.map(function(x){
+      return '<div class="card"><div class="ch"><span class="tk">'+x.symbol+'</span><span class="pill '+x.cls+'">'+x.cls+'</span></div>'+
+        '<div class="nm">'+x.name+'</div>'+
+        '<div class="pr">'+pr(x.price)+'</div>'+
+        '<div class="cg '+col(x.changePct)+'">'+sgn(x.changePct)+' <span style="color:var(--mut);font-weight:500">1d</span></div>'+
+        spark(x.points)+'</div>';
     }).join('');
-    tablewrap.innerHTML=head+body+'</tbody></table>';
-  }catch(e){
-    status.textContent='Could not reach the cross-asset tape. Try again shortly.';
-  }
+  }catch(e){ status.textContent='Could not reach the cross-asset tape. Try again shortly.'; }
 }
 load();
 </script>
