@@ -39,6 +39,16 @@ th:first-child,td:first-child{text-align:left}
 .empty{margin-top:30px;color:var(--mut);font-size:14.5px;text-align:center;border:1px dashed #d7d7d7;border-radius:14px;padding:40px 20px}
 .note{margin-top:14px;font-size:12px;color:var(--mut)}
 @media(max-width:680px){.addbar input.num{width:46%}}
+
+.ctrl{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+.nbtn{border:1px solid var(--line);background:#fff;color:#0a0a0a;border-radius:9px;padding:9px 14px;font-size:13.5px;font-weight:600;cursor:pointer}
+.nbtn:hover{border-color:#999}
+.nstate{font-size:12.5px;color:var(--mut)}
+.auto{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.auto .d{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block;animation:ap 1.9s infinite}
+@keyframes ap{0%{box-shadow:0 0 0 0 rgba(10,125,51,.45)}70%{box-shadow:0 0 0 6px rgba(10,125,51,0)}100%{box-shadow:0 0 0 0 rgba(10,125,51,0)}}
+tr.fired td{background:#fbf7e9}
+.rearm{cursor:pointer;color:#3358ff;font-weight:600;font-size:12px;margin-left:8px}
 </style>
 </head>
 <body>
@@ -84,6 +94,8 @@ th:first-child,td:first-child{text-align:left}
     <div class="hint">Crypto via Coinbase · stocks via Twelve Data · alerts stored only in this browser</div>
   </div>
 
+  <div class="ctrl"><button id="notif" class="nbtn">Enable notifications</button><span class="nstate" id="notifstate"></span><span class="auto" id="auto"><span class="d"></span> Auto-checking live every 45s</span></div>
+
   <div id="tablewrap"></div>
   <div class="note" id="note"></div>
 </div>
@@ -98,30 +110,60 @@ async function priceCrypto(sym){ try{ var r=await fetch('https://api.exchange.co
 async function priceStock(sym){ try{ var r=await fetch('/api/quote?symbol='+encodeURIComponent(sym)); var d=await r.json(); return (d&&d.closes&&d.closes.length)?parseFloat(d.closes[0]):null; }catch(e){ return null; } }
 async function priceFor(a){ return a.type==='crypto'? priceCrypto(a.sym) : priceStock(a.sym); }
 
-async function render(){
-  var al=getA();
-  var tablewrap=document.getElementById('tablewrap');
-  var note=document.getElementById('note');
-  if(!al.length){ tablewrap.innerHTML='<div class="empty">No alerts yet. Set one above — e.g. <b>BTC</b> rises above <b>70000</b>.</div>'; note.textContent=''; return; }
+/* ---- notifications + alerting ---- */
+function notifUI(){
+  var b=document.getElementById('notif'), s=document.getElementById('notifstate');
+  if(!('Notification' in window)){ b.style.display='none'; s.textContent='This browser does not support notifications.'; return; }
+  var p=Notification.permission;
+  if(p==='granted'){ b.style.display='none'; s.textContent='✓ Notifications on — alerts pop even when this tab is in the background.'; }
+  else if(p==='denied'){ s.textContent='Notifications are blocked in your browser settings.'; }
+  else { s.textContent='Turn on pop-up alerts that fire the moment a level is crossed.'; }
+}
+function beep(){ try{ var C=window.AudioContext||window.webkitAudioContext; if(!C)return; var c=new C(); var o=c.createOscillator(),g=c.createGain(); o.connect(g); g.connect(c.destination); o.type='sine'; o.frequency.value=880; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.18,c.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.4); o.start(); o.stop(c.currentTime+0.42); }catch(e){} }
+var ORIG=document.title, flashT=null;
+function flashTitle(msg){ if(flashT) return; var on=false; flashT=setInterval(function(){ document.title=(on?ORIG:'🔔 '+msg); on=!on; },900);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden && flashT){ clearInterval(flashT); flashT=null; document.title=ORIG; } }); }
+function fire(a,p){
+  var verb=a.dir==='above'?'rose above ':'fell below ';
+  var body=a.sym+' '+verb+money(a.target)+' — now '+money(p);
+  try{ if('Notification' in window && Notification.permission==='granted'){ var n=new Notification('Quantora · '+a.sym+' alert', {body:body, icon:'/favicon-32.png', tag:'q-'+a.sym+'-'+a.target}); n.onclick=function(){ window.focus(); n.close(); }; } }catch(e){}
+  beep(); flashTitle(a.sym+' '+verb+money(a.target));
+}
+
+async function check(){
+  var al=getA(), tablewrap=document.getElementById('tablewrap'), note=document.getElementById('note');
+  if(!al.length){ tablewrap.innerHTML='<div class="empty">No alerts yet. Set one above — e.g. <b>BTC</b> rises above <b>70000</b> — then enable notifications and Quantora will ping you the second it crosses.</div>'; note.textContent=''; return; }
   note.textContent='Checking '+al.length+' alert'+(al.length>1?'s':'')+'…';
   var prices=await Promise.all(al.map(priceFor));
+  var changed=false, firedNow=0;
+  al.forEach(function(a,i){ var p=prices[i]; var hit=(p!=null)&&(a.dir==='above'?p>=a.target:p<=a.target);
+    if(hit && !a.firedAt){ a.firedAt=Date.now(); changed=true; firedNow++; fire(a,p); }
+  });
+  if(changed) saveA(al);
   var rows=al.map(function(a,i){
     var p=prices[i];
-    var hit = (p!=null) && (a.dir==='above'? p>=a.target : p<=a.target);
+    var hit=(p!=null)&&(a.dir==='above'?p>=a.target:p<=a.target);
     var cond=(a.dir==='above'?'rises above ':'falls below ')+money(a.target);
-    return '<tr>'+
+    var status, extra='';
+    if(p==null) status='<span class="pill watch">no data</span>';
+    else if(a.firedAt){ status='<span class="pill hit">★ triggered</span>'; extra='<span class="rearm" data-r="'+i+'">re-arm</span>'; }
+    else if(hit) status='<span class="pill hit">★ triggered</span>';
+    else status='<span class="pill watch">watching</span>';
+    return '<tr class="'+(a.firedAt?'fired':'')+'">'+
       '<td><span class="tk">'+a.sym+'</span><span class="badge">'+(a.type==='crypto'?'Crypto':'Stock')+'</span></td>'+
       '<td style="text-align:left">'+cond+'</td>'+
       '<td>'+(p!=null?money(p):'—')+'</td>'+
-      '<td>'+(p==null?'<span class="pill watch">no data</span>':(hit?'<span class="pill hit">★ triggered</span>':'<span class="pill watch">watching</span>'))+'</td>'+
+      '<td>'+status+extra+'</td>'+
       '<td><span class="x" data-i="'+i+'">✕</span></td></tr>';
   }).join('');
   tablewrap.innerHTML='<table><thead><tr><th>Asset</th><th>Condition</th><th>Current</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
-  var hits=prices.filter(function(p,i){ return p!=null && (al[i].dir==='above'? p>=al[i].target : p<=al[i].target); }).length;
-  note.textContent=(hits? (hits+' alert'+(hits>1?'s':'')+' triggered · ') : '')+'updated '+new Date().toLocaleTimeString()+' · not investment advice';
-  Array.prototype.forEach.call(tablewrap.querySelectorAll('.x'),function(x){ x.onclick=function(){ var i=parseInt(x.getAttribute('data-i'),10); var a=getA(); a.splice(i,1); saveA(a); render(); }; });
+  var armed=al.filter(function(a){return !a.firedAt;}).length, fired=al.length-armed;
+  note.textContent=(fired?(fired+' triggered · '):'')+armed+' watching · updated '+new Date().toLocaleTimeString()+' · not investment advice';
+  Array.prototype.forEach.call(tablewrap.querySelectorAll('.x'),function(x){ x.onclick=function(){ var i=+x.getAttribute('data-i'); var a=getA(); a.splice(i,1); saveA(a); check(); }; });
+  Array.prototype.forEach.call(tablewrap.querySelectorAll('.rearm'),function(x){ x.onclick=function(){ var i=+x.getAttribute('data-r'); var a=getA(); if(a[i]){ delete a[i].firedAt; saveA(a); check(); } }; });
 }
 
+document.getElementById('notif').onclick=function(){ if(!('Notification' in window)) return; Notification.requestPermission().then(notifUI); };
 document.getElementById('add').onclick=function(){
   var sym=document.getElementById('i_sym').value.trim().toUpperCase().replace(/[^A-Z0-9.]/g,'');
   var type=document.getElementById('i_type').value, dir=document.getElementById('i_dir').value;
@@ -129,12 +171,14 @@ document.getElementById('add').onclick=function(){
   if(!sym||!(target>0)){ document.getElementById('note').textContent='Enter a symbol and a positive target price.'; return; }
   var a=getA(); a.push({sym:sym,type:type,dir:dir,target:target}); saveA(a);
   document.getElementById('i_sym').value=''; document.getElementById('i_target').value='';
-  render();
+  check();
 };
-document.getElementById('refresh').onclick=render;
+document.getElementById('refresh').onclick=check;
 document.getElementById('i_target').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('add').click(); });
-render();
-</script>
+notifUI();
+check();
+setInterval(check, 45000);
+</script></script>
   <script src="/nav.js"></script>
 </body>
 </html>
