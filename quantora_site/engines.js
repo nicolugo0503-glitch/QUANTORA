@@ -339,7 +339,34 @@ function expectedMove(S,sig,days){ var m=S*sig*Math.sqrt(days/365); return {move
 function zScore(series){ var mu=mean(series), sd=stdev(series); return (series[series.length-1]-mu)/sd; }
 Q.ewmaVol=ewmaVol; Q.expectedMove=expectedMove; Q.zScore=zScore;
 
-Q.version='1.3';
+
+/* ================= GARCH(1,1) & BOND LADDER ================= */
+function garch11(returns,alpha,beta){
+  alpha=alpha==null?0.08:alpha; beta=beta==null?0.90:beta;
+  var mu=mean(returns), n=returns.length, i;
+  var sv=0; for(i=0;i<n;i++) sv+=(returns[i]-mu)*(returns[i]-mu); sv/=n; // population sample var = LR target
+  var omega=sv*(1-alpha-beta);
+  var v=sv;
+  for(i=1;i<n;i++){ var e=returns[i-1]-mu; v=omega+alpha*e*e+beta*v; }
+  var persist=alpha+beta;
+  function fc(h){ return sv+Math.pow(persist,h)*(v-sv); }
+  return { omega:omega, persistence:persist, longRunVar:sv,
+    dailyVol:Math.sqrt(v), annualVol:Math.sqrt(v)*Math.sqrt(252),
+    longRunVol:Math.sqrt(sv)*Math.sqrt(252),
+    forecast10:Math.sqrt(fc(10))*Math.sqrt(252) };
+}
+function bondLadder(bonds){
+  var tv=0,wd=0,dv=0,inc=0,wy=0;
+  for(var i=0;i<bonds.length;i++){ var b=bonds[i], m=b.m||1;
+    var a=bondAnalytics(b.face,b.coupon,b.yield,b.years,m);
+    tv+=a.price; wd+=a.price*a.modified; dv+=a.dv01; inc+=b.face*b.coupon; wy+=a.price*b.yield;
+  }
+  return { count:bonds.length, totalValue:tv, wDuration:tv?wd/tv:0, totalDV01:dv,
+    annualIncome:inc, avgYield:tv?wy/tv:0, currentYield:tv?inc/tv:0 };
+}
+Q.garch11=garch11; Q.bondLadder=bondLadder;
+
+Q.version='1.4';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
