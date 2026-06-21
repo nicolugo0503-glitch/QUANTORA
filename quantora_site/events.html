@@ -55,8 +55,8 @@ h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
 </div>
 <div class="wrap">
   <h1>Global Events</h1>
-  <div class="sub">The world wire — market-moving news from across the globe in 65+ languages, with the country it broke in and the live tone of coverage. Powered by GDELT, updated every 15 minutes.</div>
-  <div class="src">Live global news &amp; tone via the GDELT Project · for information only, not investment advice</div>
+  <div class="sub">The world wire — business and markets headlines from across the globe, refreshed continuously and ranked newest-first.</div>
+  <div class="src">Live headlines via BBC, CNBC, Yahoo Finance &amp; MarketWatch · for information only, not investment advice</div>
 
   <div id="sumwrap"></div>
   <div id="feed" class="feed"></div>
@@ -64,40 +64,41 @@ h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
 </div>
 
 <script>
+var FEEDS=[
+  {url:'https://feeds.bbci.co.uk/news/business/rss.xml',name:'BBC Business',dom:'bbc.com'},
+  {url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',name:'CNBC',dom:'cnbc.com'},
+  {url:'https://finance.yahoo.com/news/rssindex',name:'Yahoo Finance',dom:'finance.yahoo.com'},
+  {url:'http://feeds.marketwatch.com/marketwatch/topstories/',name:'MarketWatch',dom:'marketwatch.com'},
+  {url:'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en',name:'Google News',dom:'news.google.com'}
+];
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function logoFor(dom){ return 'https://www.google.com/s2/favicons?domain='+(dom||'')+'&sz=64'; }
-function ago(dt){ var m=/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/.exec(dt||''); if(!m) return ''; var t=Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]); var s=Math.floor((Date.now()-t)/1000); if(s<60)return 'just now'; if(s<3600)return Math.floor(s/60)+'m ago'; if(s<86400)return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
-function toneSpark(arr){ if(!arr||arr.length<2) return ''; var min=Math.min.apply(null,arr),max=Math.max.apply(null,arr),rng=(max-min)||1,W=140,H=38; var X=function(i){return (i/(arr.length-1)*W).toFixed(1);},Y=function(v){return (H-4-(v-min)/rng*(H-8)).toFixed(1);}; var up=arr[arr.length-1]>=arr[0],c=up?'#0a7d33':'#c0341d'; var ln=arr.map(function(v,i){return X(i)+','+Y(v);}).join(' '); return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="display:block"><polyline fill="none" stroke="'+c+'" stroke-width="1.7" points="'+ln+'"/></svg>'; }
-
-var GBASE='https://api.gdeltproject.org/api/v2/doc/doc?format=json&query=markets';
+function ago(ts){ if(!ts) return ''; var s=Math.floor(Date.now()/1000)-ts; if(s<60)return 'just now'; if(s<3600)return Math.floor(s/60)+'m ago'; if(s<86400)return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
+async function one(f){ try{ var d=await (await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(f.url))).json(); if(d.status!=='ok'||!d.items) return []; return d.items.map(function(it){ return {title:it.title, url:it.link, src:f.name, dom:f.dom, ts:Math.floor(Date.parse(it.pubDate)/1000)||0}; }); }catch(e){ return []; } }
 async function load(){
   var status=document.getElementById('status'), feedEl=document.getElementById('feed');
   try{
-    var d=await (await fetch(GBASE+'&mode=artlist&maxrecords=24&sort=datedesc&timespan=3d')).json();
-    var arts=(d.articles||[]).filter(function(a){return a.title && a.url;});
-    if(!arts.length){ status.textContent='The global wire is quiet right now. Try again shortly.'; return; }
-    var seen={}, uniq=[]; arts.forEach(function(a){var k=a.title.toLowerCase().slice(0,60); if(!seen[k]){seen[k]=1;uniq.push(a);}});
+    var groups=await Promise.all(FEEDS.map(one));
+    var all=[].concat.apply([],groups).filter(function(a){return a.title&&a.url;});
+    if(!all.length){ status.textContent='The global wire is quiet right now. Try again shortly.'; return; }
+    var seen={}, uniq=[]; all.forEach(function(a){var k=a.title.toLowerCase().slice(0,60); if(!seen[k]){seen[k]=1;uniq.push(a);}});
+    uniq.sort(function(a,b){return b.ts-a.ts;});
+    var srcCount={}; uniq.forEach(function(a){srcCount[a.src]=1;});
+    document.getElementById('sumwrap').innerHTML='<div class="sum">'+
+      '<div class="s"><span class="l">Live stories</span><span class="v">'+uniq.length+'</span></div>'+
+      '<div class="s"><span class="l">Sources</span><span class="v">'+Object.keys(srcCount).length+'</span></div>'+
+      '<div class="s"><span class="l">Updated</span><span class="v" style="font-size:15px;font-weight:600">'+new Date().toLocaleTimeString()+'</span></div></div>';
     status.style.display='none';
     feedEl.innerHTML=uniq.slice(0,24).map(function(a,i){
       var lead=i===0?' lead':'';
       return '<a class="card'+lead+'" href="'+encodeURI(a.url)+'" target="_blank" rel="noopener noreferrer">'+
-        '<div class="chead"><img class="logo" src="'+logoFor(a.domain)+'" alt="" onerror="this.style.visibility=\'hidden\'"><span class="s">'+esc(a.domain||'')+'</span>'+(a.sourcecountry?'<span class="ct">'+esc(a.sourcecountry)+'</span>':'')+'<span class="time">'+ago(a.seendate)+'</span></div>'+
+        '<div class="chead"><img class="logo" src="'+logoFor(a.dom)+'" alt="" onerror="this.style.visibility=\'hidden\'"><span class="s">'+esc(a.src)+'</span><span class="time">'+ago(a.ts)+'</span></div>'+
         '<div class="t">'+esc(a.title)+'</div><div class="go">Read &#8594;</div></a>';
     }).join('');
-    try{
-      var tj=await (await fetch(GBASE+'&mode=timelinetone&timespan=7d')).json();
-      var ser=tj.timeline&&tj.timeline[0]&&tj.timeline[0].data;
-      if(ser&&ser.length){ var vals=ser.map(function(x){return x.value;}); var cur=vals[vals.length-1]; var cls=cur>=0?'up':'down', label=cur>=0?'positive':'negative';
-        document.getElementById('sumwrap').innerHTML='<div class="sum">'+
-          '<div class="s"><span class="l">Global coverage tone (now)</span><span class="v '+cls+'">'+(cur>=0?'+':'')+cur.toFixed(2)+' \u00b7 '+label+'</span></div>'+
-          '<div class="s"><span class="l">7-day tone trend</span><span class="v">'+toneSpark(vals)+'</span></div>'+
-          '<div class="s"><span class="l">Window</span><span class="v" style="font-size:15px;font-weight:600">last 72h headlines</span></div></div>';
-      }
-    }catch(e){}
   }catch(e){ status.textContent='Could not reach the global wire. Try again shortly.'; }
 }
 load();
-setInterval(load, 300000);
+setInterval(load, 180000);
 </script>
   <script src="/nav.js"></script>
 </body>
