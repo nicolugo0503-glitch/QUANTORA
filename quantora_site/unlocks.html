@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Token Unlocks — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · Token Unlocks — live vesting schedules"><meta property="og:description" content="Upcoming token unlocks ranked by 30-day supply pressure — vesting cliffs, dollar value and % of supply, live.">
+<meta property="og:url" content="https://www.usequantora.com/unlocks.html"><meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="Upcoming token unlocks ranked by 30-day supply pressure — vesting cliffs, dollar value and % of supply, live via DefiLlama.">
+<link rel="canonical" href="https://www.usequantora.com/unlocks.html">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a8a3b;--down:#d23a2c;--acc:#6366f1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 24px 80px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.sum{display:flex;gap:30px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:16px 22px;margin-top:20px;background:var(--soft)}
+.sum .s{display:flex;flex-direction:column}.sum .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}.sum .v{font-size:19px;font-weight:750;margin-top:3px;letter-spacing:-.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:22px}
+.card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s}
+.card:hover{transform:translateY(-3px);box-shadow:0 16px 38px -22px rgba(16,24,40,.26);border-color:#e2e3e9}
+.card .ch{display:flex;align-items:center;gap:8px}.card .tk{font-weight:700;font-size:15px}
+.card .badge{margin-left:auto;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;background:#eef1ff;color:#3358ff}
+.badge.cliff{background:#fdeeeb;color:#c0341d}
+.card .v{font-size:24px;font-weight:750;letter-spacing:-.02em;margin-top:12px;font-variant-numeric:tabular-nums}
+.card .meta{font-size:12.5px;color:var(--mut);margin-top:4px}
+.card .pctbar{height:6px;background:#eef0f4;border-radius:5px;overflow:hidden;margin-top:11px}
+.card .pctbar i{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#ec4899)}
+.card .nx{font-size:12.5px;margin-top:10px;color:#444}.card .nx b{color:var(--down)}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+@media(max-width:560px){.wrap{padding:28px 16px 60px}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/funding.html" class="link">Funding</a>
+  <a href="/unlocks.html" class="link active">Unlocks</a>
+  <a href="/dex.html" class="link">DEX</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <div class="right"><span class="dot"></span> Live · token unlocks</div>
+</div>
+<div class="wrap">
+  <h1>Token Unlocks</h1>
+  <div class="sub">The supply hitting the market next — upcoming vesting unlocks ranked by 30-day pressure, with the dollar value and the share of supply unlocking. The single most-watched, least-surfaced signal in crypto.</div>
+  <div class="src">Live vesting schedules via DefiLlama · prices via CoinGecko · for information only, not investment advice</div>
+
+  <div id="sumwrap"></div>
+  <div id="grid" class="grid"></div>
+  <div class="status" id="status">Loading vesting schedules across the market…</div>
+</div>
+
+<script>
+var KW=['arbitrum','optimism','aptos','sui','sei','celestia','immutable','jito','worldcoin','ethena','pyth','jupiter','starknet','zksync','dydx','blur','ondo','wormhole','altlayer','manta','eigenlayer','ethfi','renzo','aevo','saga','omni','grass','starknet-token','axelar','metis','cyber'];
+function big(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(1)+'M'; if(a>=1e3)return '$'+(n/1e3).toFixed(0)+'K'; return '$'+Math.round(n); }
+function tn(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e9)return (n/1e9).toFixed(2)+'B'; if(a>=1e6)return (n/1e6).toFixed(1)+'M'; if(a>=1e3)return (n/1e3).toFixed(0)+'K'; return Math.round(n).toString(); }
+function days(ts){ var d=Math.round((ts*1000-Date.now())/864e5); return d<=0?'soon':('in '+d+'d'); }
+function dstr(ts){ return new Date(ts*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}); }
+function cum(cats,t){ var s=0; cats.forEach(function(c){ var v=0; var arr=c.data||[]; for(var i=0;i<arr.length;i++){ if(arr[i].timestamp<=t) v=arr[i].unlocked; else break; } s+=v; }); return s; }
+
+async function load(){
+  var status=document.getElementById('status');
+  try{
+    var list=await (await fetch('https://defillama-datasets.llama.fi/emissionsProtocolsList')).json();
+    var slugs=list.filter(function(s){ return KW.some(function(k){return s===k || s.indexOf(k)>=0;}); });
+    // de-dup & cap
+    slugs=slugs.filter(function(s,i){return slugs.indexOf(s)===i;}).slice(0,26);
+    if(!slugs.length){ status.textContent='No vesting schedules available right now.'; return; }
+    var details=await Promise.all(slugs.map(function(s){ return fetch('https://defillama-datasets.llama.fi/emissions/'+s).then(function(r){return r.json();}).catch(function(){return null;}); }));
+    var now=Math.floor(Date.now()/1000), wk=now+7*864e2, mo=now+30*864e2;
+    var rows=[]; var geckos=[];
+    details.forEach(function(d){
+      if(!d||!d.documentedData||!d.documentedData.data) return;
+      var cats=d.documentedData.data;
+      var u30=cum(cats,mo)-cum(cats,now); var u7=cum(cats,wk)-cum(cats,now);
+      if(!(u30>0)) return;
+      var total=(d.metadata&&d.metadata.total)||cum(cats,now+10*365*864e2)||0;
+      var nextCliff=null;
+      var evs=(d.metadata&&d.metadata.events)||[];
+      evs.forEach(function(e){ if(e.timestamp>now && e.unlockType==='cliff' && !nextCliff){ nextCliff={ts:e.timestamp,tok:(e.noOfTokens||[0]).reduce(function(a,b){return a+b;},0)}; } });
+      var g=d.gecko_id;
+      rows.push({name:d.name||g, gecko:g, u30:u30, u7:u7, total:total, pct30:total>0?u30/total*100:null, nextCliff:nextCliff});
+      if(g)geckos.push(g);
+    });
+    // prices
+    var prices={};
+    try{ prices=await (await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+encodeURIComponent(geckos.join(','))+'&vs_currencies=usd')).json(); }catch(e){}
+    rows.forEach(function(r){ var p=prices[r.gecko]&&prices[r.gecko].usd; r.price=p||null; r.usd30=p?r.u30*p:null; r.usd7=p?r.u7*p:null; if(r.nextCliff&&p)r.nextCliff.usd=r.nextCliff.tok*p; });
+    rows.sort(function(a,b){ return (b.usd30||0)-(a.usd30||0); });
+    if(!rows.length){ status.textContent='No upcoming unlocks found right now.'; return; }
+    status.style.display='none';
+    var tot30=rows.reduce(function(s,r){return s+(r.usd30||0);},0);
+    var soon=rows.slice().filter(function(r){return r.nextCliff;}).sort(function(a,b){return a.nextCliff.ts-b.nextCliff.ts;})[0];
+    document.getElementById('sumwrap').innerHTML='<div class="sum"><div class="s"><span class="l">Tokens tracked</span><span class="v">'+rows.length+'</span></div>'+
+      '<div class="s"><span class="l">Unlocking next 30 days</span><span class="v">'+big(tot30)+'</span></div>'+
+      (soon?'<div class="s"><span class="l">Next major cliff</span><span class="v" style="font-size:15px">'+soon.name+' · '+dstr(soon.nextCliff.ts)+' ('+big(soon.nextCliff.usd)+')</span></div>':'')+'</div>';
+    document.getElementById('grid').innerHTML=rows.map(function(r){
+      return '<div class="card"><div class="ch"><span class="tk">'+r.name+'</span><span class="badge'+(r.nextCliff?' cliff':'')+'">'+(r.nextCliff?'cliff ahead':'linear')+'</span></div>'+
+        '<div class="v">'+(r.usd30!=null?big(r.usd30):tn(r.u30))+'</div>'+
+        '<div class="meta">unlocking next 30d'+(r.pct30!=null?' · '+r.pct30.toFixed(1)+'% of supply':'')+'</div>'+
+        (r.pct30!=null?'<div class="pctbar"><i style="width:'+Math.min(100,r.pct30*4).toFixed(0)+'%"></i></div>':'')+
+        (r.nextCliff?'<div class="nx">Next cliff <b>'+dstr(r.nextCliff.ts)+'</b> '+days(r.nextCliff.ts)+(r.nextCliff.usd?' · '+big(r.nextCliff.usd):'')+'</div>':'')+
+        '</div>';
+    }).join('');
+  }catch(e){ status.textContent='Could not reach the unlocks feed. Try again shortly.'; }
+}
+load();
+setInterval(load, 600000);
+</script>
+  <footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Vesting estimates may be inaccurate. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
+<script defer src="/_vercel/insights/script.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>
