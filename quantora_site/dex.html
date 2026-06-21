@@ -40,6 +40,17 @@ tbody tr:hover{background:var(--soft)}
 .up{color:var(--up)}.down{color:var(--down)}
 .status{margin-top:26px;color:var(--mut);font-size:14px}
 @media(max-width:760px){.liq,.fdv{display:none}}
+
+.dexsum{display:flex;gap:30px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:14px 20px;margin-top:18px;background:var(--soft)}
+.dexsum .ds{display:flex;flex-direction:column}
+.dexsum .dl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.dexsum .dv{font-size:17px;font-weight:750;margin-top:3px;letter-spacing:-.02em}
+.vbar{height:6px;background:#eef0f4;border-radius:4px;overflow:hidden;margin-top:5px;width:92px;margin-left:auto}
+.vbar i{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#22d3ee)}
+.vv{font-variant-numeric:tabular-nums}
+.flow{display:flex;height:6px;border-radius:4px;overflow:hidden;width:84px;margin-left:auto;background:#eef0f4}
+.flow .fb{background:#0a8a3b}.flow .fs{background:#d23a2c}
+.ft{font-size:11px;color:var(--mut);margin-top:4px;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -95,18 +106,26 @@ async function search(){
     pairs=pairs.filter(function(p){return p.volume&&p.volume.h24;}).sort(function(a,b){return (b.volume.h24||0)-(a.volume.h24||0);}).slice(0,30);
     if(!pairs.length){ status.textContent='No active pairs found for "'+q+'".'; return; }
     status.style.display='none';
-    var head='<table><thead><tr><th>Pair</th><th>Chain</th><th>DEX</th><th>Price</th><th>24h</th><th class="liq">Liquidity</th><th>Volume 24h</th></tr></thead><tbody>';
+    var maxVol=Math.max.apply(null,pairs.map(function(p){return p.volume.h24||0;}))||1;
+    var totVol=pairs.reduce(function(a,p){return a+(p.volume.h24||0);},0);
+    var top=pairs[0];
+    var summary='<div class="dexsum"><div class="ds"><span class="dl">Active pairs</span><span class="dv">'+pairs.length+'</span></div>'+
+      '<div class="ds"><span class="dl">Total 24h volume</span><span class="dv">'+bn(totVol)+'</span></div>'+
+      '<div class="ds"><span class="dl">Top pair</span><span class="dv">'+(top.baseToken&&top.baseToken.symbol||'?')+'/'+(top.quoteToken&&top.quoteToken.symbol||'?')+' · '+(top.dexId||'')+'</span></div></div>';
+    var head='<table><thead><tr><th>Pair</th><th>Chain</th><th>Price</th><th>24h</th><th class="liq">Liquidity</th><th>24h flow (buys/sells)</th><th>Volume 24h</th></tr></thead><tbody>';
     var body=pairs.map(function(p){
       var ch=p.priceChange&&p.priceChange.h24;
-      return '<tr><td><span class="pair">'+(p.baseToken&&p.baseToken.symbol||'?')+'</span><span class="q">/'+(p.quoteToken&&p.quoteToken.symbol||'?')+'</span></td>'+
+      var vol=(p.volume&&p.volume.h24)||0;
+      var tx=p.txns&&p.txns.h24; var b=tx?tx.buys:0, sl=tx?tx.sells:0, tot=(b+sl)||1;
+      return '<tr><td><span class="pair">'+(p.baseToken&&p.baseToken.symbol||'?')+'</span><span class="q">/'+(p.quoteToken&&p.quoteToken.symbol||'?')+'</span> <span class="badge">'+(p.dexId||'')+'</span></td>'+
         '<td><span class="badge">'+(p.chainId||'—')+'</span></td>'+
-        '<td>'+(p.dexId||'—')+'</td>'+
         '<td>'+px(parseFloat(p.priceUsd))+'</td>'+
         '<td class="'+col(ch)+'">'+pc(ch)+'</td>'+
         '<td class="liq">'+bn(p.liquidity&&p.liquidity.usd)+'</td>'+
-        '<td>'+bn(p.volume&&p.volume.h24)+'</td></tr>';
+        '<td><div class="flow"><span class="fb" style="width:'+(b/tot*100).toFixed(0)+'%"></span><span class="fs" style="width:'+(sl/tot*100).toFixed(0)+'%"></span></div><div class="ft">'+b.toLocaleString()+' / '+sl.toLocaleString()+'</div></td>'+
+        '<td><div class="vv">'+bn(vol)+'</div><div class="vbar"><i style="width:'+(vol/maxVol*100).toFixed(0)+'%"></i></div></td></tr>';
     }).join('');
-    document.getElementById('tablewrap').innerHTML=head+body+'</tbody></table>';
+    document.getElementById('tablewrap').innerHTML=summary+head+body+'</tbody></table>';
   }catch(e){ status.textContent='Could not reach the DEX feed. Try again shortly.'; }
 }
 document.getElementById('go').onclick=search;
