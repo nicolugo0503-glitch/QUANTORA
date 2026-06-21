@@ -77,6 +77,7 @@ tbody tr:hover{background:var(--soft)}
 <script>
 var CHAINS={eth:{host:'eth.blockscout.com',name:'Ethereum'},base:{host:'base.blockscout.com',name:'Base'},arbitrum:{host:'arbitrum.blockscout.com',name:'Arbitrum'},optimism:{host:'optimism.blockscout.com',name:'Optimism'}};
 var PRESETS=[{l:'vitalik.eth',a:'0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'},{l:'Ethereum Foundation',a:'0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe'}];
+var MAJ={USDC:1,USDT:1,DAI:1,WETH:1,WBTC:1,STETH:1,WSTETH:1,RETH:1,USDE:1,SUSDE:1,LINK:1,UNI:1,AAVE:1,LDO:1,ENS:1,MKR:1,CRV:1,PEPE:1,SHIB:1,MATIC:1,ARB:1,OP:1,FRAX:1,LUSD:1,CBETH:1,WEETH:1};
 function usd(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(2)+'M'; if(a>=1e3)return '$'+(n/1e3).toFixed(1)+'K'; return '$'+n.toLocaleString(undefined,{maximumFractionDigits:2}); }
 function amt(n){ if(n==null||isNaN(n))return '—'; if(n>=1000)return n.toLocaleString(undefined,{maximumFractionDigits:0}); if(n>=1)return n.toLocaleString(undefined,{maximumFractionDigits:3}); return n.toPrecision(3); }
 function shrt(a){ return a.slice(0,6)+'…'+a.slice(-4); }
@@ -99,8 +100,12 @@ async function load(){
     var rows=(Array.isArray(toks)?toks:[]).map(function(t){
       var d=parseInt(t.token&&t.token.decimals||'18',10); var bal=parseFloat(t.value)/Math.pow(10,d);
       var rate=t.token&&t.token.exchange_rate?parseFloat(t.token.exchange_rate):null;
-      return {sym:(t.token&&t.token.symbol)||'?', name:(t.token&&t.token.name)||'', bal:bal, price:rate, val:(rate!=null?bal*rate:null)};
-    }).filter(function(r){return r.val!=null && r.val>=1;}).sort(function(a,b){return b.val-a.val;});
+      var mc=t.token&&t.token.circulating_market_cap?parseFloat(t.token.circulating_market_cap):0;
+      return {sym:(t.token&&t.token.symbol)||'?', name:(t.token&&t.token.name)||'', bal:bal, price:rate, mc:mc, val:(rate!=null?bal*rate:null)};
+    }).filter(function(r){
+      if(r.val==null||r.val<1) return false;
+      return r.mc>0 || MAJ[(r.sym||'').toUpperCase()];   // only real, priced tokens (drop spam airdrops)
+    }).sort(function(a,b){return b.val-a.val;});
     var tokTotal=rows.reduce(function(s,r){return s+r.val;},0);
     var total=(nativeUSD||0)+tokTotal;
     status.style.display='none';
