@@ -508,7 +508,55 @@ function corrMatrix(series){
 }
 Q.corrMatrix=corrMatrix;
 
-Q.version='1.7';
+
+/* ================= TECHNICAL STUDIES ================= */
+function sma(arr,n){ var r=[]; for(var i=0;i<arr.length;i++){ if(i<n-1){ r.push(null); continue; } var s=0; for(var j=i-n+1;j<=i;j++) s+=arr[j]; r.push(s/n); } return r; }
+function ema(arr,n){ var k=2/(n+1), r=[arr[0]]; for(var i=1;i<arr.length;i++) r.push(arr[i]*k+r[i-1]*(1-k)); return r; }
+function rsi(arr,n){ n=n||14; if(arr.length<n+1) return null; var g=0,l=0,i;
+  for(i=1;i<=n;i++){ var d=arr[i]-arr[i-1]; if(d>=0) g+=d; else l-=d; } g/=n; l/=n;
+  for(i=n+1;i<arr.length;i++){ var d2=arr[i]-arr[i-1]; var up=d2>0?d2:0, dn=d2<0?-d2:0; g=(g*(n-1)+up)/n; l=(l*(n-1)+dn)/n; }
+  if(l===0) return 100; var rs=g/l; return 100-100/(1+rs);
+}
+function macd(arr,fast,slow,sig){ fast=fast||12; slow=slow||26; sig=sig||9;
+  var ef=ema(arr,fast), es=ema(arr,slow), line=arr.map(function(_,i){return ef[i]-es[i];});
+  var sgn=ema(line,sig); var i=arr.length-1; return {macd:line[i], signal:sgn[i], hist:line[i]-sgn[i]};
+}
+function bollinger(arr,n,k){ n=n||20; k=k||2; if(arr.length<n) return null; var last=arr.slice(arr.length-n); var m=mean(last), sd=0; for(var i=0;i<last.length;i++) sd+=(last[i]-m)*(last[i]-m); sd=Math.sqrt(sd/n); return {mid:m, upper:m+k*sd, lower:m-k*sd, sd:sd}; }
+Q.sma=sma; Q.ema=ema; Q.rsi=rsi; Q.macd=macd; Q.bollinger=bollinger;
+
+/* ================= OLS MULTI-FACTOR REGRESSION ================= */
+function ols(y,X){ // X: array of rows, each row = factor values (no intercept)
+  var n=y.length, k=X[0].length, i, j, c;
+  var D=[]; for(i=0;i<n;i++){ D.push([1].concat(X[i])); }
+  var p=k+1, DtD=[], Dty=[];
+  for(i=0;i<p;i++){ DtD[i]=[]; for(j=0;j<p;j++){ var s=0; for(c=0;c<n;c++) s+=D[c][i]*D[c][j]; DtD[i][j]=s; } var sy=0; for(c=0;c<n;c++) sy+=D[c][i]*y[c]; Dty[i]=sy; }
+  var inv=matInv(DtD), beta=matVec(inv,Dty);
+  var ybar=mean(y), ssr=0, sst=0;
+  for(c=0;c<n;c++){ var fit=0; for(i=0;i<p;i++) fit+=D[c][i]*beta[i]; ssr+=(y[c]-fit)*(y[c]-fit); sst+=(y[c]-ybar)*(y[c]-ybar); }
+  return {alpha:beta[0], betas:beta.slice(1), r2:sst?1-ssr/sst:0, resStd:Math.sqrt(ssr/Math.max(1,n-p))};
+}
+Q.ols=ols;
+
+/* ================= DISTRIBUTION STATS ================= */
+function _moment(a,p){ var m=mean(a),s=0; for(var i=0;i<a.length;i++) s+=Math.pow(a[i]-m,p); return s/a.length; }
+function skewness(a){ var m2=_moment(a,2); return _moment(a,3)/Math.pow(m2,1.5); }
+function kurtosis(a){ var m2=_moment(a,2); return _moment(a,4)/(m2*m2)-3; }
+function jarqueBera(a){ var S=skewness(a), K=kurtosis(a), n=a.length; return n/6*(S*S+K*K/4); }
+Q.skewness=skewness; Q.kurtosis=kurtosis; Q.jarqueBera=jarqueBera;
+
+/* ================= PERFORMANCE EXTRAS ================= */
+function ulcerIndex(returns){ var eq=1,peak=1,s=0,n=returns.length; for(var i=0;i<n;i++){ eq*=1+returns[i]; if(eq>peak) peak=eq; var dd=(eq/peak-1)*100; s+=dd*dd; } return Math.sqrt(s/n); }
+function gainToPain(returns){ var g=0,p=0; for(var i=0;i<returns.length;i++){ g+=returns[i]; if(returns[i]<0) p-=returns[i]; } return p===0?Infinity:g/p; }
+function tailRatio(returns){ var s=returns.slice().sort(function(a,b){return a-b;}); function q(pp){ return s[Math.min(s.length-1,Math.floor(pp*s.length))]; } var lo=Math.abs(q(0.05)); return lo===0?Infinity:Math.abs(q(0.95))/lo; }
+Q.ulcerIndex=ulcerIndex; Q.gainToPain=gainToPain; Q.tailRatio=tailRatio;
+
+/* ================= DIGITAL OPTION + CARRY ================= */
+function digitalOption(S,K,T,r,q,sig,isCall,payout){ payout=payout==null?1:payout; var d2=bsm(S,K,T,r,q,sig).d2; return payout*Math.exp(-r*T)*(isCall?normCdf(d2):normCdf(-d2)); }
+function futureFair(spot,r,q,T){ return spot*Math.exp((r-q)*T); }
+function forwardFX(spot,rd,rf,T){ return spot*Math.exp((rd-rf)*T); }
+Q.digitalOption=digitalOption; Q.futureFair=futureFair; Q.forwardFX=forwardFX;
+
+Q.version='1.8';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

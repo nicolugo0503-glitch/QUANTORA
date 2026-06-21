@@ -333,6 +333,24 @@ BTC: 0.03,-0.05,0.04,0.01,-0.03,0.05,-0.02</textarea></div>
     <h2>Execution &amp; sizing</h2>
     <div class="grid" id="g_exec"></div>
   </div>
+  <div class="sec">
+    <h2>Technical &amp; quant studies</h2>
+    <div id="techPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">Price studies</span>
+        <span class="badge">SMA · Bollinger</span>
+        <span id="techNote" style="font-size:11.5px;color:var(--mut);margin-left:auto"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start">
+        <div>
+          <div class="fld" style="margin-bottom:8px"><label>Price series</label><textarea id="tech_px" style="width:100%;min-height:90px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:8px;padding:7px">100,102,101,104,107,105,108,110,109,112,115,113,116,119,121,118,122,125,123,127,130,128,126,129,133,131,135,138,136,140</textarea></div>
+          <div class="row2"><div class="fld"><label>SMA period</label><input id="tech_sma" type="number" value="10" step="1"></div><div class="fld"><label>Boll. period</label><input id="tech_boll" type="number" value="20" step="1"></div></div>
+        </div>
+        <div id="tech_chart" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="grid" id="g_tech"></div>
+  </div>
 
   <p class="foot">All outputs are computed from the inputs you enter using standard published formulas (Black–Scholes–Merton, Hull; Fabozzi duration/convexity; Estrella–Mishkin recession probit; Merton structural credit; Almgren–Chriss; Uniswap-v2 impermanent loss). They are mathematical tools for analysis and education, not investment advice. Quantora is not a registered investment adviser or broker-dealer.</p>
 </div>
@@ -1088,6 +1106,85 @@ function drawCorr(){
   host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+g+'</svg>';
 }
 document.getElementById('corr_in').addEventListener('input',drawCorr); drawCorr();
+
+/* ===== TECHNICAL CHART PANEL ===== */
+function drawTech(){
+  var px=parseNums(document.getElementById('tech_px').value);
+  var nS=Math.max(2,parseInt(document.getElementById('tech_sma').value)||10);
+  var nB=Math.max(2,parseInt(document.getElementById('tech_boll').value)||20);
+  var host=document.getElementById('tech_chart'), note=document.getElementById('techNote');
+  if(px.length<Math.max(nS,nB)){ host.innerHTML='<span style="color:var(--mut);font-size:12.5px">Need at least '+Math.max(nS,nB)+' prices.</span>'; note.textContent=''; return; }
+  var smaArr=Q.sma(px,nS);
+  // bollinger bands series
+  var up=[],lo=[],mid=[];
+  for(var i=0;i<px.length;i++){ if(i<nB-1){ up.push(null);lo.push(null);mid.push(null);continue; } var seg=px.slice(i-nB+1,i+1); var m=Q.mean(seg),sd=0; for(var j=0;j<seg.length;j++) sd+=(seg[j]-m)*(seg[j]-m); sd=Math.sqrt(sd/nB); mid.push(m); up.push(m+2*sd); lo.push(m-2*sd); }
+  var W=520,H=210,pad=32, n=px.length;
+  var allv=px.concat(up.filter(function(x){return x!=null;})).concat(lo.filter(function(x){return x!=null;}));
+  var ymin=Math.min.apply(null,allv), ymax=Math.max.apply(null,allv); var yp=(ymax-ymin)*0.06||1; ymin-=yp; ymax+=yp;
+  function X(i){ return pad+i/(n-1)*(W-2*pad); }
+  function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
+  function poly(a,col,w,dash){ var pts=a.map(function(v,i){return v==null?null:X(i).toFixed(1)+','+Y(v).toFixed(1);}).filter(function(x){return x;}).join(' '); return '<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="'+w+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>'; }
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
+    poly(up,'#c7c0f5',1,'4 3')+poly(lo,'#c7c0f5',1,'4 3')+
+    poly(px,'#0a0a0a',2)+poly(smaArr,'#6366f1',1.6)+
+    '<text x="'+(pad+2)+'" y="'+(pad-4)+'" font-size="9" fill="#6366f1">SMA'+nS+'</text>'+
+    '<text x="'+(pad+44)+'" y="'+(pad-4)+'" font-size="9" fill="#c7a0f5">Bollinger'+nB+'</text>'+
+    '</svg>';
+  var r=Q.rsi(px,14), b=Q.bollinger(px,nB,2);
+  note.textContent='last '+px[px.length-1].toFixed(1)+(r!=null?(' · RSI '+r.toFixed(0)):'')+(b?(' · band '+b.lower.toFixed(1)+'–'+b.upper.toFixed(1)):'');
+}
+['tech_px','tech_sma','tech_boll'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawTech); }); drawTech();
+
+/* ===== TECHNICAL CARDS ===== */
+buildCard(document.getElementById('g_tech'),{
+  title:'RSI', desc:'Relative Strength Index (Wilder, 14) from a price series — >70 overbought, <30 oversold.',
+  inputs:[{k:'p',label:'Prices',type:'textarea',val:'44,44.3,44.1,43.6,44.3,44.8,45.1,45.4,45.1,45.4,45.8,46.1,45.9,46.0,46.4,46.2,46.6'},{k:'n',label:'Period',val:14}],
+  compute:function(v){ var a=parseNums(v.p); var r=Q.rsi(a,v.n); if(r==null) return [{l:'Note',v:'need period+1'}]; return [{l:'RSI',v:fmt(r,1),cls:r>70?'down':(r<30?'up':'')},{l:'Zone',v:r>70?'overbought':(r<30?'oversold':'neutral')}]; }
+});
+buildCard(document.getElementById('g_tech'),{
+  title:'MACD', desc:'Moving-average convergence/divergence (12,26,9) from a price series.',
+  inputs:[{k:'p',label:'Prices (30+)',type:'textarea',val:'100,102,101,104,107,105,108,110,109,112,115,113,116,119,121,118,122,125,123,127,130,128,126,129,133,131,135,138,136,140'}],
+  compute:function(v){ var a=parseNums(v.p); if(a.length<27) return [{l:'Note',v:'need 27+'}]; var m=Q.macd(a); return [{l:'MACD',v:fmt(m.macd,2)},{l:'Signal',v:fmt(m.signal,2)},{l:'Histogram',v:fmt(m.hist,2),cls:m.hist>=0?'up':'down'}]; }
+});
+buildCard(document.getElementById('g_tech'),{
+  title:'Bollinger bands', desc:'Upper/lower bands at ±2σ around the moving average.',
+  inputs:[{k:'p',label:'Prices',type:'textarea',val:'100,102,101,104,107,105,108,110,109,112,115,113,116,119,121,118,122,125,123,127'},{k:'n',label:'Period',val:20}],
+  compute:function(v){ var a=parseNums(v.p); var b=Q.bollinger(a,v.n,2); if(!b) return [{l:'Note',v:'need period'}]; var last=a[a.length-1]; return [{l:'Upper',v:fmt(b.upper,2)},{l:'Mid',v:fmt(b.mid,2)},{l:'Lower',v:fmt(b.lower,2)},{l:'%B',v:pct((last-b.lower)/(b.upper-b.lower),0)}]; }
+});
+
+/* ===== FACTOR / DISTRIBUTION / PERF / EXOTIC / CARRY ===== */
+buildCard(document.getElementById('g_risk'),{
+  title:'Factor regression', desc:'OLS of asset returns on factors — alpha, betas and R². Asset line first, then one factor per line.',
+  inputs:[{k:'y',label:'Asset returns',type:'textarea',val:'0.012,-0.018,0.016,-0.004,0.021,-0.028,0.022'},{k:'f',label:'Factors (one series per line)',type:'textarea',val:'0.010,-0.015,0.012,-0.002,0.018,-0.025,0.019\n0.002,-0.004,0.003,0.001,0.004,-0.006,0.002'}],
+  compute:function(v){ var y=parseNums(v.y); var facs=v.f.split(/\n/).map(function(l){return parseNums(l);}).filter(function(a){return a.length===y.length;}); if(!facs.length||y.length<facs.length+2) return [{l:'Note',v:'check lengths'}];
+    var X=y.map(function(_,i){return facs.map(function(fr){return fr[i];});}); var r=Q.ols(y,X);
+    var out=[{l:'Alpha',v:fmt(r.alpha,4)}]; r.betas.forEach(function(b,i){ out.push({l:'Beta '+(i+1),v:fmt(b,2)}); }); out.push({l:'R²',v:fmt(r.r2,2)}); return out; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Distribution stats', desc:'Skewness, excess kurtosis and the Jarque–Bera normality test on returns.',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.012,-0.020,0.015,-0.005,0.020,-0.030,0.025,0.010,-0.008,0.018,0.005,-0.012,0.022,-0.018,0.009,-0.025'}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<4) return []; var jb=Q.jarqueBera(a); return [{l:'Skew',v:fmt(Q.skewness(a),2)},{l:'Kurtosis',v:fmt(Q.kurtosis(a),2)},{l:'Jarque–Bera',v:fmt(jb,2)},{l:'Normal?',v:jb<5.99?'yes':'no',cls:jb<5.99?'up':'down'}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Pain ratios', desc:'Ulcer index, gain-to-pain and tail ratio — depth-of-drawdown adjusted performance.',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.01,-0.02,0.03,-0.01,0.02,-0.03,0.025,0.01,-0.008,0.018'}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<3) return []; return [{l:'Ulcer index',v:fmt(Q.ulcerIndex(a),2)},{l:'Gain/pain',v:fmt(Q.gainToPain(a),2)},{l:'Tail ratio',v:fmt(Q.tailRatio(a),2)}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Digital option', desc:'Cash-or-nothing binary option — pays a fixed amount if it expires in the money.',
+  inputs:[{k:'S',label:'Spot',val:100},{k:'K',label:'Strike',val:105},{k:'D',label:'Days',val:90},{k:'v',label:'Vol %',val:25},{k:'r',label:'Rate %',val:5},{k:'pay',label:'Payout',val:100}],
+  compute:function(v){ var c=Q.digitalOption(v.S,v.K,v.D/365,v.r/100,0,v.v/100,true,v.pay); var pu=Q.digitalOption(v.S,v.K,v.D/365,v.r/100,0,v.v/100,false,v.pay); return [{l:'Call (binary)',v:fmt(c,2),cls:'up'},{l:'Put (binary)',v:fmt(pu,2),cls:'down'}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Futures fair value', desc:'Cost-of-carry fair price of a futures contract.',
+  inputs:[{k:'s',label:'Spot',val:100},{k:'r',label:'Rate %',val:5},{k:'q',label:'Yield/carry %',val:2},{k:'d',label:'Days',val:90}],
+  compute:function(v){ var fv=Q.futureFair(v.s,v.r/100,v.q/100,v.d/365); return [{l:'Fair futures',v:fmt(fv,2)},{l:'Basis',v:fmt(fv-v.s,2),cls:fv>=v.s?'up':'down'}]; }
+});
+buildCard(document.getElementById('g_crypto'),{
+  title:'Covered interest parity', desc:'No-arbitrage forward FX rate from the interest-rate differential.',
+  inputs:[{k:'s',label:'Spot FX',val:1.20},{k:'rd',label:'Domestic %',val:4},{k:'rf',label:'Foreign %',val:1},{k:'d',label:'Days',val:180}],
+  compute:function(v){ var fwd=Q.forwardFX(v.s,v.rd/100,v.rf/100,v.d/365); return [{l:'Forward FX',v:fmt(fwd,4)},{l:'Fwd points',v:fmt((fwd-v.s)*10000,0)}]; }
+});
 
 calcOptions();
 </script>
