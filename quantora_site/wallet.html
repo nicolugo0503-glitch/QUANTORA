@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Wallet — Live On-Chain</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:15px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1080px;margin:0 auto;padding:34px 24px 80px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
+.src{color:var(--mut);font-size:12px;margin-top:9px}
+.bar{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;align-items:center}
+.bar input{border:1px solid #d8d8d8;border-radius:10px;padding:10px 13px;font-size:14px;font-family:ui-monospace,Menlo,monospace;outline:none;width:430px;max-width:100%}
+.bar input:focus{border-color:#000}
+.bar select{border:1px solid #d8d8d8;border-radius:10px;padding:10px 11px;font-size:14px;font-family:inherit;background:#fff;outline:none}
+.bar button{border:none;background:#000;color:#fff;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 13px;font-size:12.5px;cursor:pointer;color:#444}
+.chip:hover{border-color:#999}
+.head{display:flex;gap:30px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin-top:20px;background:var(--soft)}
+.head .s{display:flex;flex-direction:column}
+.head .l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.head .v{font-size:20px;font-weight:750;margin-top:3px;letter-spacing:-.02em}
+.head .v.big{font-size:26px}
+.addr{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
+th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.03em;color:var(--mut);text-transform:uppercase;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--soft)}
+.tk{font-weight:650}.nm{color:var(--mut);font-size:12px;margin-left:7px}
+.status{margin-top:26px;color:var(--mut);font-size:14px}
+@media(max-width:680px){.bar input{width:100%}.px{display:none}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/l2.html" class="link">Layer 2s</a>
+  <a href="/dex.html" class="link">DEX</a>
+  <a href="/wallet.html" class="link active">Wallet</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <div class="right"><span class="dot"></span> Live · on-chain wallets</div>
+</div>
+<div class="wrap">
+  <h1>Wallet</h1>
+  <div class="sub">Look up any wallet across Ethereum and the major L2s — native balance, token holdings, and live USD value, straight from the chain. Paste an address or try one below.</div>
+  <div class="src">Live on-chain data via Blockscout · prices via Blockscout &amp; Coinbase · for information only, not investment advice</div>
+
+  <div class="bar">
+    <input id="addr" placeholder="0x… wallet address" autocomplete="off" spellcheck="false">
+    <select id="chain"><option value="eth">Ethereum</option><option value="base">Base</option><option value="arbitrum">Arbitrum</option><option value="optimism">Optimism</option></select>
+    <button id="go">Look up</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div id="headwrap"></div>
+  <div id="tablewrap"></div>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+var CHAINS={eth:{host:'eth.blockscout.com',name:'Ethereum'},base:{host:'base.blockscout.com',name:'Base'},arbitrum:{host:'arbitrum.blockscout.com',name:'Arbitrum'},optimism:{host:'optimism.blockscout.com',name:'Optimism'}};
+var PRESETS=[{l:'vitalik.eth',a:'0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'},{l:'Ethereum Foundation',a:'0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe'}];
+function usd(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e9)return '$'+(n/1e9).toFixed(2)+'B'; if(a>=1e6)return '$'+(n/1e6).toFixed(2)+'M'; if(a>=1e3)return '$'+(n/1e3).toFixed(1)+'K'; return '$'+n.toLocaleString(undefined,{maximumFractionDigits:2}); }
+function amt(n){ if(n==null||isNaN(n))return '—'; if(n>=1000)return n.toLocaleString(undefined,{maximumFractionDigits:0}); if(n>=1)return n.toLocaleString(undefined,{maximumFractionDigits:3}); return n.toPrecision(3); }
+function shrt(a){ return a.slice(0,6)+'…'+a.slice(-4); }
+async function ethPrice(){ try{ var d=await (await fetch('https://api.exchange.coinbase.com/products/ETH-USD/ticker')).json(); return parseFloat(d.price); }catch(e){ return null; } }
+function renderChips(){ var c=document.getElementById('chips'); c.innerHTML='<span style="font-size:12px;color:#6b7280;align-self:center">try:</span>'+PRESETS.map(function(p){return '<span class="chip" data-a="'+p.a+'">'+p.l+'</span>';}).join(''); Array.prototype.forEach.call(c.querySelectorAll('.chip'),function(ch){ch.onclick=function(){document.getElementById('addr').value=ch.getAttribute('data-a');load();};}); }
+
+async function load(){
+  var addr=document.getElementById('addr').value.trim();
+  var status=document.getElementById('status'), hw=document.getElementById('headwrap'), tw=document.getElementById('tablewrap');
+  if(!/^0x[a-fA-F0-9]{40}$/.test(addr)){ status.textContent='Enter a valid 0x wallet address (40 hex characters).'; return; }
+  var ck=document.getElementById('chain').value, host=CHAINS[ck].host;
+  status.style.display='block'; status.textContent='Reading '+addr.slice(0,8)+'… on '+CHAINS[ck].name+'…'; hw.innerHTML=''; tw.innerHTML='';
+  try{
+    var ep=await ethPrice();
+    var info=await (await fetch('https://'+host+'/api/v2/addresses/'+addr)).json();
+    var toks=await (await fetch('https://'+host+'/api/v2/addresses/'+addr+'/token-balances')).json();
+    var native=info&&info.coin_balance? parseFloat(info.coin_balance)/1e18 : 0;
+    var nativeUSD=(ep!=null)? native*ep : null;
+    var ens=info&&info.ens_domain_name;
+    var rows=(Array.isArray(toks)?toks:[]).map(function(t){
+      var d=parseInt(t.token&&t.token.decimals||'18',10); var bal=parseFloat(t.value)/Math.pow(10,d);
+      var rate=t.token&&t.token.exchange_rate?parseFloat(t.token.exchange_rate):null;
+      return {sym:(t.token&&t.token.symbol)||'?', name:(t.token&&t.token.name)||'', bal:bal, price:rate, val:(rate!=null?bal*rate:null)};
+    }).filter(function(r){return r.val!=null && r.val>=1;}).sort(function(a,b){return b.val-a.val;});
+    var tokTotal=rows.reduce(function(s,r){return s+r.val;},0);
+    var total=(nativeUSD||0)+tokTotal;
+    status.style.display='none';
+    hw.innerHTML='<div class="head">'+
+      '<div class="s"><span class="l">Wallet</span><span class="v addr">'+(ens?ens:shrt(addr))+'</span></div>'+
+      '<div class="s"><span class="l">Total value</span><span class="v big">'+usd(total)+'</span></div>'+
+      '<div class="s"><span class="l">'+CHAINS[ck].name+' balance</span><span class="v">'+amt(native)+' ETH'+(nativeUSD!=null?' · '+usd(nativeUSD):'')+'</span></div>'+
+      '<div class="s"><span class="l">Tokens held</span><span class="v">'+rows.length+'</span></div></div>';
+    if(!rows.length){ tw.innerHTML='<div class="status">No priced token holdings found on '+CHAINS[ck].name+'. The native balance is shown above.</div>'; return; }
+    var head='<table><thead><tr><th>Token</th><th class="px">Price</th><th>Balance</th><th>Value</th><th>% of book</th></tr></thead><tbody>';
+    var body=rows.slice(0,30).map(function(r){
+      return '<tr><td><span class="tk">'+r.sym+'</span><span class="nm">'+(r.name||'').slice(0,28)+'</span></td>'+
+        '<td class="px">'+(r.price!=null?usd(r.price):'—')+'</td>'+
+        '<td>'+amt(r.bal)+'</td>'+
+        '<td>'+usd(r.val)+'</td>'+
+        '<td>'+(total>0?(r.val/total*100).toFixed(1)+'%':'—')+'</td></tr>';
+    }).join('');
+    tw.innerHTML=head+body+'</tbody></table>';
+  }catch(e){ status.textContent='Could not read that wallet on '+CHAINS[ck].name+'. Try another chain or address.'; }
+}
+document.getElementById('go').onclick=load;
+document.getElementById('chain').onchange=load;
+document.getElementById('addr').addEventListener('keydown',function(e){ if(e.key==='Enter') load(); });
+renderChips();
+document.getElementById('addr').value=PRESETS[0].a;
+load();
+</script>
+  <script src="/nav.js"></script>
+</body>
+</html>
