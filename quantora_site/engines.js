@@ -424,7 +424,74 @@ function efficientFrontier(mu,Sigma,rf){
 }
 Q.covFromVolCorr=covFromVolCorr; Q.efficientFrontier=efficientFrontier;
 
-Q.version='1.5';
+
+/* ================= LONG-ONLY FRONTIER ================= */
+function _portVol(w,Sigma){ var n=w.length,s=0,i,j; for(i=0;i<n;i++) for(j=0;j<n;j++) s+=w[i]*w[j]*Sigma[i][j]; return Math.sqrt(Math.max(s,0)); }
+function _refine(w,obj){ // hill-climb on simplex; obj(w)->higher is better
+  var n=w.length, d=0.10, best=obj(w);
+  for(var it=0;it<4000 && d>1e-5;it++){
+    var improved=false;
+    for(var i=0;i<n;i++) for(var j=0;j<n;j++){ if(i===j||w[i]<d) continue;
+      var t=w.slice(); t[i]-=d; t[j]+=d; var o=obj(t); if(o>best){ best=o; w=t; improved=true; } }
+    if(!improved) d*=0.5;
+  }
+  return w;
+}
+function efficientFrontierLO(mu,Sigma,rf,opts){
+  opts=opts||{}; var n=mu.length, N=opts.samples||16000, rng=opts.seed!=null?mulberry32(opts.seed):Math.random, i,k;
+  var pts=[], gmv=null, tan=null;
+  for(k=0;k<N;k++){
+    var w=[],sw=0; for(i=0;i<n;i++){ var x=-Math.log(rng()||1e-12); w.push(x); sw+=x; }
+    for(i=0;i<n;i++) w[i]/=sw;
+    var ret=0; for(i=0;i<n;i++) ret+=w[i]*mu[i]; var vol=_portVol(w,Sigma); var sh=(ret-rf)/vol;
+    pts.push({ret:ret,vol:vol});
+    if(!gmv||vol<gmv.vol) gmv={w:w,ret:ret,vol:vol};
+    if(!tan||sh>tan.sharpe) tan={w:w,ret:ret,vol:vol,sharpe:sh};
+  }
+  // refine
+  var gw=_refine(gmv.w.slice(),function(w){ return -_portVol(w,Sigma); });
+  var gret=0; for(i=0;i<n;i++) gret+=gw[i]*mu[i]; gmv={w:gw,ret:gret,vol:_portVol(gw,Sigma)};
+  var tw=_refine(tan.w.slice(),function(w){ var r=0;for(var z=0;z<n;z++) r+=w[z]*mu[z]; var v=_portVol(w,Sigma); return (r-rf)/v; });
+  var tret=0; for(i=0;i<n;i++) tret+=tw[i]*mu[i]; var tvol=_portVol(tw,Sigma); tan={w:tw,ret:tret,vol:tvol,sharpe:(tret-rf)/tvol};
+  // frontier: min vol per return bin
+  var lo=Math.min.apply(null,mu), hi=Math.max.apply(null,mu), K=28, bins=new Array(K).fill(null);
+  for(i=0;i<pts.length;i++){ var b=Math.min(K-1,Math.max(0,Math.floor((pts[i].ret-lo)/(hi-lo)*K))); if(!bins[b]||pts[i].vol<bins[b].vol) bins[b]=pts[i]; }
+  var fr=bins.filter(function(x){return x;}).sort(function(a,b){return a.ret-b.ret;});
+  return {gmv:gmv, tangency:tan, frontier:fr, cloud:pts};
+}
+Q.efficientFrontierLO=efficientFrontierLO;
+
+/* ================= GARCH FORECAST PATH ================= */
+function garchPath(returns,alpha,beta,horizon){
+  alpha=alpha==null?0.08:alpha; beta=beta==null?0.90:beta; horizon=horizon||60;
+  var mu=mean(returns), n=returns.length, i, sv=0;
+  for(i=0;i<n;i++) sv+=(returns[i]-mu)*(returns[i]-mu); sv/=n;
+  var omega=sv*(1-alpha-beta), v=sv;
+  for(i=1;i<n;i++){ var e=returns[i-1]-mu; v=omega+alpha*e*e+beta*v; }
+  var pers=alpha+beta, vols=[];
+  for(var h=0;h<=horizon;h++){ var vh=sv+Math.pow(pers,h)*(v-sv); vols.push(Math.sqrt(Math.max(vh,0))*Math.sqrt(252)); }
+  return {vols:vols, current:vols[0], longRun:Math.sqrt(sv)*Math.sqrt(252), persistence:pers};
+}
+Q.garchPath=garchPath;
+
+/* ================= VOL SURFACE (parametric) ================= */
+function skewCurve(atmVol,skew,curv,moneyness){ return moneyness.map(function(k){ return atmVol - skew*k + curv*k*k; }); }
+function termCurve(shortVol,longVol,lambda,maturities){ return maturities.map(function(T){ return longVol+(shortVol-longVol)*Math.exp(-lambda*T); }); }
+Q.skewCurve=skewCurve; Q.termCurve=termCurve;
+
+/* ================= VaR BACKTEST (Kupiec POF) ================= */
+function varBacktest(returns,conf,window){
+  conf=conf||0.95; window=window||100; var breaches=0, n=0, i;
+  for(i=window;i<returns.length;i++){ var hist=returns.slice(i-window,i); var v=histVaR(hist,conf); if(returns[i]<-v) breaches++; n++; }
+  var p=1-conf, x=breaches, phat=n?x/n:0;
+  var LR=0;
+  if(n>0 && x>0 && x<n){ LR=-2*((n-x)*Math.log(1-p)+x*Math.log(p)-((n-x)*Math.log(1-phat)+x*Math.log(phat))); }
+  else if(n>0 && x===0){ LR=-2*(n*Math.log(1-p)); }
+  return {observations:n, breaches:x, breachRate:phat, expected:p, kupiecLR:LR, pass:LR<3.841};
+}
+Q.varBacktest=varBacktest;
+
+Q.version='1.6';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

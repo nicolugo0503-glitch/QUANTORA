@@ -207,12 +207,54 @@ Crypto,20,60</textarea></div>
     </div>
   </div>
 
+  <div class="flag" style="margin-top:22px">
+    <div class="top">
+      <span class="t">Implied vol surface</span>
+      <span class="tag">Skew &amp; term structure</span>
+      <span class="vrf">parametric model · explore skew and term shape</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>ATM vol %</label><input id="vs_atm" type="number" value="25" step="any"></div>
+        <div class="row2">
+          <div class="fld"><label>Skew</label><input id="vs_skew" type="number" value="0.4" step="any"></div>
+          <div class="fld"><label>Smile curv.</label><input id="vs_curv" type="number" value="0.6" step="any"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Short vol %</label><input id="vs_short" type="number" value="32" step="any"></div>
+          <div class="fld"><label>Long vol %</label><input id="vs_long" type="number" value="22" step="any"></div>
+        </div>
+        <div class="fld"><label>Term decay λ</label><input id="vs_lam" type="number" value="1.2" step="any"></div>
+      </div>
+      <div class="out">
+        <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:4px">Skew — vol vs moneyness</div>
+        <div id="vs_skewchart" style="width:100%"></div>
+        <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:12px 0 4px">Term structure — vol vs maturity</div>
+        <div id="vs_termchart" style="width:100%"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
     <div class="grid" id="g_rates"></div>
   </div>
   <div class="sec">
     <h2>Risk &amp; portfolio</h2>
+    <div id="garchPanel" style="border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:680">GARCH(1,1) volatility forecast</span>
+        <span class="badge">term structure</span>
+        <span id="garchNow" style="font-size:11.5px;color:var(--mut);margin-left:auto"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:center">
+        <div>
+          <div class="fld" style="margin-bottom:8px"><label>Daily returns</label><textarea id="garch_r" style="width:100%;min-height:64px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:8px;padding:7px">0.012,-0.020,0.015,-0.005,0.020,-0.030,0.025,0.010,-0.008,0.018,0.005,-0.012,0.022,-0.018,0.009,-0.025,0.011</textarea></div>
+          <div class="row2"><div class="fld"><label>Alpha</label><input id="garch_a" type="number" value="0.08" step="any"></div><div class="fld"><label>Beta</label><input id="garch_b" type="number" value="0.90" step="any"></div></div>
+        </div>
+        <div id="garch_chart" style="width:100%"></div>
+      </div>
+    </div>
     <div class="grid" id="g_risk"></div>
   </div>
   <div class="sec">
@@ -804,6 +846,7 @@ buildCard(document.getElementById('g_rates'),{
 });
 
 /* ===== EFFICIENT FRONTIER ===== */
+var EF_MODE='lo';
 function drawEF(){
   var rows=document.getElementById('ef_assets').value.split(/\n/).map(function(l){return l.split(',');}).filter(function(a){return a.length>=3&&!isNaN(parseFloat(a[1]));});
   var names=rows.map(function(a){return (a[0]||'').trim();});
@@ -813,7 +856,7 @@ function drawEF(){
   var rf=(parseFloat(document.getElementById('ef_rf').value)||0)/100;
   if(mu.length<2){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter at least 2 assets.</span>'; document.getElementById('ef_metrics').innerHTML=''; return; }
   var Sig=Q.covFromVolCorr(vols,rho), ef;
-  try{ ef=Q.efficientFrontier(mu,Sig,rf); }catch(e){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Singular covariance — adjust correlation.</span>'; return; }
+  try{ ef = EF_MODE==='lo' ? Q.efficientFrontierLO(mu,Sig,rf,{samples:14000}) : Q.efficientFrontier(mu,Sig,rf); }catch(e){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Singular covariance — adjust correlation.</span>'; return; }
   var W=520,H=250,pad=38;
   var allVol=ef.frontier.map(function(p){return p.vol;}).concat(vols).concat([0,ef.tangency.vol]);
   var allRet=ef.frontier.map(function(p){return p.ret;}).concat(mu).concat([rf,ef.tangency.ret]);
@@ -846,8 +889,73 @@ function drawEF(){
     '<div class="r"><div class="rl">Min-var vol</div><div class="rv">'+pct(ef.gmv.vol,1)+'</div></div>'+
     '<div class="r" style="flex-basis:100%"><div class="rl">Tangency weights</div><div class="rv" style="font-size:12px">'+wT+'</div></div>';
 }
+(function(){ var host=document.getElementById('ef_chart');
+  var bar=document.createElement('div'); bar.style.cssText='display:flex;gap:6px;margin-bottom:8px';
+  bar.innerHTML='<button id="ef_lo" style="font-size:11.5px;font-weight:650;border:1px solid var(--line);border-radius:7px;padding:5px 11px;background:#0a0a0a;color:#fff;cursor:pointer">Long-only</button><button id="ef_un" style="font-size:11.5px;font-weight:650;border:1px solid var(--line);border-radius:7px;padding:5px 11px;background:#fff;color:var(--ink);cursor:pointer">Unconstrained</button>';
+  host.parentNode.insertBefore(bar,host);
+  function set(m){ EF_MODE=m; document.getElementById('ef_lo').style.background=m==='lo'?'#0a0a0a':'#fff'; document.getElementById('ef_lo').style.color=m==='lo'?'#fff':'var(--ink)'; document.getElementById('ef_un').style.background=m==='un'?'#0a0a0a':'#fff'; document.getElementById('ef_un').style.color=m==='un'?'#fff':'var(--ink)'; drawEF(); }
+  document.getElementById('ef_lo').addEventListener('click',function(e){e.preventDefault();set('lo');});
+  document.getElementById('ef_un').addEventListener('click',function(e){e.preventDefault();set('un');});
+})();
 ['ef_assets','ef_rho','ef_rf'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawEF); });
 drawEF();
+
+/* ===== VOL SURFACE ===== */
+function lineChart(host,xs,series,ylabel){ // series:[{pts:[y..],color}]
+  var W=520,H=150,pad=30;
+  var allY=[]; series.forEach(function(s){ s.pts.forEach(function(y){ allY.push(y); }); });
+  var ymin=Math.min.apply(null,allY), ymax=Math.max.apply(null,allY); var yp=(ymax-ymin)*0.12||0.01; ymin-=yp; ymax+=yp;
+  var xmin=xs[0], xmax=xs[xs.length-1];
+  function px(x){ return pad+(x-xmin)/(xmax-xmin)*(W-2*pad); }
+  function py(y){ return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad); }
+  var polys=series.map(function(s){ return '<polyline points="'+s.pts.map(function(y,i){return px(xs[i]).toFixed(1)+','+py(y).toFixed(1);}).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2"/>'; }).join('');
+  document.getElementById(host).innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/>'+polys+'</svg>';
+}
+function drawVS(){
+  var atm=(parseFloat(document.getElementById('vs_atm').value)||0)/100;
+  var skew=parseFloat(document.getElementById('vs_skew').value)||0;
+  var curv=parseFloat(document.getElementById('vs_curv').value)||0;
+  var k=[]; for(var x=-0.2;x<=0.2001;x+=0.02) k.push(+x.toFixed(3));
+  var vols=Q.skewCurve(atm,skew,curv,k).map(function(v){return v*100;});
+  lineChart('vs_skewchart',k,[{pts:vols,color:'#6366f1'}]);
+  var sh=(parseFloat(document.getElementById('vs_short').value)||0)/100, lg=(parseFloat(document.getElementById('vs_long').value)||0)/100, lam=parseFloat(document.getElementById('vs_lam').value)||1;
+  var T=[]; for(var t=0.05;t<=2.001;t+=0.1) T.push(+t.toFixed(2));
+  var tv=Q.termCurve(sh,lg,lam,T).map(function(v){return v*100;});
+  lineChart('vs_termchart',T,[{pts:tv,color:'#0a8a3b'}]);
+}
+['vs_atm','vs_skew','vs_curv','vs_short','vs_long','vs_lam'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawVS); });
+drawVS();
+
+/* ===== GARCH FORECAST PANEL ===== */
+function drawGarch(){
+  var a=parseNums(document.getElementById('garch_r').value); var al=parseFloat(document.getElementById('garch_a').value)||0.08, be=parseFloat(document.getElementById('garch_b').value)||0.90;
+  var now=document.getElementById('garchNow');
+  if(a.length<5||al+be>=1){ document.getElementById('garch_chart').innerHTML='<span style="color:var(--mut);font-size:12px">Need 5+ returns and α+β &lt; 1.</span>'; now.textContent=''; return; }
+  var gp=Q.garchPath(a,al,be,60);
+  var W=520,H=150,pad=30, n=gp.vols.length;
+  var ys=gp.vols.map(function(v){return v*100;}), lr=gp.longRun*100;
+  var ymin=Math.min(lr,Math.min.apply(null,ys)), ymax=Math.max(lr,Math.max.apply(null,ys)); var yp=(ymax-ymin)*0.15||1; ymin-=yp; ymax+=yp;
+  function px(i){ return pad+i/(n-1)*(W-2*pad); }
+  function py(y){ return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad); }
+  var path=ys.map(function(y,i){return px(i).toFixed(1)+','+py(y).toFixed(1);}).join(' ');
+  document.getElementById('garch_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
+    '<line x1="'+pad+'" y1="'+py(lr).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(lr).toFixed(1)+'" stroke="#9aa0aa" stroke-dasharray="4 4"/>'+
+    '<text x="'+(W-pad)+'" y="'+(py(lr)-3).toFixed(1)+'" font-size="9" fill="#6b7280" text-anchor="end">long-run '+lr.toFixed(1)+'%</text>'+
+    '<polyline points="'+path+'" fill="none" stroke="#d23a2c" stroke-width="2"/>'+
+    '<text x="'+pad+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280">today → 60-day forecast</text>'+
+    '</svg>';
+  now.textContent='current '+(gp.current*100).toFixed(1)+'% · persistence '+gp.persistence.toFixed(2);
+}
+['garch_r','garch_a','garch_b'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawGarch); });
+drawGarch();
+
+/* ===== VaR BACKTESTER CARD ===== */
+buildCard(document.getElementById('g_risk'),{
+  title:'VaR backtester', desc:'Rolling historical-VaR breaches vs expected, with the Kupiec coverage test.',
+  inputs:[{k:'r',label:'Return series (decimals)',type:'textarea',val:'0.004,-0.011,0.006,-0.003,0.009,-0.021,0.013,0.005,-0.006,0.011,0.002,-0.014,0.017,-0.009,0.004,-0.026,0.008,0.012,-0.004,0.006,-0.018,0.010,0.003,-0.007,0.015,-0.012,0.006,0.009,-0.022,0.011,0.004,-0.005,0.013,-0.016,0.007,0.002,-0.009,0.014,-0.003,0.008'},{k:'c',label:'Confidence',type:'select',opts:[['0.95','95%'],['0.99','99%']]},{k:'w',label:'Window',val:20}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<=v.w+3) return [{l:'Note',v:'need > window+3 obs'}]; var bt=Q.varBacktest(a,parseFloat(v.c),v.w);
+    return [{l:'Breaches',v:bt.breaches+'/'+bt.observations},{l:'Breach rate',v:pct(bt.breachRate,1)},{l:'Expected',v:pct(bt.expected,1)},{l:'Kupiec',v:bt.pass?'pass':'fail',cls:bt.pass?'up':'down'}]; }
+});
 
 calcOptions();
 </script>
