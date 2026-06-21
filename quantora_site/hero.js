@@ -13,7 +13,7 @@
     '/chain.html':   {t:'Bitcoin Chain', s:'On-chain truth, block by block.', a:['#f59e0b','#fb7185','#8b5cf6'], feed:ser('https://mempool.space/api/v1/blocks','blocks','Block height')},
     '/macro.html':   {t:'Macro',   s:'The forces beneath every market — live from FRED.', a:['#3b82f6','#6366f1','#64748b'], feed:ser('/api/fredseries','fred10Y','10-Year Treasury')},
     '/stocks.html':  {t:'Stocks',  s:'Equities, indices and the names that move them.', a:['#4f7cff','#6366f1','#8b5cf6'], feed:ser('/api/quote?symbol=SPY','quote','S&P 500 · SPY')},
-    '/global.html':  {t:'Global',  s:'FX and commodities across the world.', a:['#0ea5e9','#6366f1','#14b8a6'], feed:ser('/api/quote?symbol=XAU%2FUSD','quote','Gold · XAU/USD')},
+    '/global.html':  {t:'Global',  s:'FX and commodities across the world.', a:['#0ea5e9','#6366f1','#14b8a6'], feed:ser('/api/quote?symbol=GLD','quote','Gold · GLD')},
     '/fundamentals.html':{t:'Fundamentals',s:'The numbers behind the ticker.', a:['#4f7cff','#14b8a6','#6366f1'], feed:ser('/api/quote?symbol=AAPL','quote','Apple · AAPL')},
     '/chart.html':   {t:'Chart',   s:'Professional charting, every instrument.', a:['#6366f1','#22d3ee','#8b5cf6'], feed:cb('ETH-USD','ETH / USD')},
     '/live.html':    {t:'Live',    s:'Every print, streaming in real time.', a:['#10b981','#22d3ee','#6366f1'], feed:cb('SOL-USD','SOL / USD')},
