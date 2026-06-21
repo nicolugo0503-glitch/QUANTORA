@@ -132,6 +132,31 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
     </div>
   </div>
 
+  <div class="flag" style="margin-top:22px">
+    <div class="top">
+      <span class="t">Strategy P&amp;L</span>
+      <span class="tag">Payoff engine</span>
+      <span class="vrf"><span class="c">✓ verified</span> · multi-leg expiry payoff, breakevens, max P/L</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>Preset</label><select id="st_preset">
+          <option value="lc">Long call</option><option value="lp">Long put</option>
+          <option value="cc">Covered call</option><option value="pp">Protective put</option>
+          <option value="bcs">Bull call spread</option><option value="bps">Bear put spread</option>
+          <option value="strad">Straddle</option><option value="strang">Strangle</option>
+          <option value="ic">Iron condor</option><option value="custom">Custom</option>
+        </select></div>
+        <div class="fld"><label>Spot</label><input id="st_spot" type="number" value="100" step="any"></div>
+        <div id="st_legs"></div>
+      </div>
+      <div class="out">
+        <div id="st_chart" style="width:100%"></div>
+        <div class="cr" id="st_metrics" style="border-top:1px solid var(--line);padding-top:11px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Rates &amp; fixed income</h2>
     <div class="grid" id="g_rates"></div>
@@ -147,6 +172,10 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
   <div class="sec">
     <h2>Valuation &amp; corporate finance</h2>
     <div class="grid" id="g_corp"></div>
+  </div>
+  <div class="sec">
+    <h2>Equity &amp; fundamentals</h2>
+    <div class="grid" id="g_equity"></div>
   </div>
   <div class="sec">
     <h2>Crypto &amp; derivatives risk</h2>
@@ -419,6 +448,158 @@ buildCard(document.getElementById('g_exec'),{
     return [{l:'Half-life (days)',v:fmt(ac.halfLife,2)},{l:'First slice',v:pct(ac.trades[0]/v.X,1)},{l:'Last slice',v:pct(ac.trades[ac.trades.length-1]/v.X,1)}]; }
 });
 // Kelly already in crypto; add Kelly into exec too for sizing grouping? keep single.
+
+/* ===== STRATEGY P&L BUILDER ===== */
+var ST_PRESETS={
+  lc:[['call',1,100,5]], lp:[['put',1,100,5]],
+  cc:[['stock',1,100,0],['call',-1,110,3]],
+  pp:[['stock',1,100,0],['put',1,95,4]],
+  bcs:[['call',1,95,8],['call',-1,105,3]],
+  bps:[['put',1,105,8],['put',-1,95,3]],
+  strad:[['call',1,100,6],['put',1,100,5]],
+  strang:[['call',1,110,3],['put',1,90,3]],
+  ic:[['put',-1,90,2],['put',1,85,1],['call',-1,110,2],['call',1,115,1]],
+  custom:[['call',1,100,5],['',0,0,0],['',0,0,0],['',0,0,0]]
+};
+function legRowHtml(i,leg){
+  leg=leg||['',0,0,0];
+  var sel=['','call','put','stock'].map(function(k){var lbl=k===''?'—':k.charAt(0).toUpperCase()+k.slice(1);return '<option value="'+k+'"'+(k===leg[0]?' selected':'')+'>'+lbl+'</option>';}).join('');
+  return '<div style="display:grid;grid-template-columns:1.1fr .7fr .9fr .9fr;gap:6px;margin-bottom:6px">'+
+    '<select data-st="k'+i+'" style="border:1px solid var(--line);border-radius:7px;padding:6px;font-size:12px;font-family:inherit">'+sel+'</select>'+
+    '<input data-st="q'+i+'" type="number" step="any" value="'+leg[1]+'" title="qty (+long/-short)" style="border:1px solid var(--line);border-radius:7px;padding:6px;font-size:12px">'+
+    '<input data-st="s'+i+'" type="number" step="any" value="'+leg[2]+'" title="strike" style="border:1px solid var(--line);border-radius:7px;padding:6px;font-size:12px">'+
+    '<input data-st="p'+i+'" type="number" step="any" value="'+leg[3]+'" title="premium" style="border:1px solid var(--line);border-radius:7px;padding:6px;font-size:12px">'+
+    '</div>';
+}
+function renderLegs(legs){
+  var h='<div style="display:grid;grid-template-columns:1.1fr .7fr .9fr .9fr;gap:6px;margin:8px 0 5px;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700"><span>Type</span><span>Qty</span><span>Strike</span><span>Premium</span></div>';
+  for(var i=0;i<4;i++) h+=legRowHtml(i,legs[i]);
+  document.getElementById('st_legs').innerHTML=h;
+  document.querySelectorAll('[data-st]').forEach(function(el){ el.addEventListener('input',drawStrategy); });
+}
+function readLegs(){
+  var legs=[];
+  for(var i=0;i<4;i++){
+    var k=document.querySelector('[data-st=k'+i+']'); if(!k||!k.value) continue;
+    legs.push({kind:k.value, qty:parseFloat(document.querySelector('[data-st=q'+i+']').value)||0,
+      strike:parseFloat(document.querySelector('[data-st=s'+i+']').value)||0,
+      premium:parseFloat(document.querySelector('[data-st=p'+i+']').value)||0});
+  }
+  return legs.filter(function(l){return l.kind&&l.qty;});
+}
+function drawPayoff(res,spot){
+  var W=520,H=240,pad=34;
+  var xs=res.xs,ys=res.ys, xmin=xs[0],xmax=xs[xs.length-1];
+  var ymin=Math.min(0,res.maxLoss),ymax=Math.max(0,res.maxProfit);
+  if(ymax<=ymin){ymax=ymin+1;}
+  var ypad=(ymax-ymin)*0.08; ymin-=ypad; ymax+=ypad;
+  function px(x){return pad+(x-xmin)/(xmax-xmin)*(W-2*pad);}
+  function py(y){return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad);}
+  var zeroY=py(0);
+  // split into profit/loss colored segments
+  var segs='',i;
+  for(i=1;i<xs.length;i++){
+    var c=(ys[i]>=0&&ys[i-1]>=0)?'#0a8a3b':((ys[i]<0&&ys[i-1]<0)?'#d23a2c':'#6b7280');
+    segs+='<line x1="'+px(xs[i-1]).toFixed(1)+'" y1="'+py(ys[i-1]).toFixed(1)+'" x2="'+px(xs[i]).toFixed(1)+'" y2="'+py(ys[i]).toFixed(1)+'" stroke="'+c+'" stroke-width="2.2"/>';
+  }
+  var sx=px(spot);
+  var bedots=res.breakevens.map(function(b){return '<circle cx="'+px(b).toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="3.5" fill="#6366f1"/><text x="'+px(b).toFixed(1)+'" y="'+(zeroY-7).toFixed(1)+'" font-size="9" fill="#6366f1" text-anchor="middle" font-family="JetBrains Mono,monospace">'+b.toFixed(1)+'</text>';}).join('');
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
+    '<line x1="'+pad+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zeroY.toFixed(1)+'" stroke="#d0d0d0" stroke-dasharray="4 4"/>'+
+    '<line x1="'+sx.toFixed(1)+'" y1="'+pad+'" x2="'+sx.toFixed(1)+'" y2="'+(H-pad)+'" stroke="#6366f1" stroke-width="1" opacity="0.4"/>'+
+    '<text x="'+sx.toFixed(1)+'" y="'+(H-pad+13)+'" font-size="9" fill="#6366f1" text-anchor="middle" font-family="JetBrains Mono,monospace">spot '+spot+'</text>'+
+    segs+bedots+'</svg>';
+  document.getElementById('st_chart').innerHTML=svg;
+}
+function drawStrategy(){
+  var spot=parseFloat(document.getElementById('st_spot').value)||100;
+  var legs=readLegs();
+  if(!legs.length){ document.getElementById('st_chart').innerHTML=''; document.getElementById('st_metrics').innerHTML=''; return; }
+  var strikes=legs.map(function(l){return l.strike;}).filter(function(x){return x>0;});
+  var ref=strikes.length?(strikes.reduce(function(a,b){return a+b;},0)/strikes.length):spot;
+  var span=Math.max(ref,spot)*0.6;
+  var res=Q.strategyPnL(legs,spot,{lo:Math.max(0,ref-span),hi:ref+span,n:160});
+  drawPayoff(res,spot);
+  var mp=res.maxProfit, ml=res.maxLoss;
+  var bes=res.breakevens.length?res.breakevens.map(function(b){return b.toFixed(2);}).join(', '):'—';
+  document.getElementById('st_metrics').innerHTML=
+    '<div class="r"><div class="rl">P&L at spot</div><div class="rv '+(res.atSpot>=0?'up':'down')+'">'+fmt(res.atSpot,2)+'</div></div>'+
+    '<div class="r"><div class="rl">Max profit</div><div class="rv up">'+(mp>1e5?'unbounded':fmt(mp,2))+'</div></div>'+
+    '<div class="r"><div class="rl">Max loss</div><div class="rv down">'+(ml<-1e5?'unbounded':fmt(ml,2))+'</div></div>'+
+    '<div class="r"><div class="rl">Breakeven(s)</div><div class="rv">'+bes+'</div></div>';
+}
+document.getElementById('st_preset').addEventListener('change',function(){ renderLegs(ST_PRESETS[this.value].slice()); drawStrategy(); });
+document.getElementById('st_spot').addEventListener('input',drawStrategy);
+renderLegs(ST_PRESETS.lc.slice()); drawStrategy();
+
+/* ===== NEW CARDS (v1.2) ===== */
+// Rates: Black-76, GK, forward rate, 2nd-order greeks
+buildCard(document.getElementById('g_rates'),{
+  title:'Futures option (Black-76)', desc:'Price options on futures/commodities from the forward price.',
+  inputs:[{k:'F',label:'Futures F',val:100},{k:'K',label:'Strike',val:100},{k:'D',label:'Days',val:365},{k:'v',label:'Vol %',val:20},{k:'r',label:'Rate %',val:5}],
+  compute:function(v){ var b=Q.black76(v.F,v.K,v.D/365,v.r/100,v.v/100); return [{l:'Call',v:fmt(b.call,3),cls:'up'},{l:'Put',v:fmt(b.put,3),cls:'down'}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'FX option (Garman–Kohlhagen)', desc:'Currency option pricing with domestic & foreign rates.',
+  inputs:[{k:'S',label:'Spot',val:1.20},{k:'K',label:'Strike',val:1.25},{k:'D',label:'Days',val:180},{k:'v',label:'Vol %',val:10},{k:'rd',label:'Dom rate %',val:4},{k:'rf',label:'For rate %',val:1}],
+  compute:function(v){ var g=Q.garmanKohlhagen(v.S,v.K,v.D/365,v.rd/100,v.rf/100,v.v/100); return [{l:'Call',v:fmt(g.call,4),cls:'up'},{l:'Put',v:fmt(g.put,4),cls:'down'}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Forward rate', desc:'Implied forward rate between two points on the spot curve.',
+  inputs:[{k:'z1',label:'Spot rate 1 %',val:3},{k:'t1',label:'Maturity 1 (yr)',val:1},{k:'z2',label:'Spot rate 2 %',val:5},{k:'t2',label:'Maturity 2 (yr)',val:2}],
+  compute:function(v){ var f=Q.forwardRate(v.z1/100,v.t1,v.z2/100,v.t2); return [{l:'Fwd '+v.t1+'y→'+v.t2+'y',v:pct(f,3)}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'2nd-order Greeks', desc:'Vanna (dDelta/dVol) & Volga (dVega/dVol) for an option.',
+  inputs:[{k:'S',label:'Spot',val:100},{k:'K',label:'Strike',val:100},{k:'D',label:'Days',val:365},{k:'v',label:'Vol %',val:20},{k:'r',label:'Rate %',val:5},{k:'q',label:'Div %',val:0}],
+  compute:function(v){ var g=Q.greeks2(v.S,v.K,v.D/365,v.r/100,v.q/100,v.v/100); return [{l:'Vanna',v:fmt(g.vanna,4)},{l:'Volga',v:fmt(g.volga,2)}]; }
+});
+
+// Risk: Treynor/Calmar/Omega, Information ratio + Jensen
+buildCard(document.getElementById('g_risk'),{
+  title:'Treynor · Calmar · Omega', desc:'Beta-adjusted, drawdown-adjusted and gain/loss ratios.',
+  inputs:[{k:'r',label:'Returns (decimals)',type:'textarea',val:'0.012,-0.020,0.015,-0.005,0.020,-0.030,0.025,0.010,-0.008,0.018'},{k:'b',label:'Beta',val:1.1},{k:'p',label:'Periods/yr',val:252}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<3) return []; return [{l:'Treynor',v:fmt(Q.treynor(a,v.b,0,v.p),3)},{l:'Calmar',v:fmt(Q.calmar(a,v.p),2)},{l:'Omega',v:fmt(Q.omega(a,0),2)}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Information ratio · Alpha', desc:'Active return vs a benchmark and Jensen’s alpha.',
+  inputs:[{k:'a',label:'Asset returns',type:'textarea',val:'0.012,-0.018,0.016,-0.004,0.021'},{k:'b',label:'Benchmark returns',type:'textarea',val:'0.010,-0.015,0.012,-0.002,0.018'},{k:'beta',label:'Beta',val:1.1}],
+  compute:function(v){ var a=parseNums(v.a),b=parseNums(v.b); if(a.length<3||a.length!==b.length) return [{l:'Note',v:'len mismatch'}]; return [{l:'Info ratio',v:fmt(Q.informationRatio(a,b),2)},{l:'Jensen α',v:pct(Q.jensenAlpha(a,b,v.beta),2)}]; }
+});
+
+// Equity & fundamentals
+buildCard(document.getElementById('g_equity'),{
+  title:'Altman Z-score', desc:'Bankruptcy-risk score for a public manufacturer (>2.99 safe, <1.81 distress).',
+  inputs:[{k:'wc',label:'Working capital',val:200},{k:'re',label:'Retained earnings',val:300},{k:'ebit',label:'EBIT',val:150},{k:'eq',label:'Mkt equity',val:800},{k:'sales',label:'Sales',val:1200},{k:'ta',label:'Total assets',val:1000},{k:'tl',label:'Total liabs',val:500}],
+  compute:function(v){ var z=Q.altmanZ(v.wc,v.re,v.ebit,v.eq,v.sales,v.ta,v.tl); return [{l:'Z-score',v:fmt(z.z,2)},{l:'Zone',v:z.zone,cls:z.zone==='Safe'?'up':(z.zone==='Distress'?'down':'')}]; }
+});
+buildCard(document.getElementById('g_equity'),{
+  title:'DuPont ROE', desc:'Decompose return on equity into margin × turnover × leverage.',
+  inputs:[{k:'ni',label:'Net income',val:100},{k:'sales',label:'Sales',val:1000},{k:'assets',label:'Assets',val:2000},{k:'eq',label:'Equity',val:800}],
+  compute:function(v){ var d=Q.dupont(v.ni,v.sales,v.assets,v.eq); return [{l:'Net margin',v:pct(d.margin,1)},{l:'Asset turn',v:fmt(d.turnover,2)},{l:'Leverage',v:fmt(d.leverage,2)},{l:'ROE',v:pct(d.roe,1),cls:'up'}]; }
+});
+buildCard(document.getElementById('g_equity'),{
+  title:'Valuation multiples', desc:'P/E, PEG, EV/EBITDA and P/B from price and fundamentals.',
+  inputs:[{k:'px',label:'Price',val:50},{k:'eps',label:'EPS',val:2.5},{k:'g',label:'Growth %',val:20},{k:'ev',label:'EV',val:1200},{k:'ebitda',label:'EBITDA',val:150},{k:'bps',label:'Book/share',val:20}],
+  compute:function(v){ var m=Q.multiples(v.px,v.eps,v.g,v.ev,v.ebitda,v.bps); return [{l:'P/E',v:fmt(m.pe,1)},{l:'PEG',v:fmt(m.peg,2)},{l:'EV/EBITDA',v:fmt(m.evEbitda,1)},{l:'P/B',v:fmt(m.pb,2)}]; }
+});
+
+// Corp finance: CAGR, mortgage, future value
+buildCard(document.getElementById('g_corp'),{
+  title:'CAGR', desc:'Compound annual growth rate between two values.',
+  inputs:[{k:'s',label:'Start value',val:1000},{k:'e',label:'End value',val:2000},{k:'y',label:'Years',val:5}],
+  compute:function(v){ return [{l:'CAGR',v:pct(Q.cagr(v.s,v.e,v.y),2),cls:'up'},{l:'Total return',v:pct(v.e/v.s-1,1)}]; }
+});
+buildCard(document.getElementById('g_corp'),{
+  title:'Mortgage / loan', desc:'Monthly payment, total interest and cost from principal & rate.',
+  inputs:[{k:'p',label:'Principal',val:300000},{k:'r',label:'Annual rate %',val:6},{k:'y',label:'Years',val:30}],
+  compute:function(v){ var m=Q.mortgage(v.p,v.r/100,v.y); return [{l:'Monthly',v:fmt(m.payment,2)},{l:'Total interest',v:fmt(m.totalInterest,0),cls:'down'},{l:'Total paid',v:fmt(m.totalPaid,0)}]; }
+});
+buildCard(document.getElementById('g_corp'),{
+  title:'Savings growth (FV)', desc:'Future value of regular contributions at a given return.',
+  inputs:[{k:'pmt',label:'Monthly contribution',val:500},{k:'r',label:'Annual return %',val:7},{k:'y',label:'Years',val:20},{k:'pv',label:'Starting balance',val:0}],
+  compute:function(v){ var fv=Q.futureValue(v.pmt,v.r/100,v.y,12,v.pv); var contrib=v.pmt*12*v.y+v.pv; return [{l:'Future value',v:fmt(fv,0),cls:'up'},{l:'Contributed',v:fmt(contrib,0)},{l:'Growth',v:fmt(fv-contrib,0),cls:'up'}]; }
+});
 
 calcOptions();
 </script>

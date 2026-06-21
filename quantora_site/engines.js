@@ -200,7 +200,90 @@ function sqrtImpact(Q_,V,sigma,price,Y){ Y=Y==null?1:Y; var f=Y*sigma*Math.sqrt(
 function almgrenChriss(X,T,N,lambda,sigma,eta,gamma){ var tau=T/N; var etaT=eta-0.5*gamma*tau; var kappa=Math.sqrt(lambda*sigma*sigma/etaT); var sh=Math.sinh(kappa*T); var hold=[],tr=[],j; for(j=0;j<=N;j++){ var t=j*tau; hold.push(X*Math.sinh(kappa*(T-t))/sh); } for(j=1;j<=N;j++) tr.push(hold[j-1]-hold[j]); return {kappa:kappa, halfLife:1/kappa, holdings:hold, trades:tr}; }
 Q.probITM=probITM; Q.markowitz2=markowitz2; Q.sqrtImpact=sqrtImpact; Q.almgrenChriss=almgrenChriss;
 
-Q.version='1.1';
+
+/* ================= BLOOMBERG-GRADE BATCH ================= */
+/* Futures options (Black-76) & FX options (Garman-Kohlhagen) */
+function black76(F,K,T,r,sig){ var b=bsm(F,K,T,r,r,sig); return {call:b.call, put:b.put, d1:b.d1, d2:b.d2}; }
+function garmanKohlhagen(S,K,T,rd,rf,sig){ var b=bsm(S,K,T,rd,rf,sig); return {call:b.call, put:b.put}; }
+
+/* Second-order Greeks */
+function greeks2(S,K,T,r,q,sig){
+  var b=bsm(S,K,T,r,q,sig), d1=b.d1, d2=b.d2, sqT=Math.sqrt(T);
+  var vega=S*Math.exp(-q*T)*normPdf(d1)*sqT;
+  return { vanna:(vega/S)*(1-d1/(sig*sqT)), volga:vega*d1*d2/sig };
+}
+
+/* Options strategy P&L (multi-leg, at expiry) */
+function legPnL(leg,S){
+  var q=leg.qty||0, prem=leg.premium||0;
+  if(leg.kind==='stock') return q*(S-(leg.strike||0));
+  var intr=leg.kind==='put'?Math.max((leg.strike||0)-S,0):Math.max(S-(leg.strike||0),0);
+  return q*intr-q*prem;
+}
+function strategyPnL(legs,S0,opts){
+  opts=opts||{}; var lo=opts.lo!=null?opts.lo:0, hi=opts.hi!=null?opts.hi:S0*2, n=opts.n||120;
+  var xs=[],ys=[],i,prev=null,bes=[],maxP=-Infinity,maxL=Infinity;
+  for(i=0;i<=n;i++){ var S=lo+(hi-lo)*i/n, p=0; for(var j=0;j<legs.length;j++) p+=legPnL(legs[j],S);
+    xs.push(S); ys.push(p);
+    if(p>maxP) maxP=p; if(p<maxL) maxL=p;
+    if(prev!==null && (prev<0)!==(p<0) && prev!==p){ var Sb=xs[i-1]+(0-prev)/(p-prev)*(S-xs[i-1]); bes.push(Sb); }
+    prev=p;
+  }
+  var net=0; for(var k=0;k<legs.length;k++) net+=legPnL(legs[k],S0);
+  return {xs:xs, ys:ys, breakevens:bes, maxProfit:maxP, maxLoss:maxL, atSpot:net};
+}
+
+/* Equity & fundamentals */
+function altmanZ(wc,re,ebit,mktEq,sales,ta,tl){
+  var X1=wc/ta,X2=re/ta,X3=ebit/ta,X4=mktEq/tl,X5=sales/ta;
+  var z=1.2*X1+1.4*X2+3.3*X3+0.6*X4+1.0*X5;
+  var zone=z>2.99?'Safe':(z>=1.81?'Grey':'Distress');
+  return {z:z, zone:zone};
+}
+function dupont(ni,sales,assets,equity){
+  var margin=ni/sales, turnover=sales/assets, leverage=assets/equity;
+  return {margin:margin, turnover:turnover, leverage:leverage, roe:margin*turnover*leverage};
+}
+function multiples(price,eps,growthPct,ev,ebitda,bookps){
+  var pe=price/eps;
+  return {pe:pe, peg:growthPct?pe/growthPct:null, evEbitda:ev/ebitda, pb:price/bookps};
+}
+function piotroskiF(t){ // t: object of 9 boolean signals
+  var keys=['roaPos','cfoPos','roaUp','accrual','levDown','currUp','noDilution','marginUp','turnUp'];
+  var sc=0; for(var i=0;i<keys.length;i++) if(t[keys[i]]) sc++;
+  return {score:sc, max:9};
+}
+
+/* Performance analytics */
+function cagr(start,end,years){ return Math.pow(end/start,1/years)-1; }
+function treynor(returns,beta,rfAnnual,P){ P=P||252; rfAnnual=rfAnnual||0; return (mean(returns)*P-rfAnnual)/beta; }
+function calmar(returns,P){ P=P||252; var dd=Math.abs(maxDrawdown(returns)); return dd===0?Infinity:(mean(returns)*P)/dd; }
+function omega(returns,thr){ thr=thr||0; var up=0,dn=0; for(var i=0;i<returns.length;i++){ var d=returns[i]-thr; if(d>0) up+=d; else dn+=-d; } return dn===0?Infinity:up/dn; }
+function informationRatio(returns,bench,P){ P=P||252; var diff=[]; for(var i=0;i<returns.length;i++) diff.push(returns[i]-bench[i]); return (mean(diff)/stdev(diff))*Math.sqrt(P); }
+function jensenAlpha(returns,bench,beta,rfAnnual,P){ P=P||252; rfAnnual=rfAnnual||0; var rp=mean(returns)*P, rm=mean(bench)*P; return rp-(rfAnnual+beta*(rm-rfAnnual)); }
+
+/* Rates: forward rate */
+function forwardRate(z1,t1,z2,t2){ return Math.pow(Math.pow(1+z2,t2)/Math.pow(1+z1,t1),1/(t2-t1))-1; }
+
+/* Personal finance */
+function mortgage(principal,annualRate,years,perYr){
+  perYr=perYr||12; var r=annualRate/perYr, n=years*perYr;
+  var pay=r===0?principal/n:principal*r/(1-Math.pow(1+r,-n));
+  return {payment:pay, totalPaid:pay*n, totalInterest:pay*n-principal, n:n};
+}
+function futureValue(pmt,annualRate,years,perYr,pv){
+  perYr=perYr||12; var r=annualRate/perYr, n=years*perYr; pv=pv||0;
+  var fvAnnuity=r===0?pmt*n:pmt*((Math.pow(1+r,n)-1)/r);
+  return pv*Math.pow(1+r,n)+fvAnnuity;
+}
+
+Q.black76=black76; Q.garmanKohlhagen=garmanKohlhagen; Q.greeks2=greeks2;
+Q.legPnL=legPnL; Q.strategyPnL=strategyPnL;
+Q.altmanZ=altmanZ; Q.dupont=dupont; Q.multiples=multiples; Q.piotroskiF=piotroskiF;
+Q.cagr=cagr; Q.treynor=treynor; Q.calmar=calmar; Q.omega=omega; Q.informationRatio=informationRatio; Q.jensenAlpha=jensenAlpha;
+Q.forwardRate=forwardRate; Q.mortgage=mortgage; Q.futureValue=futureValue;
+
+Q.version='1.2';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
