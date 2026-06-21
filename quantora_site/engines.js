@@ -593,7 +593,72 @@ function probabilisticSharpe(returns,srStar){
 }
 Q.probabilisticSharpe=probabilisticSharpe;
 
-Q.version='1.9';
+
+/* ================= MATRIX HELPERS ================= */
+function matMul(A,B){ var n=A.length,m=B[0].length,p=B.length,R=[],i,j,k; for(i=0;i<n;i++){ R[i]=[]; for(j=0;j<m;j++){ var sm=0; for(k=0;k<p;k++) sm+=A[i][k]*B[k][j]; R[i][j]=sm; } } return R; }
+function matT(A){ var n=A.length,m=A[0].length,R=[],i,j; for(j=0;j<m;j++){ R[j]=[]; for(i=0;i<n;i++) R[j][i]=A[i][j]; } return R; }
+function matScale(A,s){ return A.map(function(r){return r.map(function(x){return x*s;});}); }
+
+/* ================= SORTINO/CALMAR-OPTIMIZED ALLOCATION ================= */
+function optimizeAllocation(series,objective,P,opts){
+  opts=opts||{}; objective=objective||'sortino'; P=P||252; var n=series.length, N=opts.samples||16000, rng=opts.seed!=null?mulberry32(opts.seed):Math.random, i,k;
+  function ratio(w){ var pr=portfolioReturns(series,w); var r; if(objective==='calmar') r=calmar(pr,P); else if(objective==='sharpe') r=sharpe(pr,0,P); else r=sortino(pr,0,P); if(!isFinite(r)) r=1e6+mean(pr)*1e6; return r; }
+  var best=null,bw=null;
+  for(k=0;k<N;k++){ var w=[],sw=0; for(i=0;i<n;i++){ var x=-Math.log(rng()||1e-12); w.push(x); sw+=x; } for(i=0;i<n;i++) w[i]/=sw; var r=ratio(w); if(!isNaN(r)&&(best===null||r>best)){ best=r; bw=w; } }
+  if(!bw){ bw=series.map(function(){return 1/n;}); }
+  bw=_refine(bw.slice(),function(w){ var r=ratio(w); return isFinite(r)?r:-1e9; });
+  var pr=portfolioReturns(series,bw);
+  return {weights:bw, sortino:sortino(pr,0,P), calmar:calmar(pr,P), sharpe:sharpe(pr,0,P), objective:objective};
+}
+Q.optimizeAllocation=optimizeAllocation;
+
+/* ================= SPOT-CURVE BOND PRICING + Z-SPREAD ================= */
+function bondPriceFromCurve(face,coupon,n,zeros){ var c=face*coupon, p=0; for(var t=1;t<=n;t++){ var cf=c+(t===n?face:0); p+=cf/Math.pow(1+zeros[t-1],t); } return p; }
+function zSpread(face,coupon,n,zeros,mktPrice){
+  var c=face*coupon;
+  function pv(z){ var p=0; for(var t=1;t<=n;t++){ var cf=c+(t===n?face:0); p+=cf/Math.pow(1+zeros[t-1]+z,t); } return p; }
+  var a=-0.2,b=0.5;
+  for(var i=0;i<200;i++){ var m=(a+b)/2; if(pv(m)>mktPrice) a=m; else b=m; if(b-a<1e-10) break; }
+  return (a+b)/2;
+}
+Q.bondPriceFromCurve=bondPriceFromCurve; Q.zSpread=zSpread;
+
+/* ================= BLACK-LITTERMAN ================= */
+function blackLitterman(wMkt,Sigma,lambda,views,tau){
+  tau=tau||0.05; var n=wMkt.length, i, k;
+  var Pi=matVec(matScale(Sigma,lambda),wMkt); // equilibrium excess returns
+  if(!views||!views.length){ return {equilibrium:Pi, posterior:Pi.slice(), weights:wMkt.slice()}; }
+  var m=views.length, Pm=[], Q=[], omega=[];
+  for(k=0;k<m;k++){ var row=new Array(n).fill(0); row[views[k].asset]=1; Pm.push(row); Q.push(views[k].ret);
+    var pv=0; for(i=0;i<n;i++) for(var j=0;j<n;j++) pv+=row[i]*tau*Sigma[i][j]*row[j];
+    var conf=Math.min(0.999,Math.max(0.001,views[k].confidence||0.5));
+    omega.push((1/conf-1)*pv+1e-9);
+  }
+  var tauSig=matScale(Sigma,tau), invTauSig=matInv(tauSig);
+  var Pt=matT(Pm);
+  // Pt * invOmega * P  and Pt*invOmega*Q
+  var PtOmP=[]; for(i=0;i<n;i++){ PtOmP[i]=[]; for(var j2=0;j2<n;j2++){ var sm=0; for(k=0;k<m;k++) sm+=Pt[i][k]*(1/omega[k])*Pm[k][j2]; PtOmP[i][j2]=sm; } }
+  var A=invTauSig.map(function(r,i2){return r.map(function(x,j3){return x+PtOmP[i2][j3];});});
+  var invTauSigPi=matVec(invTauSig,Pi);
+  var PtOmQ=new Array(n).fill(0); for(i=0;i<n;i++){ var sm=0; for(k=0;k<m;k++) sm+=Pt[i][k]*(1/omega[k])*Q[k]; PtOmQ[i]=sm; }
+  var bvec=invTauSigPi.map(function(x,i2){return x+PtOmQ[i2];});
+  var post=matVec(matInv(A),bvec);
+  var wStar=matVec(matInv(matScale(Sigma,lambda)),post);
+  return {equilibrium:Pi, posterior:post, weights:wStar};
+}
+Q.blackLitterman=blackLitterman;
+
+/* ================= VALUE/MOMENTUM FACTOR SCORING ================= */
+function crossZ(vals){ var m=mean(vals), sd=stdev(vals)||1; return vals.map(function(v){return (v-m)/sd;}); }
+function factorRank(assets,wValue,wMom){ wValue=wValue==null?0.5:wValue; wMom=wMom==null?0.5:wMom;
+  var zv=crossZ(assets.map(function(a){return a.value;})), zm=crossZ(assets.map(function(a){return a.momentum;}));
+  var out=assets.map(function(a,i){ return {name:a.name, value:a.value, momentum:a.momentum, zValue:zv[i], zMom:zm[i], score:wValue*zv[i]+wMom*zm[i]}; });
+  out.sort(function(a,b){return b.score-a.score;});
+  return out;
+}
+Q.crossZ=crossZ; Q.factorRank=factorRank;
+
+Q.version='2.0';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

@@ -267,7 +267,7 @@ Bitcoin,Crypto,10000</textarea></div>
         <div class="fld"><label>Assets — label: r,r,r (decimals)</label><textarea id="bt_assets" style="width:100%;min-height:96px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);border-radius:9px;padding:8px">Stocks: 0.02,-0.03,0.04,-0.01,0.03,-0.05,0.04,0.02,-0.02,0.03,0.01,-0.04,0.05,-0.02,0.03
 Bonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.007,-0.002,0.004,0.003</textarea></div>
         <div class="fld"><label>Weights (match order, sum ~1)</label><input id="bt_w" type="text" value="0.6, 0.4" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;font-family:'JetBrains Mono',monospace;font-size:12px"></div>
-        <div class="fld"><label>Periods / year</label><input id="bt_p" type="number" value="12" step="1"></div>
+        <div class="fld"><label>Periods / year</label><input id="bt_p" type="number" value="12" step="1"></div><button class="miniBtn" id="bt_btc" style="margin-top:6px">↻ load live BTC (90d daily)</button>
       </div>
       <div class="out">
         <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:4px">Equity curve</div>
@@ -1254,6 +1254,51 @@ buildCard(document.getElementById('g_risk'),{
   title:'Probabilistic Sharpe', desc:'Confidence that the true Sharpe exceeds a benchmark, adjusted for skew & fat tails (Bailey–López de Prado).',
   inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.02,0.01,0.03,-0.01,0.02,0.018,0.025,-0.005,0.022,0.012,0.019,-0.008'},{k:'sr',label:'Benchmark SR (per period)',val:0}],
   compute:function(v){ var a=parseNums(v.r); if(a.length<4) return []; var ps=Q.probabilisticSharpe(a,v.sr); return [{l:'Sharpe (per period)',v:fmt(ps.sr,3)},{l:'PSR',v:pct(ps.psr,1),cls:ps.psr>0.95?'up':''}]; }
+});
+
+/* ===== LIVE BTC LOADER for backtester ===== */
+document.getElementById('bt_btc').addEventListener('click',function(e){
+  e.preventDefault(); var b=this; b.textContent='loading…';
+  fetch('https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400').then(function(r){return r.json();}).then(function(c){
+    if(!Array.isArray(c)||!c.length){ b.textContent='↻ load live BTC (90d daily)'; return; }
+    c.sort(function(a,b2){return a[0]-b2[0];}); var closes=c.map(function(x){return x[4];});
+    var rets=[]; for(var i=1;i<closes.length;i++) rets.push(closes[i]/closes[i-1]-1);
+    document.getElementById('bt_assets').value='BTC (live): '+rets.map(function(x){return x.toFixed(4);}).join(',');
+    document.getElementById('bt_w').value='1'; document.getElementById('bt_p').value='365';
+    b.textContent='↻ loaded '+rets.length+' live days'; drawBT();
+  }).catch(function(){ b.textContent='↻ load live BTC (90d daily)'; });
+});
+
+/* ===== NEW CARDS (v2.0) ===== */
+function infOr(x,d){ return isFinite(x)?fmt(x,d):'∞'; }
+buildCard(document.getElementById('g_risk'),{
+  title:'Optimized allocation', desc:'Find weights that maximize Sortino, Calmar or Sharpe. One asset return series per line.',
+  inputs:[{k:'a',label:'Assets — label: r,r,r',type:'textarea',val:'Stocks: 0.02,-0.03,0.04,-0.01,0.03,-0.05,0.04,0.02,-0.02,0.03,0.01,-0.04\nBonds: 0.004,0.006,-0.002,0.005,0.003,0.008,-0.003,0.004,0.006,-0.001,0.005,0.007\nGold: 0.01,0.02,-0.01,0.0,0.015,-0.02,0.01,0.005,0.02,-0.01,0.0,0.012'},{k:'obj',label:'Objective',type:'select',opts:[['sortino','Max Sortino'],['calmar','Max Calmar'],['sharpe','Max Sharpe']]},{k:'p',label:'Periods/yr',val:12}],
+  compute:function(v){ var rows=v.a.split(/\n/).filter(function(l){return l.trim();}); var names=[],series=[]; rows.forEach(function(l){var idx=l.indexOf(':');var nums=parseNums(idx>=0?l.slice(idx+1):l);if(nums.length>=3){names.push(idx>=0?l.slice(0,idx).trim():('A'+names.length));series.push(nums);}}); if(series.length<1) return [];
+    var al=Q.optimizeAllocation(series,v.obj,v.p,{samples:9000}); var out=al.weights.map(function(w,i){return {l:names[i],v:pct(w,0),cls:'up'};});
+    out.push({l:'Sortino',v:infOr(al.sortino,2)}); out.push({l:'Calmar',v:infOr(al.calmar,2)}); return out; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Z-spread (vs curve)', desc:'Bootstraps a spot curve from par rates, then solves the constant spread over it that prices the bond.',
+  inputs:[{k:'par',label:'Par rates % (1y,2y,…)',type:'textarea',val:'3,3.5,4,4.3,4.5'},{k:'cpn',label:'Bond coupon %',val:5},{k:'px',label:'Market price',val:98}],
+  compute:function(v){ var pr=parseNums(v.par).map(function(x){return x/100;}); if(pr.length<1) return []; var taus=pr.map(function(){return 1;}); var bc=Q.bootstrapCurve(pr,taus); var n=pr.length;
+    var fair=Q.bondPriceFromCurve(100,v.cpn/100,n,bc.zeros); var zs=Q.zSpread(100,v.cpn/100,n,bc.zeros,v.px);
+    return [{l:'Fair (on curve)',v:fmt(fair,2)},{l:'Z-spread',v:fmt(zs*1e4,0)+' bps',cls:zs>0?'down':'up'}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Black–Litterman', desc:'Blend market-equilibrium returns with a view. Weights, vols, and one bullish view on asset 1.',
+  inputs:[{k:'w',label:'Market weights',val:'0.6,0.3,0.1'},{k:'vol',label:'Vols %',val:'16,6,15'},{k:'rho',label:'Avg corr',val:0.2},{k:'lam',label:'Risk aversion',val:2.5},{k:'view',label:'View on asset 1 (ret %)',val:12},{k:'conf',label:'Confidence',val:0.6}],
+  compute:function(v){ var w=parseNums(v.w), vols=parseNums(v.vol).map(function(x){return x/100;}); if(w.length<2||w.length!==vols.length) return [{l:'Note',v:'check inputs'}];
+    var Sig=Q.covFromVolCorr(vols,v.rho); var views=isFinite(v.view)?[{asset:0,ret:v.view/100,confidence:v.conf}]:[];
+    var bl=Q.blackLitterman(w,Sig,v.lam,views,0.05);
+    return bl.weights.map(function(x,i){return {l:'Asset '+(i+1)+' wt',v:pct(x,0),cls:x>w[i]?'up':(x<w[i]?'down':'')};}); }
+});
+buildCard(document.getElementById('g_equity'),{
+  title:'Factor scoring', desc:'Rank assets by combined value + momentum z-score. One per line: name,value,momentum.',
+  inputs:[{k:'a',label:'name,value,momentum',type:'textarea',val:'AAPL,0.04,0.18\nXOM,0.09,0.05\nTSLA,0.02,0.35\nKO,0.06,-0.04'},{k:'wv',label:'Value weight',val:0.5}],
+  compute:function(v){ var rows=v.a.split(/\n/).map(function(l){return l.split(',');}).filter(function(a){return a.length>=3&&!isNaN(parseFloat(a[1]));}).map(function(a){return {name:a[0].trim(),value:parseFloat(a[1]),momentum:parseFloat(a[2])};}); if(rows.length<2) return [];
+    var wv=Math.min(1,Math.max(0,v.wv)); var fr=Q.factorRank(rows,wv,1-wv);
+    return fr.map(function(x,i){return {l:(i+1)+'. '+x.name,v:fmt(x.score,2),cls:x.score>0?'up':'down'};}); }
 });
 
 calcOptions();
