@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · The Delta — What Changed &amp; Why</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · The Delta — what changed across markets, and why"><meta property="og:description" content="A grounded, cross-asset AI brief: what moved overnight across crypto, stocks, macro and on-chain — and the most likely why.">
+<meta property="og:url" content="https://www.usequantora.com/delta.html"><meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="The Delta — a grounded cross-asset AI brief on what changed across crypto, stocks, macro and on-chain, and why.">
+<link rel="canonical" href="https://www.usequantora.com/delta.html">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a8a3b;--down:#d23a2c;--acc:#6366f1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:16px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
+.wrap{max-width:1000px;margin:0 auto;padding:34px 24px 80px}
+h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
+.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:720px}
+.brief{border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-top:22px;background:linear-gradient(180deg,#fbfbfe,#fff);box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.brief h3{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--acc);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.brief .body{font-size:17px;line-height:1.7;margin-top:14px;color:#15171d}
+.brief .foot{color:var(--mut);font-size:12px;margin-top:16px;font-family:ui-monospace,Menlo,monospace}
+.shimmer{color:#aab0bd}
+.divs{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.dv{font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;background:#eef1ff;color:#3358ff}
+.dv.warn{background:#fdeeeb;color:#c0341d}.dv.good{background:#eafaf0;color:#0a7d33}
+.sect{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:26px 0 2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.m{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:#fff}
+.m .l{font-size:11px;color:var(--mut);font-weight:600}
+.m .v{font-size:19px;font-weight:750;letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
+.m .c{font-size:12.5px;font-weight:650;margin-top:3px}
+.up{color:var(--up)}.down{color:var(--down)}
+.status{margin-top:18px;color:var(--mut);font-size:13px}
+@media(max-width:560px){.wrap{padding:28px 16px 60px}.brief .body{font-size:15.5px}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/delta.html" class="link active">The Delta</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/news.html" class="link">News</a>
+  <div class="right"><span class="dot"></span> Live · cross-asset</div>
+</div>
+<div class="wrap">
+  <h1>The Delta</h1>
+  <div class="sub">What changed across every market in the last 24 hours — and the most likely why. Quantora reads crypto, equities, macro, funding and sentiment together, finds the divergences, and writes the story. Grounded entirely in the live numbers below.</div>
+
+  <div class="brief">
+    <h3>★ Quantora AI · Cross-asset desk</h3>
+    <div class="body shimmer" id="brief">Reading the tape across crypto, equities, macro and on-chain…</div>
+    <div class="divs" id="divs"></div>
+    <div class="foot" id="foot"></div>
+  </div>
+
+  <div class="sect">The data behind it · 24h</div>
+  <div id="grid" class="grid"></div>
+  <div class="status" id="status">Gathering the snapshot…</div>
+</div>
+
+<script>
+function pc(n){ if(n==null||isNaN(n))return '—'; return (n>=0?'+':'')+n.toFixed(2)+'%'; }
+function col(n){ return n>=0?'up':'down'; }
+function usd0(n){ return (n==null||isNaN(n))?'—':'$'+Math.round(n).toLocaleString(); }
+function px(n){ if(n==null||isNaN(n))return '—'; return n>=100?'$'+Math.round(n).toLocaleString():(n>=1?'$'+n.toFixed(2):'$'+n.toFixed(4)); }
+function big(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e12)return '$'+(n/1e12).toFixed(2)+'T'; if(a>=1e9)return '$'+(n/1e9).toFixed(0)+'B'; return '$'+Math.round(n); }
+function j(u,o){ return fetch(u,o).then(function(r){return r.json();}).catch(function(){return null;}); }
+
+async function gather(){
+  var out={};
+  var r=await Promise.all([
+    j('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana&price_change_percentage=24h'),
+    j('https://api.coingecko.com/api/v3/global'),
+    j('/api/stocks'),
+    j('/api/fredseries'),
+    j('https://api.alternative.me/fng/'),
+    j('https://api.hyperliquid.xyz/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'metaAndAssetCtxs'})}),
+    j('https://api.llama.fi/v2/chains')
+  ]);
+  var cg=r[0]||[], glob=r[1], stk=r[2], fred=r[3], fng=r[4], hl=r[5], llama=r[6];
+  function coin(id){var c=(cg||[]).filter(function(x){return x.id===id;})[0];return c?{p:c.current_price,ch:c.price_change_percentage_24h}:null;}
+  out.btc=coin('bitcoin'); out.eth=coin('ethereum'); out.sol=coin('solana');
+  if(glob&&glob.data){out.cap={v:glob.data.total_market_cap.usd,ch:glob.data.market_cap_change_percentage_24h_usd,dom:glob.data.market_cap_percentage.btc};}
+  out.stocks={}; if(stk&&stk.rows){stk.rows.forEach(function(x){out.stocks[x.symbol]={p:x.price,ch:x.changePct};});}
+  if(fred&&fred.indicators){var f=function(id){var it=fred.indicators.filter(function(x){return x.id===id;})[0];return it?{v:it.latest,ch:it.change}:null;};out.tenY=f('DGS10');out.vix=f('VIXCLS');}
+  if(fng&&fng.data&&fng.data[0]){out.fng={v:+fng.data[0].value,l:fng.data[0].value_classification};}
+  if(hl&&hl[0]&&hl[1]){var uni=hl[0].universe,ctx=hl[1];var bi=uni.findIndex(function(u){return u.name==='BTC';});if(bi>=0&&ctx[bi]){out.funding=parseFloat(ctx[bi].funding)*24*365*100;}}
+  if(Array.isArray(llama)){out.tvl=llama.reduce(function(s,c){return s+(c.tvl||0);},0);}
+  return out;
+}
+
+function renderGrid(d){
+  var cards=[];
+  function m(l,v,c){return '<div class="m"><div class="l">'+l+'</div><div class="v">'+v+'</div>'+(c!=null?'<div class="c '+col(c)+'">'+pc(c)+'</div>':'')+'</div>';}
+  if(d.btc)cards.push(m('Bitcoin',px(d.btc.p),d.btc.ch));
+  if(d.eth)cards.push(m('Ethereum',px(d.eth.p),d.eth.ch));
+  if(d.sol)cards.push(m('Solana',px(d.sol.p),d.sol.ch));
+  if(d.cap)cards.push(m('Crypto cap',big(d.cap.v),d.cap.ch));
+  if(d.stocks.SPY)cards.push(m('S&P 500',px(d.stocks.SPY.p),d.stocks.SPY.ch));
+  if(d.stocks.QQQ)cards.push(m('Nasdaq 100',px(d.stocks.QQQ.p),d.stocks.QQQ.ch));
+  if(d.stocks.NVDA)cards.push(m('NVIDIA',px(d.stocks.NVDA.p),d.stocks.NVDA.ch));
+  if(d.tenY)cards.push(m('10Y Treasury',d.tenY.v+'%',d.tenY.ch));
+  if(d.vix)cards.push(m('VIX',d.vix.v.toFixed(2),d.vix.ch));
+  if(d.funding!=null)cards.push(m('BTC funding (APR)','<span class="'+col(d.funding)+'">'+pc(d.funding)+'</span>',null));
+  if(d.tvl)cards.push(m('DeFi TVL',big(d.tvl),null));
+  if(d.fng)cards.push(m('Fear &amp; Greed',d.fng.v,null));
+  document.getElementById('grid').innerHTML=cards.join('');
+}
+function divergences(d){
+  var out=[];
+  if(d.btc&&d.stocks.QQQ){var a=d.btc.ch,b=d.stocks.QQQ.ch;if(a*b<0&&(Math.abs(a)>0.5||Math.abs(b)>0.5))out.push({t:'BTC & Nasdaq decoupled ('+pc(a)+' vs '+pc(b)+')',c:'warn'});}
+  if(d.btc&&d.eth){if(d.btc.ch*d.eth.ch<0)out.push({t:'BTC & ETH split ('+pc(d.btc.ch)+' / '+pc(d.eth.ch)+')',c:''});}
+  if(d.vix&&d.vix.ch>3&&d.stocks.SPY&&d.stocks.SPY.ch<0)out.push({t:'Risk-off: VIX up '+pc(d.vix.ch)+', stocks down',c:'warn'});
+  if(d.vix&&d.vix.ch<-3&&d.stocks.SPY&&d.stocks.SPY.ch>0)out.push({t:'Risk-on: VIX down, stocks up',c:'good'});
+  if(d.funding!=null&&d.funding>20)out.push({t:'Crowded longs: BTC funding +'+d.funding.toFixed(0)+'% APR',c:'warn'});
+  if(d.funding!=null&&d.funding<-5)out.push({t:'Crowded shorts: BTC funding '+d.funding.toFixed(0)+'% APR',c:''});
+  if(d.fng&&d.fng.v<=25)out.push({t:'Sentiment: '+d.fng.l+' ('+d.fng.v+')',c:'warn'});
+  if(d.fng&&d.fng.v>=75)out.push({t:'Sentiment: '+d.fng.l+' ('+d.fng.v+')',c:'good'});
+  return out;
+}
+function packet(d){
+  var L=[];
+  if(d.btc)L.push('Bitcoin '+px(d.btc.p)+' ('+pc(d.btc.ch)+' 24h)');
+  if(d.eth)L.push('Ethereum '+px(d.eth.p)+' ('+pc(d.eth.ch)+')');
+  if(d.sol)L.push('Solana '+px(d.sol.p)+' ('+pc(d.sol.ch)+')');
+  if(d.cap)L.push('Total crypto cap '+big(d.cap.v)+' ('+pc(d.cap.ch)+'), BTC dominance '+d.cap.dom.toFixed(1)+'%');
+  if(d.funding!=null)L.push('BTC perp funding '+pc(d.funding)+' annualized ('+(d.funding>=0?'longs pay shorts':'shorts pay longs')+')');
+  if(d.tvl)L.push('DeFi TVL '+big(d.tvl));
+  if(d.stocks.SPY)L.push('S&P500 '+pc(d.stocks.SPY.ch)+', Nasdaq '+(d.stocks.QQQ?pc(d.stocks.QQQ.ch):'?')+', NVDA '+(d.stocks.NVDA?pc(d.stocks.NVDA.ch):'?'));
+  if(d.tenY)L.push('10Y Treasury '+d.tenY.v+'% ('+pc(d.tenY.ch)+')');
+  if(d.vix)L.push('VIX '+d.vix.v.toFixed(2)+' ('+pc(d.vix.ch)+')');
+  if(d.fng)L.push('Crypto Fear & Greed '+d.fng.v+' ('+d.fng.l+')');
+  return 'CROSS-ASSET SNAPSHOT (last 24h):\n- '+L.join('\n- ');
+}
+async function run(){
+  var d=await gather();
+  document.getElementById('status').style.display='none';
+  renderGrid(d);
+  var dv=divergences(d);
+  document.getElementById('divs').innerHTML=dv.map(function(x){return '<span class="dv '+(x.c||'')+'">'+x.t+'</span>';}).join('');
+  var pkt=packet(d);
+  var instr=pkt+'\n\nYou are Quantora\'s cross-asset desk. Using ONLY the snapshot above, write a tight 4-6 sentence brief on what changed across markets in the last 24h and the most likely why: the dominant story, the clearest divergence or signal, and the overall risk tone. Cite specific numbers from the snapshot. Plain English, confident but measured, no hype, no investment advice, and do not add any disclaimer text.';
+  try{
+    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:instr})});
+    var jd=await r.json();
+    var el=document.getElementById('brief');
+    if(jd&&jd.text){ el.className='body'; el.textContent=jd.text; document.getElementById('foot').textContent='Written by Quantora AI (Llama 3.3) on the live snapshot above · '+new Date().toLocaleString()+' · not investment advice'; }
+    else if(jd&&jd.error==='no_key'){ el.className='body'; el.textContent='The AI desk needs the GROQ_KEY set in Vercel. The live cross-asset snapshot below is already running.'; }
+    else { el.className='body'; el.textContent='Could not generate the brief just now — but the live snapshot below is current. Try refreshing.'; }
+  }catch(e){ var el=document.getElementById('brief'); el.className='body'; el.textContent='Network hiccup generating the brief. The live snapshot below is current.'; }
+}
+run();
+</script>
+  <footer class="qfoot" style="max-width:1000px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. AI commentary is automated and may be wrong. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
+<script defer src="/_vercel/insights/script.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>
