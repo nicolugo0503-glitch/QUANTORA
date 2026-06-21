@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Engines — verified quant math, free</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · Engines — verified quant math, free">
+<meta property="og:description" content="Black-Scholes & Greeks, bond analytics, VaR, recession probability, DCF/IRR, crypto risk — real, unit-tested quant engines that run in your browser. Free, no login.">
+<meta property="og:url" content="https://www.usequantora.com/engines.html"><meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="Quantora Engines: real, verified quant math — options pricing & Greeks, bond analytics, VaR, recession probability, DCF/IRR, crypto risk. Runs in your browser. Free.">
+<link rel="canonical" href="https://www.usequantora.com/engines.html">
+<style>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a8a3b;--down:#d23a2c;--acc:#6366f1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 24px 90px}
+h1{font-size:30px;font-weight:720;letter-spacing:-.7px}
+.sub{color:var(--mut);font-size:15px;margin-top:7px;max-width:780px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{font-size:11.5px;font-weight:600;color:#374151;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+.badge .g{color:var(--up)}
+mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* flagship */
+.flag{border:1px solid var(--line);border-radius:18px;margin-top:26px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.03),0 12px 40px -28px rgba(0,0,0,.25)}
+.flag .top{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.flag .top .t{font-size:18px;font-weight:680;letter-spacing:-.3px}
+.flag .top .tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);background:#eef0ff;border-radius:6px;padding:3px 8px}
+.flag .top .vrf{font-size:11.5px;color:var(--mut);margin-left:auto;display:flex;align-items:center;gap:6px}
+.flag .top .vrf .c{color:var(--up);font-weight:700}
+.flag .body{display:grid;grid-template-columns:300px 1fr;gap:0}
+@media(max-width:760px){.flag .body{grid-template-columns:1fr}}
+.inputs{padding:20px 22px;border-right:1px solid var(--line)}
+@media(max-width:760px){.inputs{border-right:none;border-bottom:1px solid var(--line)}}
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:5px}
+.fld input,.fld select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--acc)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.miniBtn{font-size:11.5px;color:var(--acc);font-weight:650;cursor:pointer;background:none;border:none;padding:0;margin-top:2px}
+.out{padding:20px 22px}
+.prices{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.pcard{flex:1;min-width:130px;border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:var(--soft)}
+.pcard .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.pcard .v{font-size:27px;font-weight:780;letter-spacing:-.02em;margin-top:3px}
+.gtab{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
+.gtab th,.gtab td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:right}
+.gtab th:first-child,.gtab td:first-child{text-align:left;color:var(--mut)}
+.gtab th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.gtab td.num{font-family:"JetBrains Mono",ui-monospace,monospace}
+.ivbox{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.ivbox .fld{margin-bottom:0;flex:1;min-width:150px}
+.ivbox .res{font-size:13px;color:var(--mut)}.ivbox .res b{color:var(--ink);font-size:17px;font-family:"JetBrains Mono",monospace}
+
+/* grid of engines */
+.sec{margin-top:42px}
+.sec h2{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;margin-top:14px}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px 17px;background:#fff;transition:box-shadow .15s}
+.card:hover{box-shadow:0 8px 30px -22px rgba(0,0,0,.3)}
+.card .ct{font-size:15px;font-weight:670;letter-spacing:-.2px}
+.card .cd{font-size:12.5px;color:var(--mut);margin-top:3px;min-height:32px}
+.card .ci{margin-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card .ci .fld{margin-bottom:0}
+.card .ci .fld.full{grid-column:1 / -1}
+.card .ci .fld label{font-size:10px}
+.card .ci .fld input,.card .ci .fld select,.card .ci .fld textarea{padding:7px 9px;font-size:13px;border:1px solid var(--line);border-radius:8px;width:100%;font-family:inherit}
+.card .ci textarea{resize:vertical;min-height:46px;font-family:"JetBrains Mono",monospace;font-size:11.5px}
+.card .cr{margin-top:12px;border-top:1px solid var(--line);padding-top:11px;display:flex;flex-wrap:wrap;gap:14px}
+.card .cr .r{display:flex;flex-direction:column}
+.card .cr .r .rl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.card .cr .r .rv{font-size:18px;font-weight:740;font-family:"JetBrains Mono",monospace;margin-top:2px;letter-spacing:-.02em}
+.foot{margin-top:46px;border-top:1px solid var(--line);padding-top:18px;color:var(--mut);font-size:12.5px;max-width:820px}
+.up{color:var(--up)}.down{color:var(--down)}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <h1>Engines</h1>
+  <p class="sub">Real quant math — not data, not a demo. Every engine below is a verified formula that runs entirely in your browser. No API, no key, no rate limit. Each one is unit-tested against published reference values.</p>
+  <div class="badges">
+    <span class="badge"><span class="g">●</span> 30+ engines</span>
+    <span class="badge">Unit-tested</span>
+    <span class="badge">Runs in-browser</span>
+    <span class="badge">Free · no login</span>
+  </div>
+
+  <!-- FLAGSHIP: OPTIONS -->
+  <div class="flag">
+    <div class="top">
+      <span class="t">Options pricer</span>
+      <span class="tag">Black–Scholes–Merton</span>
+      <span class="vrf"><span class="c">✓ verified</span> · call=10.4506 @ S=K=100,T=1,r=5%,σ=20%</span>
+    </div>
+    <div class="body">
+      <div class="inputs">
+        <div class="fld"><label>Spot price (S)</label><input id="o_S" type="number" value="100" step="any"><button class="miniBtn" id="o_btc">↻ load live BTC price</button></div>
+        <div class="fld"><label>Strike (K)</label><input id="o_K" type="number" value="100" step="any"></div>
+        <div class="row2">
+          <div class="fld"><label>Days to expiry</label><input id="o_D" type="number" value="365" step="1"></div>
+          <div class="fld"><label>Vol σ (%)</label><input id="o_v" type="number" value="20" step="any"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Rate r (%)</label><input id="o_r" type="number" value="5" step="any"></div>
+          <div class="fld"><label>Div yield q (%)</label><input id="o_q" type="number" value="0" step="any"></div>
+        </div>
+        <div class="fld"><label>Exercise</label><select id="o_ex"><option value="euro">European (BSM)</option><option value="amer">American (binomial)</option></select></div>
+      </div>
+      <div class="out">
+        <div class="prices">
+          <div class="pcard"><div class="l">Call</div><div class="v up" id="o_call">—</div></div>
+          <div class="pcard"><div class="l">Put</div><div class="v down" id="o_put">—</div></div>
+        </div>
+        <table class="gtab">
+          <thead><tr><th>Greek</th><th>Call</th><th>Put</th></tr></thead>
+          <tbody id="o_greeks"></tbody>
+        </table>
+        <div class="ivbox">
+          <div class="fld"><label>Implied vol — enter market price</label><input id="o_mp" type="number" placeholder="e.g. 10.45" step="any"></div>
+          <div class="fld" style="flex:0 0 auto"><label>Type</label><select id="o_mt"><option value="call">Call</option><option value="put">Put</option></select></div>
+          <div class="res">Implied σ: <b id="o_iv">—</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Rates &amp; fixed income</h2>
+    <div class="grid" id="g_rates"></div>
+  </div>
+  <div class="sec">
+    <h2>Risk &amp; portfolio</h2>
+    <div class="grid" id="g_risk"></div>
+  </div>
+  <div class="sec">
+    <h2>Macro &amp; credit</h2>
+    <div class="grid" id="g_macro"></div>
+  </div>
+  <div class="sec">
+    <h2>Valuation &amp; corporate finance</h2>
+    <div class="grid" id="g_corp"></div>
+  </div>
+  <div class="sec">
+    <h2>Crypto &amp; derivatives risk</h2>
+    <div class="grid" id="g_crypto"></div>
+  </div>
+
+  <p class="foot">All outputs are computed from the inputs you enter using standard published formulas (Black–Scholes–Merton, Hull; Fabozzi duration/convexity; Estrella–Mishkin recession probit; Merton structural credit; Almgren–Chriss; Uniswap-v2 impermanent loss). They are mathematical tools for analysis and education, not investment advice. Quantora is not a registered investment adviser or broker-dealer.</p>
+</div>
+
+<script src="/engines.js"></script>
+<script src="/nav.js"></script>
+<script>
+var Q=window.QENG;
+var fmt=function(x,d){ if(x==null||!isFinite(x)) return '—'; d=d==null?2:d; return x.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}); };
+var pct=function(x,d){ return x==null||!isFinite(x)?'—':fmt(x*100,d==null?2:d)+'%'; };
+var num=function(id){ return parseFloat(document.getElementById(id).value); };
+
+/* ---- FLAGSHIP OPTIONS ---- */
+function calcOptions(){
+  var S=num('o_S'),K=num('o_K'),D=num('o_D'),v=num('o_v')/100,r=num('o_r')/100,q=num('o_q')/100;
+  var T=D/365, ex=document.getElementById('o_ex').value;
+  if(!(S>0&&K>0&&T>0&&v>0)){ document.getElementById('o_call').textContent='—'; document.getElementById('o_put').textContent='—'; return; }
+  var g=Q.greeks(S,K,T,r,q,v);
+  var call=g.call, put=g.put;
+  if(ex==='amer'){ call=Q.crr(S,K,T,r,q,v,400,true,true); put=Q.crr(S,K,T,r,q,v,400,false,true); }
+  document.getElementById('o_call').textContent=fmt(call,4);
+  document.getElementById('o_put').textContent=fmt(put,4);
+  var rows=[
+    ['Delta',g.deltaCall,g.deltaPut,4],
+    ['Gamma',g.gamma,g.gamma,5],
+    ['Vega (per 1%)',g.vega/100,g.vega/100,4],
+    ['Theta (per day)',g.thetaCall/365,g.thetaPut/365,4],
+    ['Rho (per 1%)',g.rhoCall/100,g.rhoPut/100,4]
+  ];
+  document.getElementById('o_greeks').innerHTML=rows.map(function(x){
+    return '<tr><td>'+x[0]+'</td><td class="num">'+fmt(x[1],x[3])+'</td><td class="num">'+fmt(x[2],x[3])+'</td></tr>';
+  }).join('');
+  calcIV();
+}
+function calcIV(){
+  var mp=parseFloat(document.getElementById('o_mp').value);
+  var el=document.getElementById('o_iv');
+  if(!(mp>0)){ el.textContent='—'; return; }
+  var S=num('o_S'),K=num('o_K'),D=num('o_D'),r=num('o_r')/100,q=num('o_q')/100,T=D/365;
+  var isCall=document.getElementById('o_mt').value==='call';
+  var iv=Q.impliedVol(mp,S,K,T,r,q,isCall);
+  el.textContent=(iv*100).toFixed(2)+'%';
+}
+['o_S','o_K','o_D','o_v','o_r','o_q','o_ex'].forEach(function(id){ document.getElementById(id).addEventListener('input',calcOptions); });
+['o_mp','o_mt'].forEach(function(id){ document.getElementById(id).addEventListener('input',calcIV); });
+document.getElementById('o_btc').addEventListener('click',function(e){
+  e.preventDefault(); var b=this; b.textContent='loading…';
+  fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot').then(function(r){return r.json();}).then(function(j){
+    var p=parseFloat(j.data.amount); document.getElementById('o_S').value=Math.round(p);
+    document.getElementById('o_K').value=Math.round(p); b.textContent='↻ BTC $'+p.toLocaleString(); calcOptions();
+  }).catch(function(){ b.textContent='↻ load live BTC price'; });
+});
+
+/* ---- GENERIC MINI-CALCULATOR FRAMEWORK ---- */
+function parseNums(s){ return (s||'').split(/[\s,]+/).map(parseFloat).filter(function(x){return isFinite(x);}); }
+function buildCard(host,cfg){
+  var el=document.createElement('div'); el.className='card';
+  var inputsHtml=cfg.inputs.map(function(f){
+    var w=f.full?' full':'';
+    if(f.type==='textarea') return '<div class="fld full"><label>'+f.label+'</label><textarea data-k="'+f.k+'">'+(f.val||'')+'</textarea></div>';
+    if(f.type==='select') return '<div class="fld'+w+'"><label>'+f.label+'</label><select data-k="'+f.k+'">'+f.opts.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('')+'</select></div>';
+    return '<div class="fld'+w+'"><label>'+f.label+'</label><input type="number" step="any" data-k="'+f.k+'" value="'+f.val+'"></div>';
+  }).join('');
+  el.innerHTML='<div class="ct">'+cfg.title+'</div><div class="cd">'+cfg.desc+'</div><div class="ci">'+inputsHtml+'</div><div class="cr"></div>';
+  host.appendChild(el);
+  var inEls=el.querySelectorAll('[data-k]'), crEl=el.querySelector('.cr');
+  function run(){
+    var v={}; inEls.forEach(function(i){ v[i.getAttribute('data-k')]=(i.tagName==='TEXTAREA'||i.tagName==='SELECT')?i.value:parseFloat(i.value); });
+    var out; try{ out=cfg.compute(v); }catch(e){ out=[]; }
+    crEl.innerHTML=(out||[]).map(function(o){
+      return '<div class="r"><div class="rl">'+o.l+'</div><div class="rv '+(o.cls||'')+'">'+o.v+'</div></div>';
+    }).join('');
+  }
+  inEls.forEach(function(i){ i.addEventListener('input',run); });
+  run();
+}
+
+/* RATES */
+buildCard(document.getElementById('g_rates'),{
+  title:'Bond analytics', desc:'Price, yield, duration, convexity & DV01 from coupon and yield.',
+  inputs:[{k:'face',label:'Face',val:100},{k:'cpn',label:'Coupon %',val:5},{k:'y',label:'Yield %',val:6},{k:'n',label:'Years',val:10},{k:'m',label:'Pmts/yr',val:1}],
+  compute:function(v){ var b=Q.bondAnalytics(v.face,v.cpn/100,v.y/100,v.n,v.m);
+    return [{l:'Price',v:fmt(b.price,3)},{l:'Mod duration',v:fmt(b.modified,3)},{l:'Convexity',v:fmt(b.convexity,2)},{l:'DV01',v:fmt(b.dv01,4)}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Yield to maturity', desc:'Solve the bond’s yield from its market price (Newton + bisection).',
+  inputs:[{k:'face',label:'Face',val:100},{k:'cpn',label:'Coupon %',val:5},{k:'px',label:'Price',val:92.64},{k:'n',label:'Years',val:10},{k:'m',label:'Pmts/yr',val:1}],
+  compute:function(v){ var y=Q.ytm(v.face,v.cpn/100,v.px,v.n,v.m); return [{l:'YTM',v:pct(y,3)}]; }
+});
+buildCard(document.getElementById('g_rates'),{
+  title:'Nelson–Siegel curve', desc:'Smooth zero curve from 4 parameters; read the yield at any maturity.',
+  inputs:[{k:'b0',label:'β0 level',val:0.06},{k:'b1',label:'β1 slope',val:-0.02},{k:'b2',label:'β2 curve',val:0.01},{k:'tau',label:'τ',val:2},{k:'t',label:'Maturity (yr)',val:5,full:true}],
+  compute:function(v){ var y=Q.nelsonSiegel(v.t,v.b0,v.b1,v.b2,v.tau); return [{l:'Yield @ '+v.t+'y',v:pct(y,3)},{l:'Long-run',v:pct(v.b0,2)}]; }
+});
+
+/* RISK */
+buildCard(document.getElementById('g_risk'),{
+  title:'Value at Risk', desc:'Historical & parametric VaR + CVaR from a return series (paste % or decimals).',
+  inputs:[{k:'r',label:'Returns (comma/space sep, decimals)',type:'textarea',val:'0.012,-0.020,0.015,-0.005,0.020,-0.030,0.025,0.010,-0.008,0.018'},{k:'c',label:'Confidence',type:'select',opts:[['0.95','95%'],['0.99','99%']]}],
+  compute:function(v){ var a=parseNums(v.r), c=parseFloat(v.c); if(a.length<3) return [];
+    return [{l:'Hist VaR',v:pct(Q.histVaR(a,c),2),cls:'down'},{l:'CVaR',v:pct(Q.histCVaR(a,c),2),cls:'down'},{l:'Param VaR',v:pct(Q.paramVaR(a,c),2)}]; }
+});
+buildCard(document.getElementById('g_risk'),{
+  title:'Risk-adjusted return', desc:'Annualized vol, Sharpe, Sortino & max drawdown from returns.',
+  inputs:[{k:'r',label:'Daily returns (decimals)',type:'textarea',val:'0.012,-0.020,0.015,-0.005,0.020,-0.030,0.025,0.010,-0.008,0.018'},{k:'p',label:'Periods/yr',val:252}],
+  compute:function(v){ var a=parseNums(v.r); if(a.length<3) return [];
+    return [{l:'Ann. vol',v:pct(Q.annVol(a,v.p),1)},{l:'Sharpe',v:fmt(Q.sharpe(a,0,v.p),2)},{l:'Sortino',v:fmt(Q.sortino(a,0,v.p),2)},{l:'Max DD',v:pct(Q.maxDrawdown(a),1),cls:'down'}]; }
+});
+
+/* MACRO + CREDIT */
+buildCard(document.getElementById('g_macro'),{
+  title:'Recession probability', desc:'Estrella–Mishkin yield-curve probit — 12-month recession odds from the 10Y–3M spread.',
+  inputs:[{k:'ten',label:'10Y yield %',val:4.2},{k:'three',label:'3M yield %',val:4.5}],
+  compute:function(v){ var p=Q.recessionProb(v.ten,v.three); var sp=v.ten-v.three;
+    return [{l:'P(recession 12m)',v:pct(p,1),cls:p>0.4?'down':''},{l:'10Y–3M spread',v:fmt(sp,2)+'%',cls:sp<0?'down':'up'}]; }
+});
+buildCard(document.getElementById('g_macro'),{
+  title:'Taylor rule', desc:'Prescribed policy rate from inflation and the output gap (1993 rule).',
+  inputs:[{k:'inf',label:'Inflation %',val:3.5},{k:'gap',label:'Output gap %',val:-1.0},{k:'rstar',label:'Neutral r* %',val:2},{k:'tgt',label:'Inflation tgt %',val:2}],
+  compute:function(v){ var i=Q.taylorRule(v.inf,v.gap,{rStar:v.rstar,piTarget:v.tgt}); return [{l:'Prescribed rate',v:fmt(i,2)+'%'}]; }
+});
+buildCard(document.getElementById('g_macro'),{
+  title:'Credit risk (Merton)', desc:'Distance-to-default, PD and expected loss from a structural model.',
+  inputs:[{k:'V',label:'Asset value',val:100},{k:'D',label:'Debt',val:90},{k:'sig',label:'Asset vol %',val:30},{k:'r',label:'Drift %',val:5},{k:'T',label:'Horizon (yr)',val:1},{k:'rec',label:'Recovery %',val:40}],
+  compute:function(v){ var m=Q.merton(v.V,v.D,v.sig/100,v.r/100,v.T); var lgd=1-v.rec/100; var el=Q.expectedLoss(m.pd,lgd,v.D);
+    return [{l:'Dist-to-default',v:fmt(m.dd,3)},{l:'PD',v:pct(m.pd,2),cls:'down'},{l:'Expected loss',v:fmt(el,2)}]; }
+});
+
+/* CORP FIN */
+buildCard(document.getElementById('g_corp'),{
+  title:'NPV / IRR', desc:'Net present value & internal rate of return from a cashflow stream (t=0 first).',
+  inputs:[{k:'cf',label:'Cashflows (t=0 first)',type:'textarea',val:'-1000,300,400,500,600'},{k:'r',label:'Discount %',val:10}],
+  compute:function(v){ var cf=parseNums(v.cf); if(cf.length<2) return []; var irr=Q.irr(cf);
+    return [{l:'NPV @ '+v.r+'%',v:fmt(Q.npv(v.r/100,cf),2)},{l:'IRR',v:isFinite(irr)?pct(irr,2):'n/a'}]; }
+});
+buildCard(document.getElementById('g_corp'),{
+  title:'DCF valuation', desc:'Enterprise value from free-cash-flow forecast + Gordon terminal value.',
+  inputs:[{k:'fcf',label:'FCF forecast',type:'textarea',val:'100,110,121'},{k:'disc',label:'Discount % (WACC)',val:10},{k:'g',label:'Terminal g %',val:2}],
+  compute:function(v){ var f=parseNums(v.fcf); if(f.length<1||v.disc/100<=v.g/100) return [{l:'Note',v:'g<disc'}]; var d=Q.dcf({fcf:f,discount:v.disc/100,g:v.g/100});
+    return [{l:'Enterprise value',v:fmt(d.ev,1)},{l:'Terminal % of EV',v:pct(d.pvTerminal/d.ev,0)}]; }
+});
+buildCard(document.getElementById('g_corp'),{
+  title:'Real estate underwriting', desc:'NOI, cap-rate value, DSCR & cash-on-cash for a property.',
+  inputs:[{k:'gpr',label:'Gross rent',val:120000},{k:'vac',label:'Vacancy',val:6000},{k:'opex',label:'OpEx',val:40000},{k:'cap',label:'Cap rate %',val:6.5},{k:'ds',label:'Debt service',val:60000},{k:'eq',label:'Equity',val:300000}],
+  compute:function(v){ var re=Q.reUnderwrite({gpr:v.gpr,vacancy:v.vac,opex:v.opex,capRate:v.cap/100,debtService:v.ds,equity:v.eq});
+    return [{l:'NOI',v:fmt(re.noi,0)},{l:'Value',v:fmt(re.value,0)},{l:'DSCR',v:fmt(re.dscr,2),cls:re.dscr<1.2?'down':'up'},{l:'Cash-on-cash',v:pct(re.coc,1)}]; }
+});
+
+/* CRYPTO */
+buildCard(document.getElementById('g_crypto'),{
+  title:'Liquidation price', desc:'Where a leveraged position gets liquidated (isolated margin).',
+  inputs:[{k:'e',label:'Entry',val:10000},{k:'lev',label:'Leverage',val:10},{k:'mmr',label:'Maint margin %',val:0.5},{k:'side',label:'Side',type:'select',opts:[['long','Long'],['short','Short']]}],
+  compute:function(v){ var lp=Q.liqPrice(v.e,v.lev,v.mmr/100,v.side); var mv=Math.abs(lp/v.e-1);
+    return [{l:'Liq price',v:fmt(lp,2),cls:'down'},{l:'Move to liq',v:pct(mv,2)}]; }
+});
+buildCard(document.getElementById('g_crypto'),{
+  title:'Impermanent loss', desc:'LP loss vs holding for a 50/50 AMM pool at a given price change.',
+  inputs:[{k:'r',label:'Price ratio (now/start)',val:2},{k:'fee',label:'Fee yield % earned',val:0}],
+  compute:function(v){ var il=Q.impermanentLoss(v.r); var net=v.fee/100+il;
+    return [{l:'Impermanent loss',v:pct(il,2),cls:'down'},{l:'Net vs HODL',v:pct(net,2),cls:net<0?'down':'up'}]; }
+});
+buildCard(document.getElementById('g_crypto'),{
+  title:'Funding → APR/APY', desc:'Annualize a perpetual-futures funding rate (carry).',
+  inputs:[{k:'rate',label:'Funding rate % / period',val:0.01},{k:'h',label:'Period (hours)',val:8}],
+  compute:function(v){ return [{l:'APR',v:pct(Q.fundingAPR(v.rate/100,v.h),2)},{l:'APY (cmpd)',v:pct(Q.fundingAPY(v.rate/100,v.h),2)}]; }
+});
+buildCard(document.getElementById('g_crypto'),{
+  title:'Kelly position size', desc:'Optimal bet fraction from win rate and payoff ratio (use fractional Kelly).',
+  inputs:[{k:'p',label:'Win prob %',val:55},{k:'w',label:'Avg win',val:120},{k:'l',label:'Avg loss',val:100},{k:'f',label:'Kelly fraction',val:0.5}],
+  compute:function(v){ var full=Q.kelly(v.p/100,v.w,v.l,1); var frac=Q.kelly(v.p/100,v.w,v.l,v.f);
+    return [{l:'Full Kelly',v:pct(full,1)},{l:'Sized ('+v.f+'×)',v:pct(frac,1),cls:'up'}]; }
+});
+buildCard(document.getElementById('g_crypto'),{
+  title:'Risk-based sizing', desc:'Position size from account risk %, entry and stop.',
+  inputs:[{k:'eq',label:'Equity',val:10000},{k:'risk',label:'Risk %',val:1},{k:'e',label:'Entry',val:100},{k:'s',label:'Stop',val:95}],
+  compute:function(v){ var ps=Q.positionSize(v.eq,v.risk/100,v.e,v.s);
+    return [{l:'Size (units)',v:fmt(ps.units,1)},{l:'Notional',v:fmt(ps.notional,0)},{l:'Risk $',v:fmt(ps.riskDollars,0),cls:'down'}]; }
+});
+
+calcOptions();
+</script>
+</body>
+</html>
