@@ -16,7 +16,11 @@ module.exports = async (req, res) => {
     insider:  () => sym ? ('insider-trading/search?symbol=' + sym + '&page=0&limit=12')
                         : ('insider-trading/latest?page=0&limit=15'),
     senate:   () => sym ? ('senate-trades?symbol=' + sym) : ('senate-latest?page=0&limit=15'),
-    house:    () => 'house-latest?page=0&limit=15'
+    house:    () => 'house-latest?page=0&limit=15',
+    estimates:() => 'analyst-estimates?symbol=' + sym + '&period=annual&page=0&limit=5',
+    thirteenf:() => 'institutional-ownership/symbol-positions-summary?symbol=' + sym + '&page=0&limit=1',
+    etfhold:  () => 'etf/holdings?symbol=' + sym,
+    etfsector:() => 'etf/sector-weightings?symbol=' + sym
   };
   const build = MAP[type];
   if (!build) { res.status(200).json({ error: 'badtype' }); return; }
