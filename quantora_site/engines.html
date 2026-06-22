@@ -1555,6 +1555,12 @@ buildCard(document.getElementById('g_risk'),{
   compute:function(v){ var r=parseNums(v.r); if(r.length<3) return []; var b=Q.burkeRatio(r,v.p); return [{l:'Burke ratio',v:isFinite(b)?fmt(b,2):'∞',cls:b>0?'up':'down'},{l:'Downside dev',v:pct(Q.downsideDeviation(r,0,v.p),1)}]; }
 });
 
+buildCard(document.getElementById('g_risk'),{
+  title:'Sterling ratio', desc:'Annual return divided by (max drawdown + 10%) — a conservative drawdown-adjusted return.',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.03,0.02,-0.04,-0.03,0.01,-0.02,0.04,0.02,0.03,-0.05,-0.02,0.03'},{k:'p',label:'Periods/yr',val:12}],
+  compute:function(v){ var r=parseNums(v.r); if(r.length<3) return []; return [{l:'Sterling ratio',v:fmt(Q.sterlingRatio(r,v.p),2),cls:'up'},{l:'Max drawdown',v:pct(Q.maxDrawdown(r),1),cls:'down'}]; }
+});
+
 /* ===== SEARCH + SECTION NAV ===== */
 (function(){
   var secs=[].slice.call(document.querySelectorAll('.sec'));

@@ -128,7 +128,7 @@ function load(sym){
   }).catch(function(){ $('insider').innerHTML='<div class="muted">unavailable</div>'; });
 
   // LIVE VALUATION ENGINES: real financials -> QENG models
-  Promise.all([api('income',sym),api('balance',sym),api('cashflow',sym),api('quote',sym)]).then(function(rs){
+  Promise.all([api('income',sym),api('balance',sym),api('cashflow',sym),api('quote',sym),api('prices',sym)]).then(function(rs){
     var el=$('liveeng'); var Q=window.QENG;
     if(!Q){ el.innerHTML='<div class="muted">engine library not loaded</div>'; return; }
     var incA=arr(rs[0].data), balA=arr(rs[1].data), cfA=arr(rs[2].data); var inc=incA[0], bal=balA[0], cf=cfA[0]||{}, q=one(rs[3].data);
@@ -155,6 +155,10 @@ function load(sym){
         extra=kv('Beneish M-score', nf(bm.m,2)+(bm.flag?' ⚠':' ok'), bm.flag?'down':'up')+kv('Piotroski F-score', pf.score+'/9', pf.score>=7?'up':(pf.score<=3?'down':''));
       }
     }catch(e){ extra=''; }
+    var mer='';
+    try{ var pxA=arr(rs[4].data);
+      if(pxA&&pxA.length>40){ var cl=pxA.map(function(p){return p.price;}).reverse(); var rets=[]; for(var z=1;z<cl.length;z++) rets.push(cl[z]/cl[z-1]-1); var evol=Q.stdev(rets)*Math.sqrt(252); var totDebt=bal.totalDebt||bal.totalLiabilities||0; var V=mktCap+totDebt, D=totDebt; if(D>0&&V>0&&evol>0){ var sigA=evol*(mktCap/V); var mt=Q.merton(V,D,sigA,0.05,1); mer=kv('Equity vol (1y)', pct(evol,1))+kv('Merton PD (1y)', pct(mt.pd,2), mt.pd>0.05?'down':'up')+kv('Distance to default', nf(mt.dd,2)+'σ'); } }
+    }catch(e){ mer=''; }
     el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px">'+
       kv('DCF intrinsic / share', dcfStr, dcfCls)+
       kv('Altman Z-score', nf(az.z,2)+' · '+az.zone, az.zone==='Safe'?'up':(az.zone==='Distress'?'down':''))+
@@ -163,7 +167,7 @@ function load(sym){
       kv('P/E', nf(mult.pe,1))+
       kv('EV / EBITDA', nf(mult.evEbitda,1))+
       kv('P/B', nf(mult.pb,2))+
-      kv('FCF (latest)', cf&&cf.freeCashFlow?bn(cf.freeCashFlow):'—')+extra+
+      kv('FCF (latest)', cf&&cf.freeCashFlow?bn(cf.freeCashFlow):'—')+extra+mer+
       '</div><div class="tk" style="font-size:11px;margin-top:8px;color:var(--mut)">DCF assumes 6% FCF growth (5y), 9% discount, 2.5% terminal — illustrative, not advice.</div>';
   }).catch(function(){ $('liveeng').innerHTML='<div class="muted">unavailable</div>'; });
 

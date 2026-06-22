@@ -794,7 +794,12 @@ function downsideDeviation(returns,mar,P){ mar=mar||0; P=P||252; var ss=0; for(v
 function burkeRatio(returns,P){ P=P||252; var eq=1,peak=1,ss=0; for(var i=0;i<returns.length;i++){ eq*=1+returns[i]; if(eq>peak) peak=eq; var dd=eq/peak-1; ss+=dd*dd; } var denom=Math.sqrt(ss); return denom? (mean(returns)*P)/denom : Infinity; }
 Q.downsideDeviation=downsideDeviation; Q.burkeRatio=burkeRatio;
 
-Q.version='2.6';
+
+/* ================= STERLING RATIO ================= */
+function sterlingRatio(returns,P){ P=P||252; var mdd=Math.abs(maxDrawdown(returns)); return (mean(returns)*P)/(mdd+0.10); }
+Q.sterlingRatio=sterlingRatio;
+
+Q.version='2.7';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
