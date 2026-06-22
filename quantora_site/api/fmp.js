@@ -20,7 +20,10 @@ module.exports = async (req, res) => {
     estimates:() => 'analyst-estimates?symbol=' + sym + '&period=annual&page=0&limit=5',
     thirteenf:() => 'institutional-ownership/symbol-positions-summary?symbol=' + sym + '&page=0&limit=1',
     etfhold:  () => 'etf/holdings?symbol=' + sym,
-    etfsector:() => 'etf/sector-weightings?symbol=' + sym
+    etfsector:() => 'etf/sector-weightings?symbol=' + sym,
+    gainers:  () => 'biggest-gainers',
+    actives:  () => 'most-actives',
+    news:     () => 'news/stock-latest?page=0&limit=12'
   };
   const build = MAP[type];
   if (!build) { res.status(200).json({ error: 'badtype' }); return; }
