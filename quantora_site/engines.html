@@ -99,6 +99,32 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
 .sec h2{position:relative;padding-left:13px}
 .sec h2::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:13px;border-radius:2px;background:var(--acc)}
 @media(max-width:760px){.ehero{padding:52px 18px 34px} .ehero .estat{padding:2px 14px}}
+
+/* ===== PREMIUM CARD + METRIC REDESIGN (overrides) ===== */
+.grid{gap:18px!important}
+.card{padding:18px 18px 16px!important;border-radius:16px!important;background:linear-gradient(180deg,#fff,#fcfcfe)!important}
+.card .ct{font-size:15.5px!important;font-weight:690!important;letter-spacing:-.2px!important}
+.card .cd{font-size:12px!important;color:var(--mut)!important;min-height:0!important;margin:3px 0 2px!important;line-height:1.45!important}
+.fld label{font-size:9.5px!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:var(--mut)!important;font-weight:700!important;margin-bottom:5px!important}
+.fld input,.fld select,.fld textarea,.ci input,.ci select,.ci textarea{
+  background:#f6f7f9!important;border:1px solid #e7e9ee!important;border-radius:10px!important;
+  padding:10px 12px!important;font-size:13.5px!important;font-variant-numeric:tabular-nums;transition:background .18s,border-color .18s,box-shadow .18s!important;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus,.ci input:focus,.ci select:focus,.ci textarea:focus{
+  background:#fff!important;border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(99,102,241,.12)!important;outline:none!important;
+}
+/* metric tiles — applies to card results AND flagship readouts */
+.cr{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(116px,1fr))!important;gap:10px!important;margin-top:14px!important;padding-top:14px!important;border-top:1px solid var(--line)!important}
+.cr .r{background:linear-gradient(180deg,#f7f8fb,#fff)!important;border:1px solid #ebedf2!important;border-radius:12px!important;padding:11px 13px!important;display:flex!important;flex-direction:column!important;gap:5px!important;align-items:flex-start!important}
+.cr .r .rl{font-size:9px!important;letter-spacing:.1em!important;text-transform:uppercase!important;color:var(--mut)!important;font-weight:700!important}
+.cr .r .rv{font-size:21px!important;font-weight:730!important;font-family:"JetBrains Mono",monospace!important;letter-spacing:-.03em!important;line-height:1!important;color:var(--ink)!important}
+.cr .r .rv.up{color:var(--up)!important}.cr .r .rv.down{color:var(--down)!important}
+/* flagship price cards a touch richer */
+.pcard{background:linear-gradient(180deg,#f7f8fb,#fff)!important;border-radius:14px!important}
+.pcard .v{font-size:30px!important;letter-spacing:-.03em!important}
+/* greeks table premium */
+.gtab td.num{font-size:13.5px!important}
+.gtab tbody tr:hover{background:var(--soft)!important}
 </style>
 </head>
 <body>
