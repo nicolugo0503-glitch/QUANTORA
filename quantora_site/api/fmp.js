@@ -26,7 +26,8 @@ module.exports = async (req, res) => {
     news:     () => 'stock-news?limit=12',
     income:   () => 'income-statement?symbol=' + sym + '&period=annual&limit=2',
     balance:  () => 'balance-sheet-statement?symbol=' + sym + '&period=annual&limit=2',
-    cashflow: () => 'cash-flow-statement?symbol=' + sym + '&period=annual&limit=2'
+    cashflow: () => 'cash-flow-statement?symbol=' + sym + '&period=annual&limit=2',
+    prices:   () => 'historical-price-eod/light?symbol=' + sym
   };
   const build = MAP[type];
   if (!build) { res.status(200).json({ error: 'badtype' }); return; }
