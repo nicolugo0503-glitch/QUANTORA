@@ -16,7 +16,7 @@
 <meta name="description" content="Quantora Engines: real, verified quant math — options pricing & Greeks, bond analytics, VaR, recession probability, DCF/IRR, crypto risk. Runs in your browser. Free.">
 <link rel="canonical" href="https://www.usequantora.com/engines.html">
 <style>
-:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a8a3b;--down:#d23a2c;--acc:#6366f1}
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#34d399;--down:#fb7185;--acc:#8b93ff}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
 a{color:inherit;text-decoration:none}
@@ -125,6 +125,66 @@ mono,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monosp
 /* greeks table premium */
 .gtab td.num{font-size:13.5px!important}
 .gtab tbody tr:hover{background:var(--soft)!important}
+
+/* ===== TERMINAL NOIR — full dark cinematic redesign ===== */
+:root{--ink:#e9ebf2;--mut:#878da0;--line:rgba(255,255,255,.09);--soft:rgba(255,255,255,.04);--bg:#07080d;--acc:#8b93ff}
+body{background:#06070c!important;color:#e9ebf2!important}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(1000px 560px at 82% -8%,rgba(99,102,241,.13),transparent),radial-gradient(760px 520px at -5% 105%,rgba(52,211,153,.06),transparent)}
+.wrap{position:relative;z-index:1}
+h1,h2,h3{color:#f2f3f8!important}
+.sub,.muted,.cd,.foot{color:#878da0!important}
+.badge{background:rgba(255,255,255,.05)!important;border-color:rgba(255,255,255,.1)!important;color:#c3c8d6!important}
+.card,.flag,#macroLive,#garchPanel,#corrPanel,#rsPanel,#calPanel,#krdPanel,#ycPanel,#cvxPanel,#techPanel{
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.018))!important;
+  border:1px solid rgba(255,255,255,.09)!important;border-radius:16px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 64px -42px rgba(0,0,0,.85)!important;backdrop-filter:blur(7px)}
+.card:hover{transform:translateY(-2px);border-color:rgba(139,147,255,.45)!important;box-shadow:0 0 0 1px rgba(139,147,255,.18),0 34px 74px -34px rgba(70,50,180,.6)!important}
+.flag .top{background:rgba(255,255,255,.025)!important;border-bottom-color:rgba(255,255,255,.08)!important}
+.flag .body,.inputs{border-color:rgba(255,255,255,.08)!important}
+.ct,.sec h2{color:#eef0f6!important}
+.sec h2::before{background:#8b93ff!important;box-shadow:0 0 12px rgba(139,147,255,.6)}
+.flag .top .tag{background:rgba(139,147,255,.16)!important;color:#b9beff!important}
+.flag .top .vrf,.flag .top .vrf .c{color:#878da0!important}
+.flag .top .vrf .c{color:#34d399!important}
+/* inputs */
+.fld input,.fld select,.fld textarea,.ci input,.ci select,.ci textarea,#engSearch,input,select,textarea{
+  background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.12)!important;color:#e9ebf2!important}
+.fld input:focus,.ci input:focus,textarea:focus,select:focus,#engSearch:focus{border-color:#8b93ff!important;box-shadow:0 0 0 3px rgba(139,147,255,.22)!important;background:rgba(255,255,255,.07)!important;outline:none!important}
+::placeholder{color:#646a7d!important}
+option{background:#11131c;color:#e9ebf2}
+.fld label{color:#878da0!important}
+/* metric tiles — glowing */
+.cr{border-top-color:rgba(255,255,255,.08)!important}
+.cr .r{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015))!important;border:1px solid rgba(255,255,255,.08)!important}
+.cr .r .rl{color:#878da0!important}
+.cr .r .rv{color:#f2f3f8!important;text-shadow:0 0 22px rgba(139,147,255,.28)}
+.cr .r .rv.up{color:#34d399!important;text-shadow:0 0 22px rgba(52,211,153,.4)!important}
+.cr .r .rv.down{color:#fb7185!important;text-shadow:0 0 22px rgba(251,113,133,.34)!important}
+/* price cards */
+.pcard{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015))!important;border-color:rgba(255,255,255,.09)!important}
+.pcard .l{color:#878da0!important}
+.pcard .v.up,.up{color:#34d399!important} .pcard .v.up{text-shadow:0 0 26px rgba(52,211,153,.45)}
+.pcard .v.down,.down{color:#fb7185!important} .pcard .v.down{text-shadow:0 0 26px rgba(251,113,133,.4)}
+/* tables */
+.gtab th,.gtab td,td,th{border-color:rgba(255,255,255,.08)!important;color:#d6d9e3!important}
+thead th,.gtab th{color:#878da0!important}
+tbody tr:hover{background:rgba(255,255,255,.035)!important}
+/* search bar + nav dark */
+#engBar{background:rgba(10,12,20,.72)!important;border-color:rgba(255,255,255,.1)!important;backdrop-filter:blur(14px)!important}
+#engLinks a{background:rgba(255,255,255,.05)!important;border-color:rgba(255,255,255,.1)!important;color:#aab0c2!important}
+#engCount{color:#878da0!important}
+.qnav{background:rgba(7,8,13,.82)!important;border-bottom-color:rgba(255,255,255,.08)!important;box-shadow:0 8px 30px -20px rgba(0,0,0,.9)!important}
+.qnav .qbrand{color:#fff!important}
+.qnav a.qtop,.qnav .qtop{color:#aab0c2!important}
+.qnav a.qtop:hover,.qnav .qtop:hover,.qnav .qitem.open .qtop{background:rgba(255,255,255,.07)!important;color:#fff!important}
+.qnav .qtop.active{color:#8b93ff!important}
+.qnav .qmenu{background:#0e1019!important;border-color:rgba(255,255,255,.1)!important;box-shadow:0 24px 60px -20px rgba(0,0,0,.9)!important}
+.qnav .qmenu a{color:#c3c8d6!important}
+.qnav .qmenu a:hover,.qnav .qmenu a.active{background:rgba(139,147,255,.16)!important;color:#fff!important}
+.foot{border-top-color:rgba(255,255,255,.08)!important}
+.miniBtn{color:#8b93ff!important}
+/* toggle buttons (MC/EF/strategy) */
+#mc_tp,#mc_td,#ef_lo,#ef_un{border-color:rgba(255,255,255,.14)!important}
 </style>
 </head>
 <body>
@@ -794,15 +854,15 @@ function drawPayoff(res,spot){
   // split into profit/loss colored segments
   var segs='',i;
   for(i=1;i<xs.length;i++){
-    var c=(ys[i]>=0&&ys[i-1]>=0)?'#0a8a3b':((ys[i]<0&&ys[i-1]<0)?'#d23a2c':'#6b7280');
+    var c=(ys[i]>=0&&ys[i-1]>=0)?'#34d399':((ys[i]<0&&ys[i-1]<0)?'#fb7185':'#6b7280');
     segs+='<line x1="'+px(xs[i-1]).toFixed(1)+'" y1="'+py(ys[i-1]).toFixed(1)+'" x2="'+px(xs[i]).toFixed(1)+'" y2="'+py(ys[i]).toFixed(1)+'" stroke="'+c+'" stroke-width="2.2"/>';
   }
   var sx=px(spot);
-  var bedots=res.breakevens.map(function(b){return '<circle cx="'+px(b).toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="3.5" fill="#6366f1"/><text x="'+px(b).toFixed(1)+'" y="'+(zeroY-7).toFixed(1)+'" font-size="9" fill="#6366f1" text-anchor="middle" font-family="JetBrains Mono,monospace">'+b.toFixed(1)+'</text>';}).join('');
+  var bedots=res.breakevens.map(function(b){return '<circle cx="'+px(b).toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="3.5" fill="#8b93ff"/><text x="'+px(b).toFixed(1)+'" y="'+(zeroY-7).toFixed(1)+'" font-size="9" fill="#8b93ff" text-anchor="middle" font-family="JetBrains Mono,monospace">'+b.toFixed(1)+'</text>';}).join('');
   var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
-    '<line x1="'+pad+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zeroY.toFixed(1)+'" stroke="#d0d0d0" stroke-dasharray="4 4"/>'+
-    '<line x1="'+sx.toFixed(1)+'" y1="'+pad+'" x2="'+sx.toFixed(1)+'" y2="'+(H-pad)+'" stroke="#6366f1" stroke-width="1" opacity="0.4"/>'+
-    '<text x="'+sx.toFixed(1)+'" y="'+(H-pad+13)+'" font-size="9" fill="#6366f1" text-anchor="middle" font-family="JetBrains Mono,monospace">spot '+spot+'</text>'+
+    '<line x1="'+pad+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zeroY.toFixed(1)+'" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/>'+
+    '<line x1="'+sx.toFixed(1)+'" y1="'+pad+'" x2="'+sx.toFixed(1)+'" y2="'+(H-pad)+'" stroke="#8b93ff" stroke-width="1" opacity="0.4"/>'+
+    '<text x="'+sx.toFixed(1)+'" y="'+(H-pad+13)+'" font-size="9" fill="#8b93ff" text-anchor="middle" font-family="JetBrains Mono,monospace">spot '+spot+'</text>'+
     segs+bedots+'</svg>';
   document.getElementById('st_chart').innerHTML=svg;
 }
@@ -912,13 +972,13 @@ function drawMCFan(){
   function area(top,bot){ var u=top.map(function(y,i){return px(i).toFixed(1)+','+py(y).toFixed(1);}); var d=bot.map(function(y,i){return px(i).toFixed(1)+','+py(y).toFixed(1);}).reverse(); return u.concat(d).join(' '); }
   var samples=fan.samples.map(function(pth){ return '<polyline points="'+poly(pth)+'" fill="none" stroke="#9aa0aa" stroke-width="0.6" opacity="0.5"/>'; }).join('');
   var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
-    '<polygon points="'+area(fan.p95,fan.p5)+'" fill="#6366f1" opacity="0.10"/>'+
-    '<polygon points="'+area(fan.p75,fan.p25)+'" fill="#6366f1" opacity="0.18"/>'+
+    '<polygon points="'+area(fan.p95,fan.p5)+'" fill="#8b93ff" opacity="0.10"/>'+
+    '<polygon points="'+area(fan.p75,fan.p25)+'" fill="#8b93ff" opacity="0.18"/>'+
     samples+
-    '<polyline points="'+poly(fan.p50)+'" fill="none" stroke="#0a0a0a" stroke-width="2"/>'+
-    '<line x1="'+pad+'" y1="'+py(p.S).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(p.S).toFixed(1)+'" stroke="#d0d0d0" stroke-dasharray="4 4"/>'+
-    '<text x="'+(W-pad)+'" y="'+(py(fan.p95[n-1])-2).toFixed(1)+'" font-size="9" fill="#6366f1" text-anchor="end" font-family="JetBrains Mono,monospace">95%</text>'+
-    '<text x="'+(W-pad)+'" y="'+(py(fan.p5[n-1])+9).toFixed(1)+'" font-size="9" fill="#6366f1" text-anchor="end" font-family="JetBrains Mono,monospace">5%</text>'+
+    '<polyline points="'+poly(fan.p50)+'" fill="none" stroke="#cfd3e0" stroke-width="2"/>'+
+    '<line x1="'+pad+'" y1="'+py(p.S).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(p.S).toFixed(1)+'" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/>'+
+    '<text x="'+(W-pad)+'" y="'+(py(fan.p95[n-1])-2).toFixed(1)+'" font-size="9" fill="#8b93ff" text-anchor="end" font-family="JetBrains Mono,monospace">95%</text>'+
+    '<text x="'+(W-pad)+'" y="'+(py(fan.p5[n-1])+9).toFixed(1)+'" font-size="9" fill="#8b93ff" text-anchor="end" font-family="JetBrains Mono,monospace">5%</text>'+
     '</svg>';
   document.getElementById('mc_chart').innerHTML=svg;
   document.getElementById('mc_metrics').innerHTML=
@@ -933,10 +993,10 @@ function drawMCHist(){
   var maxB=Math.max.apply(null,bins), W=520,H=240,pad=30, bw=(W-2*pad)/nb;
   function px(x){ return pad+(x-lo)/(hi-lo)*(W-2*pad); }
   var bars='';
-  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0, x=pad+i*bw, binMid=lo+(i+0.5)/nb*(hi-lo), col=binMid>=p.S?'#0a8a3b':'#d23a2c';
+  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0, x=pad+i*bw, binMid=lo+(i+0.5)/nb*(hi-lo), col=binMid>=p.S?'#34d399':'#fb7185';
     bars+='<rect x="'+x.toFixed(1)+'" y="'+(H-pad-h).toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.55"/>'; }
   function vline(xv,c,lab){ var X=px(xv); if(X<pad||X>W-pad) return ''; return '<line x1="'+X.toFixed(1)+'" y1="'+pad+'" x2="'+X.toFixed(1)+'" y2="'+(H-pad)+'" stroke="'+c+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+X.toFixed(1)+'" y="'+(pad-4)+'" font-size="9" fill="'+c+'" text-anchor="middle" font-family="JetBrains Mono,monospace">'+lab+'</text>'; }
-  document.getElementById('mc_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+vline(p.S,'#6366f1','spot')+vline(sim.p50,'#0a0a0a','median')+vline(sim.p5,'#d23a2c','5%')+vline(sim.p95,'#0a8a3b','95%')+'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/></svg>';
+  document.getElementById('mc_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+vline(p.S,'#8b93ff','spot')+vline(sim.p50,'#cfd3e0','median')+vline(sim.p5,'#fb7185','5%')+vline(sim.p95,'#34d399','95%')+'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(255,255,255,0.16)"/></svg>';
   document.getElementById('mc_metrics').innerHTML=
     '<div class="r"><div class="rl">Median</div><div class="rv">'+fmt(sim.p50,2)+'</div></div>'+
     '<div class="r"><div class="rl">90% range</div><div class="rv">'+fmt(sim.p5,1)+'–'+fmt(sim.p95,1)+'</div></div>'+
@@ -1065,15 +1125,15 @@ function drawEF(){
   var cmlX=xmax, cmlY=rf+slope*cmlX;
   var assetDots=names.map(function(nm,i){ return '<circle cx="'+px(vols[i]).toFixed(1)+'" cy="'+py(mu[i]).toFixed(1)+'" r="4" fill="#9aa0aa"/><text x="'+(px(vols[i])+6).toFixed(1)+'" y="'+(py(mu[i])+3).toFixed(1)+'" font-size="9" fill="#6b7280">'+nm+'</text>'; }).join('');
   var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
-    '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/>'+
-    '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/>'+
+    '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(255,255,255,0.16)"/>'+
+    '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="rgba(255,255,255,0.16)"/>'+
     '<text x="'+(W-pad)+'" y="'+(H-pad+14)+'" font-size="9" fill="#6b7280" text-anchor="end">volatility →</text>'+
     '<text x="'+pad+'" y="'+(pad-6)+'" font-size="9" fill="#6b7280">return ↑</text>'+
-    '<line x1="'+px(0).toFixed(1)+'" y1="'+py(rf).toFixed(1)+'" x2="'+px(cmlX).toFixed(1)+'" y2="'+py(cmlY).toFixed(1)+'" stroke="#0a8a3b" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>'+
-    '<polyline points="'+fr+'" fill="none" stroke="#6366f1" stroke-width="2"/>'+
+    '<line x1="'+px(0).toFixed(1)+'" y1="'+py(rf).toFixed(1)+'" x2="'+px(cmlX).toFixed(1)+'" y2="'+py(cmlY).toFixed(1)+'" stroke="#34d399" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>'+
+    '<polyline points="'+fr+'" fill="none" stroke="#8b93ff" stroke-width="2"/>'+
     assetDots+
-    '<circle cx="'+px(ef.gmv.vol).toFixed(1)+'" cy="'+py(ef.gmv.ret).toFixed(1)+'" r="5" fill="#0a0a0a"/><text x="'+(px(ef.gmv.vol)+7).toFixed(1)+'" y="'+(py(ef.gmv.ret)-5).toFixed(1)+'" font-size="9" fill="#0a0a0a" font-weight="700">GMV</text>'+
-    '<circle cx="'+px(ef.tangency.vol).toFixed(1)+'" cy="'+py(ef.tangency.ret).toFixed(1)+'" r="5" fill="#0a8a3b"/><text x="'+(px(ef.tangency.vol)+7).toFixed(1)+'" y="'+(py(ef.tangency.ret)-5).toFixed(1)+'" font-size="9" fill="#0a8a3b" font-weight="700">Tangency</text>'+
+    '<circle cx="'+px(ef.gmv.vol).toFixed(1)+'" cy="'+py(ef.gmv.ret).toFixed(1)+'" r="5" fill="#e9ebf2"/><text x="'+(px(ef.gmv.vol)+7).toFixed(1)+'" y="'+(py(ef.gmv.ret)-5).toFixed(1)+'" font-size="9" fill="#e9ebf2" font-weight="700">GMV</text>'+
+    '<circle cx="'+px(ef.tangency.vol).toFixed(1)+'" cy="'+py(ef.tangency.ret).toFixed(1)+'" r="5" fill="#34d399"/><text x="'+(px(ef.tangency.vol)+7).toFixed(1)+'" y="'+(py(ef.tangency.ret)-5).toFixed(1)+'" font-size="9" fill="#34d399" font-weight="700">Tangency</text>'+
     '</svg>';
   document.getElementById('ef_chart').innerHTML=svg;
   var wT=ef.tangency.w.map(function(w,i){return names[i]+' '+pct(w,0);}).join(' · ');
@@ -1104,7 +1164,7 @@ function lineChart(host,xs,series,ylabel){ // series:[{pts:[y..],color}]
   function px(x){ return pad+(x-xmin)/(xmax-xmin)*(W-2*pad); }
   function py(y){ return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad); }
   var polys=series.map(function(s){ return '<polyline points="'+s.pts.map(function(y,i){return px(xs[i]).toFixed(1)+','+py(y).toFixed(1);}).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2"/>'; }).join('');
-  document.getElementById(host).innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/>'+polys+'</svg>';
+  document.getElementById(host).innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(255,255,255,0.16)"/>'+polys+'</svg>';
 }
 function drawVS(){
   var atm=(parseFloat(document.getElementById('vs_atm').value)||0)/100;
@@ -1112,11 +1172,11 @@ function drawVS(){
   var curv=parseFloat(document.getElementById('vs_curv').value)||0;
   var k=[]; for(var x=-0.2;x<=0.2001;x+=0.02) k.push(+x.toFixed(3));
   var vols=Q.skewCurve(atm,skew,curv,k).map(function(v){return v*100;});
-  lineChart('vs_skewchart',k,[{pts:vols,color:'#6366f1'}]);
+  lineChart('vs_skewchart',k,[{pts:vols,color:'#8b93ff'}]);
   var sh=(parseFloat(document.getElementById('vs_short').value)||0)/100, lg=(parseFloat(document.getElementById('vs_long').value)||0)/100, lam=parseFloat(document.getElementById('vs_lam').value)||1;
   var T=[]; for(var t=0.05;t<=2.001;t+=0.1) T.push(+t.toFixed(2));
   var tv=Q.termCurve(sh,lg,lam,T).map(function(v){return v*100;});
-  lineChart('vs_termchart',T,[{pts:tv,color:'#0a8a3b'}]);
+  lineChart('vs_termchart',T,[{pts:tv,color:'#34d399'}]);
 }
 ['vs_atm','vs_skew','vs_curv','vs_short','vs_long','vs_lam'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawVS); });
 drawVS();
@@ -1136,7 +1196,7 @@ function drawGarch(){
   document.getElementById('garch_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
     '<line x1="'+pad+'" y1="'+py(lr).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(lr).toFixed(1)+'" stroke="#9aa0aa" stroke-dasharray="4 4"/>'+
     '<text x="'+(W-pad)+'" y="'+(py(lr)-3).toFixed(1)+'" font-size="9" fill="#6b7280" text-anchor="end">long-run '+lr.toFixed(1)+'%</text>'+
-    '<polyline points="'+path+'" fill="none" stroke="#d23a2c" stroke-width="2"/>'+
+    '<polyline points="'+path+'" fill="none" stroke="#fb7185" stroke-width="2"/>'+
     '<text x="'+pad+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280">today → 60-day forecast</text>'+
     '</svg>';
   now.textContent='current '+(gp.current*100).toFixed(1)+'% · persistence '+gp.persistence.toFixed(2);
@@ -1170,11 +1230,11 @@ function drawStress(){
   var mx=Math.max.apply(null,res.map(function(r){return Math.abs(r.pct);}))||0.01;
   var zeroX=padL+(W-padL-padR)*0.5;
   function bw(pct){ return (pct/mx)*((W-padL-padR)/2); }
-  var bars=res.map(function(r,i){ var y=padV+i*rowH+rowH*0.18, h=rowH*0.64; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#d23a2c':'#0a8a3b';
-    return '<text x="'+(padL-8)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10.5" fill="#374151" text-anchor="end">'+r.name+'</text>'+
+  var bars=res.map(function(r,i){ var y=padV+i*rowH+rowH*0.18, h=rowH*0.64; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#fb7185':'#34d399';
+    return '<text x="'+(padL-8)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10.5" fill="#aab2c4" text-anchor="end">'+r.name+'</text>'+
       '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.abs(w).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.7" rx="2"/>'+
       '<text x="'+(w<0?(x-4):(x+Math.abs(w)+4)).toFixed(1)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10" fill="'+col+'" text-anchor="'+(w<0?'end':'start')+'" font-family="JetBrains Mono,monospace">'+(r.pct*100).toFixed(1)+'%</text>'; }).join('');
-  document.getElementById('ss_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+zeroX+'" y1="'+padV+'" x2="'+zeroX+'" y2="'+(H-padV)+'" stroke="#d0d0d0"/>'+bars+'</svg>';
+  document.getElementById('ss_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+zeroX+'" y1="'+padV+'" x2="'+zeroX+'" y2="'+(H-padV)+'" stroke="rgba(255,255,255,0.16)"/>'+bars+'</svg>';
   var worst=res.reduce(function(a,b){return b.pct<a.pct?b:a;});
   var tot=pos.reduce(function(a,b){return a+b.value;},0);
   document.getElementById('ss_metrics').innerHTML=
@@ -1200,10 +1260,10 @@ function drawCvx(){
   document.getElementById('cvx_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
     '<line x1="'+midX.toFixed(1)+'" y1="'+pad+'" x2="'+midX.toFixed(1)+'" y2="'+(H-pad)+'" stroke="#eee"/>'+
     '<polyline points="'+poly(lin)+'" fill="none" stroke="#9aa0aa" stroke-width="1.5" stroke-dasharray="5 3"/>'+
-    '<polyline points="'+poly(actual)+'" fill="none" stroke="#6366f1" stroke-width="2.2"/>'+
+    '<polyline points="'+poly(actual)+'" fill="none" stroke="#8b93ff" stroke-width="2.2"/>'+
     '<text x="'+pad+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280">−300bp</text>'+
     '<text x="'+(W-pad)+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280" text-anchor="end">+300bp</text>'+
-    '<text x="'+(pad+4)+'" y="'+(pad+2)+'" font-size="9" fill="#6366f1">actual price</text>'+
+    '<text x="'+(pad+4)+'" y="'+(pad+2)+'" font-size="9" fill="#8b93ff">actual price</text>'+
     '<text x="'+(pad+4)+'" y="'+(pad+13)+'" font-size="9" fill="#9aa0aa">duration estimate</text>'+
     '</svg>';
   document.getElementById('cvxNote').textContent='price '+P0.toFixed(2)+' · dur '+ba.modified.toFixed(2)+' · cvx '+ba.convexity.toFixed(1);
@@ -1228,9 +1288,9 @@ function drawCorr(){
   var g='';
   for(var i=0;i<n;i++){ for(var j=0;j<n;j++){ var v=M[i][j]; var x=pad+j*cell, y=pad+i*cell;
     g+='<rect x="'+x+'" y="'+y+'" width="'+(cell-2)+'" height="'+(cell-2)+'" fill="'+corrColor(v)+'" rx="3"/>'+
-      '<text x="'+(x+cell/2-1)+'" y="'+(y+cell/2+3)+'" font-size="'+(cell>40?10:8)+'" fill="#111" text-anchor="middle" font-family="JetBrains Mono,monospace">'+v.toFixed(2)+'</text>'; }
-    g+='<text x="'+(pad-6)+'" y="'+(pad+i*cell+cell/2+3)+'" font-size="10" fill="#374151" text-anchor="end">'+labels[i]+'</text>';
-    g+='<text x="'+(pad+i*cell+cell/2)+'" y="'+(pad-8)+'" font-size="10" fill="#374151" text-anchor="middle">'+labels[i]+'</text>';
+      '<text x="'+(x+cell/2-1)+'" y="'+(y+cell/2+3)+'" font-size="'+(cell>40?10:8)+'" fill="#e9ebf2" text-anchor="middle" font-family="JetBrains Mono,monospace">'+v.toFixed(2)+'</text>'; }
+    g+='<text x="'+(pad-6)+'" y="'+(pad+i*cell+cell/2+3)+'" font-size="10" fill="#aab2c4" text-anchor="end">'+labels[i]+'</text>';
+    g+='<text x="'+(pad+i*cell+cell/2)+'" y="'+(pad-8)+'" font-size="10" fill="#aab2c4" text-anchor="middle">'+labels[i]+'</text>';
   }
   host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+g+'</svg>';
 }
@@ -1255,8 +1315,8 @@ function drawTech(){
   function poly(a,col,w,dash){ var pts=a.map(function(v,i){return v==null?null:X(i).toFixed(1)+','+Y(v).toFixed(1);}).filter(function(x){return x;}).join(' '); return '<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="'+w+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>'; }
   host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
     poly(up,'#c7c0f5',1,'4 3')+poly(lo,'#c7c0f5',1,'4 3')+
-    poly(px,'#0a0a0a',2)+poly(smaArr,'#6366f1',1.6)+
-    '<text x="'+(pad+2)+'" y="'+(pad-4)+'" font-size="9" fill="#6366f1">SMA'+nS+'</text>'+
+    poly(px,'#cfd3e0',2)+poly(smaArr,'#8b93ff',1.6)+
+    '<text x="'+(pad+2)+'" y="'+(pad-4)+'" font-size="9" fill="#8b93ff">SMA'+nS+'</text>'+
     '<text x="'+(pad+44)+'" y="'+(pad-4)+'" font-size="9" fill="#c7a0f5">Bollinger'+nB+'</text>'+
     '</svg>';
   var r=Q.rsi(px,14), b=Q.bollinger(px,nB,2);
@@ -1334,8 +1394,8 @@ function drawBT(){
     if(fillNeg){ var base=Y(0); poly='<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+line+' '+X(n-1).toFixed(1)+','+base.toFixed(1)+'" fill="'+color+'" opacity="0.15"/>'; }
     host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+poly+'<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
   }
-  area(eqHost,bt.equity,'#0a0a0a',false);
-  area(ddHost,bt.drawdown,'#d23a2c',true);
+  area(eqHost,bt.equity,'#cfd3e0',false);
+  area(ddHost,bt.drawdown,'#fb7185',true);
   met.innerHTML=
     '<div class="r"><div class="rl">Total return</div><div class="rv '+(bt.totalReturn>=0?'up':'down')+'">'+pct(bt.totalReturn,1)+'</div></div>'+
     '<div class="r"><div class="rl">Ann. return</div><div class="rv">'+pct(bt.annReturn,1)+'</div></div>'+
@@ -1432,8 +1492,8 @@ buildCard(document.getElementById('g_equity'),{
     function X(i){ return pad+i/(n-1)*(W-2*pad); }
     function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
     var line=pts.map(function(p,i){return X(i).toFixed(1)+','+Y(p.y).toFixed(1);}).join(' ');
-    var dots=pts.map(function(p,i){return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.y).toFixed(1)+'" r="3.5" fill="#6366f1"/><text x="'+X(i).toFixed(1)+'" y="'+(Y(p.y)-7).toFixed(1)+'" font-size="9" fill="#374151" text-anchor="middle" font-family="JetBrains Mono,monospace">'+p.y.toFixed(2)+'</text><text x="'+X(i).toFixed(1)+'" y="'+(H-pad+14)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+p.lab+'</text>';}).join('');
-    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#d0d0d0"/><polyline points="'+line+'" fill="none" stroke="#6366f1" stroke-width="2"/>'+dots+'</svg>';
+    var dots=pts.map(function(p,i){return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.y).toFixed(1)+'" r="3.5" fill="#8b93ff"/><text x="'+X(i).toFixed(1)+'" y="'+(Y(p.y)-7).toFixed(1)+'" font-size="9" fill="#aab2c4" text-anchor="middle" font-family="JetBrains Mono,monospace">'+p.y.toFixed(2)+'</text><text x="'+X(i).toFixed(1)+'" y="'+(H-pad+14)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+p.lab+'</text>';}).join('');
+    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(255,255,255,0.16)"/><polyline points="'+line+'" fill="none" stroke="#8b93ff" stroke-width="2"/>'+dots+'</svg>';
     var sp=(by.DGS10&&by.DGS3MO)?(by.DGS10.latest-by.DGS3MO.latest):null;
     note.textContent=(sp!=null?('10Y–3M '+sp.toFixed(2)+'% · '+(sp<0?'inverted':'normal')+' · '):'')+'as of '+(by.DGS10?by.DGS10.points[by.DGS10.points.length-1].d:'latest');
   }).catch(function(){ note.textContent='unavailable'; });
@@ -1452,8 +1512,8 @@ function drawVSGrid(){
   var matLab=['1M','3M','6M','1Y','2Y'], kLab=['-20%','-10%','ATM','+10%','+20%'];
   var cells='';
   for(var i=0;i<mats.length;i++){ for(var j=0;j<ks.length;j++){ var x=padL+j*cw,y=padT+i*ch;
-    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+gridColor(g[i][j],lo,hi)+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="9.5" fill="#111" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(g[i][j]*100).toFixed(1)+'</text>'; }
-    cells+='<text x="'+(padL-5)+'" y="'+(padT+i*ch+ch/2+3)+'" font-size="9" fill="#374151" text-anchor="end">'+matLab[i]+'</text>'; }
+    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+gridColor(g[i][j],lo,hi)+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="9.5" fill="#e9ebf2" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(g[i][j]*100).toFixed(1)+'</text>'; }
+    cells+='<text x="'+(padL-5)+'" y="'+(padT+i*ch+ch/2+3)+'" font-size="9" fill="#aab2c4" text-anchor="end">'+matLab[i]+'</text>'; }
   for(var j2=0;j2<ks.length;j2++) cells+='<text x="'+(padL+j2*cw+cw/2)+'" y="'+(padT-6)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+kLab[j2]+'</text>';
   host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+cells+'</svg>';
 }
@@ -1484,10 +1544,10 @@ function drawKRD(){
   var W=520,H=170,padL=30,padB=24,padT=14, bw=(W-padL-10)/kr.krd.length;
   var mx=Math.max.apply(null,kr.krd.map(function(d){return Math.abs(d.krd);}))||1;
   var bars=kr.krd.map(function(d,i){ var h=Math.abs(d.krd)/mx*(H-padT-padB); var x=padL+i*bw+bw*0.15, y=H-padB-h;
-    return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.7).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="#6366f1" opacity="0.75" rx="2"/>'+
-      '<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(y-3).toFixed(1)+'" font-size="8.5" fill="#374151" text-anchor="middle" font-family="JetBrains Mono,monospace">'+d.krd.toFixed(2)+'</text>'+
+    return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.7).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="#8b93ff" opacity="0.75" rx="2"/>'+
+      '<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(y-3).toFixed(1)+'" font-size="8.5" fill="#aab2c4" text-anchor="middle" font-family="JetBrains Mono,monospace">'+d.krd.toFixed(2)+'</text>'+
       '<text x="'+(x+bw*0.35).toFixed(1)+'" y="'+(H-padB+12).toFixed(1)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+d.tenor+'y</text>'; }).join('');
-  document.getElementById('krd_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+padL+'" y1="'+(H-padB)+'" x2="'+(W-10)+'" y2="'+(H-padB)+'" stroke="#d0d0d0"/>'+bars+'</svg>';
+  document.getElementById('krd_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+padL+'" y1="'+(H-padB)+'" x2="'+(W-10)+'" y2="'+(H-padB)+'" stroke="rgba(255,255,255,0.16)"/>'+bars+'</svg>';
   document.getElementById('krdNote').textContent='total duration '+kr.total.toFixed(2)+' · price '+kr.base.toFixed(2);
 }
 ['krd_c','krd_n','krd_par'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawKRD); }); drawKRD();
@@ -1503,7 +1563,7 @@ function drawRS(){
   function X(i){ return pad+i/(n-1)*(W-2*pad); }
   function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
   var line=rs.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
-  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="#d0d0d0" stroke-dasharray="4 4"/><polyline points="'+line+'" fill="none" stroke="#6366f1" stroke-width="2"/></svg>';
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/><polyline points="'+line+'" fill="none" stroke="#8b93ff" stroke-width="2"/></svg>';
   document.getElementById('rsNote').textContent='latest '+rs[rs.length-1].toFixed(2)+' · '+w+'-period window';
 }
 ['rs_r','rs_w','rs_p'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawRS); }); drawRS();
@@ -1517,11 +1577,11 @@ function drawCal(){
   var cw=36,ch=24,padL=42,padT=18, W=padL+12*cw+30, H=padT+years*ch+6;
   var cells='';
   for(var yi=0;yi<years;yi++){ for(var mi=0;mi<12;mi++){ var idx=yi*12+mi; if(idx>=R.length) break; var x=padL+mi*cw,y=padT+yi*ch;
-    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+calColor(R[idx])+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="8" fill="#111" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(R[idx]*100).toFixed(0)+'</text>'; }
-    cells+='<text x="'+(padL-5)+'" y="'+(padT+yi*ch+ch/2+3)+'" font-size="9" fill="#374151" text-anchor="end">'+(y0+yi)+'</text>'; }
+    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+calColor(R[idx])+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="8" fill="#e9ebf2" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(R[idx]*100).toFixed(0)+'</text>'; }
+    cells+='<text x="'+(padL-5)+'" y="'+(padT+yi*ch+ch/2+3)+'" font-size="9" fill="#aab2c4" text-anchor="end">'+(y0+yi)+'</text>'; }
   for(var m2=0;m2<12;m2++) cells+='<text x="'+(padL+m2*cw+cw/2)+'" y="'+(padT-5)+'" font-size="8.5" fill="#6b7280" text-anchor="middle">'+M[m2]+'</text>';
   // annual totals
-  for(var yi2=0;yi2<years;yi2++){ var tot=1; for(var mi2=0;mi2<12;mi2++){ var ix=yi2*12+mi2; if(ix<R.length) tot*=1+R[ix]; } cells+='<text x="'+(padL+12*cw+6)+'" y="'+(padT+yi2*ch+ch/2+3)+'" font-size="9" fill="'+((tot-1)>=0?'#0a8a3b':'#d23a2c')+'" font-family="JetBrains Mono,monospace">'+((tot-1)*100).toFixed(0)+'%</text>'; }
+  for(var yi2=0;yi2<years;yi2++){ var tot=1; for(var mi2=0;mi2<12;mi2++){ var ix=yi2*12+mi2; if(ix<R.length) tot*=1+R[ix]; } cells+='<text x="'+(padL+12*cw+6)+'" y="'+(padT+yi2*ch+ch/2+3)+'" font-size="9" fill="'+((tot-1)>=0?'#34d399':'#fb7185')+'" font-family="JetBrains Mono,monospace">'+((tot-1)*100).toFixed(0)+'%</text>'; }
   host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+cells+'</svg>';
 }
 ['cal_r','cal_y'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawCal); }); drawCal();
