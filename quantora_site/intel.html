@@ -131,7 +131,7 @@ function load(sym){
   Promise.all([api('income',sym),api('balance',sym),api('cashflow',sym),api('quote',sym)]).then(function(rs){
     var el=$('liveeng'); var Q=window.QENG;
     if(!Q){ el.innerHTML='<div class="muted">engine library not loaded</div>'; return; }
-    var inc=one(rs[0].data), bal=one(rs[1].data), cf=one(rs[2].data), q=one(rs[3].data);
+    var incA=arr(rs[0].data), balA=arr(rs[1].data), cfA=arr(rs[2].data); var inc=incA[0], bal=balA[0], cf=cfA[0]||{}, q=one(rs[3].data);
     if(!inc||!bal||!q||inc['Error Message']||bal['Error Message']){ planNote(el); return; }
     var price=q.price, shares=inc.weightedAverageShsOut||inc.weightedAverageShsOutDil||1;
     var mktCap=q.marketCap||price*shares, netDebt=bal.netDebt||0, ev=mktCap+netDebt;
@@ -142,6 +142,19 @@ function load(sym){
     var dcfStr='—', dcfCls='';
     if(cf&&cf.freeCashFlow){ var proj=[]; for(var i=1;i<=5;i++) proj.push(cf.freeCashFlow*Math.pow(1.06,i)); var d=Q.dcf({fcf:proj,discount:0.09,g:0.025,netDebt:netDebt}); var ps=d.equity/shares; var up=(ps/price-1); dcfStr=nf(ps,2)+'  ('+(up>=0?'+':'')+nf(up*100,0)+'% vs '+nf(price,2)+')'; dcfCls=up>=0?'up':'down'; }
     function kv(k,v,c){ return '<div class="kv"><span class="k">'+k+'</span><span class="v '+(c||'')+'">'+v+'</span></div>'; }
+    var extra='';
+    try{ var i1=incA[1], b1=balA[1];
+      if(i1&&b1&&i1.revenue&&b1.revenue){
+        var gm=function(i){return (i.revenue-i.costOfRevenue)/i.revenue;};
+        var aqi=function(b){return 1-((b.totalCurrentAssets+b.propertyPlantEquipmentNet)/b.totalAssets);};
+        var dep=function(i,b){return i.depreciationAndAmortization/(i.depreciationAndAmortization+b.propertyPlantEquipmentNet);};
+        var lev=function(b){return (b.totalCurrentLiabilities+b.longTermDebt)/b.totalAssets;};
+        var bm=Q.beneishM({ DSRI:(bal.netReceivables/inc.revenue)/(b1.netReceivables/i1.revenue), GMI:gm(i1)/gm(inc), AQI:aqi(bal)/aqi(b1), SGI:inc.revenue/i1.revenue, DEPI:dep(i1,b1)/dep(inc,bal), SGAI:(inc.sellingGeneralAndAdministrativeExpenses/inc.revenue)/(i1.sellingGeneralAndAdministrativeExpenses/i1.revenue), LVGI:lev(bal)/lev(b1), TATA:(inc.netIncome-(cf.operatingCashFlow||0))/bal.totalAssets });
+        var roa=inc.netIncome/bal.totalAssets, roa1=i1.netIncome/b1.totalAssets, cfo=cf.operatingCashFlow||0;
+        var pf=Q.piotroskiF({ roaPos:roa>0, cfoPos:cfo>0, roaUp:roa>roa1, accrual:cfo>inc.netIncome, levDown:(bal.longTermDebt/bal.totalAssets)<(b1.longTermDebt/b1.totalAssets), currUp:(bal.totalCurrentAssets/bal.totalCurrentLiabilities)>(b1.totalCurrentAssets/b1.totalCurrentLiabilities), noDilution:(inc.weightedAverageShsOut||0)<=(i1.weightedAverageShsOut||0), marginUp:gm(inc)>gm(i1), turnUp:(inc.revenue/bal.totalAssets)>(i1.revenue/b1.totalAssets) });
+        extra=kv('Beneish M-score', nf(bm.m,2)+(bm.flag?' ⚠':' ok'), bm.flag?'down':'up')+kv('Piotroski F-score', pf.score+'/9', pf.score>=7?'up':(pf.score<=3?'down':''));
+      }
+    }catch(e){ extra=''; }
     el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px">'+
       kv('DCF intrinsic / share', dcfStr, dcfCls)+
       kv('Altman Z-score', nf(az.z,2)+' · '+az.zone, az.zone==='Safe'?'up':(az.zone==='Distress'?'down':''))+
@@ -150,7 +163,7 @@ function load(sym){
       kv('P/E', nf(mult.pe,1))+
       kv('EV / EBITDA', nf(mult.evEbitda,1))+
       kv('P/B', nf(mult.pb,2))+
-      kv('FCF (latest)', cf&&cf.freeCashFlow?bn(cf.freeCashFlow):'—')+
+      kv('FCF (latest)', cf&&cf.freeCashFlow?bn(cf.freeCashFlow):'—')+extra+
       '</div><div class="tk" style="font-size:11px;margin-top:8px;color:var(--mut)">DCF assumes 6% FCF growth (5y), 9% discount, 2.5% terminal — illustrative, not advice.</div>';
   }).catch(function(){ $('liveeng').innerHTML='<div class="muted">unavailable</div>'; });
 

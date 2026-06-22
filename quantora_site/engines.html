@@ -1549,6 +1549,12 @@ buildCard(document.getElementById('g_risk'),{
   compute:function(v){ var r=parseNums(v.r); if(r.length<3) return []; var m=Q.martinRatio(r,v.p); return [{l:'Martin ratio',v:isFinite(m)?fmt(m,2):'∞',cls:m>0?'up':'down'},{l:'Pain index',v:fmt(Q.painIndex(r),2)+'%',cls:'down'}]; }
 });
 
+buildCard(document.getElementById('g_risk'),{
+  title:'Burke ratio &amp; downside dev', desc:'Return per root-sum-squared drawdown (Burke) and annualized downside deviation.',
+  inputs:[{k:'r',label:'Returns',type:'textarea',val:'0.03,0.02,-0.04,-0.03,0.01,-0.02,0.04,0.02,0.03,-0.05,-0.02,0.03'},{k:'p',label:'Periods/yr',val:12}],
+  compute:function(v){ var r=parseNums(v.r); if(r.length<3) return []; var b=Q.burkeRatio(r,v.p); return [{l:'Burke ratio',v:isFinite(b)?fmt(b,2):'∞',cls:b>0?'up':'down'},{l:'Downside dev',v:pct(Q.downsideDeviation(r,0,v.p),1)}]; }
+});
+
 /* ===== SEARCH + SECTION NAV ===== */
 (function(){
   var secs=[].slice.call(document.querySelectorAll('.sec'));

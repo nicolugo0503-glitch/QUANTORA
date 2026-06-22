@@ -788,7 +788,13 @@ function painIndex(returns){ var eq=1,peak=1,s=0,n=returns.length; for(var i=0;i
 function martinRatio(returns,P){ P=P||252; var ui=ulcerIndex(returns); return ui? (mean(returns)*P*100)/ui : Infinity; }
 Q.painIndex=painIndex; Q.martinRatio=martinRatio;
 
-Q.version='2.5';
+
+/* ================= BURKE RATIO + DOWNSIDE DEVIATION ================= */
+function downsideDeviation(returns,mar,P){ mar=mar||0; P=P||252; var ss=0; for(var i=0;i<returns.length;i++){ var d=Math.min(returns[i]-mar,0); ss+=d*d; } return Math.sqrt(ss/returns.length)*Math.sqrt(P); }
+function burkeRatio(returns,P){ P=P||252; var eq=1,peak=1,ss=0; for(var i=0;i<returns.length;i++){ eq*=1+returns[i]; if(eq>peak) peak=eq; var dd=eq/peak-1; ss+=dd*dd; } var denom=Math.sqrt(ss); return denom? (mean(returns)*P)/denom : Infinity; }
+Q.downsideDeviation=downsideDeviation; Q.burkeRatio=burkeRatio;
+
+Q.version='2.6';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
