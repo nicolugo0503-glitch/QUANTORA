@@ -157,7 +157,7 @@ function load(sym){
     }catch(e){ extra=''; }
     var mer='';
     try{ var pxA=arr(rs[4].data);
-      if(pxA&&pxA.length>40){ var cl=pxA.map(function(p){return p.price;}).reverse(); var rets=[]; for(var z=1;z<cl.length;z++) rets.push(cl[z]/cl[z-1]-1); var evol=Q.stdev(rets)*Math.sqrt(252); var totDebt=bal.totalDebt||bal.totalLiabilities||0; var V=mktCap+totDebt, D=totDebt; if(D>0&&V>0&&evol>0){ var sigA=evol*(mktCap/V); var mt=Q.merton(V,D,sigA,0.05,1); mer=kv('Equity vol (1y)', pct(evol,1))+kv('Merton PD (1y)', pct(mt.pd,2), mt.pd>0.05?'down':'up')+kv('Distance to default', nf(mt.dd,2)+'σ'); } }
+      if(pxA&&pxA.length>40){ var cl=pxA.map(function(p){return p.price;}).reverse(); var rets=[]; for(var z=1;z<cl.length;z++) rets.push(cl[z]/cl[z-1]-1); var evol=Q.stdev(rets)*Math.sqrt(252); var totDebt=bal.totalDebt||bal.totalLiabilities||0; var V=mktCap+totDebt, D=totDebt; if(D>0&&V>0&&evol>0){ var sigA=evol*(mktCap/V); var mt=Q.merton(V,D,sigA,0.05,1); mer=kv('Equity vol (1y)', nf(evol*100,1)+'%')+kv('Merton PD (1y)', nf(mt.pd*100,2)+'%', mt.pd>0.05?'down':'up')+kv('Distance to default', nf(mt.dd,2)+'σ'); } }
     }catch(e){ mer=''; }
     el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px">'+
       kv('DCF intrinsic / share', dcfStr, dcfCls)+
