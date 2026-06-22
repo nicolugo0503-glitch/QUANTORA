@@ -22,16 +22,17 @@ module.exports = async (req, res) => {
     etfhold:  () => 'etf/holdings?symbol=' + sym,
     etfsector:() => 'etf/sector-weightings?symbol=' + sym,
     gainers:  () => 'biggest-gainers',
-    actives:  () => 'most-actives',
-    news:     () => 'news/stock-latest?page=0&limit=12',
-    income:   () => 'income-statement?symbol=' + sym + '&period=annual&limit=1',
-    balance:  () => 'balance-sheet-statement?symbol=' + sym + '&period=annual&limit=1',
-    cashflow: () => 'cash-flow-statement?symbol=' + sym + '&period=annual&limit=1'
+    actives:  () => 'most-active',
+    news:     () => 'stock-news?limit=12',
+    income:   () => 'income-statement?symbol=' + sym + '&period=annual&limit=2',
+    balance:  () => 'balance-sheet-statement?symbol=' + sym + '&period=annual&limit=2',
+    cashflow: () => 'cash-flow-statement?symbol=' + sym + '&period=annual&limit=2'
   };
   const build = MAP[type];
   if (!build) { res.status(200).json({ error: 'badtype' }); return; }
   try {
-    const url = 'https://financialmodelingprep.com/stable/' + build() + '&apikey=' + KEY;
+    const path = build(); const sep = path.indexOf('?') >= 0 ? '&' : '?';
+    const url = 'https://financialmodelingprep.com/stable/' + path + sep + 'apikey=' + KEY;
     const r = await fetch(url);
     const j = await r.json();
     res.status(200).json({ data: j });
