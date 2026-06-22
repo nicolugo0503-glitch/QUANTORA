@@ -23,7 +23,10 @@ module.exports = async (req, res) => {
     etfsector:() => 'etf/sector-weightings?symbol=' + sym,
     gainers:  () => 'biggest-gainers',
     actives:  () => 'most-actives',
-    news:     () => 'news/stock-latest?page=0&limit=12'
+    news:     () => 'news/stock-latest?page=0&limit=12',
+    income:   () => 'income-statement?symbol=' + sym + '&period=annual&limit=1',
+    balance:  () => 'balance-sheet-statement?symbol=' + sym + '&period=annual&limit=1',
+    cashflow: () => 'cashflow-statement?symbol=' + sym + '&period=annual&limit=1'
   };
   const build = MAP[type];
   if (!build) { res.status(200).json({ error: 'badtype' }); return; }
