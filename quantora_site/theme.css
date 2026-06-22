@@ -171,3 +171,15 @@ pre,code,.code,.mono{font-family:var(--mono)}
 
 /* hr / dividers softer */
 hr{border:none;border-top:1px solid var(--line)}
+
+/* ---- small-screen hardening (phones) ---- */
+@media(max-width:560px){
+  img,svg,canvas,video{max-width:100%}
+  .qnav{padding:9px 13px!important}
+  .ehero{padding:46px 16px 30px!important}
+  .ehero h1{font-size:30px!important;letter-spacing:-1px!important}
+  .ehero .lead{font-size:14.5px!important}
+  .ehero .estat{padding:2px 11px!important}
+  .ehero .estat .n{font-size:18px!important}
+  table{font-size:12px}
+}
