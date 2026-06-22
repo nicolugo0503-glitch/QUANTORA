@@ -144,7 +144,7 @@ function load(sym){
     function kv(k,v,c){ return '<div class="kv"><span class="k">'+k+'</span><span class="v '+(c||'')+'">'+v+'</span></div>'; }
     var extra='';
     try{ var i1=incA[1], b1=balA[1];
-      if(i1&&b1&&i1.revenue&&b1.revenue){
+      if(i1&&b1&&i1.revenue&&b1.totalAssets){
         var gm=function(i){return (i.revenue-i.costOfRevenue)/i.revenue;};
         var aqi=function(b){return 1-((b.totalCurrentAssets+b.propertyPlantEquipmentNet)/b.totalAssets);};
         var dep=function(i,b){return i.depreciationAndAmortization/(i.depreciationAndAmortization+b.propertyPlantEquipmentNet);};
