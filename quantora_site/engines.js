@@ -782,7 +782,13 @@ function cdar(returns,conf){
 function starr(returns,conf){ conf=conf||0.95; var cv=histCVaR(returns,conf); return cv!==0? mean(returns)/cv : Infinity; }
 Q.swaptionBlack76=swaptionBlack76; Q.cdar=cdar; Q.starr=starr;
 
-Q.version='2.4';
+
+/* ================= MARTIN / PAIN RATIOS ================= */
+function painIndex(returns){ var eq=1,peak=1,s=0,n=returns.length; for(var i=0;i<n;i++){ eq*=1+returns[i]; if(eq>peak) peak=eq; s+=Math.max(0,(1-eq/peak)*100); } return s/n; }
+function martinRatio(returns,P){ P=P||252; var ui=ulcerIndex(returns); return ui? (mean(returns)*P*100)/ui : Infinity; }
+Q.painIndex=painIndex; Q.martinRatio=martinRatio;
+
+Q.version='2.5';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

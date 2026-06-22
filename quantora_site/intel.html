@@ -64,7 +64,12 @@ th{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)
   <div class="grid">
     <div class="card"><div class="ct">Key metrics</div><div id="metrics"><div class="muted">—</div></div></div>
     <div class="card"><div class="ct">Analyst price targets</div><div id="targets"><div class="muted">—</div></div></div>
+    <div class="card"><div class="ct">Quant rating</div><div id="rating"><div class="muted">—</div></div></div>
+    <div class="card"><div class="ct">Peer comparison</div><div id="peers"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Insider transactions</div><div id="insider"><div class="muted">—</div></div></div>
+    <div class="card full"><div class="ct">Earnings estimates (analyst)</div><div id="estimates"><div class="muted">—</div></div></div>
+    <div class="card full"><div class="ct">Institutional holdings (13F)</div><div id="i13f"><div class="muted">—</div></div></div>
+    <div class="card full"><div class="ct">ETF holdings &amp; sectors (for ETF tickers)</div><div id="etf"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Congressional trades (latest, market-wide)</div><div id="senate"><div class="muted">—</div></div></div>
   </div>
   <p class="foot">Data via Financial Modeling Prep. Figures are for information and education only, not investment advice. Quantora is not a registered investment adviser or broker-dealer.</p>
@@ -79,12 +84,14 @@ var bn=function(x){ if(x==null||isNaN(x))return '—'; var a=Math.abs(x); if(a>=
 function row(k,v,cls){ return '<div class="kv"><span class="k">'+k+'</span><span class="v '+(cls||'')+'">'+v+'</span></div>'; }
 function one(j){ return Array.isArray(j)?(j[0]||null):(j&&j.data?one(j.data):j); }
 function arr(j){ return Array.isArray(j)?j:(j&&j.data?arr(j.data):[]); }
+function planNote(el){ el.innerHTML='<div class="muted">Requires a higher FMP plan (Starter/Ultimate) — upgrade your data key to activate.</div>'; }
+function gatedOrEmpty(res){ if(res&&res.error&&res.error!=='nokey') return true; var d=res&&res.data; if(d&&d['Error Message']) return true; if(Array.isArray(d)&&!d.length) return true; if(!d) return true; return false; }
 
 function load(sym){
   sym=(sym||'AAPL').toUpperCase();
   // gating check + profile
   api('profile',sym).then(function(res){
-    if(res&&res.error==='nokey'){ $('banner').style.display='block'; $('head').style.display='none'; ['metrics','targets','insider','senate'].forEach(function(id){$(id).innerHTML='<div class="muted">Connect a data key to activate.</div>';}); return; }
+    if(res&&res.error==='nokey'){ $('banner').style.display='block'; $('head').style.display='none'; ['metrics','targets','rating','peers','insider','estimates','i13f','etf','senate'].forEach(function(id){$(id).innerHTML='<div class="muted">Connect a data key to activate.</div>';}); return; }
     $('banner').style.display='none';
     var p=one(res.data);
     if(p){ var chg=p.changePercentage!=null?p.changePercentage:(p.changesPercentage); 
@@ -114,6 +121,36 @@ function load(sym){
     var rows=a.slice(0,10).map(function(d){ var buy=d.acquisitionOrDisposition==='A'; return '<tr><td>'+(d.transactionDate||'')+'</td><td>'+((d.reportingName||'').slice(0,26))+'</td><td>'+((d.typeOfOwner||'').slice(0,20))+'</td><td class="'+(buy?'up':'down')+'">'+(buy?'Buy':'Sell')+'</td><td class="mono">'+nf(d.securitiesTransacted,0)+'</td><td class="mono">'+(d.price?nf(d.price,2):'—')+'</td></tr>'; }).join('');
     $('insider').innerHTML='<table><thead><tr><th>Date</th><th>Insider</th><th>Role</th><th>Side</th><th>Shares</th><th>Price</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }).catch(function(){ $('insider').innerHTML='<div class="muted">unavailable</div>'; });
+
+  // Quant rating (free tier)
+  api('ratings',sym).then(function(res){ var r=one(res.data); var el=$('rating'); if(!r||r['Error Message']){ planNote(el); return; }
+    function bar(label,sc){ var pct=Math.max(0,Math.min(5,sc))/5*100; return '<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut)"><span>'+label+'</span><span class="mono">'+sc+'/5</span></div><div style="height:6px;background:var(--soft);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--acc)"></div></div></div>'; }
+    el.innerHTML='<div style="font-size:26px;font-weight:780;margin-bottom:6px">'+(r.rating||'—')+' <span class="tk" style="font-size:12px">overall '+(r.overallScore||'—')+'/5</span></div>'+
+      bar('DCF',r.discountedCashFlowScore||0)+bar('ROE',r.returnOnEquityScore||0)+bar('ROA',r.returnOnAssetsScore||0)+bar('D/E',r.debtToEquityScore||0)+bar('P/E',r.priceToEarningsScore||0)+bar('P/B',r.priceToBookScore||0);
+  }).catch(function(){ planNote($('rating')); });
+
+  // Peers (free tier)
+  api('peers',sym).then(function(res){ var a=arr(res.data); var el=$('peers'); if(!a.length){ planNote(el); return; }
+    var rows=a.slice(0,8).map(function(d){ return '<tr><td class="mono">'+(d.symbol||'')+'</td><td>'+((d.companyName||'').slice(0,22))+'</td><td class="mono">'+nf(d.price,2)+'</td><td class="mono">'+bn(d.mktCap||d.marketCap)+'</td></tr>'; }).join('');
+    el.innerHTML='<table><thead><tr><th>Sym</th><th>Name</th><th>Price</th><th>Mkt cap</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(){ planNote($('peers')); });
+
+  // Earnings estimates (may require higher plan)
+  api('estimates',sym).then(function(res){ var a=arr(res.data); var el=$('estimates'); if(gatedOrEmpty(res)){ planNote(el); return; }
+    var rows=a.slice(0,5).map(function(d){ return '<tr><td>'+((d.date||'').slice(0,4))+'</td><td class="mono">'+bn(d.revenueAvg||d.estimatedRevenueAvg)+'</td><td class="mono">'+nf(d.epsAvg||d.estimatedEpsAvg,2)+'</td><td class="mono">'+nf(d.netIncomeAvg||d.estimatedNetIncomeAvg?bn(d.netIncomeAvg||d.estimatedNetIncomeAvg):null,0)+'</td></tr>'; }).join('');
+    el.innerHTML='<table><thead><tr><th>Year</th><th>Rev (avg)</th><th>EPS (avg)</th><th>Net inc</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(){ planNote($('estimates')); });
+
+  // Institutional 13F (requires Ultimate)
+  api('thirteenf',sym).then(function(res){ var d=one(res.data); var el=$('i13f'); if(gatedOrEmpty(res)){ planNote(el); return; }
+    el.innerHTML=row('Investors holding',nf(d.investorsHolding,0))+row('Total invested',bn(d.totalInvested))+row('Ownership %',d.ownershipPercent!=null?nf(d.ownershipPercent,2)+'%':'—')+row('Put/Call',d.putCallRatio!=null?nf(d.putCallRatio,2):'—');
+  }).catch(function(){ planNote($('i13f')); });
+
+  // ETF holdings (requires Starter+)
+  api('etfhold',sym).then(function(res){ var a=arr(res.data); var el=$('etf'); if(gatedOrEmpty(res)){ planNote(el); return; }
+    var rows=a.slice(0,10).map(function(d){ return '<tr><td class="mono">'+(d.asset||d.symbol||'')+'</td><td>'+((d.name||'').slice(0,28))+'</td><td class="mono">'+(d.weightPercentage!=null?nf(d.weightPercentage,2)+'%':(d.weight!=null?nf(d.weight,2)+'%':'—'))+'</td></tr>'; }).join('');
+    el.innerHTML='<table><thead><tr><th>Holding</th><th>Name</th><th>Weight</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(){ planNote($('etf')); });
 }
 
 // congressional (market-wide, independent of ticker)
