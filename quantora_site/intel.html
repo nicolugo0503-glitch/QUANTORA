@@ -66,6 +66,7 @@ th{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)
     <div class="card"><div class="ct">Analyst price targets</div><div id="targets"><div class="muted">—</div></div></div>
     <div class="card"><div class="ct">Quant rating</div><div id="rating"><div class="muted">—</div></div></div>
     <div class="card"><div class="ct">Peer comparison</div><div id="peers"><div class="muted">—</div></div></div>
+    <div class="card full" style="border-color:#dcd9fb;background:linear-gradient(180deg,#fbfaff,#fff)"><div class="ct">Live valuation engines — real financials → Quantora models</div><div id="liveeng"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Insider activity (latest, market-wide)</div><div id="insider"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Earnings estimates (analyst)</div><div id="estimates"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Institutional holdings (13F)</div><div id="i13f"><div class="muted">—</div></div></div>
@@ -77,6 +78,7 @@ th{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)
   <p class="foot">Data via Financial Modeling Prep. Figures are for information and education only, not investment advice. Quantora is not a registered investment adviser or broker-dealer.</p>
 </div>
 
+<script src="/engines.js"></script>
 <script src="/nav.js"></script>
 <script>
 var $=function(id){return document.getElementById(id);};
@@ -93,7 +95,7 @@ function load(sym){
   sym=(sym||'AAPL').toUpperCase();
   // gating check + profile
   api('profile',sym).then(function(res){
-    if(res&&res.error==='nokey'){ $('banner').style.display='block'; $('head').style.display='none'; ['metrics','targets','rating','peers','insider','estimates','i13f','etf','senate','movers','news'].forEach(function(id){$(id).innerHTML='<div class="muted">Connect a data key to activate.</div>';}); return; }
+    if(res&&res.error==='nokey'){ $('banner').style.display='block'; $('head').style.display='none'; ['metrics','targets','rating','peers','liveeng','insider','estimates','i13f','etf','senate','movers','news'].forEach(function(id){$(id).innerHTML='<div class="muted">Connect a data key to activate.</div>';}); return; }
     $('banner').style.display='none';
     var p=one(res.data);
     if(p){ var chg=p.changePercentage!=null?p.changePercentage:(p.changesPercentage); 
@@ -124,6 +126,33 @@ function load(sym){
     var rows=a.slice(0,12).map(function(d){ var buy=d.acquisitionOrDisposition==='A'; return '<tr><td>'+(d.transactionDate||'')+'</td><td class="mono">'+(d.symbol||'')+'</td><td>'+((d.reportingName||'').slice(0,22))+'</td><td class="'+(buy?'up':'down')+'">'+(buy?'Buy':'Sell')+'</td><td class="mono">'+nf(d.securitiesTransacted,0)+'</td><td class="mono">'+(d.price?nf(d.price,2):'—')+'</td></tr>'; }).join('');
     $('insider').innerHTML='<table><thead><tr><th>Date</th><th>Sym</th><th>Insider</th><th>Side</th><th>Shares</th><th>Price</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }).catch(function(){ $('insider').innerHTML='<div class="muted">unavailable</div>'; });
+
+  // LIVE VALUATION ENGINES: real financials -> QENG models
+  Promise.all([api('income',sym),api('balance',sym),api('cashflow',sym),api('quote',sym)]).then(function(rs){
+    var el=$('liveeng'); var Q=window.QENG;
+    if(!Q){ el.innerHTML='<div class="muted">engine library not loaded</div>'; return; }
+    var inc=one(rs[0].data), bal=one(rs[1].data), cf=one(rs[2].data), q=one(rs[3].data);
+    if(!inc||!bal||!q||inc['Error Message']||bal['Error Message']){ planNote(el); return; }
+    var price=q.price, shares=inc.weightedAverageShsOut||inc.weightedAverageShsOutDil||1;
+    var mktCap=q.marketCap||price*shares, netDebt=bal.netDebt||0, ev=mktCap+netDebt;
+    var wc=(bal.totalCurrentAssets||0)-(bal.totalCurrentLiabilities||0);
+    var az=Q.altmanZ(wc,bal.retainedEarnings||0,inc.ebit||inc.operatingIncome||0,mktCap,inc.revenue||0,bal.totalAssets||1,bal.totalLiabilities||1);
+    var du=Q.dupont(inc.netIncome||0,inc.revenue||1,bal.totalAssets||1,bal.totalStockholdersEquity||1);
+    var mult=Q.multiples(price,inc.eps||1,null,ev,inc.ebitda||1,(bal.totalStockholdersEquity||0)/shares);
+    var dcfStr='—', dcfCls='';
+    if(cf&&cf.freeCashFlow){ var proj=[]; for(var i=1;i<=5;i++) proj.push(cf.freeCashFlow*Math.pow(1.06,i)); var d=Q.dcf({fcf:proj,discount:0.09,g:0.025,netDebt:netDebt}); var ps=d.equity/shares; var up=(ps/price-1); dcfStr=nf(ps,2)+'  ('+(up>=0?'+':'')+nf(up*100,0)+'% vs '+nf(price,2)+')'; dcfCls=up>=0?'up':'down'; }
+    function kv(k,v,c){ return '<div class="kv"><span class="k">'+k+'</span><span class="v '+(c||'')+'">'+v+'</span></div>'; }
+    el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px">'+
+      kv('DCF intrinsic / share', dcfStr, dcfCls)+
+      kv('Altman Z-score', nf(az.z,2)+' · '+az.zone, az.zone==='Safe'?'up':(az.zone==='Distress'?'down':''))+
+      kv('DuPont ROE', nf(du.roe*100,1)+'%', 'up')+
+      kv('— margin × turnover × lev', nf(du.margin*100,1)+'% · '+nf(du.turnover,2)+' · '+nf(du.leverage,2),'')+
+      kv('P/E', nf(mult.pe,1))+
+      kv('EV / EBITDA', nf(mult.evEbitda,1))+
+      kv('P/B', nf(mult.pb,2))+
+      kv('FCF (latest)', cf&&cf.freeCashFlow?bn(cf.freeCashFlow):'—')+
+      '</div><div class="tk" style="font-size:11px;margin-top:8px;color:var(--mut)">DCF assumes 6% FCF growth (5y), 9% discount, 2.5% terminal — illustrative, not advice.</div>';
+  }).catch(function(){ $('liveeng').innerHTML='<div class="muted">unavailable</div>'; });
 
   // Quant rating (free tier)
   api('ratings',sym).then(function(res){ var r=one(res.data); var el=$('rating'); if(!r||r['Error Message']){ planNote(el); return; }
