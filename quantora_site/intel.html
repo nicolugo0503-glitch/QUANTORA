@@ -66,11 +66,13 @@ th{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)
     <div class="card"><div class="ct">Analyst price targets</div><div id="targets"><div class="muted">—</div></div></div>
     <div class="card"><div class="ct">Quant rating</div><div id="rating"><div class="muted">—</div></div></div>
     <div class="card"><div class="ct">Peer comparison</div><div id="peers"><div class="muted">—</div></div></div>
-    <div class="card full"><div class="ct">Insider transactions</div><div id="insider"><div class="muted">—</div></div></div>
+    <div class="card full"><div class="ct">Insider activity (latest, market-wide)</div><div id="insider"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Earnings estimates (analyst)</div><div id="estimates"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Institutional holdings (13F)</div><div id="i13f"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">ETF holdings &amp; sectors (for ETF tickers)</div><div id="etf"><div class="muted">—</div></div></div>
     <div class="card full"><div class="ct">Congressional trades (latest, market-wide)</div><div id="senate"><div class="muted">—</div></div></div>
+    <div class="card full"><div class="ct">Market movers (top gainers)</div><div id="movers"><div class="muted">—</div></div></div>
+    <div class="card full"><div class="ct">Latest market news</div><div id="news"><div class="muted">—</div></div></div>
   </div>
   <p class="foot">Data via Financial Modeling Prep. Figures are for information and education only, not investment advice. Quantora is not a registered investment adviser or broker-dealer.</p>
 </div>
@@ -91,7 +93,7 @@ function load(sym){
   sym=(sym||'AAPL').toUpperCase();
   // gating check + profile
   api('profile',sym).then(function(res){
-    if(res&&res.error==='nokey'){ $('banner').style.display='block'; $('head').style.display='none'; ['metrics','targets','rating','peers','insider','estimates','i13f','etf','senate'].forEach(function(id){$(id).innerHTML='<div class="muted">Connect a data key to activate.</div>';}); return; }
+    if(res&&res.error==='nokey'){ $('banner').style.display='block'; $('head').style.display='none'; ['metrics','targets','rating','peers','insider','estimates','i13f','etf','senate','movers','news'].forEach(function(id){$(id).innerHTML='<div class="muted">Connect a data key to activate.</div>';}); return; }
     $('banner').style.display='none';
     var p=one(res.data);
     if(p){ var chg=p.changePercentage!=null?p.changePercentage:(p.changesPercentage); 
@@ -103,8 +105,9 @@ function load(sym){
     api('metrics',sym).then(function(mr){ var m=one(mr.data)||{}; 
       $('metrics').innerHTML=
         row('Market cap', p?bn(p.marketCap):'—')+
-        row('P/E', m.peRatio!=null?nf(m.peRatio,1):(p&&p.pe!=null?nf(p.pe,1):'—'))+
-        row('ROE', m.roe!=null?nf(m.roe*100,1)+'%':'—')+
+        row('P/E', (m.earningsYield)?nf(1/m.earningsYield,1):'—')+
+        row('ROE', m.returnOnEquity!=null?nf(m.returnOnEquity*100,1)+'%':'—')+
+        row('ROIC', m.returnOnInvestedCapital!=null?nf(m.returnOnInvestedCapital*100,1)+'%':'—')+
         row('Net debt / EBITDA', m.netDebtToEBITDA!=null?nf(m.netDebtToEBITDA,2):'—')+
         row('Free cash flow yield', m.freeCashFlowYield!=null?nf(m.freeCashFlowYield*100,2)+'%':'—')+
         row('Beta', p&&p.beta!=null?nf(p.beta,2):'—');
@@ -117,9 +120,9 @@ function load(sym){
   }).catch(function(){ $('targets').innerHTML='<div class="muted">unavailable</div>'; });
 
   // insider
-  api('insider',sym).then(function(res){ var a=arr(res.data); if(!a.length){ $('insider').innerHTML='<div class="muted">no recent filings</div>'; return; }
-    var rows=a.slice(0,10).map(function(d){ var buy=d.acquisitionOrDisposition==='A'; return '<tr><td>'+(d.transactionDate||'')+'</td><td>'+((d.reportingName||'').slice(0,26))+'</td><td>'+((d.typeOfOwner||'').slice(0,20))+'</td><td class="'+(buy?'up':'down')+'">'+(buy?'Buy':'Sell')+'</td><td class="mono">'+nf(d.securitiesTransacted,0)+'</td><td class="mono">'+(d.price?nf(d.price,2):'—')+'</td></tr>'; }).join('');
-    $('insider').innerHTML='<table><thead><tr><th>Date</th><th>Insider</th><th>Role</th><th>Side</th><th>Shares</th><th>Price</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  api('insider','').then(function(res){ var a=arr(res.data); if(!a.length){ $('insider').innerHTML='<div class="muted">unavailable</div>'; return; }
+    var rows=a.slice(0,12).map(function(d){ var buy=d.acquisitionOrDisposition==='A'; return '<tr><td>'+(d.transactionDate||'')+'</td><td class="mono">'+(d.symbol||'')+'</td><td>'+((d.reportingName||'').slice(0,22))+'</td><td class="'+(buy?'up':'down')+'">'+(buy?'Buy':'Sell')+'</td><td class="mono">'+nf(d.securitiesTransacted,0)+'</td><td class="mono">'+(d.price?nf(d.price,2):'—')+'</td></tr>'; }).join('');
+    $('insider').innerHTML='<table><thead><tr><th>Date</th><th>Sym</th><th>Insider</th><th>Side</th><th>Shares</th><th>Price</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }).catch(function(){ $('insider').innerHTML='<div class="muted">unavailable</div>'; });
 
   // Quant rating (free tier)
@@ -161,10 +164,19 @@ function loadSenate(){
   }).catch(function(){ $('senate').innerHTML='<div class="muted">unavailable</div>'; });
 }
 
+function loadExtras(){
+  api('gainers','').then(function(res){ var a=arr(res.data); var el=$('movers'); if(gatedOrEmpty(res)){ planNote(el); return; }
+    var rows=a.slice(0,12).map(function(d){ return '<tr><td class="mono">'+(d.symbol||'')+'</td><td>'+((d.name||'').slice(0,26))+'</td><td class="mono">'+nf(d.price,2)+'</td><td class="mono up">+'+nf(d.changesPercentage||d.changePercentage,2)+'%</td></tr>'; }).join('');
+    el.innerHTML='<table><thead><tr><th>Sym</th><th>Name</th><th>Price</th><th>Chg</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(){ $('movers').innerHTML='<div class="muted">unavailable</div>'; });
+  api('news','').then(function(res){ var a=arr(res.data); var el=$('news'); if(gatedOrEmpty(res)){ planNote(el); return; }
+    el.innerHTML=a.slice(0,10).map(function(d){ var t=d.title||d.text||''; var sym=d.symbol?(' · '+d.symbol):''; var src=d.publisher||d.site||''; return '<div style="padding:7px 0;border-bottom:1px solid var(--line);font-size:13px"><div style="font-weight:600">'+t.slice(0,120)+'</div><div class="tk" style="font-size:11px">'+src+sym+' · '+((d.publishedDate||d.date||'').slice(0,16))+'</div></div>'; }).join('');
+  }).catch(function(){ $('news').innerHTML='<div class="muted">unavailable</div>'; });
+}
 $('go').addEventListener('click',function(){ load($('tk').value); });
 $('tk').addEventListener('keydown',function(e){ if(e.key==='Enter') load(this.value); });
 document.querySelectorAll('.chip').forEach(function(c){ c.addEventListener('click',function(){ $('tk').value=this.getAttribute('data-t'); load(this.getAttribute('data-t')); }); });
-load('AAPL'); loadSenate();
+load('AAPL'); loadSenate(); loadExtras();
 </script>
 </body>
 </html>
