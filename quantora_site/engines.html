@@ -258,6 +258,22 @@ h1,h2,h3,.ehero h1,.er-title h2,.card .ct,.er-stage .card .ct,.pcard .v,.cr .r .
 thead th,.gtab th{color:#8a90a2!important;font-weight:500!important}
 /* CHARTS: rounded joins everywhere (premium line quality) */
 svg polyline,svg path{stroke-linejoin:round;stroke-linecap:round}
+
+/* ===== Command palette + premium entrance motion ===== */
+@keyframes erin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.er-stage .card.erin{animation:erin .3s cubic-bezier(.16,1,.3,1) both!important}
+#qpal{position:fixed;inset:0;z-index:200;background:rgba(5,6,9,.62);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding-top:12vh}
+.qpal-box{width:560px;max-width:92vw;background:#111113;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 28px 70px -24px rgba(0,0,0,.75);overflow:hidden;animation:erin .18s cubic-bezier(.16,1,.3,1) both}
+#qpal-in{width:100%;background:transparent;border:0;border-bottom:1px solid rgba(255,255,255,.08);color:#e6edf3;font-size:16px;padding:16px 18px;outline:none;font-family:"Geist","Inter",sans-serif;font-weight:400}
+#qpal-list{max-height:46vh;overflow:auto;padding:6px}
+.qpal-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;color:#cfd3dc;font-size:14px;cursor:pointer}
+.qpal-item.on{background:rgba(99,91,255,.14);color:#fff}
+.qpal-kind{font-size:10px;color:#7c8296;font-family:"Geist Mono",monospace;letter-spacing:.05em;text-transform:uppercase}
+.qpal-empty{padding:20px;color:#7c8296;text-align:center;font-size:13px}
+.qpal-foot{display:flex;gap:18px;padding:9px 16px;border-top:1px solid rgba(255,255,255,.06);color:#7c8296;font-size:11px;font-family:"Geist Mono",monospace}
+.qpal-hint{display:flex;justify-content:space-between;align-items:center;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#9aa0aa;font-size:12.5px;padding:9px 11px;margin-bottom:8px;cursor:pointer;transition:border-color .14s,background .14s}
+.qpal-hint:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.qpal-hint kbd{font-family:"Geist Mono",monospace;font-size:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:1px 6px;color:#cfd3dc}
 </style>
 </head>
 <body>
@@ -1791,6 +1807,41 @@ buildCard(document.getElementById('g_risk'),{
   listEl.addEventListener('click',function(ev){ var b=ev.target.closest('.er-item'); if(!b) return; var k=b.getAttribute('data-k').split('~'); show(k[0], +k[1]); });
   room.querySelector('#er_search').addEventListener('input',function(){ var q=this.value.toLowerCase(); [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ b.style.display=b.textContent.toLowerCase().indexOf(q)>=0?'':'none'; }); [].forEach.call(listEl.querySelectorAll('.er-cat'),function(c){ c.style.display=q?'none':''; }); });
   show(order[0],0);
+})();
+
+/* ===== ⌘K command palette + stage entrance ===== */
+(function(){
+  function idx(){ var items=[];
+    document.querySelectorAll('.er-item').forEach(function(b){ var cat='',p=b.previousElementSibling; while(p){ if(p.classList&&p.classList.contains('er-cat')){cat=p.textContent;break;} p=p.previousElementSibling; }
+      items.push({label:b.textContent.trim(),cat:cat,run:function(){ b.click(); var st=document.getElementById('er_stage'); if(st) st.scrollIntoView({behavior:'smooth',block:'center'}); }}); });
+    document.querySelectorAll('.flag').forEach(function(fl){ var t=fl.querySelector('.top .t'); if(t) items.push({label:t.textContent.trim(),cat:'Flagship',run:function(){ fl.scrollIntoView({behavior:'smooth',block:'start'}); }}); });
+    return items; }
+  var INDEX=[];
+  function rec(){ try{return JSON.parse(localStorage.getItem('qk_recent')||'[]');}catch(e){return[];} }
+  function pushRec(l){ var r=rec().filter(function(x){return x!==l;}); r.unshift(l); localStorage.setItem('qk_recent',JSON.stringify(r.slice(0,6))); }
+  function fz(q,t){ q=q.toLowerCase();t=t.toLowerCase();var qi=0,sc=0,st=0,pr=-1;for(var ti=0;ti<t.length&&qi<q.length;ti++){if(t[ti]===q[qi]){st=(pr===ti-1)?st+1:1;sc+=st*2+((ti===0||t[ti-1]===' ')?6:0);pr=ti;qi++;}}return qi===q.length?sc:-1; }
+  var ov=document.createElement('div'); ov.id='qpal';
+  ov.innerHTML='<div class="qpal-box"><input id="qpal-in" placeholder="Search engines\u2026" autocomplete="off" spellcheck="false"><div id="qpal-list"></div><div class="qpal-foot"><span>\u2191\u2193 navigate</span><span>\u21B5 open</span><span>esc close</span></div></div>';
+  document.body.appendChild(ov);
+  var input=ov.querySelector('#qpal-in'), list=ov.querySelector('#qpal-list'), sel=0, results=[];
+  function paint(){ list.innerHTML=results.map(function(it,i){return '<div class="qpal-item'+(i===sel?' on':'')+'" data-i="'+i+'">'+it.label+'<span class="qpal-kind">'+it.cat+'</span></div>';}).join('')||'<div class="qpal-empty">No match</div>';
+    [].forEach.call(list.querySelectorAll('.qpal-item'),function(el){ el.addEventListener('click',function(){ run(+el.getAttribute('data-i')); }); });
+    var on=list.querySelector('.qpal-item.on'); if(on) on.scrollIntoView({block:'nearest'}); }
+  function render(q){ if(!q){ var r=rec(); results=INDEX.slice().sort(function(a,b){ var ai=r.indexOf(a.label),bi=r.indexOf(b.label); ai=ai<0?99:ai; bi=bi<0?99:bi; return ai-bi; }).slice(0,40); }
+    else { results=INDEX.map(function(it){return {it:it,s:fz(q,it.label+' '+it.cat)};}).filter(function(x){return x.s>=0;}).sort(function(a,b){return b.s-a.s;}).slice(0,40).map(function(x){return x.it;}); }
+    sel=0; paint(); }
+  function run(i){ var it=results[i]; if(!it) return; pushRec(it.label); close(); it.run(); }
+  function open(){ INDEX=idx(); ov.style.display='flex'; input.value=''; render(''); setTimeout(function(){input.focus();},10); }
+  function close(){ ov.style.display='none'; }
+  input.addEventListener('input',function(){ render(this.value.trim()); });
+  input.addEventListener('keydown',function(e){ if(e.key==='ArrowDown'){sel=Math.min(sel+1,results.length-1);paint();e.preventDefault();} else if(e.key==='ArrowUp'){sel=Math.max(sel-1,0);paint();e.preventDefault();} else if(e.key==='Enter'){run(sel);e.preventDefault();} else if(e.key==='Escape'){close();} });
+  ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+  document.addEventListener('keydown',function(e){ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); ov.style.display==='flex'?close():open(); } });
+  var rail=document.querySelector('.er-rail');
+  if(rail){ var hint=document.createElement('button'); hint.className='qpal-hint'; hint.innerHTML='Search all engines <kbd>\u2318 K</kbd>'; hint.addEventListener('click',open); rail.insertBefore(hint, rail.firstChild); }
+  // stage entrance motion
+  var st=document.getElementById('er_stage');
+  if(st){ var mo=new MutationObserver(function(){ var c=st.querySelector('.card'); if(c){ c.classList.remove('erin'); void c.offsetWidth; c.classList.add('erin'); } }); mo.observe(st,{childList:true}); }
 })();
 </script>
 </body>
