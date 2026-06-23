@@ -1067,7 +1067,7 @@ function drawMCFan(){
     '<polyline points="'+poly(fan.p50)+'" fill="none" stroke="#cfd3e0" stroke-width="2"/>'+
     '<line x1="'+pad+'" y1="'+py(p.S).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(p.S).toFixed(1)+'" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/>'+
     '<text x="'+(W-pad)+'" y="'+(py(fan.p95[n-1])-2).toFixed(1)+'" font-size="9" fill="#8b93ff" text-anchor="end" font-family="JetBrains Mono,monospace">95%</text>'+
-    '<text x="'+(W-pad)+'" y="'+(py(fan.p5[n-1])+9).toFixed(1)+'" font-size="9" fill="#8b93ff" text-anchor="end" font-family="JetBrains Mono,monospace">5%</text>'+
+    '<text x="'+(W-pad)+'" y="'+(py(fan.p5[n-1])+9).toFixed(1)+'" font-size="9" fill="#8b93ff" text-anchor="end" font-family="JetBrains Mono,monospace">5%</text>'+'<circle cx="'+px(n-1).toFixed(1)+'" cy="'+py(fan.p50[n-1]).toFixed(1)+'" r="7" fill="#8b93ff" opacity="0.16"/><circle cx="'+px(n-1).toFixed(1)+'" cy="'+py(fan.p50[n-1]).toFixed(1)+'" r="3" fill="#e6edf3"/>'+
     '</svg>';
   document.getElementById('mc_chart').innerHTML=svg;
   document.getElementById('mc_metrics').innerHTML=
@@ -1285,7 +1285,7 @@ function drawGarch(){
   document.getElementById('garch_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
     '<line x1="'+pad+'" y1="'+py(lr).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+py(lr).toFixed(1)+'" stroke="#9aa0aa" stroke-dasharray="4 4"/>'+
     '<text x="'+(W-pad)+'" y="'+(py(lr)-3).toFixed(1)+'" font-size="9" fill="#6b7280" text-anchor="end">long-run '+lr.toFixed(1)+'%</text>'+
-    '<polyline points="'+path+'" fill="none" stroke="#fb7185" stroke-width="2"/>'+
+    '<polyline points="'+path+'" fill="none" stroke="#fb7185" stroke-width="1.6"/>'+'<circle cx="'+px(n-1).toFixed(1)+'" cy="'+py(ys[n-1]).toFixed(1)+'" r="6" fill="#fb7185" opacity="0.2"/><circle cx="'+px(n-1).toFixed(1)+'" cy="'+py(ys[n-1]).toFixed(1)+'" r="3" fill="#fb7185"/>'+
     '<text x="'+pad+'" y="'+(H-pad+13)+'" font-size="9" fill="#6b7280">today → 60-day forecast</text>'+
     '</svg>';
   now.textContent='current '+(gp.current*100).toFixed(1)+'% · persistence '+gp.persistence.toFixed(2);
@@ -1406,7 +1406,7 @@ function drawTech(){
     poly(up,'#c7c0f5',1,'4 3')+poly(lo,'#c7c0f5',1,'4 3')+
     poly(px,'#cfd3e0',2)+poly(smaArr,'#8b93ff',1.6)+
     '<text x="'+(pad+2)+'" y="'+(pad-4)+'" font-size="9" fill="#8b93ff">SMA'+nS+'</text>'+
-    '<text x="'+(pad+44)+'" y="'+(pad-4)+'" font-size="9" fill="#c7a0f5">Bollinger'+nB+'</text>'+
+    '<text x="'+(pad+44)+'" y="'+(pad-4)+'" font-size="9" fill="#c7a0f5">Bollinger'+nB+'</text>'+'<circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(px[n-1]).toFixed(1)+'" r="7" fill="#cfd3e0" opacity="0.16"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(px[n-1]).toFixed(1)+'" r="3" fill="#e6edf3"/>'+
     '</svg>';
   var r=Q.rsi(px,14), b=Q.bollinger(px,nB,2);
   note.textContent='last '+px[px.length-1].toFixed(1)+(r!=null?(' · RSI '+r.toFixed(0)):'')+(b?(' · band '+b.lower.toFixed(1)+'–'+b.upper.toFixed(1)):'');
@@ -1481,7 +1481,9 @@ function drawBT(){
     var line=arr.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
     var poly='';
     if(fillNeg){ var base=Y(0); poly='<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+line+' '+X(n-1).toFixed(1)+','+base.toFixed(1)+'" fill="'+color+'" opacity="0.15"/>'; }
-    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+poly+'<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
+    else { var bot=(H-pad).toFixed(1); poly='<polygon points="'+X(0).toFixed(1)+','+bot+' '+line+' '+X(n-1).toFixed(1)+','+bot+'" fill="'+color+'" opacity="0.05"/>'; }
+    var dot='<circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(arr[n-1]).toFixed(1)+'" r="6" fill="'+color+'" opacity="0.22"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(arr[n-1]).toFixed(1)+'" r="3" fill="'+color+'"/>';
+    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+poly+'<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="1.6"/>'+dot+'</svg>';
   }
   area(eqHost,bt.equity,'#cfd3e0',false);
   area(ddHost,bt.drawdown,'#fb7185',true);
@@ -1652,7 +1654,7 @@ function drawRS(){
   function X(i){ return pad+i/(n-1)*(W-2*pad); }
   function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
   var line=rs.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
-  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/><polyline points="'+line+'" fill="none" stroke="#8b93ff" stroke-width="2"/></svg>';
+  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+pad+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-pad)+'" y2="'+Y(0).toFixed(1)+'" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/><polyline points="'+line+'" fill="none" stroke="#8b93ff" stroke-width="1.6"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(rs[n-1]).toFixed(1)+'" r="6" fill="#8b93ff" opacity="0.2"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(rs[n-1]).toFixed(1)+'" r="3" fill="#8b93ff"/></svg>';
   document.getElementById('rsNote').textContent='latest '+rs[rs.length-1].toFixed(2)+' · '+w+'-period window';
 }
 ['rs_r','rs_w','rs_p'].forEach(function(id){ document.getElementById(id).addEventListener('input',drawRS); }); drawRS();
