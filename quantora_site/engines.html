@@ -623,6 +623,41 @@ body.qv .qreveal.qin{opacity:1;transform:none;transition:opacity .55s var(--ease
 .er-stage>.erin{animation:erin .32s cubic-bezier(.16,1,.3,1) both}
 @media(max-width:860px){.eroom{grid-template-columns:1fr!important}.er-rail{position:static!important;max-height:none!important}}
 
+
+/* ===== WORKSTATION v2 — rail polish, Home, market pulse ===== */
+.er-item{display:flex;align-items:center;gap:8px;text-decoration:none}
+.er-home{font-weight:500;color:var(--ink)!important;margin-bottom:4px}
+.er-home .er-ico{font-size:14px;opacity:.6}
+.er-cat{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.er-cat .er-ct{font-variant-numeric:tabular-nums;color:var(--faint);font-weight:500;font-size:10px}
+.er-rail input#er_search{position:sticky;top:0;z-index:2}
+/* the stage swaps under a named slot so View Transitions crossfade just the stage */
+.er-stage{view-transition-name:qstage}
+::view-transition-old(qstage),::view-transition-new(qstage){animation-duration:.20s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
+@media(prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+/* ---- HOME ---- */
+.qhome{padding:8px 4px 24px}
+.qhome-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:26px}
+.qhome-eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--faint);font-weight:500}
+.qhome h2{font-size:clamp(28px,3.6vw,42px)!important;letter-spacing:-.03em!important;margin:8px 0 0!important;color:var(--ink)!important;font-weight:500!important}
+.qhome-sub{color:var(--mut);font-size:15px;max-width:620px;margin-top:10px;line-height:1.55}
+.qhome-sub kbd,.ws-title kbd{font-family:var(--mono,'Geist Mono',monospace);background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px}
+.qhome-status{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-size:12.5px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.qhome-status .dot{width:6px;height:6px;border-radius:50%;background:var(--up)}
+.qhome-pulse{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:30px}
+.qhome-pulse:empty{display:none}
+.qp-cell{background:#fff;padding:15px 16px;display:flex;flex-direction:column;gap:5px}
+.qp-l{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);font-weight:500}
+.qp-v{font-family:var(--mono,'Geist Mono',monospace);font-size:21px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.qp-v.up{color:var(--up)}.qp-v.down{color:var(--down)}
+.qhome-sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);font-weight:500;margin:0 0 14px}
+.qhome-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:30px}
+.qhome-grid:empty{display:none}
+.qhome-card{display:block;text-decoration:none;border:1px solid var(--line);border-radius:13px;padding:16px 18px;background:#fff;transition:border-color .15s var(--ease),transform .15s var(--ease),box-shadow .15s var(--ease)}
+.qhome-card:hover{border-color:rgba(99,91,255,.4);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.qhome-card-t{font-size:14.5px;font-weight:500;color:var(--ink);letter-spacing:-.01em}
+.qhome-card-s{font-size:12px;color:var(--mut);margin-top:4px}
+
 </style>
 </head>
 <body>
@@ -2168,39 +2203,115 @@ buildCard(document.getElementById('g_risk'),{
 })();
 
 
-/* ===== UNIFIED WORKSTATION — flagships + panels + calculators, one stage ===== */
+/* ===== UNIFIED WORKSTATION v2 — Home + deep-links + recents + view transitions ===== */
 (function(){
-  var groups={}, order=[];
-  function add(cat,label,node){ if(!groups[cat]){groups[cat]=[];order.push(cat);} groups[cat].push({title:label,node:node}); }
-  // 1) flagships
+  var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var groups={}, order=[], bySlug={};
+  function slugify(t){ return t.toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+  function add(cat,label,node){ if(!groups[cat]){groups[cat]=[];order.push(cat);} var idx=groups[cat].length; var sl=slugify(label); if(bySlug[sl]) sl=slugify(cat)+'-'+sl; var e={title:label,node:node,cat:cat,i:idx,slug:sl}; groups[cat].push(e); bySlug[sl]=e; }
   [].forEach.call(document.querySelectorAll('.flag'),function(fl){ var t=fl.querySelector('.top .t'); add('Flagships', t?t.textContent.trim():'Engine', fl); });
-  // 2) each section: live panels first, then calculator cards
   [].forEach.call(document.querySelectorAll('.sec'),function(sec){ var h=sec.querySelector('h2'); var cat=h?h.textContent.replace(/&amp;/g,'&').trim():'Engines';
     [].forEach.call(sec.querySelectorAll('[id$="Panel"], #macroLive'),function(pn){ var sp=pn.querySelector('span'); add(cat, sp?sp.textContent.trim():'Live panel', pn); });
     [].forEach.call(sec.querySelectorAll('.card'),function(c){ var t=c.querySelector('.ct'); add(cat, t?t.textContent.trim():'Engine', c); });
   });
   if(!order.length) return;
+
+  // ---- recents (slugs) ----
+  var RKEY='qnav_recent_v1';
+  function recents(){ try{return JSON.parse(localStorage.getItem(RKEY)||'[]');}catch(e){return[];} }
+  function pushRecent(sl){ var r=recents().filter(function(x){return x!==sl;}); r.unshift(sl); localStorage.setItem(RKEY,JSON.stringify(r.slice(0,6))); }
+
+  // ---- HOME node ----
+  function buildHome(){
+    var el=document.createElement('div'); el.className='qhome'; el.id='qhome';
+    var hr=new Date().getHours(); var greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+    var dstr=new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+    el.innerHTML=''
+      +'<div class="qhome-head"><div><div class="qhome-eyb">Quantora Terminal</div>'
+      +'<h2>'+greet+'.</h2><p class="qhome-sub">96 verified engines — options &amp; Greeks, risk, macro, credit, valuation. One workspace, computed live. Pick an engine from the rail, or press <kbd>⌘K</kbd>.</p></div>'
+      +'<span class="qhome-status"><span class="dot"></span>'+dstr+'</span></div>'
+      +'<div class="qhome-pulse" id="qhome_pulse"></div>'
+      +'<div class="qhome-sec-label">Featured engines</div>'
+      +'<div class="qhome-grid" id="qhome_featured"></div>'
+      +'<div class="qhome-sec-label" id="qhome_rec_lbl" style="display:none">Recent</div>'
+      +'<div class="qhome-grid" id="qhome_rec"></div>';
+    return el;
+  }
+  var home=buildHome();
+
+  // ---- mount workstation ----
   var anchor=document.querySelector('.flag')||document.querySelector('.sec');
   var title=document.createElement('div'); title.className='er-title ws-title';
-  title.innerHTML='<div class="er-eyb">The Terminal</div><h2>99 engines. One workspace.</h2><p>Choose any instrument from the rail — it opens full-size, computed live. Press <kbd>⌘K</kbd> to jump to any of them.</p>';
+  title.innerHTML='<div class="er-eyb">The Terminal</div><h2>96 engines. One workspace.</h2><p>Choose any instrument from the rail — it opens full-size, computed live. <kbd>⌘K</kbd> jumps anywhere; every engine has its own link.</p>';
   var room=document.createElement('div'); room.className='eroom';
-  room.innerHTML='<div class="er-rail"><input id="er_search" type="text" placeholder="Filter 99 engines…" autocomplete="off"><div id="er_list"></div></div><div class="er-stage" id="er_stage"></div>';
+  room.innerHTML='<div class="er-rail"><input id="er_search" type="text" placeholder="Filter 96 engines…" autocomplete="off" spellcheck="false"><div id="er_list"></div></div><div class="er-stage" id="er_stage"></div>';
   anchor.parentNode.insertBefore(title, anchor);
   anchor.parentNode.insertBefore(room, anchor);
   var holder=document.createElement('div'); holder.style.display='none'; holder.id='er_holder'; document.body.appendChild(holder);
+  holder.appendChild(home);
   order.forEach(function(cat){ groups[cat].forEach(function(e){ holder.appendChild(e.node); }); });
   var eb=document.getElementById('engBar'); if(eb) eb.style.display='none';
   [].forEach.call(document.querySelectorAll('.sec'),function(sx){ sx.style.display='none'; });
+
+  // ---- rail list ----
   var listEl=room.querySelector('#er_list'), stage=room.querySelector('#er_stage');
-  var html=''; order.forEach(function(cat){ html+='<div class="er-cat">'+cat+'</div>'; groups[cat].forEach(function(e,i){ html+='<button class="er-item" data-k="'+cat+'~'+i+'">'+e.title+'</button>'; }); });
+  var html='<a class="er-item er-home" href="#home" data-slug="home"><span class="er-ico">⌂</span>Home</a>';
+  html+='<div class="er-cat er-rec-lbl" style="display:none">Recent</div><div id="er_recents"></div>';
+  order.forEach(function(cat){ html+='<div class="er-cat">'+cat+'<span class="er-ct">'+groups[cat].length+'</span></div>'; groups[cat].forEach(function(e){ html+='<a class="er-item" href="#'+e.slug+'" data-slug="'+e.slug+'">'+e.title+'</a>'; }); });
   listEl.innerHTML=html;
+
+  function markActive(slug){ [].forEach.call(document.querySelectorAll('.er-item'),function(b){ b.classList.toggle('on', b.getAttribute('data-slug')===slug); }); var on=listEl.querySelector('.er-item.on'); if(on) on.scrollIntoView({block:'nearest'}); }
+  function renderRecents(){ var r=recents(); var box=document.getElementById('er_recents'), lbl=listEl.querySelector('.er-rec-lbl'); if(!box) return;
+    if(!r.length){ box.innerHTML=''; if(lbl)lbl.style.display='none'; return; }
+    if(lbl)lbl.style.display='';
+    box.innerHTML=r.map(function(sl){ var e=bySlug[sl]; return e?'<a class="er-item" href="#'+sl+'" data-slug="'+sl+'">'+e.title+'</a>':''; }).join('');
+    // home featured recents too
+    var hr=document.getElementById('qhome_rec'), hl=document.getElementById('qhome_rec_lbl');
+    if(hr){ var cards=r.map(function(sl){var e=bySlug[sl];return e?'<a class="qhome-card" href="#'+sl+'"><div class="qhome-card-t">'+e.title+'</div><div class="qhome-card-s">'+e.cat+'</div></a>':'';}).join('');
+      hr.innerHTML=cards; if(hl)hl.style.display=cards?'':'none'; }
+  }
+
   var current=null;
-  function show(cat,i){ var e=groups[cat]&&groups[cat][i]; if(!e) return; if(current) holder.appendChild(current); stage.innerHTML=''; e.node.classList.remove('qreveal'); stage.appendChild(e.node); current=e.node;
-    [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ b.classList.toggle('on', b.getAttribute('data-k')===cat+'~'+i); });
-    var on=listEl.querySelector('.er-item.on'); if(on) on.scrollIntoView({block:'nearest'}); }
-  listEl.addEventListener('click',function(ev){ var b=ev.target.closest('.er-item'); if(!b) return; var k=b.getAttribute('data-k').split('~'); show(k[0], +k[1]); });
-  room.querySelector('#er_search').addEventListener('input',function(){ var q=this.value.toLowerCase(); [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ b.style.display=b.textContent.toLowerCase().indexOf(q)>=0?'':'none'; }); [].forEach.call(listEl.querySelectorAll('.er-cat'),function(c){ c.style.display=q?'none':''; }); });
-  show(order[0],0);
+  function doShow(node, slug){
+    var swap=function(){ if(current&&current!==node) holder.appendChild(current); if(node.classList) node.classList.remove('qreveal'); stage.innerHTML=''; stage.appendChild(node); current=node; markActive(slug); if(slug&&slug!=='home'){ pushRecent(slug); renderRecents(); } localStorage.setItem('qnav_last', slug||'home'); };
+    if(document.startViewTransition && !RM){ try{ document.startViewTransition(swap); }catch(e){ swap(); } } else swap();
+  }
+  function showSlug(slug){ if(slug==='home'||!bySlug[slug]){ doShow(home,'home'); populatePulse(); return; } doShow(bySlug[slug].node, slug); }
+
+  function route(){ var h=(location.hash||'').replace(/^#\/?/,''); var slug=h|| (localStorage.getItem('qnav_last')||'home'); showSlug(slug); }
+  window.addEventListener('hashchange', route);
+
+  room.querySelector('#er_search').addEventListener('input',function(){ var q=this.value.toLowerCase(); [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ if(b.classList.contains('er-home'))return; b.style.display=b.textContent.toLowerCase().indexOf(q)>=0?'':'none'; }); [].forEach.call(listEl.querySelectorAll('.er-cat'),function(c){ c.style.display=q?'none':''; }); var box=document.getElementById('er_recents'); if(box)box.style.display=q?'none':''; });
+
+  // ---- featured + recents render ----
+  (function(){
+    var feats=['Options pricer','Monte Carlo simulator','Efficient frontier','Value at Risk','Bond analytics','Live Treasury yield curve','GARCH(1,1) volatility forecast','Strategy P&L'];
+    var host=document.getElementById('qhome_featured'); if(host){ host.innerHTML=feats.map(function(lb){ var sl=slugify(lb); var e=bySlug[sl]||bySlug[slugify('Flagships-'+lb)]; if(!e){ for(var k in bySlug){ if(bySlug[k].title===lb){e=bySlug[k];break;} } } return e?'<a class="qhome-card" href="#'+e.slug+'"><div class="qhome-card-t">'+e.title+'</div><div class="qhome-card-s">'+e.cat+'</div></a>':''; }).join(''); }
+  })();
+  renderRecents();
+
+  // ---- live market pulse (FRED) ----
+  var pulseDone=false;
+  function populatePulse(){ if(pulseDone) return; var host=document.getElementById('qhome_pulse'); if(!host) return; pulseDone=true;
+    fetch('/api/fredseries').then(function(r){return r.json();}).then(function(j){
+      if(!j.indicators){ host.style.display='none'; return; }
+      var by={}; j.indicators.forEach(function(x){by[x.id]=x;});
+      function v(id){ return by[id]&&by[id].latest!=null?by[id].latest:null; }
+      var tiles=[];
+      if(v('FEDFUNDS')!=null) tiles.push(['Fed Funds',v('FEDFUNDS').toFixed(2)+'%','']);
+      var twoY=v('DGS2')!=null?v('DGS2'):(v('DGS10')!=null&&v('T10Y2Y')!=null?+(v('DGS10')-v('T10Y2Y')).toFixed(2):null);
+      if(twoY!=null) tiles.push(['2Y',twoY.toFixed(2)+'%','']);
+      if(v('DGS10')!=null) tiles.push(['10Y',v('DGS10').toFixed(2)+'%','']);
+      if(v('DGS30')!=null) tiles.push(['30Y',v('DGS30').toFixed(2)+'%','']);
+      var sp=v('T10Y2Y')!=null?v('T10Y2Y'):(v('DGS10')!=null&&twoY!=null?+(v('DGS10')-twoY).toFixed(2):null);
+      if(sp!=null) tiles.push(['10Y–2Y',(sp>0?'+':'')+sp.toFixed(2)+'%',sp<0?'down':'up']);
+      if(v('VIXCLS')!=null) tiles.push(['VIX',v('VIXCLS').toFixed(1),'']);
+      if(!tiles.length){ host.style.display='none'; return; }
+      host.innerHTML=tiles.map(function(t){ return '<div class="qp-cell"><div class="qp-l">'+t[0]+'</div><div class="qp-v '+(t[2]||'')+'">'+t[1]+'</div></div>'; }).join('');
+    }).catch(function(){ host.style.display='none'; });
+  }
+
+  route();
 })();
 
 /* ===== ⌘K command palette + stage entrance ===== */
