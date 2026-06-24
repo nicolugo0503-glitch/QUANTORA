@@ -344,7 +344,7 @@ function loadExtras(){
 $('go').addEventListener('click',function(){ load($('tk').value); });
 $('tk').addEventListener('keydown',function(e){ if(e.key==='Enter') load(this.value); });
 document.querySelectorAll('.chip').forEach(function(c){ c.addEventListener('click',function(){ $('tk').value=this.getAttribute('data-t'); load(this.getAttribute('data-t')); }); });
-load('AAPL'); loadSenate(); loadExtras();
+(function(){var sm=null;try{sm=new URLSearchParams(location.search).get('sym');}catch(e){} sm=(sm||'AAPL').toUpperCase(); var tk=document.getElementById('tk'); if(tk)tk.value=sm; load(sm);})(); loadSenate(); loadExtras();
 </script>
 </body>
 </html>
