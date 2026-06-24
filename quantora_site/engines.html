@@ -680,6 +680,14 @@ body.app-shell .er-stage>.qhome{max-width:1120px}
 /* home disclaimer */
 .qhome-foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;line-height:1.6;color:var(--faint);max-width:760px}
 
+
+/* ===== per-engine sensitivity chart ===== */
+.cchart{margin-top:22px}
+.cchart:empty{display:none}
+.cchart svg{width:100%;height:auto;display:block}
+.cchart-cap{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;font-weight:500}
+.er-stage .card .cchart{margin-top:30px}
+
 </style>
 </head>
 <body>
@@ -1123,6 +1131,35 @@ document.getElementById('o_btc').addEventListener('click',function(e){
 
 /* ---- GENERIC MINI-CALCULATOR FRAMEWORK ---- */
 function parseNums(s){ return (s||'').split(/[\s,]+/).map(parseFloat).filter(function(x){return isFinite(x);}); }
+function cardNum(s){ if(s==null) return NaN; s=(''+s).replace(/,/g,''); var m=s.match(/-?\d+(\.\d+)?([eE][-+]?\d+)?/); return m?parseFloat(m[0]):NaN; }
+function pickSweep(cfg){ var kw=['yield','rate','vol','sigma','return','spot','strike','premium','price','maturity','years','time','beta','correl','corr','weight','confidence','coupon','growth','wacc','discount','drift','spread','lambda','recovery','default','hazard','notional','leverage','funding']; var first=null,best=null,bestSc=-1; (cfg.inputs||[]).forEach(function(f){ if(f.type==='select'||f.type==='text'||f.type==='textarea') return; if(first===null) first=f; var lab=(f.label||'').toLowerCase(),sc=0; for(var i=0;i<kw.length;i++){ if(lab.indexOf(kw[i])>=0){ sc=kw.length-i; break; } } if(sc>bestSc){ bestSc=sc; best=f; } }); return bestSc>0?best:first; }
+function drawCardChart(el,cfg,vBase,out){ var host=el.querySelector('.cchart'); if(!host) return; if(!out||!out.length){ host.innerHTML=''; return; }
+  var sw=pickSweep(cfg); if(!sw){ host.innerHTML=''; return; }
+  var v0=parseFloat(vBase[sw.k]); if(!isFinite(v0)){ host.innerHTML=''; return; }
+  var lo=v0>0?v0*0.5:(v0<0?v0*1.5:-1), hi=v0>0?v0*1.5:(v0<0?v0*0.5:1); if(lo>hi){ var t=lo; lo=hi; hi=t; } if(hi-lo<1e-9){ lo-=1; hi+=1; }
+  var N=40, xs=[], ys=[];
+  for(var i=0;i<=N;i++){ var x=lo+(hi-lo)*i/N; var vv={}; for(var k in vBase) vv[k]=vBase[k]; vv[sw.k]=x; var o; try{ o=cfg.compute(vv); }catch(e){ o=null; } ys.push((o&&o[0])?cardNum(o[0].v):NaN); xs.push(x); }
+  var fin=ys.filter(function(y){return isFinite(y);}); if(fin.length<8){ host.innerHTML=''; return; }
+  var ymin=Math.min.apply(null,fin), ymax=Math.max.apply(null,fin); if(ymax-ymin<1e-9){ host.innerHTML=''; return; }
+  var p=(ymax-ymin)*0.12; ymin-=p; ymax+=p;
+  var W=640,H=220,pL=48,pR=18,pT=16,pB=30;
+  function X(x){ return pL+(x-lo)/(hi-lo)*(W-pL-pR); }
+  function Y(y){ return H-pB-(y-ymin)/(ymax-ymin)*(H-pT-pB); }
+  var pts=''; for(var i=0;i<xs.length;i++){ if(!isFinite(ys[i])) continue; pts+=(pts?' L':'M')+X(xs[i]).toFixed(1)+','+Y(ys[i]).toFixed(1); }
+  if(!pts){ host.innerHTML=''; return; }
+  var grid=''; for(var g=0;g<=4;g++){ var yy=pT+(H-pT-pB)*g/4; var yval=ymax-(ymax-ymin)*g/4; grid+='<line x1="'+pL+'" y1="'+(yy+0.5).toFixed(1)+'" x2="'+(W-pR)+'" y2="'+(yy+0.5).toFixed(1)+'" stroke="#eef0f3" stroke-width="1" shape-rendering="crispEdges"/><text x="'+(pL-8)+'" y="'+(yy+3).toFixed(1)+'" font-size="10" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+(Math.abs(yval)>=1000?yval.toFixed(0):yval.toFixed(2))+'</text>'; }
+  var xl=''; [lo,(lo+hi)/2,hi].forEach(function(xv,idx){ xl+='<text x="'+X(xv).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#9aa1ad" text-anchor="'+(idx===0?'start':idx===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+(Math.abs(xv)>=1000?xv.toFixed(0):xv.toFixed(2))+'</text>'; });
+  var cxv=Math.max(lo,Math.min(hi,v0)), cx=X(cxv), cyv=cardNum(out[0].v), cy=Y(cyv);
+  var gid='cg'+cfg.title.replace(/[^a-z0-9]/gi,'').slice(0,18)+Math.round(v0*7%9999);
+  var area=pts+' L'+X(xs[xs.length-1]).toFixed(1)+','+(H-pB)+' L'+X(xs[0]).toFixed(1)+','+(H-pB)+' Z';
+  host.innerHTML='<div class="cchart-cap">Sensitivity · '+(out[0].l||'output')+' vs '+sw.label+'</div>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#635bff" stop-opacity="0.12"/><stop offset="100%" stop-color="#635bff" stop-opacity="0"/></linearGradient></defs>'
+    +grid+'<path d="'+area+'" fill="url(#'+gid+')"/>'
+    +'<path d="'+pts+'" fill="none" stroke="#635bff" stroke-width="1.8"/>'
+    +'<line x1="'+cx.toFixed(1)+'" y1="'+pT+'" x2="'+cx.toFixed(1)+'" y2="'+(H-pB)+'" stroke="#b9bec8" stroke-width="1" stroke-dasharray="2 3"/>'
+    +(isFinite(cy)?'<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="4.5" fill="#fff"/><circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3" fill="#635bff"/>':'')
+    +xl+'</svg>';
+}
 function buildCard(host,cfg){
   var el=document.createElement('div'); el.className='card';
   var inputsHtml=cfg.inputs.map(function(f){
@@ -1132,7 +1169,7 @@ function buildCard(host,cfg){
     if(f.type==='text') return '<div class="fld'+w+'"><label>'+f.label+'</label><input type="text" data-k="'+f.k+'" value="'+(f.val||'')+'"></div>';
     return '<div class="fld'+w+'"><label>'+f.label+'</label><input type="number" step="any" data-k="'+f.k+'" value="'+f.val+'"></div>';
   }).join('');
-  el.innerHTML='<div class="ct">'+cfg.title+'</div><div class="cd">'+cfg.desc+'</div><div class="ci">'+inputsHtml+'</div><div class="cr"></div>';
+  el.innerHTML='<div class="ct">'+cfg.title+'</div><div class="cd">'+cfg.desc+'</div><div class="ci">'+inputsHtml+'</div><div class="cchart"></div><div class="cr"></div>';
   host.appendChild(el);
   var inEls=el.querySelectorAll('[data-k]'), crEl=el.querySelector('.cr');
   function run(){
@@ -1141,6 +1178,7 @@ function buildCard(host,cfg){
     crEl.innerHTML=(out||[]).map(function(o){
       return '<div class="r"><div class="rl">'+o.l+'</div><div class="rv '+(o.cls||'')+'">'+o.v+'</div></div>';
     }).join('');
+    try{ drawCardChart(el,cfg,v,out); }catch(e){ var hh=el.querySelector('.cchart'); if(hh)hh.innerHTML=''; }
   }
   inEls.forEach(function(i){ i.addEventListener('input',run); });
   run();
