@@ -603,6 +603,26 @@ body.qv .qreveal.qin{opacity:1;transform:none;transition:opacity .55s var(--ease
 @media(prefers-reduced-motion:reduce){body.qv .qreveal{opacity:1!important;transform:none!important;transition:none!important}
  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
 
+
+/* ===== UNIFIED WORKSTATION layout (app-like: rail + stage) ===== */
+.ehero{padding:60px 24px 30px!important}
+.ws-title{text-align:left!important;margin:6px 0 18px!important}
+.ws-title .er-eyb{color:var(--faint)!important}
+.ws-title h2{font-size:clamp(26px,3.2vw,38px)!important;letter-spacing:-.03em!important;margin-top:8px!important;color:var(--ink)!important}
+.ws-title p{color:var(--mut)!important;font-size:14.5px!important;max-width:none!important;margin-top:8px!important}
+.ws-title kbd{font-family:var(--mono,'Geist Mono',monospace);background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px}
+.eroom{grid-template-columns:300px 1fr!important;gap:22px!important;align-items:start!important;margin:0 0 60px!important}
+.er-rail{position:sticky!important;top:16px!important;max-height:86vh!important;overflow:auto!important;background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:16px!important;padding:12px 10px!important;box-shadow:var(--shadow-sm)!important}
+.er-cat{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding:14px 12px 6px;font-weight:500}
+.er-item{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--ink-2,#3a4150);font:inherit;font-size:13.5px;padding:8px 12px;border-radius:9px;cursor:pointer;line-height:1.3}
+.er-item:hover{background:var(--soft)}
+.er-item.on{background:var(--acc-weak,#eeedff)!important;color:var(--ink)!important;font-weight:500;box-shadow:inset 2px 0 0 var(--acc)}
+.er-stage{min-height:560px!important}
+.er-stage>*{width:100%}
+.er-stage>.flag{margin:0!important}
+.er-stage>.erin{animation:erin .32s cubic-bezier(.16,1,.3,1) both}
+@media(max-width:860px){.eroom{grid-template-columns:1fr!important}.er-rail{position:static!important;max-height:none!important}}
+
 </style>
 </head>
 <body>
@@ -2148,27 +2168,36 @@ buildCard(document.getElementById('g_risk'),{
 })();
 
 
-/* ===== ENGINE ROOM init (runs after all cards built) ===== */
+/* ===== UNIFIED WORKSTATION — flagships + panels + calculators, one stage ===== */
 (function(){
-  var cards=[].slice.call(document.querySelectorAll('.sec .card'));
-  if(!cards.length) return;
   var groups={}, order=[];
-  cards.forEach(function(c){ var sec=c.closest('.sec'); var cat=(sec&&sec.querySelector('h2'))?sec.querySelector('h2').textContent.replace(/&amp;/g,'&').trim():'Engines'; if(!groups[cat]){groups[cat]=[];order.push(cat);} var t=(c.querySelector('.ct')?c.querySelector('.ct').textContent.trim():'Engine'); groups[cat].push({title:t,node:c}); });
-  var firstSec=cards[0].closest('.sec');
-  var title=document.createElement('div'); title.className='er-title'; title.innerHTML='<div class="er-eyb">The Engine Room</div><h2>Every engine, one focused instrument.</h2><p>Pick from the rail \u2014 each model opens full-size, computed live.</p>';
+  function add(cat,label,node){ if(!groups[cat]){groups[cat]=[];order.push(cat);} groups[cat].push({title:label,node:node}); }
+  // 1) flagships
+  [].forEach.call(document.querySelectorAll('.flag'),function(fl){ var t=fl.querySelector('.top .t'); add('Flagships', t?t.textContent.trim():'Engine', fl); });
+  // 2) each section: live panels first, then calculator cards
+  [].forEach.call(document.querySelectorAll('.sec'),function(sec){ var h=sec.querySelector('h2'); var cat=h?h.textContent.replace(/&amp;/g,'&').trim():'Engines';
+    [].forEach.call(sec.querySelectorAll('[id$="Panel"], #macroLive'),function(pn){ var sp=pn.querySelector('span'); add(cat, sp?sp.textContent.trim():'Live panel', pn); });
+    [].forEach.call(sec.querySelectorAll('.card'),function(c){ var t=c.querySelector('.ct'); add(cat, t?t.textContent.trim():'Engine', c); });
+  });
+  if(!order.length) return;
+  var anchor=document.querySelector('.flag')||document.querySelector('.sec');
+  var title=document.createElement('div'); title.className='er-title ws-title';
+  title.innerHTML='<div class="er-eyb">The Terminal</div><h2>99 engines. One workspace.</h2><p>Choose any instrument from the rail — it opens full-size, computed live. Press <kbd>⌘K</kbd> to jump to any of them.</p>';
   var room=document.createElement('div'); room.className='eroom';
-  room.innerHTML='<div class="er-rail"><input id="er_search" type="text" placeholder="Filter engines\u2026" autocomplete="off"><div id="er_list"></div></div><div class="er-stage" id="er_stage"></div>';
-  firstSec.parentNode.insertBefore(title, firstSec);
-  firstSec.parentNode.insertBefore(room, firstSec);
-  var holder=document.createElement('div'); holder.style.display='none'; document.body.appendChild(holder);
-  cards.forEach(function(c){ holder.appendChild(c); });
-  // hide pure-calculator sections; keep panel sections (hide their empty grids)
-  document.querySelectorAll('.sec').forEach(function(sec){ if(sec.querySelector('.grid')){ var hasPanel=sec.querySelector('[id$="Panel"],#macroLive'); if(hasPanel){ sec.querySelector('.grid').style.display='none'; } else { sec.style.display='none'; } } });
+  room.innerHTML='<div class="er-rail"><input id="er_search" type="text" placeholder="Filter 99 engines…" autocomplete="off"><div id="er_list"></div></div><div class="er-stage" id="er_stage"></div>';
+  anchor.parentNode.insertBefore(title, anchor);
+  anchor.parentNode.insertBefore(room, anchor);
+  var holder=document.createElement('div'); holder.style.display='none'; holder.id='er_holder'; document.body.appendChild(holder);
+  order.forEach(function(cat){ groups[cat].forEach(function(e){ holder.appendChild(e.node); }); });
+  var eb=document.getElementById('engBar'); if(eb) eb.style.display='none';
+  [].forEach.call(document.querySelectorAll('.sec'),function(sx){ sx.style.display='none'; });
   var listEl=room.querySelector('#er_list'), stage=room.querySelector('#er_stage');
   var html=''; order.forEach(function(cat){ html+='<div class="er-cat">'+cat+'</div>'; groups[cat].forEach(function(e,i){ html+='<button class="er-item" data-k="'+cat+'~'+i+'">'+e.title+'</button>'; }); });
   listEl.innerHTML=html;
   var current=null;
-  function show(cat,i){ var e=groups[cat]&&groups[cat][i]; if(!e) return; if(current) holder.appendChild(current); stage.innerHTML=''; stage.appendChild(e.node); current=e.node; [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ b.classList.toggle('on', b.getAttribute('data-k')===cat+'~'+i); }); }
+  function show(cat,i){ var e=groups[cat]&&groups[cat][i]; if(!e) return; if(current) holder.appendChild(current); stage.innerHTML=''; e.node.classList.remove('qreveal'); stage.appendChild(e.node); current=e.node;
+    [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ b.classList.toggle('on', b.getAttribute('data-k')===cat+'~'+i); });
+    var on=listEl.querySelector('.er-item.on'); if(on) on.scrollIntoView({block:'nearest'}); }
   listEl.addEventListener('click',function(ev){ var b=ev.target.closest('.er-item'); if(!b) return; var k=b.getAttribute('data-k').split('~'); show(k[0], +k[1]); });
   room.querySelector('#er_search').addEventListener('input',function(){ var q=this.value.toLowerCase(); [].forEach.call(listEl.querySelectorAll('.er-item'),function(b){ b.style.display=b.textContent.toLowerCase().indexOf(q)>=0?'':'none'; }); [].forEach.call(listEl.querySelectorAll('.er-cat'),function(c){ c.style.display=q?'none':''; }); });
   show(order[0],0);
@@ -2178,8 +2207,7 @@ buildCard(document.getElementById('g_risk'),{
 (function(){
   function idx(){ var items=[];
     document.querySelectorAll('.er-item').forEach(function(b){ var cat='',p=b.previousElementSibling; while(p){ if(p.classList&&p.classList.contains('er-cat')){cat=p.textContent;break;} p=p.previousElementSibling; }
-      items.push({label:b.textContent.trim(),cat:cat,run:function(){ b.click(); var st=document.getElementById('er_stage'); if(st) st.scrollIntoView({behavior:'smooth',block:'center'}); }}); });
-    document.querySelectorAll('.flag').forEach(function(fl){ var t=fl.querySelector('.top .t'); if(t) items.push({label:t.textContent.trim(),cat:'Flagship',run:function(){ fl.scrollIntoView({behavior:'smooth',block:'start'}); }}); });
+      items.push({label:b.textContent.trim(),cat:cat,run:function(){ b.click(); var st=document.getElementById('er_stage'); if(st) st.scrollIntoView({behavior:'smooth',block:'start'}); }}); });
     return items; }
   var INDEX=[];
   function rec(){ try{return JSON.parse(localStorage.getItem('qk_recent')||'[]');}catch(e){return[];} }
@@ -2206,7 +2234,7 @@ buildCard(document.getElementById('g_risk'),{
   if(rail){ var hint=document.createElement('button'); hint.className='qpal-hint'; hint.innerHTML='Search all engines <kbd>\u2318 K</kbd>'; hint.addEventListener('click',open); rail.insertBefore(hint, rail.firstChild); }
   // stage entrance motion
   var st=document.getElementById('er_stage');
-  if(st){ var mo=new MutationObserver(function(){ var c=st.querySelector('.card'); if(c){ c.classList.remove('erin'); void c.offsetWidth; c.classList.add('erin'); } }); mo.observe(st,{childList:true}); }
+  if(st){ var mo=new MutationObserver(function(){ var c=st.firstElementChild; if(c){ c.classList.remove('erin'); void c.offsetWidth; c.classList.add('erin'); } }); mo.observe(st,{childList:true}); }
 })();
 </script>
 
@@ -2229,7 +2257,7 @@ buildCard(document.getElementById('g_risk'),{
       el.textContent=pre+fmt(end*e,dec)+suf; if(p<1)requestAnimationFrame(step);})(performance.now());
   }
   document.body.classList.add('qv');
-  var targets=[].slice.call(document.querySelectorAll('.flag, .estat, .er-title'));
+  var targets=[].slice.call(document.querySelectorAll('.estat'));
   targets.forEach(function(el){el.classList.add('qreveal');});
   function fire(el){el.classList.add('qin'); if(el.classList.contains('estat')){var n=el.querySelector('.n'); if(n)countUp(n);}}
   if(RM||!('IntersectionObserver' in window)){targets.forEach(fire);return;}
