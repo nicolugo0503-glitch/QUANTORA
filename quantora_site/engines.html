@@ -663,7 +663,7 @@ body.qv .qreveal.qin{opacity:1;transform:none;transition:opacity .55s var(--ease
 body.app-shell{height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 body.app-shell>#qnav{flex:0 0 auto}
 body.app-shell>.wrap{flex:1 1 auto;min-height:0;max-width:none!important;width:100%;margin:0!important;padding:0!important;display:flex;flex-direction:column}
-body.app-shell .ehero,body.app-shell .ws-title,body.app-shell #engBar{display:none!important}
+body.app-shell .ehero,body.app-shell .ws-title,body.app-shell #engBar,body.app-shell>.wrap>.foot{display:none!important}
 body.app-shell .eroom{flex:1 1 auto;min-height:0;margin:0!important;gap:0!important;grid-template-columns:280px 1fr!important;align-items:stretch!important}
 body.app-shell .er-rail{height:100%!important;max-height:none!important;position:static!important;border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;overflow-y:auto;padding:14px 12px!important}
 body.app-shell .er-stage{height:100%!important;min-height:0!important;overflow-y:auto!important;padding:34px 40px 56px!important}
@@ -675,6 +675,10 @@ body.app-shell .er-stage>.qhome{max-width:1120px}
   body.app-shell .er-rail,body.app-shell .er-stage{height:auto!important;overflow:visible!important}
   body.app-shell .er-rail{border-right:0!important;border-bottom:1px solid var(--line)!important}
 }
+
+
+/* home disclaimer */
+.qhome-foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;line-height:1.6;color:var(--faint);max-width:760px}
 
 </style>
 </head>
@@ -2252,7 +2256,8 @@ buildCard(document.getElementById('g_risk'),{
       +'<div class="qhome-sec-label">Featured engines</div>'
       +'<div class="qhome-grid" id="qhome_featured"></div>'
       +'<div class="qhome-sec-label" id="qhome_rec_lbl" style="display:none">Recent</div>'
-      +'<div class="qhome-grid" id="qhome_rec"></div>';
+      +'<div class="qhome-grid" id="qhome_rec"></div>'
+      +'<p class="qhome-foot">Outputs are computed in-browser from your inputs with standard published formulas (Black–Scholes–Merton, Hull; Fabozzi; Estrella–Mishkin; Merton; Almgren–Chriss). Mathematical tools for analysis & education — not investment advice. Quantora is not a registered adviser or broker-dealer.</p>';
     return el;
   }
   var home=buildHome();
