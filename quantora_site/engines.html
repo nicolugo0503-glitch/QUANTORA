@@ -446,6 +446,113 @@ tbody tr:hover{background:#f6f7f9!important}
 .qpal-kind,.qpal-foot,.qpal-empty{color:#9aa0aa!important}.qpal-foot{border-top:1px solid var(--line)!important}
 .qpal-hint{background:#f6f7f9!important;border:1px solid var(--line)!important;color:#6b7280!important}
 .qpal-hint kbd{background:#fff!important;border:1px solid var(--line)!important;color:#3a4150!important}
+
+/* ===== STAGE: editorial hero hierarchy (kill the spreadsheet feel) ===== */
+.er-title{margin:64px 0 22px!important}
+.er-title h2{font-size:clamp(26px,3.4vw,40px)!important;letter-spacing:-.6px!important}
+.eroom{gap:32px!important}
+.er-stage .card{padding:40px 44px!important}
+.er-stage .card .ct{font-size:30px!important;letter-spacing:-.5px!important}
+.er-stage .card .cd{font-size:15px!important;max-width:600px;margin:10px 0 0!important;line-height:1.55!important}
+/* inputs become a tidy secondary panel */
+.er-stage .card .ci{background:#fbfbfd!important;border:1px solid var(--line)!important;border-radius:14px!important;padding:20px!important;grid-template-columns:repeat(auto-fit,minmax(155px,1fr))!important;gap:16px!important;margin-top:26px!important}
+.er-stage .card .ci .fld input,.er-stage .card .ci .fld select,.er-stage .card .ci .fld textarea{background:#fff!important}
+/* results: first = giant hero metric, rest = supporting tiles */
+.er-stage .card .cr{display:flex!important;flex-wrap:wrap!important;gap:14px!important;margin-top:30px!important;padding-top:30px!important;border-top:1px solid var(--line)!important}
+.er-stage .card .cr .r{flex:1 1 150px;background:#fafafb!important;border:1px solid var(--line)!important;border-radius:14px!important;padding:18px 20px!important}
+.er-stage .card .cr .r:first-child{flex:1 1 100%!important;background:transparent!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;padding:0 0 22px!important;gap:8px!important}
+.er-stage .card .cr .r:first-child .rl{font-size:11px!important;letter-spacing:.1em!important}
+.er-stage .card .cr .r:first-child .rv{font-size:clamp(44px,6.5vw,66px)!important;letter-spacing:-.04em!important;line-height:.98!important}
+
+/* ===== EDITORIAL — hero answer + whitespace (break spreadsheet feel) ===== */
+.er-title{margin:64px 0 22px!important}
+.eroom{gap:30px!important}
+.er-stage .card{padding:42px 46px!important;border-radius:16px!important}
+.er-stage .card .ct{font-size:30px!important;letter-spacing:-.6px!important;font-weight:500!important}
+.er-stage .card .cd{font-size:15px!important;max-width:600px;margin-top:11px!important;line-height:1.55!important}
+.er-stage .card .ci{margin-top:32px!important;gap:18px!important}
+.er-stage .card .ci .fld label{font-size:10px!important;letter-spacing:.11em!important;text-transform:uppercase!important;color:#9aa0aa!important;margin-bottom:8px!important}
+.er-stage .card .ci .fld input,.er-stage .card .ci .fld select,.er-stage .card .ci .fld textarea{padding:13px 15px!important;font-size:16px!important;border-radius:10px!important}
+.er-stage .card .cr{display:flex!important;flex-wrap:wrap!important;gap:14px!important;align-items:stretch!important;margin-top:36px!important;padding-top:30px!important;border-top:1px solid var(--line)!important}
+.er-stage .card .cr .r{flex:1 1 130px;background:#fafafb!important;border:1px solid var(--line)!important;border-radius:12px!important;padding:16px 18px!important}
+.er-stage .card .cr .r .rl{font-size:10px!important;letter-spacing:.09em!important;text-transform:uppercase!important}
+.er-stage .card .cr .r .rv{font-size:24px!important}
+.er-stage .card .cr .r:first-child{flex-basis:100%;background:transparent!important;border:0!important;padding:0 0 8px!important;display:flex;flex-direction:column;gap:7px}
+.er-stage .card .cr .r:first-child .rl{font-size:11px!important;letter-spacing:.16em!important;color:#9aa0aa!important}
+.er-stage .card .cr .r:first-child .rv{font-size:58px!important;line-height:.92!important;letter-spacing:-.035em!important}
+/* flagship price displays bigger + airier greeks */
+.pcard .v{font-size:38px!important;letter-spacing:-.03em!important}
+.pcard{padding:16px 20px!important}
+.gtab th,.gtab td{padding:12px 8px!important}
+.gtab tbody tr td:first-child{color:#16181d!important}
+@media(max-width:760px){.er-stage .card{padding:26px 22px!important}.er-stage .card .cr .r:first-child .rv{font-size:42px!important}}
+
+/* ===== BREATHE — kill the spreadsheet density (air + scale + de-grid) ===== */
+.sec{margin-top:64px!important}
+.flag{margin-top:34px!important}
+.flag .top{padding:22px 30px!important}
+.inputs{padding:30px!important}.out{padding:30px 34px!important}
+.inputs .fld{margin-bottom:20px!important}
+.prices{gap:18px!important;margin-bottom:16px!important}
+.pcard{padding:22px 24px!important}
+.pcard .l{font-size:11px!important;margin-bottom:10px!important;letter-spacing:.1em!important}
+.pcard .v{font-size:42px!important;letter-spacing:-.035em!important;line-height:1!important}
+/* greeks & all tables: airy, hairline horizontals only, no grid feel */
+.gtab{margin-top:26px!important}
+.gtab th{padding:0 10px 14px!important;font-size:10.5px!important;letter-spacing:.07em!important;border-bottom:1px solid var(--line)!important}
+.gtab td{padding:15px 10px!important;border-bottom:1px solid rgba(17,17,26,.045)!important;font-size:14.5px!important}
+.gtab tbody tr:last-child td{border-bottom:none!important}
+td,th{padding:13px 10px!important;border-bottom:1px solid rgba(17,17,26,.05)!important}
+thead th{padding:0 10px 12px!important}
+/* the Engine Room stage: big, confident, lots of air */
+.er-title{margin:80px 0 26px!important}
+.er-stage .card{padding:44px 48px!important}
+.er-stage .card .ct{font-size:32px!important;letter-spacing:-.5px!important;margin-bottom:6px!important}
+.er-stage .card .cd{font-size:15.5px!important;margin:8px 0 0!important;max-width:680px}
+.er-stage .card .ci{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;gap:20px!important;margin-top:34px!important}
+.er-stage .card .ci .fld input,.er-stage .card .ci .fld select,.er-stage .card .ci .fld textarea{padding:14px 16px!important;font-size:16px!important}
+.er-stage .card .ci .fld label{font-size:10.5px!important;letter-spacing:.09em!important;margin-bottom:9px!important}
+.er-stage .card .cr{margin-top:40px!important;padding-top:30px!important;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;gap:18px!important}
+.er-stage .card .cr .r{padding:22px 24px!important;border-radius:14px!important}
+.er-stage .card .cr .r .rl{font-size:10.5px!important;margin-bottom:6px!important;letter-spacing:.09em!important}
+.er-stage .card .cr .r .rv{font-size:40px!important;letter-spacing:-.035em!important}
+/* general cards (panels) more air */
+.card{padding:24px 26px!important}
+.card .ct{font-size:16px!important;margin-bottom:2px!important}
+.card .cd{margin:4px 0 0!important}
+.card .ci{margin-top:18px!important;gap:14px!important}
+.card .cr{margin-top:22px!important;padding-top:18px!important;gap:14px!important}
+.card .cr .r{padding:16px 18px!important}
+.card .cr .r .rv{font-size:24px!important}
+/* hero more breathing room */
+.ehero{padding:90px 24px 56px!important}
+.ehero h1{margin-top:22px!important}
+.ehero .estats{margin-top:40px!important}
+.wrap{padding-bottom:120px!important}
+
+/* ===== EDITORIAL — break the spreadsheet feel (hierarchy + air) ===== */
+.sec{margin-top:60px!important}
+.flag{margin-bottom:26px!important}
+.flag .top{padding:18px 28px!important}
+.flag .top .t{font-size:19px!important;letter-spacing:-.02em!important}
+.flag .body,.flag .inputs,.flag .out{padding:26px 28px!important}
+.gtab td,.gtab th{padding:11px 12px!important}
+/* Engine Room stage = editorial, not a form-grid */
+.er-title{margin:72px 0 24px!important}
+.er-title h2{font-size:clamp(26px,3.4vw,40px)!important;letter-spacing:-.025em!important}
+.er-stage .card{padding:46px 52px 44px!important}
+.er-stage .card .ct{font-size:34px!important;letter-spacing:-.025em!important}
+.er-stage .card .cd{font-size:15px!important;max-width:600px!important;margin-top:10px!important;line-height:1.55!important}
+.er-stage .card .ci{margin-top:34px!important;gap:20px!important;max-width:720px}
+.er-stage .card .ci .fld label{font-size:10px!important;letter-spacing:.09em!important;text-transform:uppercase!important;color:#9aa0aa!important}
+.er-stage .card .ci .fld input,.er-stage .card .ci .fld select,.er-stage .card .ci .fld textarea{font-size:16px!important;padding:13px 15px!important}
+.er-stage .card .cr{margin-top:40px!important;padding-top:34px!important;gap:18px!important;border-top:1px solid var(--line)!important}
+/* the first result becomes a HERO number; the rest are quiet secondary tiles */
+.er-stage .card .cr .r:first-child{grid-column:1 / -1!important;background:transparent!important;border:0!important;padding:0 0 6px!important;gap:8px!important}
+.er-stage .card .cr .r:first-child .rl{font-size:11px!important;letter-spacing:.12em!important;color:#9aa0aa!important}
+.er-stage .card .cr .r:first-child .rv{font-size:64px!important;letter-spacing:-.035em!important;line-height:.95!important}
+.er-stage .card .cr .r:not(:first-child){background:#fafafb!important;border:1px solid var(--line)!important;padding:14px 16px!important}
+.er-stage .card .cr .r:not(:first-child) .rv{font-size:22px!important}
 </style>
 </head>
 <body>
