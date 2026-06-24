@@ -1591,8 +1591,12 @@ function drawMCHist(){
   var bars='';
   for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0, x=pad+i*bw, binMid=lo+(i+0.5)/nb*(hi-lo), col=binMid>=p.S?'#0a9d63':'#e0483d';
     bars+='<rect x="'+x.toFixed(1)+'" y="'+(H-pad-h).toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.55"/>'; }
-  function vline(xv,c,lab){ var X=px(xv); if(X<pad||X>W-pad) return ''; return '<line x1="'+X.toFixed(1)+'" y1="'+pad+'" x2="'+X.toFixed(1)+'" y2="'+(H-pad)+'" stroke="'+c+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+X.toFixed(1)+'" y="'+(pad-4)+'" font-size="9" fill="'+c+'" text-anchor="middle" font-family="JetBrains Mono,monospace">'+lab+'</text>'; }
-  document.getElementById('mc_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+vline(p.S,'#635bff','spot')+vline(sim.p50,'#1a1c22','median')+vline(sim.p5,'#e0483d','5%')+vline(sim.p95,'#0a9d63','95%')+'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(15,17,22,0.10)"/></svg>';
+  var marks=[{x:p.S,c:'#635bff',lab:'spot'},{x:sim.p50,c:'#1a1c22',lab:'median'},{x:sim.p5,c:'#e0483d',lab:'5%'},{x:sim.p95,c:'#0a9d63',lab:'95%'}]
+    .map(function(m){ m.X=px(m.x); return m; }).filter(function(m){ return m.X>=pad&&m.X<=W-pad; }).sort(function(a,b){ return a.X-b.X; });
+  var lvlLast=[-1e9,-1e9];
+  marks.forEach(function(m){ var lvl=0; if(m.X-lvlLast[0]<40){ lvl=1; if(m.X-lvlLast[1]<40) lvl=0; } lvlLast[lvl]=m.X; m.lvl=lvl; });
+  var vl=marks.map(function(m){ var ly=pad-5-m.lvl*11; return '<line x1="'+m.X.toFixed(1)+'" y1="'+pad+'" x2="'+m.X.toFixed(1)+'" y2="'+(H-pad)+'" stroke="'+m.c+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+m.X.toFixed(1)+'" y="'+ly+'" font-size="9" fill="'+m.c+'" text-anchor="middle" font-family="Geist Mono,monospace">'+m.lab+'</text>'; }).join('');
+  document.getElementById('mc_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+vl+'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(15,17,22,0.10)"/></svg>';
   document.getElementById('mc_metrics').innerHTML=
     '<div class="r"><div class="rl">Median</div><div class="rv">'+fmt(sim.p50,2)+'</div></div>'+
     '<div class="r"><div class="rl">90% range</div><div class="rv">'+fmt(sim.p5,1)+'–'+fmt(sim.p95,1)+'</div></div>'+
@@ -1822,14 +1826,14 @@ function drawStress(){
     .map(function(a){return {name:(a[0]||'').trim(),cls:(a[1]||'').trim(),value:parseFloat(a[2])};});
   if(!pos.length){ document.getElementById('ss_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter positions.</span>'; document.getElementById('ss_metrics').innerHTML=''; return; }
   var res=SCENARIOS.map(function(sc){ var r=Q.stressTest(pos,sc.r); return {name:sc.name, pnl:r.pnl, pct:r.pnlPct}; });
-  var W=520,H=235,padL=110,padR=60,padV=14, n=res.length, rowH=(H-2*padV)/n;
+  var W=560,H=235,padL=120,padR=82,padV=14, n=res.length, rowH=(H-2*padV)/n;
   var mx=Math.max.apply(null,res.map(function(r){return Math.abs(r.pct);}))||0.01;
   var zeroX=padL+(W-padL-padR)*0.5;
   function bw(pct){ return (pct/mx)*((W-padL-padR)/2); }
-  var bars=res.map(function(r,i){ var y=padV+i*rowH+rowH*0.18, h=rowH*0.64; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#e0483d':'#0a9d63';
-    return '<text x="'+(padL-8)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10.5" fill="#5f6672" text-anchor="end">'+r.name+'</text>'+
-      '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.abs(w).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.7" rx="2"/>'+
-      '<text x="'+(w<0?(x-4):(x+Math.abs(w)+4)).toFixed(1)+'" y="'+(y+h*0.7).toFixed(1)+'" font-size="10" fill="'+col+'" text-anchor="'+(w<0?'end':'start')+'" font-family="JetBrains Mono,monospace">'+(r.pct*100).toFixed(1)+'%</text>'; }).join('');
+  var bars=res.map(function(r,i){ var y=padV+i*rowH+rowH*0.18, h=rowH*0.64; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#e0483d':'#0a9d63'; var ty=(y+h*0.72).toFixed(1);
+    return '<text x="'+(padL-10)+'" y="'+ty+'" font-size="11" fill="#5f6672" text-anchor="end">'+r.name+'</text>'+
+      '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.abs(w).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.78" rx="2"/>'+
+      '<text x="'+(W-8)+'" y="'+ty+'" font-size="10.5" fill="'+col+'" text-anchor="end" font-variant-numeric="tabular-nums" font-family="Geist Mono,monospace">'+(r.pct>=0?'+':'')+(r.pct*100).toFixed(1)+'%</text>'; }).join('');
   document.getElementById('ss_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+zeroX+'" y1="'+padV+'" x2="'+zeroX+'" y2="'+(H-padV)+'" stroke="rgba(15,17,22,0.10)"/>'+bars+'</svg>';
   var worst=res.reduce(function(a,b){return b.pct<a.pct?b:a;});
   var tot=pos.reduce(function(a,b){return a+b.value;},0);
