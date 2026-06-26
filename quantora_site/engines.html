@@ -2601,7 +2601,7 @@ buildCard(document.getElementById('g_risk'),{
 <script>
 /* QUANTORA · accounts + cloud watchlist sync (Supabase). Dormant until QSB keys are set. */
 (function(){
-  var QSB={ url:'', anon:'' };   // <-- paste your Supabase Project URL + anon (publishable) key to activate
+  var QSB={ url:'https://vsbwxpxunjfeflnlpgnz.supabase.co', anon:'sb_publishable_jjaw0zEnO8iCgX-RBPjLtg_t40ZJgXX' };
   if(!QSB.url || !QSB.anon) return;   // no keys → local-only watchlist, no sign-in UI (no dead state)
   function mountAcct(html){ var slot=document.getElementById('qhome_acct'); if(slot) slot.innerHTML=html; }
   import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm').then(function(m){
