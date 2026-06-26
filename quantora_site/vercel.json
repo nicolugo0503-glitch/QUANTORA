@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/stock/:sym", "destination": "/api/stock?sym=:sym" }
+    { "source": "/stock/:sym", "destination": "/api/fmp?type=stock&symbol=:sym" }
   ]
 }
