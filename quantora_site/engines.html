@@ -717,6 +717,17 @@ body.app-shell .er-stage>.qhome{max-width:1120px}
 .qp-cell.tick-down{animation:qtick-down .85s ease}
 @media(prefers-reduced-motion:reduce){.qhome-status .dot.live{animation:none}.qp-cell.tick-up,.qp-cell.tick-down{animation:none}}
 
+
+/* watchlist stars + account */
+.qstar{background:none;border:0;cursor:pointer;font-size:13px;line-height:1;color:var(--faint);padding:0 2px;vertical-align:baseline;transition:color .15s,transform .1s}
+.qstar:hover{color:var(--acc);transform:scale(1.15)}
+.qstar.on{color:#f0a020}
+.qmv-row .qstar{margin-right:2px}
+.qhome-wl-hint{font-size:12.5px;color:var(--mut);border:1px dashed var(--line);border-radius:12px;padding:14px 16px;margin-bottom:30px}
+#qhome_acct{margin-left:8px}
+.qacct-btn{font:500 11px/1 var(--mono,'Geist Mono',monospace);text-transform:none;letter-spacing:0;color:var(--acc);background:var(--acc-weak,#eeedff);border:1px solid rgba(99,91,255,.25);border-radius:999px;padding:4px 10px;cursor:pointer}
+.qacct-btn:hover{background:#e7e6ff}
+
 </style>
 </head>
 <body>
@@ -2378,6 +2389,9 @@ buildCard(document.getElementById('g_risk'),{
       +'<div class="qhome-pulse" id="qhome_pulse"></div>'
       +'<div class="qhome-sec-label" id="qhome_mkt_lbl" style="display:none">Markets</div>'
       +'<div class="qhome-tape" id="qhome_tape"></div>'
+      +'<div class="qhome-sec-label" id="qhome_wl_lbl" style="display:none">Watchlist <span id="qhome_acct"></span></div>'
+      +'<div class="qhome-tape" id="qhome_wl"></div>'
+      +'<div class="qhome-wl-hint" id="qhome_wl_hint" style="display:none">Tap the ☆ on any market tile to track it here — saved on this device, and synced to your account once you sign in.</div>'
       +'<div class="qhome-sec-label">Featured engines</div>'
       +'<div class="qhome-grid" id="qhome_featured"></div>'
       +'<div class="qhome-sec-label" id="qhome_mv_lbl" style="display:none">Top movers</div>'
@@ -2460,12 +2474,35 @@ buildCard(document.getElementById('g_risk'),{
       host.innerHTML=tiles.map(function(t){ return '<div class="qp-cell"><div class="qp-l">'+t[0]+'</div><div class="qp-v '+(t[2]||'')+'">'+t[1]+'</div></div>'; }).join('');
     }).catch(function(){ host.style.display='none'; });
   }
+  var WL=(function(){ var KEY='qwl_v1', subs=[];
+    function get(){ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } }
+    function save(a){ try{ localStorage.setItem(KEY,JSON.stringify(a)); }catch(e){} subs.forEach(function(f){ try{f(a);}catch(_){} }); if(window.__wlSync) window.__wlSync(a); }
+    return { list:get,
+      has:function(sm){ return get().some(function(x){ return x.sym===sm; }); },
+      toggle:function(sm,nm){ var a=get(), i=-1; for(var k=0;k<a.length;k++){ if(a[k].sym===sm){i=k;break;} } if(i>=0) a.splice(i,1); else a.push({sym:sm,name:nm||sm}); save(a); },
+      setAll:function(a){ save(a||[]); }, onChange:function(f){ subs.push(f); } };
+  })();
+  window.__WL=WL;
+  function updateStars(){ [].forEach.call(document.querySelectorAll('.qstar'),function(b){ var on=WL.has(b.getAttribute('data-sym')); b.classList.toggle('on',on); b.textContent=on?'★':'☆'; }); }
+  document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.qstar'); if(!b) return; e.preventDefault(); e.stopPropagation(); WL.toggle(b.getAttribute('data-sym'),b.getAttribute('data-name')); });
+  var wlTiles={};
+  function renderWatchlist(){ var host=document.getElementById('qhome_wl'), lbl=document.getElementById('qhome_wl_lbl'), hint=document.getElementById('qhome_wl_hint'); if(!host) return;
+    var items=WL.list(); if(lbl) lbl.style.display='';
+    if(!items.length){ host.innerHTML=''; wlTiles={}; if(hint) hint.style.display=''; return; }
+    if(hint) hint.style.display='none';
+    var syms=items.map(function(i){return i.sym;});
+    Object.keys(wlTiles).forEach(function(sm){ if(syms.indexOf(sm)<0){ if(wlTiles[sm].el.parentNode) wlTiles[sm].el.remove(); delete wlTiles[sm]; } });
+    items.forEach(function(it){ if(!wlTiles[it.sym]){ var el=document.createElement('div'); el.className='qp-cell'; el.innerHTML='<div class="qp-l">'+it.name+' <button class="qstar on" data-sym="'+it.sym+'" data-name="'+it.name+'" aria-label="Remove">★</button></div><div class="qp-v">—</div><div class="qp-chg"></div>'; host.appendChild(el); wlTiles[it.sym]={el:el,last:null}; } });
+    var qi=0; (function next(){ if(qi>=items.length) return; var it=items[qi++]; fetch('/api/fmp?type=quote&symbol='+it.sym).then(function(r){return r.json();}).then(function(j){ var d=j.data; d=Array.isArray(d)?d[0]:d; var t=wlTiles[it.sym]; if(d&&d.price!=null&&t){ t.el.querySelector('.qp-v').textContent=fmtPx(d.price); var up=(d.changePercentage||0)>=0, c=t.el.querySelector('.qp-chg'); c.textContent=(up?'+':'')+(d.changePercentage!=null?d.changePercentage.toFixed(2):'0.00')+'%'; c.className='qp-chg '+(up?'up':'down'); if(t.last!=null&&d.price!==t.last){ var dir=d.price>t.last?'tick-up':'tick-down'; t.el.classList.remove('tick-up','tick-down'); void t.el.offsetWidth; t.el.classList.add(dir); } t.last=d.price; } }).catch(function(){}).then(function(){ setTimeout(next,180); }); })();
+  }
+  window.__renderWatchlist=renderWatchlist;
+  WL.onChange(function(){ updateStars(); renderWatchlist(); });
   var MKT_ASSETS=[['SPY','S&P 500'],['AAPL','Apple'],['MSFT','Microsoft'],['NVDA','Nvidia'],['AMZN','Amazon'],['META','Meta'],['BTCUSD','Bitcoin'],['ETHUSD','Ethereum']];
   var mktTiles={}, mktTimer=null, mktDone=false;
   function fmtPx(p){ return p>=1000?p.toLocaleString('en-US',{maximumFractionDigits:0}):p.toFixed(2); }
   function stampLive(){ var el=document.getElementById('qhome_live'); if(el){ el.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour12:false}); } }
   function updateTile(tape,a,d){ var sym=a[0], price=d.price, chg=d.changePercentage, t=mktTiles[sym];
-    if(!t){ var el=document.createElement('div'); el.className='qp-cell'; el.innerHTML='<div class="qp-l">'+a[1]+'</div><div class="qp-v"></div><div class="qp-chg"></div>'; tape.appendChild(el); t=mktTiles[sym]={el:el,last:null}; var lbl=document.getElementById('qhome_mkt_lbl'); if(lbl) lbl.style.display=''; }
+    if(!t){ var el=document.createElement('div'); el.className='qp-cell'; el.innerHTML='<div class="qp-l">'+a[1]+' <button class="qstar" data-sym="'+sym+'" data-name="'+a[1]+'" aria-label="Track">'+(WL.has(sym)?'\u2605':'\u2606')+'</button></div><div class="qp-v"></div><div class="qp-chg"></div>'; if(WL.has(sym)) el.querySelector('.qstar').classList.add('on'); tape.appendChild(el); t=mktTiles[sym]={el:el,last:null}; var lbl=document.getElementById('qhome_mkt_lbl'); if(lbl) lbl.style.display=''; }
     t.el.querySelector('.qp-v').textContent=fmtPx(price);
     var cEl=t.el.querySelector('.qp-chg'); var up=(chg||0)>=0; cEl.textContent=(up?'+':'')+(chg!=null?chg.toFixed(2):'0.00')+'%'; cEl.className='qp-chg '+(up?'up':'down');
     if(t.last!=null && price!==t.last){ var dir=price>t.last?'tick-up':'tick-down'; t.el.classList.remove('tick-up','tick-down'); void t.el.offsetWidth; t.el.classList.add(dir); }
@@ -2476,11 +2513,11 @@ buildCard(document.getElementById('g_risk'),{
   }
   function loadMovers(){ var mv=document.getElementById('qhome_movers'); if(!mv) return;
     fetch('/api/fmp?type=gainers').then(function(r){return r.json();}).then(function(j){ var d=j.data; if(!Array.isArray(d)||!d.length) return; var top=d.slice(0,6);
-      mv.innerHTML=top.map(function(g){ var c=g.changesPercentage!=null?g.changesPercentage:g.changePercentage; return '<a class="qmv-row" href="intel.html?sym='+g.symbol+'"><span class="qmv-sym">'+g.symbol+'</span><span class="qmv-nm">'+((g.name||'').slice(0,22))+'</span><span class="qmv-chg up">+'+(c!=null?c.toFixed(1):'0.0')+'%</span></a>'; }).join('');
+      mv.innerHTML=top.map(function(g){ var c=g.changesPercentage!=null?g.changesPercentage:g.changePercentage; return '<a class="qmv-row" href="intel.html?sym='+g.symbol+'"><button class="qstar'+(WL.has(g.symbol)?' on':'')+'" data-sym="'+g.symbol+'" data-name="'+g.symbol+'" aria-label="Track">'+(WL.has(g.symbol)?'\u2605':'\u2606')+'</button><span class="qmv-sym">'+g.symbol+'</span><span class="qmv-nm">'+((g.name||'').slice(0,22))+'</span><span class="qmv-chg up">+'+(c!=null?c.toFixed(1):'0.0')+'%</span></a>'; }).join('');
       var l=document.getElementById('qhome_mv_lbl'); if(l) l.style.display=''; }).catch(function(){});
   }
-  function startMktPolling(){ if(mktTimer) return; mktTimer=setInterval(function(){ if(document.visibilityState!=='visible') return; var tape=document.getElementById('qhome_tape'); if(!tape||!tape.offsetParent) return; loadTape(); }, 60000); }
-  function populateMarkets(){ if(mktDone) return; mktDone=true; loadTape(); loadMovers(); startMktPolling(); }
+  function startMktPolling(){ if(mktTimer) return; mktTimer=setInterval(function(){ if(document.visibilityState!=='visible') return; var tape=document.getElementById('qhome_tape'); if(!tape||!tape.offsetParent) return; loadTape(); renderWatchlist(); }, 60000); }
+  function populateMarkets(){ if(mktDone) return; mktDone=true; loadTape(); loadMovers(); renderWatchlist(); startMktPolling(); }
 
   window.__qnav={bySlug:bySlug,groups:groups,order:order,recents:recents};
   document.body.classList.add('app-shell');
@@ -2561,5 +2598,27 @@ buildCard(document.getElementById('g_risk'),{
 })();
 </script>
 
+<script>
+/* QUANTORA · accounts + cloud watchlist sync (Supabase). Dormant until QSB keys are set. */
+(function(){
+  var QSB={ url:'', anon:'' };   // <-- paste your Supabase Project URL + anon (publishable) key to activate
+  if(!QSB.url || !QSB.anon) return;   // no keys → local-only watchlist, no sign-in UI (no dead state)
+  function mountAcct(html){ var slot=document.getElementById('qhome_acct'); if(slot) slot.innerHTML=html; }
+  import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm').then(function(m){
+    var sb=m.createClient(QSB.url,QSB.anon); window.__sb=sb; var USER=null;
+    function merge(cloud,local){ var map={}; (cloud||[]).concat(local||[]).forEach(function(x){ if(x&&x.sym) map[x.sym]=x; }); return Object.keys(map).map(function(k){return map[k];}); }
+    function bindSync(){ window.__wlSync=function(a){ if(USER) sb.from('watchlists').upsert({user_id:USER.id,symbols:a,updated_at:new Date().toISOString()}); }; }
+    function onAuth(session){ USER=session&&session.user||null;
+      if(USER){ mountAcct('<button class="qacct-btn" id="qacct_out">Sign out</button>');
+        sb.from('watchlists').select('symbols').eq('user_id',USER.id).maybeSingle().then(function(res){ var cloud=(res&&res.data&&res.data.symbols)||[]; var merged=merge(cloud, window.__WL?window.__WL.list():[]); bindSync(); if(window.__WL){ window.__WL.setAll(merged); } });
+        var o=document.getElementById('qacct_out'); if(o) o.onclick=function(){ sb.auth.signOut(); };
+      } else { window.__wlSync=null; mountAcct('<button class="qacct-btn" id="qacct_in">Sign in to sync</button>'); var i=document.getElementById('qacct_in'); if(i) i.onclick=openAuth; }
+    }
+    function openAuth(){ var em=prompt('Enter your email — we’ll send a magic sign-in link:'); if(!em) return; sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.href}}).then(function(r){ alert(r.error?('Could not send link: '+r.error.message):'Check your email for a sign-in link.'); }); }
+    sb.auth.getSession().then(function(r){ onAuth(r.data.session); });
+    sb.auth.onAuthStateChange(function(_e,session){ onAuth(session); });
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>
