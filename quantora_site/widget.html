@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantora widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#14161c;--mut:#6b7280;--faint:#9aa1ad;--line:rgba(17,24,39,.10);--up:#0f9d63;--down:#d6453d;--acc:#635bff;--bg:#fff}
+  html,body{margin:0;background:transparent}
+  *{box-sizing:border-box}
+  .w{font-family:'Geist',system-ui,sans-serif;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px 16px 10px;max-width:340px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .nm{font-size:13px;font-weight:600;color:var(--ink);line-height:1.2}.tk{font-family:'Geist Mono',monospace;font-size:11px;color:var(--faint)}
+  .px{font-family:'Geist Mono',monospace;font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--ink);text-align:right}
+  .chg{font-family:'Geist Mono',monospace;font-size:12px;text-align:right;margin-top:1px}.up{color:var(--up)}.down{color:var(--down)}
+  svg{display:block;width:100%;height:44px;margin:8px 0 4px}
+  .ft{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:7px;margin-top:4px}
+  .ft a{font-size:10.5px;color:var(--faint);text-decoration:none;display:flex;align-items:center;gap:5px}.ft a:hover{color:var(--acc)}
+  .qq{width:14px;height:14px;border-radius:4px;background:#000;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:9px;font-family:'Geist',sans-serif}
+  .err{font-family:'Geist',sans-serif;color:var(--mut);font-size:12px;padding:18px}
+</style></head>
+<body><div id="root" class="w"><div class="err">Loading…</div></div>
+<script>
+(function(){
+  var p=new URLSearchParams(location.search);
+  var sym=(p.get('sym')||p.get('symbol')||'AAPL').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,12);
+  var base='https://www.usequantora.com';
+  function n(v,d){d=d==null?2:d;return v==null||isNaN(v)?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+  function spark(closes){ if(!closes||closes.length<5)return ''; var lo=Math.min.apply(null,closes),hi=Math.max.apply(null,closes); if(hi-lo<1e-9)hi=lo+1; var W=320,H=44,pd=2,nn=closes.length; function X(i){return pd+i/(nn-1)*(W-2*pd);} function Y(v){return H-pd-(v-lo)/(hi-lo)*(H-2*pd);} var d=closes.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' '); var up=closes[nn-1]>=closes[0]; var c=up?'#0f9d63':'#d6453d'; return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/></svg>'; }
+  function render(q,closes){
+    var chg=q.changePercentage!=null?q.changePercentage:q.changesPercentage; var up=(chg||0)>=0; var name=(q.name||sym);
+    document.getElementById('root').innerHTML=
+      '<div class="top"><div><div class="nm">'+name.slice(0,26)+'</div><div class="tk">'+sym+'</div></div>'+
+      '<div><div class="px">$'+n(q.price)+'</div><div class="chg '+(up?'up':'down')+'">'+(up?'+':'')+n(chg)+'% today</div></div></div>'+
+      spark(closes)+
+      '<div class="ft"><a href="'+base+'/stock/'+sym+'" target="_blank" rel="noopener"><span class="qq">Q</span> Quantora</a><a href="'+base+'/stock/'+sym+'" target="_blank" rel="noopener">View analysis →</a></div>';
+  }
+  Promise.all([
+    fetch(base+'/api/fmp?type=quote&symbol='+sym).then(function(r){return r.json();}).catch(function(){return null;}),
+    fetch(base+'/api/fmp?type=prices&symbol='+sym).then(function(r){return r.json();}).catch(function(){return null;})
+  ]).then(function(res){
+    var q=res[0]&&res[0].data; q=Array.isArray(q)?q[0]:q;
+    if(!q||q.price==null){ document.getElementById('root').innerHTML='<div class="err">No data for '+sym+'</div>'; return; }
+    var pr=res[1]&&res[1].data; var arr=Array.isArray(pr)?pr:(pr&&pr.historical?pr.historical:[]);
+    var closes=(arr||[]).slice(0,90).map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();
+    render(q,closes);
+  });
+})();
+</script>
+</body></html>
