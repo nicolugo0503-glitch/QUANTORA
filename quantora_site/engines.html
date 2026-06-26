@@ -707,6 +707,16 @@ body.app-shell .er-stage>.qhome{max-width:1120px}
 .qmv-nm{color:var(--mut);font-size:12px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .qmv-chg{font-family:var(--mono,'Geist Mono',monospace);font-size:12px;font-variant-numeric:tabular-nums}
 
+
+/* LIVE indicator + tick flash */
+.qhome-status .dot.live{animation:qpulse 1.8s ease-in-out infinite}
+@keyframes qpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+@keyframes qtick-up{0%{background:rgba(15,157,99,.20)}100%{background:#fff}}
+@keyframes qtick-down{0%{background:rgba(214,69,61,.20)}100%{background:#fff}}
+.qp-cell.tick-up{animation:qtick-up .85s ease}
+.qp-cell.tick-down{animation:qtick-down .85s ease}
+@media(prefers-reduced-motion:reduce){.qhome-status .dot.live{animation:none}.qp-cell.tick-up,.qp-cell.tick-down{animation:none}}
+
 </style>
 </head>
 <body>
@@ -2364,7 +2374,7 @@ buildCard(document.getElementById('g_risk'),{
     el.innerHTML=''
       +'<div class="qhome-head"><div><div class="qhome-eyb">Quantora Terminal</div>'
       +'<h2>'+greet+'.</h2><p class="qhome-sub">96 verified engines — options &amp; Greeks, risk, macro, credit, valuation. One workspace, computed live. Pick an engine from the rail, or press <kbd>⌘K</kbd>.</p></div>'
-      +'<span class="qhome-status"><span class="dot"></span>'+dstr+'</span></div>'
+      +'<span class="qhome-status"><span class="dot live"></span><span id="qhome_live">Live</span><span style="color:var(--faint)"> · '+dstr+'</span></span></div>'
       +'<div class="qhome-pulse" id="qhome_pulse"></div>'
       +'<div class="qhome-sec-label" id="qhome_mkt_lbl" style="display:none">Markets</div>'
       +'<div class="qhome-tape" id="qhome_tape"></div>'
@@ -2450,18 +2460,27 @@ buildCard(document.getElementById('g_risk'),{
       host.innerHTML=tiles.map(function(t){ return '<div class="qp-cell"><div class="qp-l">'+t[0]+'</div><div class="qp-v '+(t[2]||'')+'">'+t[1]+'</div></div>'; }).join('');
     }).catch(function(){ host.style.display='none'; });
   }
-  var mktDone=false;
-  function populateMarkets(){ if(mktDone) return; mktDone=true;
-    var tape=document.getElementById('qhome_tape');
-    var assets=[['SPY','S&P 500'],['AAPL','Apple'],['MSFT','Microsoft'],['NVDA','Nvidia'],['AMZN','Amazon'],['META','Meta'],['BTCUSD','Bitcoin'],['ETHUSD','Ethereum']];
-    if(tape){ var rows=[];
-      function renderTape(){ if(!rows.length) return; tape.innerHTML=rows.map(function(r){ var up=(r.chg||0)>=0; var pv=r.price>=1000?r.price.toLocaleString('en-US',{maximumFractionDigits:0}):r.price.toFixed(2); return '<div class="qp-cell"><div class="qp-l">'+r.lab+'</div><div class="qp-v">'+pv+'</div><div class="qp-chg '+(up?'up':'down')+'">'+(up?'+':'')+(r.chg!=null?r.chg.toFixed(2):'0.00')+'%</div></div>'; }).join(''); var l=document.getElementById('qhome_mkt_lbl'); if(l) l.style.display=''; }
-      var qi=0; (function next(){ if(qi>=assets.length) return; var a=assets[qi++]; fetch('/api/fmp?type=quote&symbol='+a[0]).then(function(r){return r.json();}).then(function(j){ var d=j.data; d=Array.isArray(d)?d[0]:d; if(d&&d.price!=null){ rows.push({lab:a[1],price:d.price,chg:d.changePercentage}); renderTape(); } }).catch(function(){}).then(function(){ setTimeout(next,200); }); })(); }
-    var mv=document.getElementById('qhome_movers');
-    if(mv){ fetch('/api/fmp?type=gainers').then(function(r){return r.json();}).then(function(j){ var d=j.data; if(!Array.isArray(d)||!d.length) return; var top=d.slice(0,6);
-      mv.innerHTML=top.map(function(g){ var c=g.changesPercentage!=null?g.changesPercentage:g.changePercentage; return '<a class="qmv-row" href="intel.html?sym='+g.symbol+'"><span class="qmv-sym">'+g.symbol+'</span><span class="qmv-nm">'+((g.name||'').slice(0,22))+'</span><span class="qmv-chg up">+'+(c!=null?c.toFixed(1):'0.0')+'%</span></a>'; }).join('');
-      var l=document.getElementById('qhome_mv_lbl'); if(l) l.style.display=''; }).catch(function(){}); }
+  var MKT_ASSETS=[['SPY','S&P 500'],['AAPL','Apple'],['MSFT','Microsoft'],['NVDA','Nvidia'],['AMZN','Amazon'],['META','Meta'],['BTCUSD','Bitcoin'],['ETHUSD','Ethereum']];
+  var mktTiles={}, mktTimer=null, mktDone=false;
+  function fmtPx(p){ return p>=1000?p.toLocaleString('en-US',{maximumFractionDigits:0}):p.toFixed(2); }
+  function stampLive(){ var el=document.getElementById('qhome_live'); if(el){ el.textContent='Live · '+new Date().toLocaleTimeString('en-US',{hour12:false}); } }
+  function updateTile(tape,a,d){ var sym=a[0], price=d.price, chg=d.changePercentage, t=mktTiles[sym];
+    if(!t){ var el=document.createElement('div'); el.className='qp-cell'; el.innerHTML='<div class="qp-l">'+a[1]+'</div><div class="qp-v"></div><div class="qp-chg"></div>'; tape.appendChild(el); t=mktTiles[sym]={el:el,last:null}; var lbl=document.getElementById('qhome_mkt_lbl'); if(lbl) lbl.style.display=''; }
+    t.el.querySelector('.qp-v').textContent=fmtPx(price);
+    var cEl=t.el.querySelector('.qp-chg'); var up=(chg||0)>=0; cEl.textContent=(up?'+':'')+(chg!=null?chg.toFixed(2):'0.00')+'%'; cEl.className='qp-chg '+(up?'up':'down');
+    if(t.last!=null && price!==t.last){ var dir=price>t.last?'tick-up':'tick-down'; t.el.classList.remove('tick-up','tick-down'); void t.el.offsetWidth; t.el.classList.add(dir); }
+    t.last=price;
   }
+  function loadTape(){ var tape=document.getElementById('qhome_tape'); if(!tape) return; var qi=0;
+    (function next(){ if(qi>=MKT_ASSETS.length){ stampLive(); return; } var a=MKT_ASSETS[qi++]; fetch('/api/fmp?type=quote&symbol='+a[0]).then(function(r){return r.json();}).then(function(j){ var d=j.data; d=Array.isArray(d)?d[0]:d; if(d&&d.price!=null) updateTile(tape,a,d); }).catch(function(){}).then(function(){ setTimeout(next,180); }); })();
+  }
+  function loadMovers(){ var mv=document.getElementById('qhome_movers'); if(!mv) return;
+    fetch('/api/fmp?type=gainers').then(function(r){return r.json();}).then(function(j){ var d=j.data; if(!Array.isArray(d)||!d.length) return; var top=d.slice(0,6);
+      mv.innerHTML=top.map(function(g){ var c=g.changesPercentage!=null?g.changesPercentage:g.changePercentage; return '<a class="qmv-row" href="intel.html?sym='+g.symbol+'"><span class="qmv-sym">'+g.symbol+'</span><span class="qmv-nm">'+((g.name||'').slice(0,22))+'</span><span class="qmv-chg up">+'+(c!=null?c.toFixed(1):'0.0')+'%</span></a>'; }).join('');
+      var l=document.getElementById('qhome_mv_lbl'); if(l) l.style.display=''; }).catch(function(){});
+  }
+  function startMktPolling(){ if(mktTimer) return; mktTimer=setInterval(function(){ if(document.visibilityState!=='visible') return; var tape=document.getElementById('qhome_tape'); if(!tape||!tape.offsetParent) return; loadTape(); }, 60000); }
+  function populateMarkets(){ if(mktDone) return; mktDone=true; loadTape(); loadMovers(); startMktPolling(); }
 
   window.__qnav={bySlug:bySlug,groups:groups,order:order,recents:recents};
   document.body.classList.add('app-shell');
