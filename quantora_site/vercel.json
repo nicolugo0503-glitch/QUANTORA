@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/stock/:sym", "destination": "/api/stock?sym=:sym" }
+  ]
+}

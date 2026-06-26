@@ -2513,7 +2513,7 @@ buildCard(document.getElementById('g_risk'),{
   }
   function loadMovers(){ var mv=document.getElementById('qhome_movers'); if(!mv) return;
     fetch('/api/fmp?type=gainers').then(function(r){return r.json();}).then(function(j){ var d=j.data; if(!Array.isArray(d)||!d.length) return; var top=d.slice(0,6);
-      mv.innerHTML=top.map(function(g){ var c=g.changesPercentage!=null?g.changesPercentage:g.changePercentage; return '<a class="qmv-row" href="intel.html?sym='+g.symbol+'"><button class="qstar'+(WL.has(g.symbol)?' on':'')+'" data-sym="'+g.symbol+'" data-name="'+g.symbol+'" aria-label="Track">'+(WL.has(g.symbol)?'\u2605':'\u2606')+'</button><span class="qmv-sym">'+g.symbol+'</span><span class="qmv-nm">'+((g.name||'').slice(0,22))+'</span><span class="qmv-chg up">+'+(c!=null?c.toFixed(1):'0.0')+'%</span></a>'; }).join('');
+      mv.innerHTML=top.map(function(g){ var c=g.changesPercentage!=null?g.changesPercentage:g.changePercentage; return '<a class="qmv-row" href="/stock/'+g.symbol+'"><button class="qstar'+(WL.has(g.symbol)?' on':'')+'" data-sym="'+g.symbol+'" data-name="'+g.symbol+'" aria-label="Track">'+(WL.has(g.symbol)?'\u2605':'\u2606')+'</button><span class="qmv-sym">'+g.symbol+'</span><span class="qmv-nm">'+((g.name||'').slice(0,22))+'</span><span class="qmv-chg up">+'+(c!=null?c.toFixed(1):'0.0')+'%</span></a>'; }).join('');
       var l=document.getElementById('qhome_mv_lbl'); if(l) l.style.display=''; }).catch(function(){});
   }
   function startMktPolling(){ if(mktTimer) return; mktTimer=setInterval(function(){ if(document.visibilityState!=='visible') return; var tape=document.getElementById('qhome_tape'); if(!tape||!tape.offsetParent) return; loadTape(); renderWatchlist(); }, 60000); }
@@ -2554,7 +2554,7 @@ buildCard(document.getElementById('g_risk'),{
     [].forEach.call(list.querySelectorAll('.qpal-item'),function(el){ el.addEventListener('click',function(){ run(+el.getAttribute('data-i')); }); });
     var on=list.querySelector('.qpal-item.on'); if(on) on.scrollIntoView({block:'nearest'}); }
   function move(d){ var i=sel; for(var k=0;k<rows.length;k++){ i+=d; if(i<0)i=rows.length-1; if(i>=rows.length)i=0; if(rows[i]&&rows[i].it){ sel=i; paint(input.value); return; } } }
-  function run(i){ var r=rows[i]; if(!r||!r.it) return; close(); if(r.it.sym){ location.href='intel.html?sym='+encodeURIComponent(r.it.sym); } else { location.hash=r.it.slug; var st=document.getElementById('er_stage'); if(st) st.scrollIntoView({block:'start'}); } }
+  function run(i){ var r=rows[i]; if(!r||!r.it) return; close(); if(r.it.sym){ location.href='/stock/'+encodeURIComponent(r.it.sym); } else { location.hash=r.it.slug; var st=document.getElementById('er_stage'); if(st) st.scrollIntoView({block:'start'}); } }
   function open(){ ov.style.display='flex'; input.value=''; build(''); setTimeout(function(){ input.focus(); },10); }
   function close(){ ov.style.display='none'; }
   input.addEventListener('input',function(){ build(this.value); });
