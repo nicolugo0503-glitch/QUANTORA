@@ -1162,7 +1162,7 @@ function seriesViz(el,cfg,vBase){ var host=el.querySelector('.cchart'); if(!host
     +'<circle cx="'+dx+'" cy="'+dy+'" r="4.5" fill="#fff"/><circle cx="'+dx+'" cy="'+dy+'" r="3" fill="#635bff"/></svg>';
   return true;
 }
-function drawCardChart(el,cfg,vBase,out){ var host=el.querySelector('.cchart'); if(!host) return; if(!out||!out.length){ host.innerHTML=''; return; }
+function drawCardChart(el,cfg,vBase,out){ var host=el.querySelector('.cchart'); if(!host) return; if(!el.closest||!el.closest('#er_stage')){ host.innerHTML=''; return; } if(!out||!out.length){ host.innerHTML=''; return; }
   var sw=pickSweep(cfg); if(!sw){ if(!seriesViz(el,cfg,vBase)) host.innerHTML=''; return; }
   var v0=parseFloat(vBase[sw.k]); if(!isFinite(v0)){ if(!seriesViz(el,cfg,vBase)) host.innerHTML=''; return; }
   var lo=v0>0?v0*0.5:(v0<0?v0*1.5:-1), hi=v0>0?v0*1.5:(v0<0?v0*0.5:1); if(lo>hi){ var t=lo; lo=hi; hi=t; } if(hi-lo<1e-9){ lo-=1; hi+=1; }
@@ -1209,6 +1209,7 @@ function buildCard(host,cfg){
     }).join('');
     try{ drawCardChart(el,cfg,v,out); }catch(e){ var hh=el.querySelector('.cchart'); if(hh)hh.innerHTML=''; }
   }
+  el.__run=run;
   inEls.forEach(function(i){ i.addEventListener('input',run); });
   run();
 }
@@ -2367,7 +2368,7 @@ buildCard(document.getElementById('g_risk'),{
 
   var current=null;
   function doShow(node, slug){
-    var swap=function(){ if(current&&current!==node) holder.appendChild(current); if(node.classList) node.classList.remove('qreveal'); stage.innerHTML=''; stage.appendChild(node); current=node; markActive(slug); if(slug&&slug!=='home'){ pushRecent(slug); renderRecents(); } localStorage.setItem('qnav_last', slug||'home'); };
+    var swap=function(){ if(current&&current!==node) holder.appendChild(current); if(node.classList) node.classList.remove('qreveal'); stage.innerHTML=''; stage.appendChild(node); current=node; if(node.__run){ try{ node.__run(); }catch(_e){} } markActive(slug); if(slug&&slug!=='home'){ pushRecent(slug); renderRecents(); } localStorage.setItem('qnav_last', slug||'home'); };
     if(document.startViewTransition && !RM){ try{ document.startViewTransition(swap); }catch(e){ swap(); } } else swap();
   }
   function showSlug(slug){ if(slug==='home'||!bySlug[slug]){ doShow(home,'home'); populatePulse(); return; } doShow(bySlug[slug].node, slug); }
