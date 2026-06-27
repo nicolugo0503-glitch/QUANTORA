@@ -728,6 +728,9 @@ body.app-shell .er-stage>.qhome{max-width:1120px}
 .qacct-btn{font:500 11px/1 var(--mono,'Geist Mono',monospace);text-transform:none;letter-spacing:0;color:var(--acc);background:var(--acc-weak,#eeedff);border:1px solid rgba(99,91,255,.25);border-radius:999px;padding:4px 10px;cursor:pointer}
 .qacct-btn:hover{background:#e7e6ff}
 
+
+.er-pro{color:#635bff!important;font-weight:500!important;margin-bottom:4px}
+.er-pro:hover{background:var(--acc-weak,#eeedff)!important}
 </style>
 </head>
 <body>
@@ -2419,7 +2422,7 @@ buildCard(document.getElementById('g_risk'),{
 
   // ---- rail list ----
   var listEl=room.querySelector('#er_list'), stage=room.querySelector('#er_stage');
-  var html='<a class="er-item er-home" href="#home" data-slug="home"><span class="er-ico">⌂</span>Home</a>';
+  var html='<a class="er-item er-home" href="#home" data-slug="home"><span class="er-ico">⌂</span>Home</a><a class="er-item er-pro" id="er_pro" href="/pricing.html">✦ Upgrade to Pro</a>';
   html+='<div class="er-cat er-rec-lbl" style="display:none">Recent</div><div id="er_recents"></div>';
   order.forEach(function(cat){ html+='<div class="er-cat">'+cat+'<span class="er-ct">'+groups[cat].length+'</span></div>'; groups[cat].forEach(function(e){ html+='<a class="er-item" href="#'+e.slug+'" data-slug="'+e.slug+'">'+e.title+'</a>'; }); });
   listEl.innerHTML=html;
@@ -2609,7 +2612,7 @@ buildCard(document.getElementById('g_risk'),{
     function merge(cloud,local){ var map={}; (cloud||[]).concat(local||[]).forEach(function(x){ if(x&&x.sym) map[x.sym]=x; }); return Object.keys(map).map(function(k){return map[k];}); }
     function bindSync(){ window.__wlSync=function(a){ if(USER) sb.from('watchlists').upsert({user_id:USER.id,symbols:a,updated_at:new Date().toISOString()}); }; }
     function onAuth(session){ USER=session&&session.user||null;
-      if(USER){ mountAcct('<button class="qacct-btn" id="qacct_out">Sign out</button>');
+      if(USER){ mountAcct('<button class="qacct-btn" id="qacct_out">Sign out</button>'); sb.from('entitlements').select('pro,plan').eq('user_id',USER.id).maybeSingle().then(function(er){ window.QPRO={isPro:!!(er&&er.data&&er.data.pro),plan:er&&er.data&&er.data.plan}; var pe=document.getElementById('er_pro'); if(pe&&window.QPRO.isPro){ pe.textContent='✦ Pro active'; pe.style.opacity='.65'; pe.removeAttribute('href'); } }).catch(function(){});
         sb.from('watchlists').select('symbols').eq('user_id',USER.id).maybeSingle().then(function(res){ var cloud=(res&&res.data&&res.data.symbols)||[]; var merged=merge(cloud, window.__WL?window.__WL.list():[]); bindSync(); if(window.__WL){ window.__WL.setAll(merged); } });
         var o=document.getElementById('qacct_out'); if(o) o.onclick=function(){ sb.auth.signOut(); };
       } else { window.__wlSync=null; mountAcct('<button class="qacct-btn" id="qacct_in">Sign in to sync</button>'); var i=document.getElementById('qacct_in'); if(i) i.onclick=openAuth; }
