@@ -4,6 +4,7 @@ module.exports = async (req, res) => {
   const type = (req.query.type || '').toString();
   const sym = (req.query.symbol || req.query.sym || '').toString().replace(/[^A-Za-z0-9.\-]/g, '').toUpperCase().slice(0, 12);
   if (type === 'stock') { return renderStock(res, KEY, sym); }
+  if (type === 'engine') { return renderEngine(req, res); }
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900');
   if (!KEY) { res.status(200).json({ error: 'nokey' }); return; }
@@ -111,4 +112,33 @@ async function renderStock(res, KEY, sym) {
     '<div class="sec2">Embed this</div><div class="vnote" style="font-family:Geist Mono,monospace;font-size:12px;word-break:break-all">&lt;iframe src=\'https://www.usequantora.com/widget.html?sym=' + esc(sym) + '\' width=\'340\' height=\'150\' style=\'border:0\' loading=\'lazy\'&gt;&lt;/iframe&gt;</div>' +'<div class="sec2">More stocks</div><div class="rel">' + related + ' <a href="/directory.html">All stocks →</a></div>' +
     '<div class="foot">Figures computed at the edge from latest reported data via Financial Modeling Prep; quotes may be delayed. Standard published formulas (P/E, FCF yield, Graham number, Altman Z, DuPont). Mathematical tools for analysis & education — not investment advice. Quantora is not a registered investment adviser or broker-dealer.</div></div>';
   send(200, head, body);
+}
+
+
+// ===================== verified quant engine API (/api/v1/:fn -> /api/fmp?type=engine&fn=:fn) =====================
+function renderEngine(req, res){
+  res.setHeader('Access-Control-Allow-Origin','*');
+  res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');
+  var fn=(req.query.fn||'').toString();
+  var SPEC={
+    bsm:['S','K','T','r','q','sig'], greeks:['S','K','T','r','q','sig'], impliedVol:['price','S','K','T','r','q','isCall'],
+    crr:['S','K','T','r','q','sig','N','isCall','american'], black76:['F','K','T','r','sig'], garmanKohlhagen:['S','K','T','rd','rf','sig'],
+    bondPrice:['face','couponRate','yld','n','m'], ytm:['face','couponRate','price','n','m'], bondAnalytics:['face','couponRate','yld','n','m'], nelsonSiegel:['t','b0','b1','b2','tau'],
+    npv:['rate','@cfs'], irr:['@cfs'], merton:['V','D','sig','drift','T'], expectedLoss:['pd','lgd','ead'], pdFromSpread:['spread','recovery','T'],
+    taylorRule:['inflation','outputGap'], recessionProb:['tenY','threeM'],
+    histVaR:['@returns','conf'], histCVaR:['@returns','conf'], paramVaR:['@returns','conf'], annVol:['@returns','P'],
+    sharpe:['@returns','rfPeriod','P'], sortino:['@returns','mar','P'], maxDrawdown:['@returns'], beta:['@asset','@bench'], correlation:['@x','@y'],
+    altmanZ:['wc','re','ebit','mktEq','sales','ta','tl'], dupont:['ni','sales','assets','equity']
+  };
+  if(!fn){ res.status(200).json({ api:'Quantora Engine API', version:'v1', usage:'/api/v1/{engine}?param=value', engines:Object.keys(SPEC), example:'/api/v1/greeks?S=100&K=100&T=1&r=0.05&q=0&sig=0.2' }); return; }
+  if(!SPEC[fn]){ res.status(200).json({ error:'unknown_engine', engine:fn, available:Object.keys(SPEC) }); return; }
+  var Q; try{ Q=require('../engines.js'); }catch(e){ res.status(200).json({ error:'engine_unavailable' }); return; }
+  function toArr(v){ return (v==null?'':String(v)).split(/[ ,]+/).map(parseFloat).filter(function(x){return isFinite(x);}); }
+  var spec=SPEC[fn], args=[], inputs={};
+  for(var i=0;i<spec.length;i++){ var key=spec[i];
+    if(key.charAt(0)==='@'){ var k=key.slice(1); var a=toArr(req.query[k]); args.push(a); inputs[k]=a; }
+    else { var raw=req.query[key]; var val; if(key==='isCall'){ val=(raw==='true'||raw==='1'||raw==='call'); } else if(key==='american'){ val=(raw==='true'||raw==='1'); } else { val=raw==null?undefined:parseFloat(raw); } if(val!==undefined){ args.push(val); inputs[key]=val; } else { args.push(undefined); } }
+  }
+  var result; try{ result=Q[fn].apply(null,args); }catch(e){ res.status(200).json({ error:'compute_error', engine:fn, message:String(e&&e.message||e) }); return; }
+  res.status(200).json({ engine:fn, inputs:inputs, result:result, verified:true, library:'Quantora quant library v'+(Q.version||'') });
 }
