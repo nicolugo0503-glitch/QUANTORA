@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/stock/:sym", "destination": "/api/fmp?type=stock&symbol=:sym" }
+    { "source": "/stock/:sym", "destination": "/api/fmp?type=stock&symbol=:sym" },
+    { "source": "/api/v1/:fn", "destination": "/api/fmp?type=engine&fn=:fn" }
   ]
 }

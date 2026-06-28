@@ -1,0 +1,96 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantora API — Verified Quant Engines for Developers</title>
+<meta name="description" content="Build on Quantora. ~99 verified, unit-tested quant engines — Black-Scholes & Greeks, bond analytics, VaR, Altman Z, Merton — as a simple JSON API. Free to start.">
+<link rel="canonical" href="https://www.usequantora.com/developers.html">
+<meta property="og:title" content="Quantora API — verified quant engines for developers">
+<meta property="og:description" content="The verified quant math layer for fintech. ~99 engines as a JSON API.">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+  .sw{max-width:920px;margin:0 auto;padding:34px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+  h1{font-size:clamp(30px,4.2vw,46px);font-weight:600;letter-spacing:-.035em;margin:10px 0 10px;max-width:18ch}
+  .lead{color:#3a4150;font-size:17px;line-height:1.6;max-width:660px;margin:0 0 8px}
+  .sec2{margin:40px 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9aa1ad;font-weight:500}
+  pre{background:#0d0d12;color:#e6e6ea;border-radius:12px;padding:16px 18px;overflow:auto;font-family:Geist Mono,monospace;font-size:13px;line-height:1.6;margin:0}
+  pre .k{color:#9b95ff}.cm{color:#6b7280}.s{color:#7ee2a8}
+  .try{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+  .try .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .fld{display:flex;flex-direction:column;gap:4px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad}
+  .fld input,.fld select{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;width:84px}
+  .fld.sel select{width:auto}
+  .run{background:#635bff;color:#fff;border:0;border-radius:9px;padding:10px 18px;font-weight:500;font-size:14px;cursor:pointer}
+  .out{margin-top:14px}
+  .eng{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+  .eng code{font-family:Geist Mono,monospace;font-size:12.5px;color:#14161c;background:#fff;border:1px solid rgba(17,24,39,.09);border-radius:8px;padding:7px 9px;display:block}
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+  .t{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px}.t.pop{border-color:#635bff}
+  .t h3{margin:0 0 4px;font-size:15px}.t .p{font-family:Geist Mono,monospace;font-size:22px;font-weight:600;margin:6px 0}.t ul{margin:8px 0 0;padding-left:18px;color:#3a4150;font-size:13px;line-height:1.6}
+  .cta{display:inline-flex;margin-top:8px;text-decoration:none;background:#635bff;color:#fff;border-radius:10px;padding:11px 18px;font-weight:500;font-size:14px}
+  .foot{margin-top:44px;font-size:11.5px;color:#9aa1ad;line-height:1.6;max-width:720px}
+  @media(max-width:760px){.tiers{grid-template-columns:1fr}}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+  <div class="eyb">Quantora · Platform</div>
+  <h1>Build on the verified quant layer.</h1>
+  <p class="lead">~99 unit-tested quant engines — Black-Scholes &amp; Greeks, bond analytics, VaR/CVaR, Sharpe, Altman Z, Merton, DCF — as a single JSON API. Every result is computed by the same verified library that powers the terminal. No SDK, no auth to try.</p>
+
+  <div class="sec2">Quickstart</div>
+  <pre><span class="cm"># Black-Scholes Greeks for an ATM 1-year option</span>
+curl <span class="s">"https://www.usequantora.com/api/v1/greeks?S=100&K=100&T=1&r=0.05&q=0&sig=0.2"</span>
+
+<span class="cm"># → </span>{ <span class="k">"engine"</span>:"greeks", <span class="k">"result"</span>:{ "call":10.4506, "deltaCall":0.6368, "gamma":0.0188, ... }, <span class="k">"verified"</span>:true }</pre>
+
+  <div class="sec2">Try it live</div>
+  <div class="try">
+    <div class="row">
+      <div class="fld sel"><label>Engine</label><select id="fn">
+        <option value="greeks">greeks</option><option value="bsm">bsm</option><option value="impliedVol">impliedVol</option>
+        <option value="bondAnalytics">bondAnalytics</option><option value="altmanZ">altmanZ</option><option value="merton">merton</option>
+      </select></div>
+      <div id="params"></div>
+      <button class="run" id="run">Run →</button>
+    </div>
+    <div class="out"><pre id="result">Press Run to call the live API…</pre></div>
+  </div>
+
+  <div class="sec2">Code</div>
+  <pre><span class="k">const</span> r = <span class="k">await</span> fetch(<span class="s">"https://www.usequantora.com/api/v1/bondAnalytics?face=100&couponRate=0.05&yld=0.06&n=10&m=1"</span>);
+<span class="k">const</span> { result } = <span class="k">await</span> r.json();
+console.log(result.modified); <span class="cm">// 7.567 (modified duration)</span></pre>
+
+  <div class="sec2">Available engines</div>
+  <div class="eng" id="englist"></div>
+
+  <div class="sec2">Access tiers</div>
+  <div class="tiers">
+    <div class="t"><h3>Free</h3><div class="p">$0</div><ul><li>Public engines</li><li>1,000 calls/day</li><li>Non-commercial</li></ul></div>
+    <div class="t pop"><h3>Pro API</h3><div class="p">$29<span style="font-size:13px;color:#9aa1ad">/mo</span></div><ul><li>Higher limits</li><li>All engines</li><li>Commercial use</li></ul></div>
+    <div class="t"><h3>Quant / Embed</h3><div class="p">$79<span style="font-size:13px;color:#9aa1ad">/mo</span></div><ul><li>High-volume</li><li>Batch endpoints</li><li>White-label widgets</li></ul></div>
+  </div>
+  <a class="cta" href="/pricing.html">See plans →</a>
+
+  <div class="foot">The API returns mathematical results from standard published formulas, computed by Quantora's verified library. For analysis &amp; education — not investment advice. Quantora is not a registered investment adviser or broker-dealer. Rate limits are indicative; commercial terms at launch.</div>
+</div>
+<script>
+(function(){
+  var DEF={ greeks:[['S',100],['K',100],['T',1],['r',0.05],['q',0],['sig',0.2]], bsm:[['S',100],['K',100],['T',1],['r',0.05],['q',0],['sig',0.2]],
+    impliedVol:[['price',10.45],['S',100],['K',100],['T',1],['r',0.05],['q',0],['isCall',1]],
+    bondAnalytics:[['face',100],['couponRate',0.05],['yld',0.06],['n',10],['m',1]],
+    altmanZ:[['wc',20],['re',30],['ebit',10],['mktEq',100],['sales',150],['ta',100],['tl',50]],
+    merton:[['V',100],['D',80],['sig',0.3],['drift',0.05],['T',1]] };
+  var fnSel=document.getElementById('fn'), pc=document.getElementById('params');
+  function fields(){ var f=DEF[fnSel.value]||[]; pc.innerHTML=f.map(function(p){return '<div class="fld"><label>'+p[0]+'</label><input data-k="'+p[0]+'" value="'+p[1]+'"></div>';}).join(''); }
+  fnSel.addEventListener('change',fields); fields();
+  document.getElementById('run').addEventListener('click',function(){
+    var q=[].slice.call(pc.querySelectorAll('input')).map(function(i){return i.getAttribute('data-k')+'='+encodeURIComponent(i.value);}).join('&');
+    var url='/api/v1/'+fnSel.value+'?'+q;
+    document.getElementById('result').textContent='GET '+url+'\n\n…';
+    fetch(url).then(function(r){return r.json();}).then(function(j){ document.getElementById('result').textContent='GET '+url+'\n\n'+JSON.stringify(j,null,2); }).catch(function(e){ document.getElementById('result').textContent='Error: '+e; });
+  });
+  var ALL=['bsm','greeks','impliedVol','crr','black76','garmanKohlhagen','bondPrice','ytm','bondAnalytics','nelsonSiegel','npv','irr','merton','expectedLoss','pdFromSpread','taylorRule','recessionProb','histVaR','histCVaR','paramVaR','annVol','sharpe','sortino','maxDrawdown','beta','correlation','altmanZ','dupont'];
+  document.getElementById('englist').innerHTML=ALL.map(function(e){return '<code>'+e+'</code>';}).join('');
+})();
+</script>
+</body></html>
