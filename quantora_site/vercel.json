@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/stock/:sym", "destination": "/api/fmp?type=stock&symbol=:sym" },
-    { "source": "/api/v1/:fn", "destination": "/api/fmp?type=engine&fn=:fn" }
+    { "source": "/api/v1/:fn", "destination": "/api/fmp?type=engine&fn=:fn" },
+    { "source": "/compare/:pair", "destination": "/api/fmp?type=compare&pair=:pair" }
   ]
 }
