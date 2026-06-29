@@ -86,7 +86,7 @@ async function ask(){
   try{
     var r=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:text})});
     var j=await r.json();
-    if(j.error==='ai_key_needed'){ card.innerHTML='<div class="state">The AI analyst isn\'t activated yet. The owner needs to add an <code>ANTHROPIC_API_KEY</code> in the Vercel project settings, then this goes live instantly. Every other tool on Quantora works now.</div>'; }
+    if(j.error==='ai_key_needed'){ card.innerHTML='<div class="state">The AI analyst isn\'t activated yet. The owner needs to add an <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> in the Vercel project settings, then this goes live instantly. Every other tool on Quantora works now.</div>'; }
     else if(j.error){ card.innerHTML='<div class="state err">Couldn\'t complete that: <code>'+esc(j.detail||j.message||j.error)+'</code></div>'; }
     else{
       var h='<div class="atext">'+fmtAnswer(j.answer||'(no answer)')+'</div>';
