@@ -5,6 +5,7 @@ module.exports = async (req, res) => {
   const sym = (req.query.symbol || req.query.sym || '').toString().replace(/[^A-Za-z0-9.\-]/g, '').toUpperCase().slice(0, 12);
   if (type === 'stock') { return renderStock(res, KEY, sym); }
   if (type === 'engine') { return renderEngine(req, res); }
+  if (type === 'compare') { return renderCompare(req, res, KEY); }
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900');
   if (!KEY) { res.status(200).json({ error: 'nokey' }); return; }
@@ -109,7 +110,7 @@ async function renderStock(res, KEY, sym) {
     '<div class="sec2">Valuation snapshot</div><div class="vnote">' + vtext + '</div>' + scorecardHTML +
     (desc ? '<div class="sec2">About</div><p class="desc">' + esc(desc.slice(0,600)) + (desc.length>600?'…':'') + '</p>' : '') +
     '<div class="cta"><a class="btn pri" href="/engines.html#options-pricer">Run the 96 engines on ' + esc(sym) + ' →</a><a class="btn" href="/intel.html?sym=' + esc(sym) + '">Equity Intelligence</a><a class="btn" href="/engines.html">Open terminal</a></div>' +
-    '<div class="sec2">Embed this</div><div class="vnote" style="font-family:Geist Mono,monospace;font-size:12px;word-break:break-all">&lt;iframe src=\'https://www.usequantora.com/widget.html?sym=' + esc(sym) + '\' width=\'340\' height=\'150\' style=\'border:0\' loading=\'lazy\'&gt;&lt;/iframe&gt;</div>' +'<div class="sec2">More stocks</div><div class="rel">' + related + ' <a href="/directory.html">All stocks →</a></div>' +
+    '<div class="sec2">Embed this</div><div class="vnote" style="font-family:Geist Mono,monospace;font-size:12px;word-break:break-all">&lt;iframe src=\'https://www.usequantora.com/widget.html?sym=' + esc(sym) + '\' width=\'340\' height=\'150\' style=\'border:0\' loading=\'lazy\'&gt;&lt;/iframe&gt;</div>' +'<div class="sec2">Compare</div><div class="rel"><a href="/compare/'+esc(sym)+'-vs-AAPL">'+esc(sym)+' vs AAPL</a><a href="/compare/'+esc(sym)+'-vs-MSFT">'+esc(sym)+' vs MSFT</a><a href="/compare/'+esc(sym)+'-vs-NVDA">'+esc(sym)+' vs NVDA</a></div>' + '<div class="sec2">More stocks</div><div class="rel">' + related + ' <a href="/directory.html">All stocks →</a></div>' +
     '<div class="foot">Figures computed at the edge from latest reported data via Financial Modeling Prep; quotes may be delayed. Standard published formulas (P/E, FCF yield, Graham number, Altman Z, DuPont). Mathematical tools for analysis & education — not investment advice. Quantora is not a registered investment adviser or broker-dealer.</div></div>';
   send(200, head, body);
 }
@@ -141,4 +142,57 @@ function renderEngine(req, res){
   }
   var result; try{ result=Q[fn].apply(null,args); }catch(e){ res.status(200).json({ error:'compute_error', engine:fn, message:String(e&&e.message||e) }); return; }
   res.status(200).json({ engine:fn, inputs:inputs, result:result, verified:true, library:'Quantora quant library v'+(Q.version||'') });
+}
+
+
+// ===================== /compare/:a-vs-:b  side-by-side stock comparison =====================
+async function renderCompare(req, res, KEY){
+  res.setHeader('Content-Type','text/html; charset=utf-8');
+  res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');
+  function clean(x){ return (x||'').toString().replace(/[^A-Za-z0-9.\-]/g,'').toUpperCase().slice(0,12); }
+  var pair=(req.query.pair||'').toString().toLowerCase();
+  var A=clean(req.query.a), B=clean(req.query.b);
+  if((!A||!B)&&pair.indexOf('-vs-')>=0){ var pp=pair.split('-vs-'); A=clean(pp[0]); B=clean(pp[1]); }
+  var esc=function(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});};
+  var num=function(v,d){d=d==null?2:d;return (v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});};
+  var big=function(v){v=Number(v);if(!isFinite(v)||!v)return '—';var a=Math.abs(v),s=v<0?'-':'';if(a>=1e12)return s+(a/1e12).toFixed(2)+'T';if(a>=1e9)return s+(a/1e9).toFixed(2)+'B';if(a>=1e6)return s+(a/1e6).toFixed(2)+'M';return s+a.toLocaleString('en-US');};
+  var CSS='<link rel="stylesheet" href="/theme.css"><style>body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}.sw{max-width:840px;margin:0 auto;padding:32px 24px 80px}.eyb{text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:#9aa1ad;font-weight:500}h1{font-size:clamp(24px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 18px}table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:14px;overflow:hidden}th,td{padding:13px 16px;border-bottom:1px solid rgba(17,24,39,.06);text-align:right;font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace}td:first-child,th:first-child{text-align:left;font-family:Geist,sans-serif;color:#6b7280}thead th{font-size:13px;font-weight:600;color:#14161c}tr:last-child td{border-bottom:0}.win{color:#0f9d63;font-weight:600}.eyb2{font-size:11px}.cta{display:inline-flex;margin:22px 8px 0 0;text-decoration:none;border:1px solid rgba(17,24,39,.12);border-radius:10px;padding:11px 16px;font-size:14px;font-weight:500;color:#14161c;background:#fff}.cta.pri{background:#635bff;color:#fff;border-color:#635bff}.foot{margin-top:36px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}</style><script src="/nav.js" defer></script>';
+  var send=function(st,head,body){ res.statusCode=st; res.end('<!doctype html><html lang="en"><head>'+head+'</head><body><div id="qnav"></div>'+body+'</body></html>'); };
+  if(!A||!B){ send(200,'<meta name="robots" content="noindex"><title>Compare stocks · Quantora</title>'+CSS,'<div class="sw"><div class="eyb">Quantora</div><h1>Compare two stocks</h1><p>Try <a href="/compare/AAPL-vs-MSFT">/compare/AAPL-vs-MSFT</a>.</p></div>'); return; }
+  async function one(sym){ async function f(path){ try{ var sep=path.indexOf('?')>=0?'&':'?'; var r=await fetch('https://financialmodelingprep.com/stable/'+path+sep+'apikey='+KEY); var j=await r.json(); return Array.isArray(j)?j[0]:j; }catch(e){ return null; } }
+    var q=await f('quote?symbol='+sym), m=await f('key-metrics?symbol='+sym+'&limit=1'); return {q:q,m:m}; }
+  var da=await one(A), db=await one(B);
+  if(!da.q||da.q.price==null||!db.q||db.q.price==null){ send(404,'<meta name="robots" content="noindex"><title>'+esc(A)+' vs '+esc(B)+' · Quantora</title>'+CSS,'<div class="sw"><div class="eyb">Quantora</div><h1>'+esc(A)+' vs '+esc(B)+'</h1><p>Live data unavailable for one of these symbols. Try the <a href="/engines.html">terminal</a>.</p></div>'); return; }
+  var na=(da.q.name||A), nb=(db.q.name||B);
+  function pe(d){ return d.q.pe!=null?d.q.pe:null; }
+  function eY(d){ var x=pe(d); return x?100/x:null; }
+  // rows: [label, valA, valB, betterHigh(true/false/null), fmtWinKey]
+  function row(label, va, vb, betterHigh, disp){
+    var a=va, b=vb, wa='', wb='';
+    if(betterHigh!=null && a!=null && b!=null && a!==b){ var aWin=(betterHigh? a>b : a<b); if(aWin) wa='win'; else wb='win'; }
+    return '<tr><td>'+label+'</td><td class="'+wa+'">'+disp(a)+'</td><td class="'+wb+'">'+disp(b)+'</td></tr>';
+  }
+  var d2=function(v){return v==null?'—':num(v,2);};
+  var pctd=function(v){return v==null?'—':num(v,1)+'%';};
+  var usd=function(v){return v==null?'—':'$'+num(v,2);};
+  var bigd=function(v){return v==null?'—':'$'+big(v);};
+  var ma=da.m||{}, mb=db.m||{};
+  var rows=
+    row('Price', da.q.price, db.q.price, null, usd)+
+    row('Market cap', da.q.marketCap, db.q.marketCap, true, bigd)+
+    row('P/E (lower cheaper)', pe(da), pe(db), false, d2)+
+    row('Earnings yield', eY(da), eY(db), true, pctd)+
+    row('ROE', ma.returnOnEquity!=null?ma.returnOnEquity*100:null, mb.returnOnEquity!=null?mb.returnOnEquity*100:null, true, pctd)+
+    row('ROIC', (ma.returnOnInvestedCapital||ma.roic)!=null?(ma.returnOnInvestedCapital||ma.roic)*100:null, (mb.returnOnInvestedCapital||mb.roic)!=null?(mb.returnOnInvestedCapital||mb.roic)*100:null, true, pctd)+
+    row('FCF yield', ma.freeCashFlowYield!=null?ma.freeCashFlowYield*100:null, mb.freeCashFlowYield!=null?mb.freeCashFlowYield*100:null, true, pctd)+
+    row('Net debt / EBITDA (lower safer)', ma.netDebtToEBITDA, mb.netDebtToEBITDA, false, d2);
+  var title=esc(na)+' vs '+esc(nb)+' ('+esc(A)+' vs '+esc(B)+') — Stock Comparison · Quantora';
+  var md=esc(A)+' vs '+esc(B)+': compare price, market cap, P/E, ROE, ROIC and FCF yield side by side. Verified quant comparison, free, no login.';
+  var url='https://www.usequantora.com/compare/'+esc(A)+'-vs-'+esc(B);
+  var head='<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title><meta name="description" content="'+md+'"><link rel="canonical" href="'+url+'"><meta property="og:title" content="'+title+'"><meta property="og:description" content="'+md+'">'+CSS;
+  var body='<div class="sw"><div class="eyb">Quantora · Stock comparison</div><h1>'+esc(na)+' vs '+esc(nb)+'</h1>'+
+    '<table><thead><tr><th>Metric</th><th>'+esc(A)+'</th><th>'+esc(B)+'</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<a class="cta pri" href="/engines.html">Run the engines →</a><a class="cta" href="/stock/'+esc(A)+'">'+esc(A)+' analysis</a><a class="cta" href="/stock/'+esc(B)+'">'+esc(B)+' analysis</a>'+
+    '<div class="foot">Green marks the more favorable figure on each row (context only, not a recommendation). Computed from latest reported data via Financial Modeling Prep; quotes may be delayed. For analysis &amp; education — not investment advice. Quantora is not a registered investment adviser or broker-dealer.</div></div>';
+  send(200,head,body);
 }
