@@ -235,29 +235,52 @@ async function renderAI(req, res){
   var q = (body.q || body.question || req.query.q || '').toString().slice(0,2000);
   var ctx = (body.context || req.query.context || '').toString().slice(0,4000);
   if(!q){ res.statusCode=200; res.end(JSON.stringify({ error:'no_question' })); return; }
-  var KEY = process.env.ANTHROPIC_API_KEY;
-  if(!KEY){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_key_needed' })); return; }
+  var oaiKey = process.env.OPENAI_API_KEY, antKey = process.env.ANTHROPIC_API_KEY;
+  var prov = (process.env.QAI_PROVIDER||'').toLowerCase();
+  if(!prov) prov = oaiKey ? 'openai' : (antKey ? 'anthropic' : '');
+  if(!prov || (prov==='openai'&&!oaiKey) || (prov==='anthropic'&&!antKey)){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_key_needed' })); return; }
   var Q; try{ Q=require('../engines.js'); }catch(e){ Q=null; }
   var paramHelp = Object.keys(AI_SPEC).map(function(k){ return k+'('+AI_SPEC[k].map(function(x){return x.charAt(0)==='@'?x.slice(1)+'[]':x;}).join(', ')+')'; }).join('; ');
-  var tools = [{ name:'run_engine', description:'Run a verified Quantora quant engine and return the exact numeric result. Use this for ANY number. engine must be one of the listed names; params is an object of that engine’s named inputs. Names ending [] take arrays of numbers (e.g. returns, cashflows). Engines: '+paramHelp, input_schema:{ type:'object', properties:{ engine:{type:'string'}, params:{type:'object'} }, required:['engine','params'] } }];
-  var system = "You are Quantora's quantitative markets analyst. Answer finance/markets questions with rigor and clarity. For ANY numeric result (option prices, Greeks, implied vol, VaR/CVaR, Sharpe/Sortino, bond price/duration, credit/default, valuation scores, etc.) you MUST call run_engine to compute it with Quantora's verified math — never estimate numbers yourself. After computing, explain what the result means in plain language, briefly. Be concise and concrete. Compliance: you give educational analysis and information, NOT personalized investment advice; you are not a registered investment adviser or broker-dealer; never tell the user to buy or sell specific securities or give individualized recommendations — if asked, explain the relevant analysis instead and suggest a licensed professional. If a question is outside quantitative finance, answer briefly and helpfully.";
-  var messages = [{ role:'user', content: ctx ? (ctx+"\n\nQuestion: "+q) : q }];
+  var toolDesc = 'Run a verified Quantora quant engine and return the exact numeric result. Use this for ANY number. engine must be one of the listed names; params is an object of that engine’s named inputs. Names ending [] take arrays of numbers (e.g. returns, cashflows). Engines: '+paramHelp;
+  var system = "You are Quantora's quantitative markets analyst. Answer finance/markets questions with rigor and clarity. For ANY numeric result (option prices, Greeks, implied vol, VaR/CVaR, Sharpe/Sortino, bond price/duration, credit/default, valuation scores, etc.) you MUST call the run_engine tool to compute it with Quantora's verified math — never estimate numbers yourself. After computing, explain what the result means in plain language, briefly. Be concise and concrete. Compliance: you give educational analysis and information, NOT personalized investment advice; you are not a registered investment adviser or broker-dealer; never tell the user to buy or sell specific securities or give individualized recommendations — if asked, explain the relevant analysis instead and suggest a licensed professional. If a question is outside quantitative finance, answer briefly and helpfully.";
+  var userMsg = ctx ? (ctx+"\n\nQuestion: "+q) : q;
   var used = [];
   try{
-    for(var iter=0; iter<5; iter++){
-      var r = await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{ 'x-api-key':KEY, 'anthropic-version':'2023-06-01', 'content-type':'application/json' }, body: JSON.stringify({ model: process.env.QAI_MODEL || 'claude-3-5-haiku-latest', max_tokens:1024, system:system, tools:tools, messages:messages }) });
-      var j = await r.json();
-      if(j.type==='error' || j.error){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_error', detail:(j.error&&j.error.message)||'AI request failed' })); return; }
-      if(j.stop_reason==='tool_use'){
-        messages.push({ role:'assistant', content:j.content });
-        var results = [];
-        (j.content||[]).forEach(function(b){ if(b.type==='tool_use'){ var out=runEngineTool(Q,b.input); used.push({ engine:(b.input&&b.input.engine)||'?', params:(b.input&&b.input.params)||{}, result: out.result!==undefined?out.result:out }); results.push({ type:'tool_result', tool_use_id:b.id, content: JSON.stringify(out) }); } });
-        messages.push({ role:'user', content: results });
-        continue;
+    if(prov==='openai'){
+      var tools = [{ type:'function', function:{ name:'run_engine', description: toolDesc, parameters:{ type:'object', properties:{ engine:{type:'string'}, params:{type:'object'} }, required:['engine','params'] } } }];
+      var messages = [{ role:'system', content:system }, { role:'user', content:userMsg }];
+      for(var iter=0; iter<5; iter++){
+        var r = await fetch('https://api.openai.com/v1/chat/completions',{ method:'POST', headers:{ 'Authorization':'Bearer '+oaiKey, 'content-type':'application/json' }, body: JSON.stringify({ model: process.env.QAI_MODEL || 'gpt-4o-mini', messages:messages, tools:tools, tool_choice:'auto', max_tokens:1024 }) });
+        var j = await r.json();
+        if(j.error){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_error', detail:(j.error&&j.error.message)||'AI request failed' })); return; }
+        var m = j.choices && j.choices[0] && j.choices[0].message;
+        if(!m){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_error', detail:'no message' })); return; }
+        if(m.tool_calls && m.tool_calls.length){
+          messages.push(m);
+          m.tool_calls.forEach(function(tc){ var input={}; try{ input=JSON.parse(tc.function.arguments||'{}'); }catch(e){} var out=runEngineTool(Q,input); used.push({ engine:(input&&input.engine)||'?', params:(input&&input.params)||{}, result: out.result!==undefined?out.result:out }); messages.push({ role:'tool', tool_call_id:tc.id, content: JSON.stringify(out) }); });
+          continue;
+        }
+        res.statusCode=200; res.end(JSON.stringify({ answer:(m.content||'').trim(), engines_used:used, model:j.model, provider:'openai' })); return;
       }
-      var text = (j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
-      res.statusCode=200; res.end(JSON.stringify({ answer:text, engines_used:used, model:j.model })); return;
+      res.statusCode=200; res.end(JSON.stringify({ error:'too_many_steps', engines_used:used })); return;
+    } else {
+      var atools = [{ name:'run_engine', description: toolDesc, input_schema:{ type:'object', properties:{ engine:{type:'string'}, params:{type:'object'} }, required:['engine','params'] } }];
+      var amsgs = [{ role:'user', content: userMsg }];
+      for(var it=0; it<5; it++){
+        var ar = await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{ 'x-api-key':antKey, 'anthropic-version':'2023-06-01', 'content-type':'application/json' }, body: JSON.stringify({ model: process.env.QAI_MODEL || 'claude-3-5-haiku-latest', max_tokens:1024, system:system, tools:atools, messages:amsgs }) });
+        var aj = await ar.json();
+        if(aj.type==='error' || aj.error){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_error', detail:(aj.error&&aj.error.message)||'AI request failed' })); return; }
+        if(aj.stop_reason==='tool_use'){
+          amsgs.push({ role:'assistant', content:aj.content });
+          var results = [];
+          (aj.content||[]).forEach(function(b){ if(b.type==='tool_use'){ var out=runEngineTool(Q,b.input); used.push({ engine:(b.input&&b.input.engine)||'?', params:(b.input&&b.input.params)||{}, result: out.result!==undefined?out.result:out }); results.push({ type:'tool_result', tool_use_id:b.id, content: JSON.stringify(out) }); } });
+          amsgs.push({ role:'user', content: results });
+          continue;
+        }
+        var text = (aj.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+        res.statusCode=200; res.end(JSON.stringify({ answer:text, engines_used:used, model:aj.model, provider:'anthropic' })); return;
+      }
+      res.statusCode=200; res.end(JSON.stringify({ error:'too_many_steps', engines_used:used })); return;
     }
-    res.statusCode=200; res.end(JSON.stringify({ error:'too_many_steps', engines_used:used }));
   }catch(e){ res.statusCode=200; res.end(JSON.stringify({ error:'server_error', message:String(e&&e.message||e) })); }
 }
