@@ -281,4 +281,5 @@
   <url><loc>https://www.usequantora.com/compare/XOM-vs-CVX</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://www.usequantora.com/compare/PFE-vs-MRK</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://www.usequantora.com/compare/HD-vs-LOW</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.usequantora.com/efficient-frontier.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>
