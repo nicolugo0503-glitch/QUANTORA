@@ -1,11 +1,13 @@
 // QUANTORA · FMP proxy + server-rendered /stock pages (single function to stay under Hobby's 12-fn cap).
 module.exports = async (req, res) => {
+  if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Origin','*'); res.setHeader('Access-Control-Allow-Methods','POST, GET, OPTIONS'); res.setHeader('Access-Control-Allow-Headers','content-type'); res.statusCode=200; res.end(); return; }
   const KEY = process.env.FMP_KEY;
   const type = (req.query.type || '').toString();
   const sym = (req.query.symbol || req.query.sym || '').toString().replace(/[^A-Za-z0-9.\-]/g, '').toUpperCase().slice(0, 12);
   if (type === 'stock') { return renderStock(res, KEY, sym); }
   if (type === 'engine') { return renderEngine(req, res); }
   if (type === 'compare') { return renderCompare(req, res, KEY); }
+  if (type === 'ai') { return renderAI(req, res); }
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900');
   if (!KEY) { res.status(200).json({ error: 'nokey' }); return; }
@@ -195,4 +197,67 @@ async function renderCompare(req, res, KEY){
     '<a class="cta pri" href="/engines.html">Run the engines →</a><a class="cta" href="/stock/'+esc(A)+'">'+esc(A)+' analysis</a><a class="cta" href="/stock/'+esc(B)+'">'+esc(B)+' analysis</a>'+
     '<div class="foot">Green marks the more favorable figure on each row (context only, not a recommendation). Computed from latest reported data via Financial Modeling Prep; quotes may be delayed. For analysis &amp; education — not investment advice. Quantora is not a registered investment adviser or broker-dealer.</div></div>';
   send(200,head,body);
+}
+
+
+// ===================== /api/ai  AI analyst over the verified engines (tool-use) =====================
+var AI_SPEC = {
+  bsm:['S','K','T','r','q','sig'], greeks:['S','K','T','r','q','sig'], impliedVol:['price','S','K','T','r','q','isCall'],
+  crr:['S','K','T','r','q','sig','N','isCall','american'], black76:['F','K','T','r','sig'], garmanKohlhagen:['S','K','T','rd','rf','sig'],
+  bondPrice:['face','couponRate','yld','n','m'], ytm:['face','couponRate','price','n','m'], bondAnalytics:['face','couponRate','yld','n','m'], nelsonSiegel:['t','b0','b1','b2','tau'],
+  npv:['rate','@cfs'], irr:['@cfs'], merton:['V','D','sig','drift','T'], expectedLoss:['pd','lgd','ead'], pdFromSpread:['spread','recovery','T'],
+  taylorRule:['inflation','outputGap'], recessionProb:['tenY','threeM'],
+  histVaR:['@returns','conf'], histCVaR:['@returns','conf'], paramVaR:['@returns','conf'], annVol:['@returns','P'],
+  sharpe:['@returns','rfPeriod','P'], sortino:['@returns','mar','P'], maxDrawdown:['@returns'], beta:['@asset','@bench'], correlation:['@x','@y'],
+  altmanZ:['wc','re','ebit','mktEq','sales','ta','tl'], dupont:['ni','sales','assets','equity']
+};
+function runEngineTool(Q, input){
+  try{
+    if(!Q) return { error:'engines_unavailable' };
+    var name = input && input.engine, spec = AI_SPEC[name];
+    if(!spec) return { error:'unknown_engine', engine:name, available:Object.keys(AI_SPEC) };
+    var p = (input && input.params) || {};
+    var args = spec.map(function(k){
+      if(k.charAt(0)==='@'){ var key=k.slice(1); var v=p[key]; if(typeof v==='string') v=v.split(/[ ,]+/).map(parseFloat); if(!Array.isArray(v)&&v!=null) v=[v]; return v; }
+      if(k==='isCall'||k==='american'){ return (p[k]===true||p[k]==='true'||p[k]===1||p[k]==='1'||p[k]==='call'); }
+      return p[k];
+    });
+    var out = Q[name].apply(null, args);
+    return { engine:name, result:out };
+  }catch(e){ return { error:'compute_error', message:String(e&&e.message||e) }; }
+}
+async function renderAI(req, res){
+  res.setHeader('Content-Type','application/json; charset=utf-8');
+  res.setHeader('Access-Control-Allow-Origin','*');
+  res.setHeader('Cache-Control','no-store');
+  var body = req.body; if(typeof body==='string'){ try{ body=JSON.parse(body); }catch(e){ body={}; } }
+  body = body || {};
+  var q = (body.q || body.question || req.query.q || '').toString().slice(0,2000);
+  var ctx = (body.context || req.query.context || '').toString().slice(0,4000);
+  if(!q){ res.statusCode=200; res.end(JSON.stringify({ error:'no_question' })); return; }
+  var KEY = process.env.ANTHROPIC_API_KEY;
+  if(!KEY){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_key_needed' })); return; }
+  var Q; try{ Q=require('../engines.js'); }catch(e){ Q=null; }
+  var paramHelp = Object.keys(AI_SPEC).map(function(k){ return k+'('+AI_SPEC[k].map(function(x){return x.charAt(0)==='@'?x.slice(1)+'[]':x;}).join(', ')+')'; }).join('; ');
+  var tools = [{ name:'run_engine', description:'Run a verified Quantora quant engine and return the exact numeric result. Use this for ANY number. engine must be one of the listed names; params is an object of that engine’s named inputs. Names ending [] take arrays of numbers (e.g. returns, cashflows). Engines: '+paramHelp, input_schema:{ type:'object', properties:{ engine:{type:'string'}, params:{type:'object'} }, required:['engine','params'] } }];
+  var system = "You are Quantora's quantitative markets analyst. Answer finance/markets questions with rigor and clarity. For ANY numeric result (option prices, Greeks, implied vol, VaR/CVaR, Sharpe/Sortino, bond price/duration, credit/default, valuation scores, etc.) you MUST call run_engine to compute it with Quantora's verified math — never estimate numbers yourself. After computing, explain what the result means in plain language, briefly. Be concise and concrete. Compliance: you give educational analysis and information, NOT personalized investment advice; you are not a registered investment adviser or broker-dealer; never tell the user to buy or sell specific securities or give individualized recommendations — if asked, explain the relevant analysis instead and suggest a licensed professional. If a question is outside quantitative finance, answer briefly and helpfully.";
+  var messages = [{ role:'user', content: ctx ? (ctx+"\n\nQuestion: "+q) : q }];
+  var used = [];
+  try{
+    for(var iter=0; iter<5; iter++){
+      var r = await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{ 'x-api-key':KEY, 'anthropic-version':'2023-06-01', 'content-type':'application/json' }, body: JSON.stringify({ model: process.env.QAI_MODEL || 'claude-3-5-haiku-latest', max_tokens:1024, system:system, tools:tools, messages:messages }) });
+      var j = await r.json();
+      if(j.type==='error' || j.error){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_error', detail:(j.error&&j.error.message)||'AI request failed' })); return; }
+      if(j.stop_reason==='tool_use'){
+        messages.push({ role:'assistant', content:j.content });
+        var results = [];
+        (j.content||[]).forEach(function(b){ if(b.type==='tool_use'){ var out=runEngineTool(Q,b.input); used.push({ engine:(b.input&&b.input.engine)||'?', params:(b.input&&b.input.params)||{}, result: out.result!==undefined?out.result:out }); results.push({ type:'tool_result', tool_use_id:b.id, content: JSON.stringify(out) }); } });
+        messages.push({ role:'user', content: results });
+        continue;
+      }
+      var text = (j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+      res.statusCode=200; res.end(JSON.stringify({ answer:text, engines_used:used, model:j.model })); return;
+    }
+    res.statusCode=200; res.end(JSON.stringify({ error:'too_many_steps', engines_used:used }));
+  }catch(e){ res.statusCode=200; res.end(JSON.stringify({ error:'server_error', message:String(e&&e.message||e) })); }
 }
