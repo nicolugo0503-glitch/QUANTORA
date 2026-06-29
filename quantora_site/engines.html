@@ -2623,5 +2623,56 @@ buildCard(document.getElementById('g_risk'),{
   }).catch(function(){});
 })();
 </script>
+<style>
+#qai-fab{position:fixed;right:18px;bottom:18px;z-index:99998;background:#635bff;color:#fff;border-radius:999px;padding:11px 16px;font:500 14px Geist,system-ui,sans-serif;box-shadow:0 6px 22px rgba(99,91,255,.4);cursor:pointer;display:flex;align-items:center;gap:7px;user-select:none}
+#qai-fab:hover{background:#544cff}
+#qai-panel{position:fixed;top:0;right:0;height:100dvh;width:400px;max-width:92vw;background:#fff;border-left:1px solid rgba(17,24,39,.12);box-shadow:-8px 0 44px rgba(16,24,40,.14);z-index:99999;transform:translateX(110%);transition:transform .22s ease;display:flex;flex-direction:column;font-family:Geist,system-ui,sans-serif}
+#qai-panel.open{transform:none}
+.qai-h{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid rgba(17,24,39,.08)}
+.qai-h b{font-size:14px;color:#14161c}
+.qai-x{cursor:pointer;color:#9aa1ad;font-size:22px;line-height:1;border:0;background:none}
+.qai-ctx{padding:9px 18px;font-size:10.5px;color:#9aa1ad;border-bottom:1px solid rgba(17,24,39,.06);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qai-body{flex:1;overflow:auto;padding:16px 18px}
+.qai-ans{font-size:14.5px;line-height:1.7;color:#1c2230;white-space:pre-wrap}
+.qai-ans b{font-weight:600}
+.qai-eng{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.qai-chip{font:11px Geist Mono,monospace;color:#635bff;background:rgba(99,91,255,.07);border:1px solid rgba(99,91,255,.18);border-radius:6px;padding:3px 8px}
+.qai-state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.55}
+.qai-state code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px}
+.qai-foot{padding:12px 14px;border-top:1px solid rgba(17,24,39,.08);display:flex;gap:8px}
+.qai-foot input{flex:1;border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px}
+.qai-foot button{border:0;background:#635bff;color:#fff;border-radius:9px;padding:9px 14px;font:500 14px Geist;cursor:pointer}
+.qai-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qaisp .7s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes qaisp{to{transform:rotate(360deg)}}
+</style>
+<div id="qai-fab">&#10022; Explain with AI</div>
+<div id="qai-panel"><div class="qai-h"><b>&#10022; Quantora AI</b><button class="qai-x" id="qai-x">&times;</button></div><div class="qai-ctx" id="qai-ctx">No engine selected</div><div class="qai-body" id="qai-body"><div class="qai-ans" style="color:#9aa1ad">Open any engine, then I'll explain its result - what it computes, what the numbers mean, and the caveats. Or type a question below.</div></div><div class="qai-foot"><input id="qai-in" placeholder="Ask about this engine..."><button id="qai-send">Ask</button></div></div>
+<script>
+(function(){
+ var fab=document.getElementById('qai-fab'),panel=document.getElementById('qai-panel'),body=document.getElementById('qai-body'),ctx=document.getElementById('qai-ctx'),inp=document.getElementById('qai-in'),send=document.getElementById('qai-send');
+ function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];});}
+ function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+ function grab(){var st=document.querySelector('.er-stage');if(!st)return{title:'',text:''};var h=st.querySelector('h1,h2,h3');var title=h?h.innerText.trim():'';var text=(st.innerText||'').replace(/\s+/g,' ').trim().slice(0,3500);return{title:title,text:text};}
+ function openP(){panel.classList.add('open');var g=grab();ctx.textContent=g.title?('Context: '+g.title):'No engine selected';if(g.title&&body.getAttribute('data-for')!==g.title){body.setAttribute('data-for',g.title);explain(g);}}
+ function closeP(){panel.classList.remove('open');}
+ fab.addEventListener('click',function(){panel.classList.contains('open')?closeP():openP();});
+ document.getElementById('qai-x').addEventListener('click',closeP);
+ function call(q,context){
+   body.innerHTML='<div class="qai-ans"><span class="qai-spin"></span>Thinking - running the verified engines</div>';
+   fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:q,context:context})}).then(function(r){return r.json();}).then(function(j){
+     if(j.error==='ai_key_needed'){body.innerHTML='<div class="qai-state">The AI isn\'t activated yet. Add an <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> in Vercel and it goes live instantly.</div>';return;}
+     if(j.error){body.innerHTML='<div class="qai-state">Couldn\'t complete that: <code>'+esc(j.detail||j.message||j.error)+'</code></div>';return;}
+     var h='<div class="qai-ans">'+fmt(j.answer||'(no answer)')+'</div>';
+     if(j.engines_used&&j.engines_used.length){h+='<div class="qai-eng">'+j.engines_used.map(function(e){return'<span class="qai-chip">'+esc(e.engine)+'</span>';}).join('')+'</div>';}
+     body.innerHTML=h;
+   }).catch(function(e){body.innerHTML='<div class="qai-state">Network error: <code>'+esc(String(e&&e.message||e))+'</code></div>';});
+ }
+ function explain(g){call('Explain this Quantora engine view in plain language: what it computes, what the key numbers mean, and important caveats. Be concise.','Engine: '+g.title+'\nScreen content: '+g.text);}
+ function ask(){var q=inp.value.trim();if(!q)return;var g=grab();inp.value='';call(q,g.title?('Current engine: '+g.title+'\nScreen content: '+g.text):'');}
+ send.addEventListener('click',ask);
+ inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();ask();}});
+})();
+</script>
+
 </body>
 </html>
