@@ -255,4 +255,9 @@
   <url><loc>https://www.usequantora.com/directory.html</loc></url>
   <url><loc>https://www.usequantora.com/pricing.html</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://www.usequantora.com/developers.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.usequantora.com/black-scholes-calculator.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.usequantora.com/value-at-risk-calculator.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.usequantora.com/dcf-calculator.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.usequantora.com/bond-duration-calculator.html</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.usequantora.com/sharpe-ratio-calculator.html</loc><changefreq>weekly</changefreq></url>
 </urlset>
