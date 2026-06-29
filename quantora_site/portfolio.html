@@ -1,257 +1,143 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quantora · Portfolio — Live</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="alternate icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<style>
-:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa;--up:#0a7d33;--down:#c0341d}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
-a{color:inherit;text-decoration:none}
-.nav{display:flex;align-items:center;gap:17px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
-.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-.nav a.link{color:var(--mut);font-size:14px}
-.nav a.link:hover,.nav a.active{color:var(--ink)}
-.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--up);display:inline-block}
-.wrap{max-width:1080px;margin:0 auto;padding:34px 24px 70px}
-h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
-.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:720px}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:24px}
-.card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:#fff}
-.card .l{font-size:12px;color:var(--mut);font-weight:550}
-.card .v{font-size:24px;font-weight:680;letter-spacing:-.4px;margin-top:6px}
-.up{color:var(--up)}.down{color:var(--down)}
-.addbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--soft)}
-.addbar input,.addbar select{border:1px solid #d8d8d8;border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;outline:none;background:#fff}
-.addbar input:focus,.addbar select:focus{border-color:#000}
-.addbar input.sym{width:110px;text-transform:uppercase}
-.addbar input.num{width:120px}
-.addbar button{border:none;background:#000;color:#fff;border-radius:9px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
-.addbar .hint{font-size:12px;color:var(--mut);width:100%}
-table{width:100%;border-collapse:collapse;margin-top:22px;font-size:14px}
-th,td{text-align:right;padding:12px 10px;border-bottom:1px solid var(--line)}
-th{font-size:11px;letter-spacing:.04em;color:var(--mut);text-transform:uppercase;font-weight:600}
-th:first-child,td:first-child{text-align:left}
-.tk{font-weight:650}
-.badge{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:#f1f1f1;color:#555;margin-left:7px}
-.x{cursor:pointer;color:#bbb;font-weight:700}
-.x:hover{color:var(--down)}
-.empty{margin-top:30px;color:var(--mut);font-size:14.5px;text-align:center;border:1px dashed #d7d7d7;border-radius:14px;padding:40px 20px}
-.note{margin-top:14px;font-size:12px;color:var(--mut)}
-.read{border:1px solid var(--line);background:var(--soft);border-radius:14px;padding:20px 22px;margin-top:18px;display:none}
-.read h3{font-size:13px;font-weight:650;letter-spacing:.02em;margin-bottom:9px}
-.read p{font-size:15px;line-height:1.65}
-.read .foot{color:var(--mut);font-size:12px;margin-top:11px;font-family:ui-monospace,Menlo,monospace}
-.addbar button.ai{background:#fff;color:#000;border:1px solid var(--line)}
-@media(max-width:760px){.cards{grid-template-columns:1fr 1fr}}
-
-.alloc{display:flex;gap:28px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin:18px 0;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-.alloc .dwrap{position:relative;flex:0 0 auto}
-.alloc .dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.alloc .dc .dl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
-.alloc .dc .dv{font-size:18px;font-weight:750;letter-spacing:-.02em}
-.alloc .leg{display:grid;grid-template-columns:1fr 1fr;gap:7px 26px;font-size:13px;flex:1;min-width:240px}
-.alloc .leg .li{display:flex;align-items:center;gap:8px}
-.alloc .leg .sw{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
-.alloc .leg .nm{font-weight:600}
-.alloc .leg .pc{margin-left:auto;color:var(--mut);font-variant-numeric:tabular-nums}
-.alloc .ct{width:100%;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:2px}
-@media(max-width:560px){.alloc .leg{grid-template-columns:1fr}}
-</style>
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Quantora">
-<meta property="og:title" content="Quantora · Portfolio — Live">
-<meta property="og:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta property="og:url" content="https://www.usequantora.com/portfolio.html">
-<meta property="og:image" content="https://www.usequantora.com/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Quantora · Portfolio — Live">
-<meta name="twitter:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta name="twitter:image" content="https://www.usequantora.com/og.png">
-<meta name="description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio Risk Analyzer - Volatility, Sharpe & Risk Contribution | Quantora</title>
+<meta name="description" content="Free portfolio risk analyzer: compute portfolio volatility from a covariance matrix, Sharpe ratio, diversification ratio, concentration and per-asset risk contribution. No login, computes in your browser.">
 <link rel="canonical" href="https://www.usequantora.com/portfolio.html">
-</head>
-<body>
-<div class="nav">
-  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
-  <a href="/platform.html" class="link">Platform</a>
-  <a href="/pulse.html" class="link">Pulse</a>
-  <a href="/brief.html" class="link">Brief</a>
-  <a href="/markets.html" class="link">Markets</a>
-  <a href="/live.html" class="link">Live</a>
-  <a href="/coins.html" class="link">Coins</a>
-  <a href="/defi.html" class="link">DeFi</a>
-  <a href="/chain.html" class="link">Chain</a>
-  <a href="/dex.html" class="link">DEX</a>
-  <a href="/chart.html" class="link">Chart</a>
-  <a href="/heatmap.html" class="link">Heatmap</a>
-  <a href="/screener.html" class="link">Screener</a>
-  <a href="/stocks.html" class="link">Stocks</a>
-  <a href="/global.html" class="link">Global</a>
-  <a href="/signals.html" class="link">Signals</a>
-  <a href="/news.html" class="link">News</a>
-  <a href="/macro.html" class="link">Macro</a>
-  <a href="/fundamentals.html" class="link">Fundamentals</a>
-  <a href="/calendar.html" class="link">Calendar</a>
-  <a href="/analyst.html" class="link">Analyst</a>
-  <a href="/ask.html" class="link">Ask</a>
-  <a href="/portfolio.html" class="link active">Portfolio</a>
-  <a href="/watchlist.html" class="link">Watchlist</a>
-  <a href="/alerts.html" class="link">Alerts</a>
-  <div class="right"><span class="dot"></span> Live · your book</div>
+<meta property="og:title" content="Portfolio Risk Analyzer | Quantora"><meta property="og:description" content="Compute portfolio volatility, Sharpe, diversification and per-asset risk contribution in your browser. Free, no login.">
+<meta property="og:type" content="website"><meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Quantora Portfolio Risk Analyzer","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0"},"description":"Portfolio volatility, Sharpe ratio, diversification ratio and per-asset risk contribution, computed client-side."}</script>
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:880px;margin:0 auto;padding:34px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(28px,3.8vw,40px);font-weight:600;letter-spacing:-.03em;margin:8px 0 12px}
+.lead{color:#3a4150;font-size:16px;line-height:1.65;margin:0 0 6px;max-width:680px}
+.sec2{margin:34px 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9aa1ad;font-weight:500}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+table.in{width:100%;border-collapse:collapse;font-size:14px}
+table.in th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500;text-align:right;padding:0 8px 8px;white-space:nowrap}
+table.in th:first-child{text-align:left}
+table.in td{padding:4px 8px}
+table.in td:first-child{padding-left:0}
+table.in input{width:100%;border:1px solid rgba(17,24,39,.14);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;background:#fff;color:#14161c;text-align:right;font-variant-numeric:tabular-nums}
+table.in input.nm{text-align:left;font-variant-numeric:normal}
+.rmv{border:1px solid rgba(17,24,39,.12);background:#fafbfc;color:#9aa1ad;border-radius:8px;width:30px;height:34px;cursor:pointer;font-size:15px}
+.rmv:hover{color:#d6453d;border-color:#d6453d}
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
+.addbtn{border:1px dashed rgba(99,91,255,.5);background:rgba(99,91,255,.05);color:#635bff;border-radius:9px;padding:9px 14px;font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.glob{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 12px;font:inherit;font-size:15px;width:120px;text-align:right;font-variant-numeric:tabular-nums}
+.corrwrap{flex:1 1 240px;min-width:220px}
+.corrwrap input[type=range]{width:100%;accent-color:#635bff}
+.cr{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px}
+.r{flex:1 1 150px;background:#fafbfc;border:1px solid rgba(17,24,39,.08);border-radius:12px;padding:14px 16px}
+.r.hero{flex:1 1 100%;background:transparent;border:0;border-bottom:1px solid rgba(17,24,39,.08);border-radius:0;padding:0 0 16px;display:flex;flex-wrap:wrap;gap:34px;align-items:flex-end}
+.hh{display:flex;flex-direction:column}
+.rl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:#9aa1ad;font-weight:500}
+.rv{font-family:Geist Mono,monospace;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:5px;font-size:22px}
+.r.hero .rv{font-size:42px;letter-spacing:-.04em}
+.sub{font-size:12px;color:#9aa1ad;margin-top:3px;font-family:Geist Mono,monospace}
+.up{color:#0f9d63}.down{color:#d6453d}.muted{color:#9aa1ad}
+.bars{margin-top:8px}
+.barrow{display:grid;grid-template-columns:120px 1fr 56px 1fr 56px;gap:10px;align-items:center;font-size:12.5px;padding:7px 0;border-bottom:1px solid rgba(17,24,39,.05)}
+.barrow.hd{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;border-bottom:1px solid rgba(17,24,39,.1)}
+.bname{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{height:8px;background:rgba(17,24,39,.06);border-radius:5px;overflow:hidden}
+.fill{height:100%;border-radius:5px}.fill.w{background:#9aa1ad}.fill.rc{background:#635bff}
+.pctn{text-align:right;font-family:Geist Mono,monospace;font-variant-numeric:tabular-nums;color:#3a4150}
+.body{color:#3a4150;font-size:15px;line-height:1.7;max-width:700px}.body b{color:#14161c}
+.formula{font-family:Geist Mono,monospace;font-size:13px;background:#0d0d12;color:#e6e6ea;border-radius:10px;padding:14px 16px;overflow:auto;line-height:1.7;white-space:pre-wrap}
+.cta{display:inline-flex;margin-top:8px;text-decoration:none;background:#635bff;color:#fff;border-radius:11px;padding:12px 18px;font-weight:500;font-size:14px}
+.rel{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.rel a{font-size:13px;color:#635bff;text-decoration:none;border:1px solid rgba(17,24,39,.1);border-radius:8px;padding:7px 11px}
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+@media(max-width:560px){.barrow{grid-template-columns:84px 1fr 46px;}.barrow .rc-cell,.barrow .rc-val{display:none}}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Portfolio analytics</div>
+<h1>Portfolio Risk Analyzer</h1>
+<p class="lead">Enter your holdings with an expected return and volatility for each. Quantora builds the covariance matrix and computes portfolio volatility, Sharpe ratio, diversification and the share of risk each position actually contributes - all in your browser.</p>
+
+<div class="sec2">Holdings</div>
+<div class="calc">
+<table class="in"><thead><tr><th>Asset</th><th>Weight %</th><th>Exp. return %</th><th>Volatility %</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+<div class="tools"><button class="addbtn" id="add">+ Add holding</button><button class="addbtn" id="norm">Normalize weights to 100%</button></div>
+<div class="glob">
+<div class="fld"><label>Risk-free rate %</label><input id="rf" type="number" step="any" value="4"></div>
+<div class="corrwrap fld"><label>Average correlation between assets: <span id="corrv" style="color:#14161c;font-family:Geist Mono,monospace">0.30</span></label><input id="corr" type="range" min="-0.5" max="0.99" step="0.01" value="0.30"></div>
 </div>
-<div class="wrap">
-  <h1>Portfolio</h1>
-  <div class="sub">Your book, live. Add holdings and Quantora pulls real prices to track market value and P&L across every position — saved privately on this device.</div>
+<div class="cr" id="hero" style="margin-top:22px;padding-top:20px;border-top:1px solid rgba(17,24,39,.08)"></div>
+<div class="sec2" style="margin:26px 0 6px">Allocation vs. risk contribution</div>
+<div class="bars" id="bars"></div>
+</div>
 
-  <div class="cards">
-    <div class="card"><div class="l">Market value</div><div class="v" id="tot_val">$0</div></div>
-    <div class="card"><div class="l">Cost basis</div><div class="v" id="tot_cost">$0</div></div>
-    <div class="card"><div class="l">Total P&L</div><div class="v" id="tot_pnl">$0</div></div>
-    <div class="card"><div class="l">Return</div><div class="v" id="tot_ret">0%</div></div>
-  </div>
+<div class="sec2">How it works</div>
+<div class="body">A portfolio's risk is <b>not</b> the average of its parts. Because positions move together, total volatility comes from the full <b>covariance matrix</b>, not just individual volatilities. Quantora computes portfolio variance as the weighted double-sum over every pair, then derives the metrics professionals watch:</div>
+<div class="formula" style="margin-top:12px">&sigma;p&sup2; = &Sigma;i &Sigma;j  wi wj &sigma;i &sigma;j &rho;ij        (portfolio variance)
+&sigma;p  = &radic;&sigma;p&sup2;                          (portfolio volatility)
+Sharpe = (&Sigma; wi&mu;i &minus; rf) / &sigma;p           (excess return per unit risk)
+Diversification ratio = (&Sigma; wi&sigma;i) / &sigma;p   (&ge; 1; higher = more benefit)
+Risk contribution(i) = wi (&Sigma;j wj &sigma;i &sigma;j &rho;ij) / &sigma;p&sup2;</div>
+<div class="body" style="margin-top:14px">The <b>risk contribution</b> is the key insight: a position can be a small slice of your capital yet drive a large slice of your risk. When the grey allocation bar and the purple risk bar diverge, that position is pulling more (or less) weight in risk than in dollars. The <b>diversification ratio</b> tells you how much the portfolio's correlation structure is reducing risk versus holding everything standalone.</div>
 
-  <div class="addbar">
-    <input class="sym" id="i_sym" placeholder="BTC / AAPL" autocomplete="off">
-    <select id="i_type"><option value="crypto">Crypto</option><option value="stock">Stock / ETF</option></select>
-    <input class="num" id="i_qty" type="number" step="any" placeholder="Quantity">
-    <input class="num" id="i_cost" type="number" step="any" placeholder="Avg cost (price)">
-    <button id="add">Add holding</button>
-    <button id="refresh" class="ai">↻ Refresh prices</button>
-    <button id="airead" class="ai">★ AI risk read</button>
-    <div class="hint">Crypto priced via Coinbase · stocks &amp; ETFs via Twelve Data · holdings stored only in this browser</div>
-  </div>
+<a class="cta" href="/engines.html">Open the full terminal &rarr;</a>
 
-  <div id="pread" class="read"></div>
-  <div id="alloc"></div>
-  <div id="tablewrap"></div>
-  <div class="note" id="note"></div>
+<div class="sec2">Related tools</div>
+<div class="rel"><a href="/sharpe-ratio-calculator.html">Sharpe ratio calculator</a><a href="/value-at-risk-calculator.html">Value at Risk</a><a href="/calculators.html">All calculators</a><a href="/engines.html">Terminal</a></div>
+
+<div class="foot">For analysis &amp; education - not investment advice. Expected returns and volatilities are your inputs; results are only as good as those assumptions. The model assumes a single average pairwise correlation. Quantora is not a registered investment adviser or broker-dealer.</div>
 </div>
 
 <script>
-var KEY='quantora_portfolio';
-var PFLAST=[];
-function getPF(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){ return []; } }
-function savePF(p){ localStorage.setItem(KEY, JSON.stringify(p)); }
-function money(n){ if(n===null||n===undefined||isNaN(n)) return '—'; var s=Math.abs(n)>=1?n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):n.toFixed(4); return '$'+s; }
-function pct(n){ return (n>=0?'+':'')+n.toFixed(2)+'%'; }
-function col(n){ return n>=0?'up':'down'; }
-
-async function priceCrypto(sym){
-  try{
-    var r=await fetch('https://api.exchange.coinbase.com/products/'+sym+'-USD/ticker');
-    var d=await r.json();
-    return d&&d.price?parseFloat(d.price):null;
-  }catch(e){ return null; }
-}
-async function priceStock(sym){
-  try{
-    var r=await fetch('/api/quote?symbol='+encodeURIComponent(sym));
-    var d=await r.json();
-    if(d&&d.closes&&d.closes.length) return parseFloat(d.closes[0]);
-    return null;
-  }catch(e){ return null; }
-}
-async function priceFor(h){ return h.type==='crypto'? priceCrypto(h.sym) : priceStock(h.sym); }
-
-function donut(items){
-  var tot=items.reduce(function(s,x){return s+x.value;},0); if(tot<=0) return '';
-  var cols=['#6366f1','#22d3ee','#10b981','#f59e0b','#ec4899','#8b5cf6','#0ea5e9','#fb7185','#14b8a6','#94a3b8'];
-  var sorted=items.slice().sort(function(a,b){return b.value-a.value;});
-  var r=56,sw=18,cx=72,C=2*Math.PI*r,off=0;
-  var rings=sorted.map(function(x,i){var frac=x.value/tot,dash=frac*C;var seg='<circle cx="72" cy="72" r="'+r+'" fill="none" stroke="'+cols[i%cols.length]+'" stroke-width="'+sw+'" stroke-dasharray="'+dash.toFixed(2)+' '+(C-dash).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 72 72)"/>';off+=dash;return seg;}).join('');
-  var leg=sorted.map(function(x,i){var p=(x.value/tot*100);return '<div class="li"><span class="sw" style="background:'+cols[i%cols.length]+'"></span><span class="nm">'+x.sym+'</span><span class="pc">'+p.toFixed(1)+'%</span></div>';}).join('');
-  return '<div class="ct">Allocation by market value</div>'+
-    '<div class="dwrap"><svg width="144" height="144" viewBox="0 0 144 144">'+rings+'</svg>'+
-    '<div class="dc"><span class="dl">Total</span><span class="dv">'+money(tot)+'</span></div></div>'+
-    '<div class="leg">'+leg+'</div>';
-}
-async function render(){
-  var pf=getPF();
-  var tablewrap=document.getElementById('tablewrap');
-  var note=document.getElementById('note');
-  if(!pf.length){
-    tablewrap.innerHTML='<div class="empty">No holdings yet. Add your first position above — e.g. <b>BTC</b>, Crypto, 0.5, 60000.</div>';
-    var al0=document.getElementById('alloc'); if(al0)al0.innerHTML='';
-    document.getElementById('tot_val').textContent='$0';
-    document.getElementById('tot_cost').textContent='$0';
-    document.getElementById('tot_pnl').textContent='$0';
-    document.getElementById('tot_ret').textContent='0%';
-    return;
+var DEF=[["US equities",40,8,16],["Intl equities",20,9,18],["Bonds",25,4,6],["Gold",15,6,15]];
+var rows=document.getElementById('rows');
+function rowHTML(n,w,r,v){return '<td><input class="nm" value="'+n+'"></td><td><input type="number" step="any" value="'+w+'"></td><td><input type="number" step="any" value="'+r+'"></td><td><input type="number" step="any" value="'+v+'"></td><td><button class="rmv" title="Remove">&times;</button></td>';}
+function bind(tr){tr.querySelectorAll('input').forEach(function(i){i.addEventListener('input',compute);});tr.querySelector('.rmv').addEventListener('click',function(){if(rows.children.length>1){tr.remove();compute();}});}
+function addRow(n,w,r,v){var tr=document.createElement('tr');tr.innerHTML=rowHTML(n||"Asset",w==null?10:w,r==null?7:r,v==null?15:v);rows.appendChild(tr);bind(tr);compute();}
+DEF.forEach(function(d){var tr=document.createElement('tr');tr.innerHTML=rowHTML(d[0],d[1],d[2],d[3]);rows.appendChild(tr);bind(tr);});
+document.getElementById('add').addEventListener('click',function(){addRow();});
+document.getElementById('norm').addEventListener('click',function(){var rs=[].slice.call(rows.children);var tot=rs.reduce(function(s,t){return s+(parseFloat(t.children[1].firstChild.value)||0);},0);if(tot>0)rs.forEach(function(t){var c=t.children[1].firstChild;c.value=(((parseFloat(c.value)||0)/tot)*100).toFixed(2);});compute();});
+var corr=document.getElementById('corr');corr.addEventListener('input',function(){document.getElementById('corrv').textContent=parseFloat(corr.value).toFixed(2);compute();});
+document.getElementById('rf').addEventListener('input',compute);
+function fmtP(x,d){d=d==null?1:d;return (x==null||!isFinite(x))?'—':x.toFixed(d)+'%';}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
+function compute(){
+  var rs=[].slice.call(rows.children);var names=[],w=[],mu=[],sg=[];
+  rs.forEach(function(t){names.push(t.children[0].firstChild.value||'Asset');w.push(parseFloat(t.children[1].firstChild.value)||0);mu.push((parseFloat(t.children[2].firstChild.value)||0)/100);sg.push((parseFloat(t.children[3].firstChild.value)||0)/100);});
+  var tot=w.reduce(function(a,b){return a+b;},0);var n=w.length;
+  var rf=(parseFloat(document.getElementById('rf').value)||0)/100;var rho=parseFloat(corr.value)||0;
+  var hero=document.getElementById('hero'),bars=document.getElementById('bars');
+  if(tot<=0){hero.innerHTML='<div class="r hero"><div class="hh"><div class="rl">Enter weights to begin</div></div></div>';bars.innerHTML='';return;}
+  var ww=w.map(function(x){return x/tot;});
+  var mp=0;for(var i=0;i<n;i++)mp+=ww[i]*mu[i];
+  var cw=[];for(var i=0;i<n;i++){var s=0;for(var j=0;j<n;j++){var cov=(i===j)?sg[i]*sg[i]:rho*sg[i]*sg[j];s+=ww[j]*cov;}cw.push(s);}
+  var varp=0;for(var i=0;i<n;i++)varp+=ww[i]*cw[i];
+  var sp=Math.sqrt(Math.max(varp,0));
+  var wavg=0;for(var i=0;i<n;i++)wavg+=ww[i]*sg[i];
+  var sharpe=sp>0?(mp-rf)/sp:NaN;
+  var divr=sp>0?wavg/sp:NaN;
+  var hhi=0;for(var i=0;i<n;i++)hhi+=ww[i]*ww[i];var effN=1/hhi;
+  var rc=[];for(var i=0;i<n;i++)rc.push(varp>0?(ww[i]*cw[i])/varp:0);
+  hero.innerHTML=
+    '<div class="r hero">'+
+      '<div class="hh"><div class="rl">Expected return</div><div class="rv">'+fmtP(mp*100,2)+'</div></div>'+
+      '<div class="hh"><div class="rl">Portfolio volatility</div><div class="rv">'+fmtP(sp*100,2)+'</div></div>'+
+      '<div class="hh"><div class="rl">Sharpe ratio</div><div class="rv '+(sharpe>=1?'up':(sharpe<0?'down':''))+'">'+(isFinite(sharpe)?sharpe.toFixed(2):'—')+'</div></div>'+
+    '</div>'+
+    '<div class="r"><div class="rl">Diversification ratio</div><div class="rv">'+(isFinite(divr)?divr.toFixed(2):'—')+'</div><div class="sub">wtd vol '+fmtP(wavg*100,1)+'</div></div>'+
+    '<div class="r"><div class="rl">Effective holdings</div><div class="rv">'+effN.toFixed(2)+'</div><div class="sub">of '+n+' &middot; HHI '+hhi.toFixed(3)+'</div></div>'+
+    '<div class="r"><div class="rl">Excess return</div><div class="rv">'+fmtP((mp-rf)*100,2)+'</div><div class="sub">over '+fmtP(rf*100,1)+' rf</div></div>'+
+    (Math.abs(tot-100)>0.5?'<div class="r" style="flex:1 1 100%"><div class="rl muted">Weights sum to '+tot.toFixed(1)+'% &mdash; normalized automatically for these results. Click &ldquo;Normalize&rdquo; to lock them in.</div></div>':'');
+  var maxv=Math.max.apply(null,ww),maxr=Math.max.apply(null,rc);
+  var h='<div class="barrow hd"><div>Asset</div><div>Allocation</div><div class="pctn">%</div><div class="rc-cell">Risk</div><div class="pctn rc-val">%</div></div>';
+  for(var i=0;i<n;i++){
+    h+='<div class="barrow"><div class="bname">'+esc(names[i])+'</div>'+
+       '<div class="track"><div class="fill w" style="width:'+(maxv>0?(ww[i]/maxv*100):0).toFixed(1)+'%"></div></div><div class="pctn">'+(ww[i]*100).toFixed(1)+'</div>'+
+       '<div class="track rc-cell"><div class="fill rc" style="width:'+(maxr>0?(rc[i]/maxr*100):0).toFixed(1)+'%"></div></div><div class="pctn rc-val">'+(rc[i]*100).toFixed(1)+'</div></div>';
   }
-  note.textContent='Pricing '+pf.length+' position'+(pf.length>1?'s':'')+'…';
-  var prices=await Promise.all(pf.map(priceFor));
-  var totVal=0, totCost=0; PFLAST=[];
-  var rows=pf.map(function(h,i){
-    var price=prices[i];
-    var qty=parseFloat(h.qty), cost=parseFloat(h.cost);
-    var value=(price!=null)? price*qty : null;
-    var basis=cost*qty;
-    var pnl=(value!=null)? value-basis : null;
-    var pnlPct=(value!=null && basis>0)? (pnl/basis*100) : null;
-    if(value!=null){ totVal+=value; totCost+=basis; PFLAST.push({sym:h.sym,type:h.type,value:value,pnl:pnl,pnlPct:pnlPct}); }
-    return '<tr>'+
-      '<td><span class="tk">'+h.sym+'</span><span class="badge">'+(h.type==='crypto'?'Crypto':'Stock')+'</span></td>'+
-      '<td>'+qty+'</td>'+
-      '<td>'+money(cost)+'</td>'+
-      '<td>'+(price!=null?money(price):'—')+'</td>'+
-      '<td>'+(value!=null?money(value):'—')+'</td>'+
-      '<td class="'+(pnl!=null?col(pnl):'')+'">'+(pnl!=null?money(pnl):'—')+'</td>'+
-      '<td class="'+(pnlPct!=null?col(pnlPct):'')+'">'+(pnlPct!=null?pct(pnlPct):'—')+'</td>'+
-      '<td><span class="x" data-i="'+i+'">✕</span></td></tr>';
-  }).join('');
-  var al=document.getElementById('alloc'); if(al) al.innerHTML=PFLAST.length?donut(PFLAST):'';
-  tablewrap.innerHTML='<table><thead><tr><th>Asset</th><th>Qty</th><th>Avg cost</th><th>Price</th><th>Value</th><th>P&amp;L</th><th>Return</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
-  var totPnl=totVal-totCost;
-  var totRet=totCost>0? (totPnl/totCost*100) : 0;
-  document.getElementById('tot_val').textContent=money(totVal);
-  document.getElementById('tot_cost').textContent=money(totCost);
-  var pe=document.getElementById('tot_pnl'); pe.textContent=money(totPnl); pe.className='v '+col(totPnl);
-  var re=document.getElementById('tot_ret'); re.textContent=pct(totRet); re.className='v '+col(totRet);
-  note.textContent='Updated '+new Date().toLocaleTimeString()+' · not investment advice';
-  Array.prototype.forEach.call(tablewrap.querySelectorAll('.x'),function(x){
-    x.onclick=function(){ var i=parseInt(x.getAttribute('data-i'),10); var p=getPF(); p.splice(i,1); savePF(p); render(); };
-  });
+  bars.innerHTML=h;
 }
-
-document.getElementById('add').onclick=function(){
-  var sym=document.getElementById('i_sym').value.trim().toUpperCase().replace(/[^A-Z0-9.]/g,'');
-  var type=document.getElementById('i_type').value;
-  var qty=parseFloat(document.getElementById('i_qty').value);
-  var cost=parseFloat(document.getElementById('i_cost').value);
-  if(!sym||!(qty>0)||!(cost>=0)){ document.getElementById('note').textContent='Enter a symbol, a positive quantity, and a cost.'; return; }
-  var p=getPF(); p.push({sym:sym,type:type,qty:qty,cost:cost}); savePF(p);
-  document.getElementById('i_sym').value=''; document.getElementById('i_qty').value=''; document.getElementById('i_cost').value='';
-  render();
-};
-document.getElementById('refresh').onclick=render;
-document.getElementById('airead').onclick=async function(){
-  var rw=document.getElementById('pread');
-  if(!PFLAST.length){ rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Add some holdings first, then I\'ll analyze your book.</p>'; return; }
-  var tv=PFLAST.reduce(function(s,h){return s+(h.value||0);},0);
-  rw.style.display='block'; rw.innerHTML='<h3>★ QUANTORA AI · PORTFOLIO RISK READ</h3><p style="color:#9aa0aa">Analyzing your book…</p>';
-  var ctx='PORTFOLIO (live, total value '+money(tv)+'):\n'+PFLAST.map(function(h){var w=tv>0?(h.value/tv*100):0; return '- '+h.sym+' ('+(h.type==='crypto'?'crypto':'stock')+'): value '+money(h.value)+' ('+w.toFixed(1)+'% of book), P&L '+money(h.pnl)+' ('+pct(h.pnlPct)+')';}).join('\n');
-  try{
-    var r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:ctx+'\n\nAnalyze this portfolio: concentration and diversification, which positions carry the most risk, and the overall risk posture. Be specific and cite weights. The live data is provided above; do not ask for it.'})});
-    var d=await r.json();
-    if(d.text){ rw.innerHTML='<h3>★ QUANTORA AI · PORTFOLIO RISK READ</h3><p>'+d.text.replace(/</g,'&lt;')+'</p><div class="foot">Written by Quantora AI (Llama 3.3) on your live book · not investment advice</div>'; }
-    else if(d.error==='no_key'){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>The AI read needs the <code>GROQ_KEY</code> set in Vercel. Your live P&L above is already running.</p>'; }
-    else { rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Could not analyze just now. Try again.</p>'; }
-  }catch(e){ rw.innerHTML='<h3>★ QUANTORA AI</h3><p>Network error. Try again.</p>'; }
-};
-document.getElementById('i_cost').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('add').click(); });
-render();
+compute();
 </script>
-  <script src="/nav.js"></script>
-<footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate; verify before acting. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
-<script defer src="/_vercel/insights/script.js"></script>
-</body>
-</html>
+</body></html>
