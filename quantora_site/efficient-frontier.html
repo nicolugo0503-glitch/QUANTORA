@@ -1,11 +1,11 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Efficient Frontier Optimizer - Min-Variance & Max-Sharpe Portfolios | Quantora</title>
-<meta name="description" content="Free Markowitz efficient frontier optimizer: computes the minimum-variance and maximum-Sharpe (tangency) portfolios, plots the frontier and the capital market line. Verified math, no login, runs in your browser.">
+<title>Efficient Frontier Optimizer - Min-Variance & Max-Sharpe (long-only or short) | Quantora</title>
+<meta name="description" content="Free Markowitz efficient frontier optimizer with long-only or short-selling modes: minimum-variance and maximum-Sharpe portfolios, the frontier, a random-portfolio cloud and the capital market line. Verified math, runs in your browser.">
 <link rel="canonical" href="https://www.usequantora.com/efficient-frontier.html">
-<meta property="og:title" content="Efficient Frontier Optimizer | Quantora"><meta property="og:description" content="Markowitz mean-variance optimization: min-variance and max-Sharpe portfolios with the frontier and capital market line. Free, in your browser.">
+<meta property="og:title" content="Efficient Frontier Optimizer | Quantora"><meta property="og:description" content="Markowitz optimization with long-only or short modes: min-variance and max-Sharpe portfolios, frontier and capital market line. Free, in your browser.">
 <meta property="og:type" content="website"><meta name="twitter:card" content="summary">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Quantora Efficient Frontier Optimizer","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0"},"description":"Markowitz efficient frontier, minimum-variance and tangency portfolios, computed client-side."}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Quantora Efficient Frontier Optimizer","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0"},"description":"Markowitz efficient frontier with long-only and short-selling modes, computed client-side."}</script>
 <link rel="stylesheet" href="/theme.css">
 <style>
 body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
@@ -25,10 +25,12 @@ table.in input.nm{text-align:left;font-variant-numeric:normal}
 .rmv:hover{color:#d6453d;border-color:#d6453d}
 .tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
 .addbtn{border:1px dashed rgba(99,91,255,.5);background:rgba(99,91,255,.05);color:#635bff;border-radius:9px;padding:9px 14px;font:inherit;font-size:13px;font-weight:500;cursor:pointer}
-.glob{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);align-items:end}
+.glob{display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);align-items:center}
 .fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
 .fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 12px;font:inherit;font-size:15px;width:120px;text-align:right;font-variant-numeric:tabular-nums}
-.corrwrap{flex:1 1 240px;min-width:220px}.corrwrap input[type=range]{width:100%;accent-color:#635bff}
+.corrwrap{flex:1 1 220px;min-width:200px}.corrwrap input[type=range]{width:100%;accent-color:#635bff}
+.tog{display:flex;align-items:center;gap:8px;font-size:13px;color:#3a4150;cursor:pointer;user-select:none}
+.tog input{width:16px;height:16px;accent-color:#635bff}
 .chartwrap{margin-top:20px;background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:12px;padding:8px}
 svg{display:block;width:100%;height:auto}
 .cr{display:flex;flex-wrap:wrap;gap:14px;margin-top:20px}
@@ -41,8 +43,7 @@ svg{display:block;width:100%;height:auto}
 .wrow{display:grid;grid-template-columns:1fr 52px;gap:8px;font-size:12.5px;padding:3px 0}
 .wrow .wn{color:#3a4150;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wrow .wv{text-align:right;font-family:Geist Mono,monospace;font-variant-numeric:tabular-nums}
-.neg{color:#d6453d}
-.up{color:#0f9d63}.down{color:#d6453d}
+.neg{color:#d6453d}.up{color:#0f9d63}.down{color:#d6453d}
 .body{color:#3a4150;font-size:15px;line-height:1.7;max-width:700px}.body b{color:#14161c}
 .formula{font-family:Geist Mono,monospace;font-size:13px;background:#0d0d12;color:#e6e6ea;border-radius:10px;padding:14px 16px;overflow:auto;line-height:1.7;white-space:pre-wrap}
 .cta{display:inline-flex;margin-top:8px;text-decoration:none;background:#635bff;color:#fff;border-radius:11px;padding:12px 18px;font-weight:500;font-size:14px}
@@ -53,7 +54,7 @@ svg{display:block;width:100%;height:auto}
 <body><div id="qnav"></div><div class="sw">
 <div class="eyb">Quantora &middot; Portfolio optimization</div>
 <h1>Efficient Frontier Optimizer</h1>
-<p class="lead">Enter each asset's expected return and volatility. Quantora runs Markowitz mean-variance optimization to find the <b>minimum-variance</b> and <b>maximum-Sharpe</b> portfolios, then plots the efficient frontier and the capital market line.</p>
+<p class="lead">Enter each asset's expected return and volatility. Quantora runs Markowitz mean-variance optimization to find the <b>minimum-variance</b> and <b>maximum-Sharpe</b> portfolios, then plots the efficient frontier and the capital market line. Toggle short-selling on or off.</p>
 
 <div class="sec2">Assets</div>
 <div class="calc">
@@ -62,6 +63,7 @@ svg{display:block;width:100%;height:auto}
 <div class="glob">
 <div class="fld"><label>Risk-free rate %</label><input id="rf" type="number" step="any" value="4"></div>
 <div class="corrwrap fld"><label>Average correlation: <span id="corrv" style="color:#14161c;font-family:Geist Mono,monospace">0.30</span></label><input id="corr" type="range" min="-0.4" max="0.95" step="0.01" value="0.30"></div>
+<label class="tog"><input type="checkbox" id="short" checked> Allow short selling</label>
 </div>
 <div class="chartwrap"><div id="chart"></div></div>
 <div class="cr" id="cards"></div>
@@ -69,19 +71,20 @@ svg{display:block;width:100%;height:auto}
 </div>
 
 <div class="sec2">How it works</div>
-<div class="body">For a set of assets with expected returns &mu; and a covariance matrix &Sigma;, every fully-invested portfolio plots somewhere on the risk-return plane. The <b>efficient frontier</b> is the upper edge - the best return for each level of risk. Two portfolios on it matter most: the <b>minimum-variance</b> portfolio (lowest possible risk) and the <b>tangency</b> portfolio (highest Sharpe ratio, where a line from the risk-free rate just touches the frontier). Mixing the tangency portfolio with cash traces the <b>capital market line</b> - the best risk-return trade-off available.</div>
-<div class="formula" style="margin-top:12px">A = 1' &Sigma;&#8315;&sup1; 1     B = 1' &Sigma;&#8315;&sup1; &mu;     C = &mu;' &Sigma;&#8315;&sup1; &mu;     D = AC &minus; B&sup2;
-Min-variance:  w = &Sigma;&#8315;&sup1;1 / A          return = B/A,  variance = 1/A
-Tangency:      w = &Sigma;&#8315;&sup1;(&mu;&minus;rf&middot;1) / 1'&Sigma;&#8315;&sup1;(&mu;&minus;rf&middot;1)
-Frontier:      &sigma;&sup2;(&mu;t) = (A&mu;t&sup2; &minus; 2B&mu;t + C) / D</div>
-<div class="body" style="margin-top:14px">This solves the <b>unconstrained</b> problem, so optimal weights may go negative (short positions). That is the textbook frontier; real mandates often add a no-short or position-cap constraint, which bends the frontier inward.</div>
+<div class="body">For a set of assets with expected returns &mu; and a covariance matrix &Sigma;, every portfolio plots somewhere on the risk-return plane. The <b>efficient frontier</b> is the upper edge - the best return for each level of risk. Two portfolios on it matter most: the <b>minimum-variance</b> portfolio (lowest possible risk) and the <b>tangency</b> portfolio (highest Sharpe ratio, where a line from the risk-free rate just touches the frontier). Mixing the tangency portfolio with cash traces the <b>capital market line</b>.</div>
+<div class="formula" style="margin-top:12px">With short-selling (closed form):
+  A = 1' &Sigma;&#8315;&sup1; 1   B = 1' &Sigma;&#8315;&sup1; &mu;   C = &mu;' &Sigma;&#8315;&sup1; &mu;   D = AC &minus; B&sup2;
+  Min-variance: w = &Sigma;&#8315;&sup1;1 / A      Tangency: w = &Sigma;&#8315;&sup1;(&mu;&minus;rf) / 1'&Sigma;&#8315;&sup1;(&mu;&minus;rf)
+Long-only (no closed form): projected-gradient over the simplex {w &ge; 0, &Sigma;w = 1},
+  with a Monte-Carlo cloud of random long-only portfolios shown behind the frontier.</div>
+<div class="body" style="margin-top:14px">Unconstrained optimization can produce large short positions because it amplifies small estimated edges. Turning <b>short-selling off</b> restricts every weight to be non-negative - the realistic case for most mandates - which lowers the attainable Sharpe but yields investable weights. The faint dots are thousands of random long-only portfolios; the frontier is their upper envelope.</div>
 
 <a class="cta" href="/portfolio.html">Analyze a fixed portfolio &rarr;</a>
 
 <div class="sec2">Related tools</div>
 <div class="rel"><a href="/portfolio.html">Portfolio risk analyzer</a><a href="/sharpe-ratio-calculator.html">Sharpe ratio</a><a href="/calculators.html">All calculators</a><a href="/engines.html">Terminal</a></div>
 
-<div class="foot">For analysis &amp; education - not investment advice. Results depend entirely on your expected-return, volatility and correlation inputs, which are uncertain. Mean-variance optima are sensitive to those estimates. Quantora is not a registered investment adviser or broker-dealer.</div>
+<div class="foot">For analysis &amp; education - not investment advice. Results depend entirely on your expected-return, volatility and correlation inputs, which are uncertain; mean-variance optima are highly sensitive to those estimates. Quantora is not a registered investment adviser or broker-dealer.</div>
 </div>
 
 <script>
@@ -94,54 +97,59 @@ DEF.forEach(function(d){var tr=document.createElement('tr');tr.innerHTML=rowHTML
 document.getElementById('add').addEventListener('click',function(){addRow();});
 var corr=document.getElementById('corr');corr.addEventListener('input',function(){document.getElementById('corrv').textContent=parseFloat(corr.value).toFixed(2);compute();});
 document.getElementById('rf').addEventListener('input',compute);
+document.getElementById('short').addEventListener('change',compute);
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];});}
 function pct(x,d){d=d==null?2:d;return (x==null||!isFinite(x))?'—':(x*100).toFixed(d)+'%';}
-// matrix inverse (Gauss-Jordan)
-function inv(M){var n=M.length,A=M.map(function(r,i){return r.concat(Array.from({length:n},function(_,j){return i===j?1:0;}));});
-  for(var c=0;c<n;c++){var p=c;for(var r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;if(Math.abs(A[p][c])<1e-12)return null;var t=A[p];A[p]=A[c];A[c]=t;var pv=A[c][c];for(var j=0;j<2*n;j++)A[c][j]/=pv;for(var r=0;r<n;r++){if(r===c)continue;var f=A[r][c];for(var j=0;j<2*n;j++)A[r][j]-=f*A[c][j];}}
-  return A.map(function(r){return r.slice(n);});}
+function inv(M){var n=M.length,A=M.map(function(r,i){return r.concat(Array.from({length:n},function(_,j){return i===j?1:0;}));});for(var c=0;c<n;c++){var p=c;for(var r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;if(Math.abs(A[p][c])<1e-12)return null;var t=A[p];A[p]=A[c];A[c]=t;var pv=A[c][c];for(var j=0;j<2*n;j++)A[c][j]/=pv;for(var r=0;r<n;r++){if(r===c)continue;var f=A[r][c];for(var j=0;j<2*n;j++)A[r][j]-=f*A[c][j];}}return A.map(function(r){return r.slice(n);});}
 function mv(M,v){return M.map(function(r){var s=0;for(var j=0;j<v.length;j++)s+=r[j]*v[j];return s;});}
 function dot(a,b){var s=0;for(var i=0;i<a.length;i++)s+=a[i]*b[i];return s;}
+function projSimplex(v){var n=v.length,u=v.slice().sort(function(a,b){return b-a;}),cs=0,theta=0;for(var i=0;i<n;i++){cs+=u[i];if(u[i]+(1-cs)/(i+1)>0)theta=(cs-1)/(i+1);}return v.map(function(x){return Math.max(x-theta,0);});}
+function minVarLO(S){var n=S.length,w=Array(n).fill(1/n);for(var k=0;k<5000;k++){var g=mv(S,w).map(function(x){return 2*x;});w=projSimplex(w.map(function(x,i){return x-3*g[i];}));}return w;}
+function maxSharpeLO(S,mu,rf){var n=S.length,w=Array(n).fill(1/n);for(var k=0;k<6000;k++){var sw=mv(S,w),den=Math.sqrt(Math.max(dot(w,sw),1e-12)),num=dot(w,mu)-rf;var g=mu.map(function(m,i){return m/den-num*sw[i]/(den*den*den);});w=projSimplex(w.map(function(x,i){return x+0.5*g[i];}));}return w;}
 function compute(){
   var rs=[].slice.call(rows.children);var names=[],mu=[],sg=[];
   rs.forEach(function(t){names.push(t.children[0].firstChild.value||'Asset');mu.push((parseFloat(t.children[1].firstChild.value)||0)/100);sg.push((parseFloat(t.children[2].firstChild.value)||0)/100);});
   var n=mu.length,rho=parseFloat(corr.value)||0,rf=(parseFloat(document.getElementById('rf').value)||0)/100;
+  var shorts=document.getElementById('short').checked;
   var note=document.getElementById('note'),cards=document.getElementById('cards'),chart=document.getElementById('chart');
   var S=[];for(var i=0;i<n;i++){S[i]=[];for(var j=0;j<n;j++)S[i][j]=(i===j)?sg[i]*sg[i]:rho*sg[i]*sg[j];}
-  var Si=inv(S);
-  if(!Si){note.textContent='Covariance matrix is singular at this correlation - adjust inputs.';cards.innerHTML='';chart.innerHTML='';return;}
-  var ones=Array(n).fill(1);
-  var Si1=mv(Si,ones),Simu=mv(Si,mu);
-  var A=dot(ones,Si1),B=dot(ones,Simu),C=dot(mu,Simu),D=A*C-B*B;
-  // min-variance
-  var wmv=Si1.map(function(x){return x/A;});var rmv=B/A,vmv=1/A,smv=Math.sqrt(Math.max(vmv,0));
-  // tangency
-  var ex=mu.map(function(m){return m-rf;});var Siex=mv(Si,ex);var den=dot(ones,Siex);
-  var wt=Siex.map(function(x){return x/den;});var rt=dot(wt,mu);var vt=dot(wt,mv(S,wt));var st=Math.sqrt(Math.max(vt,0));
-  var sharpeT=st>0?(rt-rf)/st:NaN;
-  // frontier sweep
-  function frVar(t){return (A*t*t-2*B*t+C)/D;}
-  var loR=Math.min.apply(null,mu),hiR=Math.max.apply(null,mu);
-  var y0=Math.min(0,loR,rmv)-0.01,y1=hiR*1.18+0.01;
-  var maxAssetVol=Math.max.apply(null,sg);
-  var x1=Math.max(maxAssetVol,smv,st)*1.2+0.01,x0=0;
-  // chart geometry
+  var wmv,rmv,smv,wt,rt,st,sharpeT,cloud=[],front=[];
+  if(shorts){
+    var Si=inv(S);
+    if(!Si){note.textContent='Covariance matrix is singular at this correlation - adjust inputs.';cards.innerHTML='';chart.innerHTML='';return;}
+    var ones=Array(n).fill(1),Si1=mv(Si,ones),Simu=mv(Si,mu);
+    var A=dot(ones,Si1),B=dot(ones,Simu),C=dot(mu,Simu),D=A*C-B*B;
+    wmv=Si1.map(function(x){return x/A;});rmv=B/A;smv=Math.sqrt(Math.max(1/A,0));
+    var ex=mu.map(function(m){return m-rf;}),Siex=mv(Si,ex),den=dot(ones,Siex);
+    wt=Siex.map(function(x){return x/den;});rt=dot(wt,mu);st=Math.sqrt(Math.max(dot(wt,mv(S,wt)),0));sharpeT=st>0?(rt-rf)/st:NaN;
+    var loR=Math.min.apply(null,mu),hiR=Math.max.apply(null,mu),y0=Math.min(0,loR,rmv)-0.01,y1=hiR*1.18+0.01;
+    for(var k=0;k<=140;k++){var t=y0+(y1-y0)*k/140;var vv=(A*t*t-2*B*t+C)/D;if(vv<0)continue;front.push([Math.sqrt(vv),t]);}
+  } else {
+    wmv=minVarLO(S);rmv=dot(wmv,mu);smv=Math.sqrt(Math.max(dot(wmv,mv(S,wmv)),0));
+    wt=maxSharpeLO(S,mu,rf);rt=dot(wt,mu);st=Math.sqrt(Math.max(dot(wt,mv(S,wt)),0));sharpeT=st>0?(rt-rf)/st:NaN;
+    var N=11000;var pts=[];for(var k=0;k<N;k++){var w=[],s=0;for(var i=0;i<n;i++){var e=-Math.log(Math.random()+1e-12);w.push(e);s+=e;}for(var i=0;i<n;i++)w[i]/=s;var rr=dot(w,mu),vv=Math.sqrt(Math.max(dot(w,mv(S,w)),0));pts.push([vv,rr]);}
+    for(var k=0;k<pts.length;k+=Math.ceil(N/900))cloud.push(pts[k]);
+    var lo=Math.min.apply(null,pts.map(function(p){return p[0];})),hi=Math.max.apply(null,pts.map(function(p){return p[0];})),Bn=46,best=Array(Bn).fill(-Infinity),bv=Array(Bn);
+    pts.forEach(function(p){var bi=Math.min(Bn-1,Math.floor((p[0]-lo)/(hi-lo+1e-12)*Bn));if(p[1]>best[bi]){best[bi]=p[1];bv[bi]=p[0];}});
+    for(var i=0;i<Bn;i++)if(best[i]>-Infinity&&bv[i]>=smv-1e-9)front.push([bv[i],best[i]]);
+    front.sort(function(a,b){return a[0]-b[0];});
+  }
+  // axis ranges
+  var allV=sg.concat([smv,st]).concat(cloud.map(function(p){return p[0];})),allR=mu.concat([rmv,rt,rf]).concat(cloud.map(function(p){return p[1];}));
+  var x0=0,x1=Math.max.apply(null,allV)*1.15+0.005;
+  var y0=Math.min.apply(null,allR.concat([0]))-0.005,y1=Math.max.apply(null,allR)*1.12+0.005;
   var W=560,H=360,pl=52,pr=16,pt=16,pb=40;
   function X(v){return pl+(v-x0)/(x1-x0)*(W-pl-pr);}
   function Y(v){return H-pb-(v-y0)/(y1-y0)*(H-pt-pb);}
-  var path='';for(var k=0;k<=120;k++){var t=y0+(y1-y0)*k/120;var vv=frVar(t);if(vv<0)continue;var sv=Math.sqrt(vv);var px=X(sv),py=Y(t);path+=(path?'L':'M')+px.toFixed(1)+','+py.toFixed(1);}
-  // efficient (upper) half only for emphasis: from min-var upward
-  var eff='';for(var k=0;k<=120;k++){var t=rmv+(y1-rmv)*k/120;var vv=frVar(t);if(vv<0)continue;var sv=Math.sqrt(vv);eff+=(eff?'L':'M')+X(sv).toFixed(1)+','+Y(t).toFixed(1);}
-  // CML
-  var slope=st>0?(rt-rf)/st:0;var cmlY=rf+slope*x1;
-  // gridlines + ticks
   var g='';for(var gi=0;gi<=4;gi++){var gv=x0+(x1-x0)*gi/4;g+='<line x1="'+X(gv)+'" y1="'+pt+'" x2="'+X(gv)+'" y2="'+(H-pb)+'" stroke="rgba(17,24,39,.05)"/>'+'<text x="'+X(gv)+'" y="'+(H-pb+16)+'" font-size="10" fill="#9aa1ad" text-anchor="middle" font-family="Geist Mono,monospace">'+(gv*100).toFixed(0)+'%</text>';}
   for(var gi=0;gi<=4;gi++){var gv=y0+(y1-y0)*gi/4;g+='<line x1="'+pl+'" y1="'+Y(gv)+'" x2="'+(W-pr)+'" y2="'+Y(gv)+'" stroke="rgba(17,24,39,.05)"/>'+'<text x="'+(pl-6)+'" y="'+(Y(gv)+3)+'" font-size="10" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+(gv*100).toFixed(0)+'%</text>';}
+  var cl='';cloud.forEach(function(p){cl+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="1.3" fill="rgba(99,91,255,.18)"/>';});
+  var fp='';front.forEach(function(p){fp+=(fp?'L':'M')+X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1);});
+  var slope=st>0?(rt-rf)/st:0,cmlY=rf+slope*x1;
   var assetDots='';for(var i=0;i<n;i++){assetDots+='<circle cx="'+X(sg[i])+'" cy="'+Y(mu[i])+'" r="3.5" fill="#9aa1ad"/>'+'<text x="'+(X(sg[i])+6)+'" y="'+(Y(mu[i])+3)+'" font-size="10" fill="#6b7280" font-family="Geist,sans-serif">'+esc(names[i])+'</text>';}
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+g+
-    '<line x1="'+X(0)+'" y1="'+Y(rf)+'" x2="'+X(x1)+'" y2="'+Y(cmlY)+'" stroke="#0f9d63" stroke-width="1.5" stroke-dasharray="5 4" opacity=".8"/>'+
-    '<path d="'+path+'" fill="none" stroke="rgba(99,91,255,.35)" stroke-width="1.5"/>'+
-    '<path d="'+eff+'" fill="none" stroke="#635bff" stroke-width="2.5"/>'+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+g+cl+
+    '<line x1="'+X(0)+'" y1="'+Y(rf)+'" x2="'+X(x1)+'" y2="'+Y(cmlY)+'" stroke="#0f9d63" stroke-width="1.5" stroke-dasharray="5 4" opacity=".85"/>'+
+    '<path d="'+fp+'" fill="none" stroke="#635bff" stroke-width="2.5"/>'+
     assetDots+
     '<circle cx="'+X(smv)+'" cy="'+Y(rmv)+'" r="5" fill="#14161c"/>'+
     '<circle cx="'+X(st)+'" cy="'+Y(rt)+'" r="5.5" fill="#635bff" stroke="#fff" stroke-width="1.5"/>'+
@@ -156,8 +164,8 @@ function compute(){
     '<div class="pcard"><h3><span class="dot" style="background:#14161c"></span>Minimum-variance</h3>'+
       '<div class="pstat"><div><div class="rl">Return</div><div class="rv">'+pct(rmv)+'</div></div><div><div class="rl">Volatility</div><div class="rv">'+pct(smv)+'</div></div><div><div class="rl">Sharpe</div><div class="rv">'+(smv>0?((rmv-rf)/smv).toFixed(2):'—')+'</div></div></div>'+
       weightsHTML(wmv)+'</div>';
-  var anyNeg=wt.some(function(x){return x<-0.001;})||wmv.some(function(x){return x<-0.001;});
-  note.textContent=anyNeg?'Negative weights indicate short positions in the unconstrained optimum. The solid purple curve is the efficient frontier; the dashed green line is the capital market line.':'The solid purple curve is the efficient frontier; the dashed green line is the capital market line from the risk-free rate through the tangency portfolio.';
+  if(shorts){var anyNeg=wt.some(function(x){return x<-0.001;})||wmv.some(function(x){return x<-0.001;});note.textContent=(anyNeg?'Negative weights are short positions in the unconstrained optimum. ':'')+'Solid purple curve = efficient frontier; dashed green = capital market line. Turn off short-selling for investable (long-only) weights.';}
+  else{note.textContent='Long-only optimum (all weights ≥ 0), solved by projected gradient over the simplex. Faint dots are ~11,000 random long-only portfolios; the purple curve is their efficient envelope; dashed green = capital market line.';}
 }
 compute();
 </script>
