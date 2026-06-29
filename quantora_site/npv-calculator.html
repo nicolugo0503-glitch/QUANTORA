@@ -1,0 +1,58 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NPV Calculator - Net Present Value, Free | Quantora</title>
+<meta name="description" content="Free NPV calculator: net present value of a cash-flow series at a chosen discount rate. Verified math, no login.">
+<link rel="canonical" href="https://www.usequantora.com/npv-calculator.html">
+<meta property="og:title" content="NPV Calculator - Net Present Value, Free | Quantora"><meta property="og:description" content="Free NPV calculator: net present value of a cash-flow series at a chosen discount rate. Verified math, no login.">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:780px;margin:0 auto;padding:34px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(28px,3.8vw,40px);font-weight:600;letter-spacing:-.03em;margin:8px 0 12px}
+.lead{color:#3a4150;font-size:16px;line-height:1.65;margin:0 0 6px}
+.sec2{margin:34px 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9aa1ad;font-weight:500}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.ci{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input,.fld textarea,.fld select{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:10px 12px;font:inherit;font-size:15px;background:#fff;color:#14161c}
+.fld.full{grid-column:1/-1} textarea{min-height:70px;font-family:Geist Mono,monospace;font-size:12.5px}
+.cr{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px;padding-top:20px;border-top:1px solid rgba(17,24,39,.08)}
+.r{flex:1 1 130px;background:#fafbfc;border:1px solid rgba(17,24,39,.08);border-radius:12px;padding:14px 16px}
+.r.hero{flex:1 1 100%;background:transparent;border:0;border-bottom:1px solid rgba(17,24,39,.08);border-radius:0;padding:0 0 14px}
+.rl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:#9aa1ad;font-weight:500}
+.rv{font-family:Geist Mono,monospace;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:5px;font-size:22px}
+.r.hero .rv{font-size:46px;letter-spacing:-.04em}
+.up{color:#0f9d63}.down{color:#d6453d}
+.body{color:#3a4150;font-size:15px;line-height:1.7;max-width:680px}.body b{color:#14161c}
+.formula{font-family:Geist Mono,monospace;font-size:13px;background:#0d0d12;color:#e6e6ea;border-radius:10px;padding:14px 16px;overflow:auto;line-height:1.6;white-space:pre-wrap}
+.cta{display:inline-flex;margin-top:8px;text-decoration:none;background:#635bff;color:#fff;border-radius:11px;padding:12px 18px;font-weight:500;font-size:14px}
+.rel{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.rel a{font-size:13px;color:#635bff;text-decoration:none;border:1px solid rgba(17,24,39,.1);border-radius:8px;padding:7px 11px}
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Free calculator</div>
+<h1>NPV Calculator</h1>
+<p class="lead">Compute the net present value (NPV) of a series of cash flows at your discount rate. Positive NPV means the investment adds value.</p>
+<div class="sec2">Calculator</div>
+<div class="calc"><div class="ci"><div class="fld"><label>Discount rate %</label><input id="rate" type="number" step="any" value="10"></div><div class="fld full"><label>Cash flows (t=0 first)</label><textarea id="cf">-1000,300,400,400,300</textarea></div></div><div class="cr" id="out"></div></div>
+<div class="sec2">How it works</div>
+<div class="body"><b>Net present value</b> discounts every future cash flow back to today and sums them. If the total is positive, the investment is worth more than it costs at your required rate of return; if negative, it destroys value.</div>
+<div class="formula">NPV = sum CFt / (1 + rate)^t</div>
+<div class="sec2">Run it on live data</div>
+<p class="body">This uses the same verified engine that powers the Quantora terminal. Open the terminal for live market data, charts and 95 other engines &mdash; or browse <a href="/calculators.html">all free calculators</a>.</p>
+<a class="cta" href="/engines.html">Open the terminal &rarr;</a>
+<div class="sec2">Related calculators</div><div class="rel"><a href="/irr-calculator.html">IRR</a><a href="/dcf-calculator.html">DCF valuation</a><a href="/bond-duration-calculator.html">Bond duration & convexity</a></div>
+<div class="foot">Computed in your browser with standard published formulas via Quantora's verified library. For analysis &amp; education &mdash; not investment advice. Quantora is not a registered investment adviser or broker-dealer.</div>
+</div>
+<script>
+function num(v,d){d=d==null?2:d;return (v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function g(id){return document.getElementById(id);}
+function val(id){return parseFloat(g(id).value);}
+function nums(id){return (g(id).value||'').split(/[ ,\n]+/).map(parseFloat).filter(function(x){return isFinite(x);});}
+function cell(l,v,cls,hero){return '<div class="r'+(hero?' hero':'')+'"><div class="rl">'+l+'</div><div class="rv '+(cls||'')+'">'+v+'</div></div>';}
+function run(){ var Q=window.QENG; try{ var rate=val('rate')/100,cf=nums('cf'); if(cf.length<1) throw 0; var v=Q.npv(rate,cf); g('out').innerHTML=cell('NPV','$'+num(v,2),(v>=0?'up':'down'),true)+cell('Discount rate',num(val('rate'),1)+'%')+cell('Periods',cf.length); }catch(e){ g('out').innerHTML='<div class="r">Enter valid inputs.</div>'; } }
+document.querySelectorAll('.calc input,.calc textarea,.calc select').forEach(function(el){el.addEventListener('input',run);});
+run();
+</script>
+</body></html>
