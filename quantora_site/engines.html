@@ -2441,7 +2441,7 @@ buildCard(document.getElementById('g_risk'),{
   var current=null;
   function doShow(node, slug){
     var swap=function(){ if(current&&current!==node) holder.appendChild(current); if(node.classList) node.classList.remove('qreveal'); stage.innerHTML=''; stage.appendChild(node); current=node; if(node.__run){ try{ node.__run(); }catch(_e){} } markActive(slug); if(slug&&slug!=='home'){ pushRecent(slug); renderRecents(); } localStorage.setItem('qnav_last', slug||'home'); };
-    if(document.startViewTransition && !RM){ try{ document.startViewTransition(swap); }catch(e){ swap(); } } else swap();
+    if(document.startViewTransition && !RM){ try{ var _vt=document.startViewTransition(swap); if(_vt){['finished','ready','updateCallbackDone'].forEach(function(k){ if(_vt[k]&&_vt[k].catch)_vt[k].catch(function(){}); }); } }catch(e){ swap(); } } else swap();
   }
   function showSlug(slug){ if(slug==='home'||!bySlug[slug]){ doShow(home,'home'); populatePulse(); populateMarkets(); return; } doShow(bySlug[slug].node, slug); }
 
