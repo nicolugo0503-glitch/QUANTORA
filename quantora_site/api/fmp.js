@@ -257,6 +257,20 @@ async function renderAI(req, res){
   var prov = (process.env.QAI_PROVIDER||'').toLowerCase();
   if(!prov) prov = oaiKey ? 'openai' : (antKey ? 'anthropic' : '');
   if(!prov || (prov==='openai'&&!oaiKey) || (prov==='anthropic'&&!antKey)){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_key_needed' })); return; }
+
+  if(mode==='parse'){
+    var fields=body.fields||[]; if(typeof fields==='string'){ try{ fields=JSON.parse(fields); }catch(e){ fields=[]; } }
+    var labels=fields.map(function(f){return typeof f==='string'?f:(f&&f.label||'');}).filter(Boolean).slice(0,40);
+    var psys="You extract numeric input values from a plain-English description for a finance calculator. Return ONLY strict minified JSON: an object mapping each provided field label (verbatim) to a number. Omit fields not mentioned. Express percentages as the number typed in a percent box (20 for 20%). No prose.";
+    var pmsg="Fields: "+JSON.stringify(labels)+"\nDescription: "+q;
+    var raw="";
+    try{
+      if(prov==='openai'){ var pr=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+oaiKey,'content-type':'application/json'},body:JSON.stringify({model:process.env.QAI_MODEL||'gpt-4o-mini',messages:[{role:'system',content:psys},{role:'user',content:pmsg}],max_tokens:500,response_format:{type:'json_object'}})}); var pj=await pr.json(); if(pj.error){ res.statusCode=200; res.end(JSON.stringify({error:'ai_error',detail:(pj.error&&pj.error.message)||'AI error'})); return; } raw=(pj.choices&&pj.choices[0]&&pj.choices[0].message&&pj.choices[0].message.content)||""; }
+      else { var pa=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':antKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:process.env.QAI_MODEL||'claude-3-5-haiku-latest',max_tokens:500,system:psys,messages:[{role:'user',content:pmsg+"\nReturn only JSON."}]})}); var paj=await pa.json(); if(paj.type==='error'||paj.error){ res.statusCode=200; res.end(JSON.stringify({error:'ai_error',detail:(paj.error&&paj.error.message)||'AI error'})); return; } raw=(paj.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join(""); }
+    }catch(e){ res.statusCode=200; res.end(JSON.stringify({error:'server_error',message:String(e&&e.message||e)})); return; }
+    var vals={}; try{ vals=JSON.parse((raw||'').replace(/```json|```/g,'').trim()); }catch(e){ vals={}; }
+    res.statusCode=200; res.end(JSON.stringify({ values:vals })); return;
+  }
   var Q; try{ Q=require('../engines.js'); }catch(e){ Q=null; }
   var mdCache = {};
   async function doTool(name, input){
