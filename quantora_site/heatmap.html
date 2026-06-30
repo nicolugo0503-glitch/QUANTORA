@@ -1,120 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quantora · Heatmap — Live</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="alternate icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<style>
-:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
-a{color:inherit;text-decoration:none}
-.nav{display:flex;align-items:center;gap:18px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
-.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-.nav a.link{color:var(--mut);font-size:14px}
-.nav a.link:hover,.nav a.active{color:var(--ink)}
-.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
-.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
-.wrap{max-width:1280px;margin:0 auto;padding:30px 24px 60px}
-h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
-.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
-.tabs{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
-.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:550;cursor:pointer;color:#333}
-.tab:hover{border-color:#bbb}
-.tab.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
-.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:16px;min-height:660px}
-</style>
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Quantora">
-<meta property="og:title" content="Quantora · Heatmap — Live">
-<meta property="og:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta property="og:url" content="https://www.usequantora.com/heatmap.html">
-<meta property="og:image" content="https://www.usequantora.com/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Quantora · Heatmap — Live">
-<meta name="twitter:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta name="twitter:image" content="https://www.usequantora.com/og.png">
-<meta name="description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Market Movers Heatmap | Quantora</title>
+<meta name="description" content="A live heatmap of the day's biggest market movers - gainers and most active - colored by move. Free, no login.">
 <link rel="canonical" href="https://www.usequantora.com/heatmap.html">
-</head>
-<body>
-<div class="nav">
-  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
-  <a href="/platform.html" class="link">Platform</a>
-  <a href="/pulse.html" class="link">Pulse</a>
-  <a href="/brief.html" class="link">Brief</a>
-  <a href="/markets.html" class="link">Markets</a>
-  <a href="/live.html" class="link">Live</a>
-  <a href="/coins.html" class="link">Coins</a>
-  <a href="/defi.html" class="link">DeFi</a>
-  <a href="/chain.html" class="link">Chain</a>
-  <a href="/dex.html" class="link">DEX</a>
-  <a href="/chart.html" class="link">Chart</a>
-  <a href="/heatmap.html" class="link active">Heatmap</a>
-  <a href="/screener.html" class="link">Screener</a>
-  <a href="/stocks.html" class="link">Stocks</a>
-  <a href="/global.html" class="link">Global</a>
-  <a href="/signals.html" class="link">Signals</a>
-  <a href="/news.html" class="link">News</a>
-  <a href="/macro.html" class="link">Macro</a>
-  <a href="/fundamentals.html" class="link">Fundamentals</a>
-  <a href="/calendar.html" class="link">Calendar</a>
-  <a href="/analyst.html" class="link">Analyst</a>
-  <a href="/ask.html" class="link">Ask</a>
-  <a href="/portfolio.html" class="link">Portfolio</a>
-  <a href="/watchlist.html" class="link">Watchlist</a>
-  <a href="/alerts.html" class="link">Alerts</a>
-  <div class="right"><span class="dot"></span> Live · market map</div>
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:980px;margin:0 auto;padding:34px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 14px}
+.sec2{margin:26px 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9aa1ad;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.tile{border-radius:11px;padding:13px 14px;text-decoration:none;color:#14161c;border:1px solid rgba(17,24,39,.06);min-height:62px;display:flex;flex-direction:column;justify-content:space-between}
+.tile .s{font-family:Geist Mono,monospace;font-weight:600;font-size:14px}
+.tile .p{font-family:Geist Mono,monospace;font-size:15px;font-weight:600}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:8px}@keyframes sp{to{transform:rotate(360deg)}}
+.foot{margin-top:36px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Markets</div>
+<h1>Market Movers Heatmap</h1>
+<div id="out"><div class="state"><span class="spin"></span>Loading live movers...</div></div>
+<div class="foot">Live movers via Financial Modeling Prep; depends on the data plan's daily limit. Tiles are colored by today's % move. Not investment advice.</div>
 </div>
-<div class="wrap">
-  <h1>Heatmap</h1>
-  <div class="sub">The whole market in one glance — every name sized by market cap, colored by today's move. Spot where the money is flowing in seconds.</div>
-  <div class="tabs" id="tabs">
-    <span class="tab active" data-k="stocks">S&amp;P 500 · by sector</span>
-    <span class="tab" data-k="etf">ETFs · by asset class</span>
-    <span class="tab" data-k="crypto">Crypto · by market cap</span>
-  </div>
-  <div class="panel"><div id="hm" class="tradingview-widget-container" style="height:660px"></div></div>
-</div>
-
 <script>
-function loadHM(kind){
-  var c=document.getElementById('hm');
-  c.innerHTML='<div class="tradingview-widget-container__widget" style="height:660px"></div>';
-  var s=document.createElement('script');
-  s.type='text/javascript'; s.async=true;
-  var cfg;
-  if(kind==='stocks'){
-    s.src='https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js';
-    cfg={dataSource:'SPX500',blockSize:'market_cap_basic',blockColor:'change',grouping:'sector',locale:'en',symbolUrl:'',colorTheme:'light',hasTopBar:false,isDataSetEnabled:false,isZoomEnabled:true,hasSymbolTooltip:true,isMonoSize:false,width:'100%',height:'660'};
-  } else if(kind==='etf'){
-    s.src='https://s3.tradingview.com/external-embedding/embed-widget-etf-heatmap.js';
-    cfg={dataSource:'AllUSEtf',blockSize:'aum',blockColor:'change',grouping:'asset_class',locale:'en',symbolUrl:'',colorTheme:'light',hasTopBar:false,isDataSetEnabled:false,isZoomEnabled:true,hasSymbolTooltip:true,isMonoSize:false,width:'100%',height:'660'};
-  } else {
-    s.src='https://s3.tradingview.com/external-embedding/embed-widget-crypto-coins-heatmap.js';
-    cfg={dataSource:'Crypto',blockSize:'market_cap_calc',blockColor:'change',locale:'en',symbolUrl:'',colorTheme:'light',hasTopBar:false,isDataSetEnabled:false,isZoomEnabled:true,hasSymbolTooltip:true,isMonoSize:false,width:'100%',height:'660'};
-  }
-  s.innerHTML=JSON.stringify(cfg);
-  c.appendChild(s);
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];});}
+function num(v,d){d=d==null?2:d;return (v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+async function fmp(type){try{var r=await fetch('/api/fmp?type='+type);var j=await r.json();return j.data;}catch(e){return null;}}
+function tile(it){
+  var sym=it.symbol||it.ticker||'';var chg=it.changesPercentage!=null?it.changesPercentage:(it.changePercentage!=null?it.changePercentage:0);
+  if(typeof chg==='string')chg=parseFloat(chg.replace(/[()%]/g,''));
+  var up=chg>=0;var a=Math.min(0.10+Math.abs(chg)*0.05,0.6);
+  var bg=up?'rgba(15,157,99,'+a+')':'rgba(214,69,61,'+a+')';
+  var col=up?'#0a6e45':'#9a3329';
+  var price=it.price!=null?it.price:null;
+  return '<a class="tile" style="background:'+bg+'" href="/stock/'+esc(sym)+'"><div class="s">'+esc(sym)+'</div><div class="p" style="color:'+col+'">'+(chg>=0?'+':'')+num(chg,1)+'%</div>'+(price!=null?'<div style="font-family:Geist Mono,monospace;font-size:11px;color:#5b6270">$'+num(price)+'</div>':'')+'</a>';
 }
-var tabs=document.getElementById('tabs');
-Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(t){
-  t.onclick=function(){
-    Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
-    t.classList.add('active');
-    loadHM(t.getAttribute('data-k'));
-  };
-});
-loadHM('stocks');
+function grid(list){return '<div class="grid">'+list.slice(0,30).map(tile).join('')+'</div>';}
+async function load(){
+  var out=document.getElementById('out');
+  var g=await fmp('gainers');var a=await fmp('actives');
+  var html='';
+  if(g&&g.length)html+='<div class="sec2">Top gainers</div>'+grid(g);
+  if(a&&a.length)html+='<div class="sec2">Most active</div>'+grid(a);
+  out.innerHTML=html||'<div class="state">Live movers aren\'t available right now - the free data feed may be at its daily limit. Try the <a href="/live.html">markets board</a> or come back later.</div>';
+}
+load();
 </script>
-  <script src="/nav.js"></script>
-<footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate; verify before acting. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
-<script defer src="/_vercel/insights/script.js"></script>
-</body>
-</html>
+</body></html>
