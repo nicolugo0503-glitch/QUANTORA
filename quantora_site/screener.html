@@ -1,111 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quantora · Screener — Live</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="alternate icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<style>
-:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
-a{color:inherit;text-decoration:none}
-.nav{display:flex;align-items:center;gap:18px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
-.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-.nav a.link{color:var(--mut);font-size:14px}
-.nav a.link:hover,.nav a.active{color:var(--ink)}
-.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
-.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
-.wrap{max-width:1280px;margin:0 auto;padding:30px 24px 60px}
-h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
-.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
-.tabs{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
-.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:550;cursor:pointer;color:#333}
-.tab:hover{border-color:#bbb}
-.tab.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
-.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:16px;min-height:660px}
-</style>
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Quantora">
-<meta property="og:title" content="Quantora · Screener — Live">
-<meta property="og:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta property="og:url" content="https://www.usequantora.com/screener.html">
-<meta property="og:image" content="https://www.usequantora.com/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Quantora · Screener — Live">
-<meta name="twitter:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta name="twitter:image" content="https://www.usequantora.com/og.png">
-<meta name="description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Stock Screener - describe what you want in plain English | Quantora</title>
+<meta name="description" content="Describe the stocks you want in plain English and Quantora's AI returns matching tickers with reasons - then open each for verified live analysis. Free, no login.">
 <link rel="canonical" href="https://www.usequantora.com/screener.html">
-</head>
-<body>
-<div class="nav">
-  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
-  <a href="/platform.html" class="link">Platform</a>
-  <a href="/pulse.html" class="link">Pulse</a>
-  <a href="/brief.html" class="link">Brief</a>
-  <a href="/markets.html" class="link">Markets</a>
-  <a href="/live.html" class="link">Live</a>
-  <a href="/coins.html" class="link">Coins</a>
-  <a href="/defi.html" class="link">DeFi</a>
-  <a href="/chain.html" class="link">Chain</a>
-  <a href="/dex.html" class="link">DEX</a>
-  <a href="/chart.html" class="link">Chart</a>
-  <a href="/heatmap.html" class="link">Heatmap</a>
-  <a href="/screener.html" class="link active">Screener</a>
-  <a href="/stocks.html" class="link">Stocks</a>
-  <a href="/global.html" class="link">Global</a>
-  <a href="/signals.html" class="link">Signals</a>
-  <a href="/news.html" class="link">News</a>
-  <a href="/macro.html" class="link">Macro</a>
-  <a href="/fundamentals.html" class="link">Fundamentals</a>
-  <a href="/calendar.html" class="link">Calendar</a>
-  <a href="/analyst.html" class="link">Analyst</a>
-  <a href="/ask.html" class="link">Ask</a>
-  <a href="/portfolio.html" class="link">Portfolio</a>
-  <a href="/watchlist.html" class="link">Watchlist</a>
-  <a href="/alerts.html" class="link">Alerts</a>
-  <div class="right"><span class="dot"></span> Live · market screener</div>
+<meta property="og:title" content="AI Stock Screener | Quantora"><meta property="og:description" content="Plain-English stock screening powered by AI, linked to verified live analysis.">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:840px;margin:0 auto;padding:34px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(28px,3.8vw,40px);font-weight:600;letter-spacing:-.03em;margin:8px 0 10px}
+.lead{color:#3a4150;font-size:16px;line-height:1.6;max-width:660px;margin:0 0 22px}
+.box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:16px;padding:8px 8px 8px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.box input{flex:1;border:0;outline:0;font:inherit;font-size:16px;background:transparent;color:#14161c;padding:11px 0}
+.box button{border:0;background:#635bff;color:#fff;border-radius:11px;padding:11px 18px;font:500 15px Geist;cursor:pointer;white-space:nowrap}
+.box button:disabled{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12.5px;color:#3a4150;background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:999px;padding:7px 13px;cursor:pointer}
+.chip:hover{border-color:rgba(99,91,255,.5);color:#635bff}
+.res{margin-top:26px}
+.row{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:13px;padding:14px 16px;margin-bottom:10px;text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+.row:hover{border-color:rgba(99,91,255,.45);transform:translateY(-1px)}
+.sym{font-family:Geist Mono,monospace;font-weight:600;font-size:15px;color:#635bff;min-width:74px}
+.rmid{flex:1}.rn{font-size:14.5px;font-weight:500}.rw{font-size:13px;color:#6b7280;margin-top:3px;line-height:1.5}
+.arr{color:#9aa1ad;font-size:18px}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6;margin-top:22px}
+.state.err{background:#fdf0ef;border-color:#f0c0bb;color:#9a3a32}
+.state code{background:rgba(0,0,0,.06);padding:1px 6px;border-radius:5px;font-family:Geist Mono,monospace;font-size:12.5px}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.note{font-size:12px;color:#9aa1ad;margin-top:14px;line-height:1.5;max-width:660px}
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; AI screener</div>
+<h1>AI Stock Screener</h1>
+<p class="lead">Describe the kind of companies you're looking for in plain English. The AI proposes matching tickers with a one-line reason - click any to open its <b>verified live analysis</b>.</p>
+<div class="box"><input id="q" placeholder="e.g. cheap, profitable large-cap tech with low debt"><button id="go">Screen</button></div>
+<div class="chips" id="chips"></div>
+<div class="res" id="res"></div>
+<div class="note">AI-suggested candidates from the model's training knowledge - not a live database query and not investment advice. Always verify on each stock's live page. Quantora is not a registered investment adviser or broker-dealer.</div>
+<div class="foot">Powered by Quantora AI. Click any result for verified, live valuation, risk and quant analysis.</div>
 </div>
-<div class="wrap">
-  <h1>Screener</h1>
-  <div class="sub">Filter the entire market — price, change, volume, market cap, and dozens of fundamentals. Find the movers before anyone tells you about them.</div>
-  <div class="tabs" id="tabs">
-    <span class="tab active" data-k="america">Stocks · US</span>
-    <span class="tab" data-k="crypto">Crypto</span>
-    <span class="tab" data-k="forex">Forex</span>
-  </div>
-  <div class="panel"><div id="sc" class="tradingview-widget-container" style="height:660px"></div></div>
-</div>
-
 <script>
-function loadScreener(market){
-  var c=document.getElementById('sc');
-  c.innerHTML='<div class="tradingview-widget-container__widget" style="height:660px"></div>';
-  var s=document.createElement('script');
-  s.type='text/javascript'; s.async=true;
-  s.src='https://s3.tradingview.com/external-embedding/embed-widget-screener.js';
-  var screen = market==='crypto' ? 'general' : (market==='forex' ? 'general' : 'most_capitalized');
-  s.innerHTML=JSON.stringify({width:'100%',height:'660',defaultColumn:'overview',defaultScreen:screen,market:market,showToolbar:true,colorTheme:'light',isTransparent:true,locale:'en'});
-  c.appendChild(s);
+var SUG=["cheap, profitable large-cap tech with low debt","high free-cash-flow dividend payers","fast-growing small-cap software","defensive consumer staples for a downturn","semiconductor leaders","undervalued energy with strong balance sheets"];
+var chips=document.getElementById('chips'),q=document.getElementById('q'),go=document.getElementById('go'),res=document.getElementById('res');
+SUG.forEach(function(s){var b=document.createElement('div');b.className='chip';b.textContent=s;b.onclick=function(){q.value=s;screen();};chips.appendChild(b);});
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];});}
+q.addEventListener('keydown',function(e){if(e.key==='Enter')screen();});
+go.addEventListener('click',screen);
+function screen(){
+  var text=q.value.trim();if(!text)return;go.disabled=true;
+  res.innerHTML='<div class="state"><span class="spin"></span>Screening with AI...</div>';
+  var prompt="Act as an equity screener. List 8 to 12 well-known, currently-listed stocks that best match this request: \""+text+"\". Return ONLY rows, one per line, in the exact format: TICKER | Company name | one concise reason it matches. No preamble, no numbering, no extra text.";
+  fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:prompt})}).then(function(r){return r.json();}).then(function(j){
+    go.disabled=false;
+    if(j.error==='ai_key_needed'){res.innerHTML='<div class="state">AI isn\'t activated yet. Add an <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> in Vercel and this goes live.</div>';return;}
+    if(j.error){res.innerHTML='<div class="state err">Couldn\'t complete that: <code>'+esc(j.detail||j.message||j.error)+'</code></div>';return;}
+    var lines=(j.answer||'').split('\n').map(function(s){return s.trim();}).filter(function(s){return s.indexOf('|')>0;});
+    if(!lines.length){res.innerHTML='<div class="state">'+esc(j.answer||'No matches.')+'</div>';return;}
+    var html='';
+    lines.forEach(function(l){var p=l.replace(/^[-*\d.\s]+/,'').split('|');var sym=(p[0]||'').trim().replace(/[^A-Za-z0-9.\-]/g,'').toUpperCase();if(!sym)return;var nm=(p[1]||'').trim();var why=(p.slice(2).join('|')||'').trim();
+      html+='<a class="row" href="/stock/'+esc(sym)+'"><div class="sym">'+esc(sym)+'</div><div class="rmid"><div class="rn">'+esc(nm||sym)+'</div><div class="rw">'+esc(why)+'</div></div><div class="arr">&rarr;</div></a>';});
+    res.innerHTML=html||'<div class="state">'+esc(j.answer)+'</div>';
+  }).catch(function(e){go.disabled=false;res.innerHTML='<div class="state err">Network error: <code>'+esc(String(e&&e.message||e))+'</code></div>';});
 }
-var tabs=document.getElementById('tabs');
-Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(t){
-  t.onclick=function(){
-    Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
-    t.classList.add('active');
-    loadScreener(t.getAttribute('data-k'));
-  };
-});
-loadScreener('america');
 </script>
-  <script src="/nav.js"></script>
-<footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate; verify before acting. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
-<script defer src="/_vercel/insights/script.js"></script>
-</body>
-</html>
+</body></html>
