@@ -243,7 +243,6 @@ async function marketDataTool(input){
   }
   return out;
 }
-async function callTool(Q, name, input){ if(name==='run_engine') return runEngineTool(Q, input); if(name==='get_market_data') return await marketDataTool(input); return { error:'unknown_tool', tool:name }; }
 async function renderAI(req, res){
   res.setHeader('Content-Type','application/json; charset=utf-8');
   res.setHeader('Access-Control-Allow-Origin','*');
@@ -259,17 +258,23 @@ async function renderAI(req, res){
   if(!prov) prov = oaiKey ? 'openai' : (antKey ? 'anthropic' : '');
   if(!prov || (prov==='openai'&&!oaiKey) || (prov==='anthropic'&&!antKey)){ res.statusCode=200; res.end(JSON.stringify({ error:'ai_key_needed' })); return; }
   var Q; try{ Q=require('../engines.js'); }catch(e){ Q=null; }
+  var mdCache = {};
+  async function doTool(name, input){
+    if(name==='get_market_data'){ var out=await marketDataTool(input); if(out){ if(out.returns){ mdCache[out.symbol]=out.returns; mdCache._last=out.returns; } } return out; }
+    if(name==='run_engine'){ var inp=input||{}; var p=inp.params||{}; Object.keys(p).forEach(function(k){ var v=p[k]; if(typeof v==='string'&&v.charAt(0)==='@'){ var key=v.slice(1).toUpperCase(); p[k]=(key==='LAST'?mdCache._last:mdCache[key])||v; } }); inp.params=p; return runEngineTool(Q, inp); }
+    return { error:'unknown_tool', tool:name };
+  }
   var paramHelp = Object.keys(AI_SPEC).map(function(k){ return k+'('+AI_SPEC[k].map(function(x){return x.charAt(0)==='@'?x.slice(1)+'[]':x;}).join(', ')+')'; }).join('; ');
-  var engDesc = 'Run a verified Quantora quant engine; returns the exact numeric result. engine must be one of: '+paramHelp+'. params is an object of named inputs; names ending [] take arrays of numbers.';
-  var mdDesc = 'Fetch LIVE market data for a real ticker (stock, ETF, or crypto like BTCUSD). symbol = ticker. fields = any of ["quote","returns","profile","income","balance","metrics"]. "returns" gives a daily return series usable directly by VaR/Sharpe/vol/beta engines; "quote" gives the live price; income/balance/metrics give fundamentals for Altman Z / DuPont / Merton.';
-  var system = "You are Quantora's quantitative markets analyst. To analyze a REAL ticker, FIRST call get_market_data to fetch its live data (price, return series, fundamentals), THEN call run_engine on those real numbers. For ANY numeric result you MUST use run_engine — never estimate. Explain briefly in plain language. Be concise. Compliance: educational analysis only, NOT personalized investment advice; not a registered investment adviser/broker-dealer; never tell the user to buy or sell specific securities.";
-  var calcSys = "You are a quantitative finance calculator. Compute the requested result using ONLY your own reasoning and arithmetic — do NOT use any tools, and ignore any answer already shown in the context (recompute from the inputs). Reply with the final numeric answer clearly first, then ONE short sentence on method. Be concise.";
+  var engDesc = 'Run a verified Quantora quant engine; returns the exact numeric result. engine must be one of: '+paramHelp+'. params is an object of named inputs. IMPORTANT: for array inputs (names ending []) that you already fetched via get_market_data, do NOT paste the numbers — pass the string "@SYMBOL" (e.g. returns:"@AAPL") or "@last" and the system substitutes the real series. Pass scalar inputs (price, spot, etc.) as numbers.';
+  var mdDesc = 'Fetch LIVE market data for a real ticker (stock, ETF, or crypto like BTCUSD). symbol = ticker. fields = any of ["quote","returns","profile","income","balance","metrics"]. "returns" loads a daily return series (reference it later as "@SYMBOL"); "quote" gives live price; income/balance/metrics give fundamentals for Altman Z / DuPont / Merton.';
+  var system = "You are Quantora's quantitative markets analyst. To analyze a REAL ticker, FIRST call get_market_data to load its live data, THEN call run_engine on it — referencing any fetched return series as \"@SYMBOL\" (never paste the raw numbers). For ANY numeric result you MUST use run_engine; never estimate. Explain briefly in plain language. Be concise. Compliance: educational analysis only, NOT personalized investment advice; not a registered investment adviser/broker-dealer; never tell the user to buy or sell specific securities.";
+  var calcSys = "You are a quantitative finance calculator. Compute the requested result using ONLY your own reasoning and arithmetic — do NOT use any tools, and ignore any answer already shown in the context. Reply with the final numeric answer clearly first, then ONE short sentence on method. Be concise.";
   var userMsg = ctx ? (ctx+"\n\nTask: "+q) : q;
   var used = [];
   try{
     if(prov==='openai'){
       var tools=[{type:'function',function:{name:'run_engine',description:engDesc,parameters:{type:'object',properties:{engine:{type:'string'},params:{type:'object'}},required:['engine','params']}}},{type:'function',function:{name:'get_market_data',description:mdDesc,parameters:{type:'object',properties:{symbol:{type:'string'},fields:{type:'array',items:{type:'string'}}},required:['symbol']}}}];
-      async function oai(messages, useTools){ var r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+oaiKey,'content-type':'application/json'},body:JSON.stringify({model:process.env.QAI_MODEL||'gpt-4o-mini',messages:messages,tools:useTools?tools:undefined,tool_choice:useTools?'auto':undefined,max_tokens:1024})}); return await r.json(); }
+      async function oai(messages, useTools){ var r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+oaiKey,'content-type':'application/json'},body:JSON.stringify({model:process.env.QAI_MODEL||'gpt-4o-mini',messages:messages,tools:useTools?tools:undefined,tool_choice:useTools?'auto':undefined,max_tokens:1200})}); return await r.json(); }
       var aiOwn=null;
       if(mode==='compute'){ var jno=await oai([{role:'system',content:calcSys},{role:'user',content:userMsg}],false); if(jno.error){res.statusCode=200;res.end(JSON.stringify({error:'ai_error',detail:(jno.error&&jno.error.message)||'AI error'}));return;} aiOwn=(jno.choices&&jno.choices[0]&&jno.choices[0].message&&jno.choices[0].message.content||'').trim(); }
       var messages=[{role:'system',content:system},{role:'user',content:mode==='compute'?('Compute the primary numeric result for this. '+userMsg):userMsg}];
@@ -277,7 +282,7 @@ async function renderAI(req, res){
         var j=await oai(messages,true);
         if(j.error){res.statusCode=200;res.end(JSON.stringify({error:'ai_error',detail:(j.error&&j.error.message)||'AI error'}));return;}
         var m=j.choices&&j.choices[0]&&j.choices[0].message; if(!m){res.statusCode=200;res.end(JSON.stringify({error:'ai_error',detail:'no message'}));return;}
-        if(m.tool_calls&&m.tool_calls.length){ messages.push(m); for(var t=0;t<m.tool_calls.length;t++){ var tc=m.tool_calls[t]; var input={}; try{input=JSON.parse(tc.function.arguments||'{}');}catch(e){} var out=await callTool(Q,tc.function.name,input); if(tc.function.name==='run_engine') used.push({engine:(input&&input.engine)||'?',params:(input&&input.params)||{},result:out.result!==undefined?out.result:out}); else used.push({tool:'market_data',symbol:input&&input.symbol}); messages.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(out)}); } continue; }
+        if(m.tool_calls&&m.tool_calls.length){ messages.push(m); for(var t=0;t<m.tool_calls.length;t++){ var tc=m.tool_calls[t]; var input={}; try{input=JSON.parse(tc.function.arguments||'{}');}catch(e){} var out=await doTool(tc.function.name,input); if(tc.function.name==='run_engine') used.push({engine:(input&&input.engine)||'?',result:out.result!==undefined?out.result:out}); else used.push({tool:'market_data',symbol:input&&input.symbol}); messages.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(out)}); } continue; }
         var ft=(m.content||'').trim();
         if(mode==='compute'){res.statusCode=200;res.end(JSON.stringify({mode:'compute',ai:aiOwn,verified:ft,engines_used:used,model:j.model,provider:'openai'}));return;}
         res.statusCode=200;res.end(JSON.stringify({answer:ft,engines_used:used,model:j.model,provider:'openai'}));return;
@@ -285,14 +290,14 @@ async function renderAI(req, res){
       res.statusCode=200;res.end(JSON.stringify({error:'too_many_steps',engines_used:used}));return;
     } else {
       var atools=[{name:'run_engine',description:engDesc,input_schema:{type:'object',properties:{engine:{type:'string'},params:{type:'object'}},required:['engine','params']}},{name:'get_market_data',description:mdDesc,input_schema:{type:'object',properties:{symbol:{type:'string'},fields:{type:'array',items:{type:'string'}}},required:['symbol']}}];
-      async function ant(messages, useTools, sys){ var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':antKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:process.env.QAI_MODEL||'claude-3-5-haiku-latest',max_tokens:1024,system:sys,tools:useTools?atools:undefined,messages:messages})}); return await r.json(); }
+      async function ant(messages, useTools, sys){ var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':antKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:process.env.QAI_MODEL||'claude-3-5-haiku-latest',max_tokens:1200,system:sys,tools:useTools?atools:undefined,messages:messages})}); return await r.json(); }
       var aiOwnA=null;
       if(mode==='compute'){ var ano=await ant([{role:'user',content:userMsg}],false,calcSys); if(ano.type==='error'||ano.error){res.statusCode=200;res.end(JSON.stringify({error:'ai_error',detail:(ano.error&&ano.error.message)||'AI error'}));return;} aiOwnA=(ano.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim(); }
       var amsgs=[{role:'user',content:mode==='compute'?('Compute the primary numeric result for this. '+userMsg):userMsg}];
       for(var it=0;it<6;it++){
         var aj=await ant(amsgs,true,system);
         if(aj.type==='error'||aj.error){res.statusCode=200;res.end(JSON.stringify({error:'ai_error',detail:(aj.error&&aj.error.message)||'AI error'}));return;}
-        if(aj.stop_reason==='tool_use'){ amsgs.push({role:'assistant',content:aj.content}); var rr=[]; var tc2=(aj.content||[]).filter(function(b){return b.type==='tool_use';}); for(var u=0;u<tc2.length;u++){ var b=tc2[u]; var out=await callTool(Q,b.name,b.input); if(b.name==='run_engine') used.push({engine:(b.input&&b.input.engine)||'?',params:(b.input&&b.input.params)||{},result:out.result!==undefined?out.result:out}); else used.push({tool:'market_data',symbol:b.input&&b.input.symbol}); rr.push({type:'tool_result',tool_use_id:b.id,content:JSON.stringify(out)}); } amsgs.push({role:'user',content:rr}); continue; }
+        if(aj.stop_reason==='tool_use'){ amsgs.push({role:'assistant',content:aj.content}); var rr=[]; var tc2=(aj.content||[]).filter(function(b){return b.type==='tool_use';}); for(var u=0;u<tc2.length;u++){ var b=tc2[u]; var out=await doTool(b.name,b.input); if(b.name==='run_engine') used.push({engine:(b.input&&b.input.engine)||'?',result:out.result!==undefined?out.result:out}); else used.push({tool:'market_data',symbol:b.input&&b.input.symbol}); rr.push({type:'tool_result',tool_use_id:b.id,content:JSON.stringify(out)}); } amsgs.push({role:'user',content:rr}); continue; }
         var at=(aj.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
         if(mode==='compute'){res.statusCode=200;res.end(JSON.stringify({mode:'compute',ai:aiOwnA,verified:at,engines_used:used,model:aj.model,provider:'anthropic'}));return;}
         res.statusCode=200;res.end(JSON.stringify({answer:at,engines_used:used,model:aj.model,provider:'anthropic'}));return;
