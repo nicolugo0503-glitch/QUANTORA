@@ -1,71 +1,154 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Live Price Chart - any stock or crypto | Quantora</title>
-<meta name="description" content="Live price chart for any stock, ETF or crypto, with range stats - free, no login.">
-<link rel="canonical" href="https://www.usequantora.com/chart.html">
-<link rel="stylesheet" href="/theme.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantora · Chart — Live</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
-body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
-.sw{max-width:900px;margin:0 auto;padding:34px 24px 90px}
-.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
-h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 14px}
-.box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:7px 7px 7px 14px;display:flex;gap:10px;align-items:center;max-width:440px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
-.box input{flex:1;border:0;outline:0;font:inherit;font-size:16px;background:transparent;text-transform:uppercase}
-.box button{border:0;background:#635bff;color:#fff;border-radius:10px;padding:10px 16px;font:500 14px Geist;cursor:pointer}
-.card{margin-top:22px;background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
-.hd{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
-.nm{font-size:20px;font-weight:600}.sym{font-family:Geist Mono,monospace;color:#6b7280;font-size:14px}
-.px{font-family:Geist Mono,monospace;font-size:34px;font-weight:600;letter-spacing:-.03em}
-.up{color:#0f9d63}.down{color:#d6453d}
-svg{display:block;width:100%;height:auto;margin-top:16px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:18px}
-.cell{background:#fff;padding:13px 15px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:16px;margin-top:4px}
-.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:14px 16px;font-size:14px;margin-top:18px;line-height:1.6}
-.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:8px}@keyframes sp{to{transform:rotate(360deg)}}
-.foot{margin-top:36px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
-</style><script src="/nav.js" defer></script></head>
-<body><div id="qnav"></div><div class="sw">
-<div class="eyb">Quantora &middot; Live chart</div>
-<h1>Price Chart</h1>
-<div class="box"><input id="t" placeholder="Ticker - AAPL, MSFT, BTCUSD" value="AAPL"><button id="go">Load</button></div>
-<div id="out"></div>
-<div class="foot">Live &amp; historical prices via Financial Modeling Prep; may be delayed. For analysis &amp; education - not investment advice.</div>
+:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5;display:flex;flex-direction:column;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.nav{display:flex;align-items:center;gap:20px;padding:16px 30px;border-bottom:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
+.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.nav a.link{color:var(--mut);font-size:14px}
+.nav a.link:hover,.nav a.active{color:var(--ink)}
+.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
+.head{padding:24px 30px 6px}
+.head h1{font-size:26px;font-weight:680;letter-spacing:-.5px}
+.head .sub{color:var(--mut);font-size:14.5px;margin-top:5px}
+.bar{display:flex;flex-wrap:wrap;gap:18px;padding:14px 30px 6px;align-items:center}
+.grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.grp .lbl{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);font-weight:600;margin-right:2px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:550;cursor:pointer;color:#333}
+.pill:hover{border-color:#bbb}
+.pill.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
+.chartwrap{flex:1 1 auto;min-height:520px;padding:14px 30px 8px}
+#tvchart{width:100%;height:100%;min-height:500px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.foot{padding:8px 30px 20px;font-size:11.5px;color:var(--mut)}
+@media(max-width:600px){.chartwrap{padding:10px 14px}.head,.bar,.foot{padding-left:16px;padding-right:16px}}
+</style>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora · Chart — Live">
+<meta property="og:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<meta property="og:url" content="https://www.usequantora.com/chart.html">
+<meta property="og:image" content="https://www.usequantora.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Quantora · Chart — Live">
+<meta name="twitter:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<meta name="twitter:image" content="https://www.usequantora.com/og.png">
+<meta name="description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<link rel="canonical" href="https://www.usequantora.com/chart.html">
+</head>
+<body>
+<div class="nav">
+  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
+  <a href="/platform.html" class="link">Platform</a>
+  <a href="/pulse.html" class="link">Pulse</a>
+  <a href="/brief.html" class="link">Brief</a>
+  <a href="/markets.html" class="link">Markets</a>
+  <a href="/live.html" class="link">Live</a>
+  <a href="/coins.html" class="link">Coins</a>
+  <a href="/defi.html" class="link">DeFi</a>
+  <a href="/chain.html" class="link">Chain</a>
+  <a href="/dex.html" class="link">DEX</a>
+  <a href="/chart.html" class="link active">Chart</a>
+  <a href="/heatmap.html" class="link">Heatmap</a>
+  <a href="/screener.html" class="link">Screener</a>
+  <a href="/stocks.html" class="link">Stocks</a>
+  <a href="/global.html" class="link">Global</a>
+  <a href="/signals.html" class="link">Signals</a>
+  <a href="/news.html" class="link">News</a>
+  <a href="/macro.html" class="link">Macro</a>
+  <a href="/fundamentals.html" class="link">Fundamentals</a>
+  <a href="/calendar.html" class="link">Calendar</a>
+  <a href="/analyst.html" class="link">Analyst</a>
+  <a href="/ask.html" class="link">Ask</a>
+  <a href="/portfolio.html" class="link">Portfolio</a>
+  <a href="/watchlist.html" class="link">Watchlist</a>
+  <a href="/alerts.html" class="link">Alerts</a>
+  <div class="right"><span class="dot"></span> Live · professional charts</div>
 </div>
+
+<div class="head">
+  <h1>Chart</h1>
+  <div class="sub">Institutional-grade live charting across every asset class — candles, indicators, and drawing tools. Pick an instrument to begin.</div>
+</div>
+
+<div class="bar" id="bar"></div>
+
+<div class="chartwrap"><div id="tvchart"></div></div>
+
+<div class="foot">Charts powered by TradingView · for information only, not investment advice</div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-var t=document.getElementById('t'),go=document.getElementById('go'),out=document.getElementById('out');
-function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];});}
-function num(v,d){d=d==null?2:d;return (v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
-async function fmp(type,extra){var r=await fetch('/api/fmp?type='+type+(extra||''));var j=await r.json();return j.data;}
-go.addEventListener('click',load);t.addEventListener('keydown',function(e){if(e.key==='Enter')load();});
-async function load(){
-  var sym=(t.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');if(!sym)return;
-  out.innerHTML='<div class="card"><div class="spin"></div>Loading '+esc(sym)+'...</div>';
-  try{
-    var q=await fmp('quote','&symbol='+sym);var quote=Array.isArray(q)?q[0]:q;
-    var pr=await fmp('prices','&symbol='+sym);
-    var arr=Array.isArray(pr)?pr:((pr&&pr.historical)||[]);
-    var closes=arr.slice(0,260).map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();
-    if((!quote||quote.price==null)&&closes.length<2){out.innerHTML='<div class="state">No live data for '+esc(sym)+' right now (the free data feed may be at its daily limit, or the symbol isn\'t covered). Try AAPL, MSFT, NVDA, or BTCUSD.</div>';return;}
-    var chg=quote?(quote.changePercentage!=null?quote.changePercentage:quote.changesPercentage):null;var dir=(chg||0)>=0?'up':'down';
-    var n=closes.length,lo=Math.min.apply(null,closes),hi=Math.max.apply(null,closes);if(hi-lo<1e-9)hi=lo+1;
-    var W=860,H=300,pl=6,pt=10,pb=10;
-    function X(i){return pl+i/(n-1)*(W-2*pl);}function Y(v){return H-pb-(v-lo)/(hi-lo)*(H-pt-pb);}
-    var d='',ar='';closes.forEach(function(v,i){d+=(i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);});
-    ar='M'+X(0).toFixed(1)+','+(H-pb)+'L'+closes.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join('L')+'L'+X(n-1).toFixed(1)+','+(H-pb)+'Z';
-    var up=closes[n-1]>=closes[0],col=up?'#0f9d63':'#d6453d';
-    var chart='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:300px"><path d="'+ar+'" fill="'+(up?'rgba(15,157,99,.08)':'rgba(214,69,61,.08)')+'"/><path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
-    var price=quote?quote.price:closes[n-1];
-    out.innerHTML='<div class="card"><div class="hd"><div><div class="nm">'+esc((quote&&quote.name)||sym)+' <span class="sym">'+esc(sym)+'</span></div></div><div style="text-align:right"><div class="px">$'+num(price)+'</div>'+(chg!=null?'<div class="'+dir+'" style="font-family:Geist Mono,monospace">'+(chg>=0?'+':'')+num(chg)+'% today</div>':'')+'</div></div>'+chart+
-    '<div class="stats">'+
-      '<div class="cell"><div class="cl">'+n+'-day range</div><div class="cv">$'+num(lo)+' - $'+num(hi)+'</div></div>'+
-      (quote&&quote.marketCap?'<div class="cell"><div class="cl">Market cap</div><div class="cv">$'+(quote.marketCap/1e9).toFixed(1)+'B</div></div>':'')+
-      (quote&&quote.yearHigh?'<div class="cell"><div class="cl">52w high</div><div class="cv">$'+num(quote.yearHigh)+'</div></div>':'')+
-      (quote&&quote.yearLow?'<div class="cell"><div class="cl">52w low</div><div class="cv">$'+num(quote.yearLow)+'</div></div>':'')+
-      '<div class="cell"><div class="cl">Period change</div><div class="cv '+(up?'up':'down')+'">'+(((closes[n-1]/closes[0])-1)*100).toFixed(1)+'%</div></div>'+
-    '</div>'+
-    '<div style="margin-top:16px"><a href="/stock/'+esc(sym)+'" style="color:#635bff;text-decoration:none;font-size:14px">Full analysis for '+esc(sym)+' &rarr;</a></div></div>';
-  }catch(e){out.innerHTML='<div class="state">Error loading '+esc(sym)+': '+esc(String(e&&e.message||e))+'</div>';}
+var GROUPS=[
+  {label:'Crypto', items:[
+    {k:'BTC', s:'COINBASE:BTCUSD'},{k:'ETH', s:'COINBASE:ETHUSD'},{k:'SOL', s:'COINBASE:SOLUSD'},{k:'XRP', s:'COINBASE:XRPUSD'},{k:'DOGE', s:'COINBASE:DOGEUSD'}
+  ]},
+  {label:'Stocks', items:[
+    {k:'AAPL', s:'NASDAQ:AAPL'},{k:'NVDA', s:'NASDAQ:NVDA'},{k:'TSLA', s:'NASDAQ:TSLA'},{k:'SPY', s:'AMEX:SPY'},{k:'QQQ', s:'NASDAQ:QQQ'}
+  ]},
+  {label:'FX & Commodities', items:[
+    {k:'EUR/USD', s:'FX:EURUSD'},{k:'USD/JPY', s:'FX:USDJPY'},{k:'Gold', s:'OANDA:XAUUSD'},{k:'Silver', s:'OANDA:XAGUSD'},{k:'Oil', s:'TVC:USOIL'}
+  ]}
+];
+var current='COINBASE:BTCUSD';
+
+function buildBar(){
+  var bar=document.getElementById('bar');
+  bar.innerHTML=GROUPS.map(function(g){
+    return '<div class="grp"><span class="lbl">'+g.label+'</span>'+g.items.map(function(it){
+      return '<span class="pill" data-s="'+it.s+'">'+it.k+'</span>';
+    }).join('')+'</div>';
+  }).join('');
+  Array.prototype.forEach.call(bar.querySelectorAll('.pill'),function(p){
+    p.onclick=function(){ current=p.getAttribute('data-s'); markActive(); render(); };
+  });
 }
-load();
+function markActive(){
+  Array.prototype.forEach.call(document.querySelectorAll('.pill'),function(p){
+    p.classList.toggle('active', p.getAttribute('data-s')===current);
+  });
+}
+function render(){
+  var c=document.getElementById('tvchart');
+  c.innerHTML='';
+  if(typeof TradingView==='undefined'){ c.innerHTML='<div style="padding:30px;color:#6b7280;font-size:14px">Loading chart engine…</div>'; return; }
+  new TradingView.widget({
+    container_id:'tvchart',
+    symbol:current,
+    interval:'D',
+    timezone:'Etc/UTC',
+    theme:'light',
+    style:'1',
+    locale:'en',
+    toolbar_bg:'#ffffff',
+    enable_publishing:false,
+    hide_side_toolbar:false,
+    allow_symbol_change:true,
+    withdateranges:true,
+    studies:['RSI@tv-basicstudies'],
+    autosize:true
+  });
+}
+buildBar();
+markActive();
+function start(){ if(typeof TradingView!=='undefined'){ render(); } else { setTimeout(start,250); } }
+start();
 </script>
-</body></html>
+  <script src="/nav.js"></script>
+<footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate; verify before acting. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
