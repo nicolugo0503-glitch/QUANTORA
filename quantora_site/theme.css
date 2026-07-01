@@ -1,7 +1,3 @@
-/* anti-FOUC: hold the page for a beat so injected nav+hero settle, then fade in (pure CSS, self-revealing) */
-@keyframes qreveal{from{opacity:0}to{opacity:1}}
-body{animation:qreveal .18s ease .16s both}
-
 /* ============================================================
    QUANTORA · TRILLION-DOLLAR DESIGN SYSTEM
    Refined-minimal, white, OpenAI/Linear/Stripe-grade.

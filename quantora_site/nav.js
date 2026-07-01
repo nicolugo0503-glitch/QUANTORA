@@ -1,3 +1,5 @@
+/* anti-FOUC: hold body until injected nav+hero are in, then reveal. Only runs if nav.js loads, so no stuck-blank risk. */
+(function(){try{if(window.__qhold)return;window.__qhold=1;var d=document;var st=d.createElement('style');st.textContent='body{opacity:0}body.qshown{opacity:1;transition:opacity .13s ease}';(d.head||d.documentElement).appendChild(st);var rv=function(){var b=d.body;if(b)b.classList.add('qshown');};window.__qshow=rv;var sched=function(){setTimeout(rv,240);setTimeout(rv,900);};if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',sched);}else{sched();}}catch(e){try{document.body.style.opacity='1';}catch(_){}}})();
 /* Quantora shared navigation — one source of truth, grouped dropdown menus. */
 (function () {
   var css =

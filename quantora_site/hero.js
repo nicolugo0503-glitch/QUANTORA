@@ -5,9 +5,9 @@
   function ser(u,m,l){return {type:'series',url:u,map:m,label:l};}
   function met(u,m,l){return {type:'metric',url:u,map:m,label:l};}
   var CG='https://api.coingecko.com/api/v3/global', FNG='https://api.alternative.me/fng/';
-  var FULL={'/pulse.html':1,'/markets.html':1};
+  var FULL={'/markets.html':1};
   var CFG={
-    '/pulse.html':   {t:'Pulse',  s:'The whole market on one screen, live.', a:['#6366f1','#8b5cf6','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
+    '/pulse.html':   {t:'Pulse',  s:'Ask the AI about any market theme, sector or strategy.', a:['#6366f1','#8b5cf6','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
     '/markets.html': {t:'Markets', s:'Live prices, moves and trend across every asset.', a:['#4f7cff','#6366f1','#22d3ee'], feed:cb('BTC-USD','BTC / USD')},
     '/coins.html':   {t:'Coins',   s:'The top of the crypto market, ranked and live.', a:['#8b5cf6','#ec4899','#6366f1'], feed:met(CG,'cgcap','Total crypto cap')},
     '/defi.html':    {t:'DeFi',    s:'Total value locked, yields, stablecoins, fees.', a:['#14b8a6','#22d3ee','#6366f1'], feed:ser('https://api.llama.fi/v2/historicalChainTvl','llamaTVL','Total value locked')},
@@ -23,6 +23,10 @@
     '/l2.html':      {t:'Layer 2s', s:'The Ethereum scaling economy, live.', a:['#6366f1','#22d3ee','#14b8a6'], feed:met('https://l2beat.com/api/scaling/summary','l2tvs','Total value secured')},
     '/events.html':  {t:'Global Events', s:'World market news and tone, live.', a:['#8b5cf6','#6366f1','#ec4899'], feed:{type:'glow'}},
     '/wallet.html':  {t:'Wallet', s:'Any wallet, any chain, valued live.', a:['#14b8a6','#6366f1','#8b5cf6'], feed:cb('ETH-USD','ETH / USD')},
+    '/predictions.html': {t:'Predictions', s:'What the crowd is betting on, priced live.', a:['#8b5cf6','#ec4899','#6366f1'], feed:{type:'glow'}},
+    '/delta.html':   {t:'The Delta', s:'What changed across markets, and why.', a:['#6366f1','#8b5cf6','#22d3ee'], feed:{type:'glow'}},
+    '/unlocks.html': {t:'Token Unlocks', s:'The supply hitting the market next.', a:['#6366f1','#ec4899','#8b5cf6'], feed:{type:'glow'}},
+    '/staking.html': {t:'Staking', s:'What your assets earn on-chain, live.', a:['#0a8a3b','#14b8a6','#6366f1'], feed:{type:'glow'}},
     '/news.html':    {t:'News',    s:'The wire that moves capital.', a:['#8b5cf6','#6366f1','#ec4899'], feed:met(FNG,'fng','Market sentiment')},
     '/alerts.html':  {t:'Alerts',  s:'Never miss the move that matters.', a:['#f59e0b','#ec4899','#8b5cf6'], feed:met(FNG,'fng','Market sentiment')},
     '/signals.html': {t:'Signals', s:'Momentum, trend and risk, computed live.', a:['#ec4899','#8b5cf6','#6366f1'], feed:cb('BTC-USD','BTC')},
@@ -30,7 +34,7 @@
     '/risk.html':    {t:'Risk Center', s:'Stress, exposure and drawdown, quantified.', a:['#ef4444','#f59e0b','#8b5cf6'], feed:ser('/api/fredseries','fredVIX','VIX · volatility')},
     '/portfolio.html':{t:'Portfolio', s:'Your positions, priced and risk-read live.', a:['#6366f1','#8b5cf6','#14b8a6'], feed:met(CG,'cgcap','Crypto market')},
     '/heatmap.html': {t:'Heatmap', s:'The market’s heat, at a glance.', a:['#fb7185','#f59e0b','#8b5cf6'], feed:met(CG,'cgvol','24h volume')},
-    '/screener.html':{t:'Screener',s:'Filter the entire market in seconds.', a:['#4f7cff','#6366f1','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
+    '/screener.html':{t:'Screener',s:'Describe what you want; AI finds the names.', a:['#4f7cff','#6366f1','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
     '/brief.html':   {t:'Brief',   s:'Your AI morning brief, ready to share.', a:['#8b5cf6','#6366f1','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
     '/calendar.html':{t:'Calendar',s:'The events that move everything.', a:['#6366f1','#22d3ee','#8b5cf6'], feed:{type:'glow',clock:true}},
     '/ask.html':     {t:'Ask Quantora', s:'Ask anything. Grounded in live data.', a:['#6366f1','#8b5cf6','#ec4899'], feed:{type:'glow'}},
@@ -151,3 +155,6 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();
 })();
+
+/* reveal page as soon as hero is injected (works with nav.js hold) */
+(function(){try{var tries=0;var t=setInterval(function(){tries++;if(document.querySelector('.qhero,[class*=hero],#qhero')||tries>30){if(window.__qshow)window.__qshow();clearInterval(t);}},30);}catch(e){}})();
