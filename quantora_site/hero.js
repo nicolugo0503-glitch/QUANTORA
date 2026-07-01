@@ -5,9 +5,9 @@
   function ser(u,m,l){return {type:'series',url:u,map:m,label:l};}
   function met(u,m,l){return {type:'metric',url:u,map:m,label:l};}
   var CG='https://api.coingecko.com/api/v3/global', FNG='https://api.alternative.me/fng/';
-  var FULL={'/pulse.html':1,'/markets.html':1};
+  var FULL={'/markets.html':1};
   var CFG={
-    '/pulse.html':   {t:'Pulse',  s:'The whole market on one screen, live.', a:['#6366f1','#8b5cf6','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
+    '/pulse.html':   {t:'Pulse',  s:'Ask the AI about any market theme, sector or strategy.', a:['#6366f1','#8b5cf6','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
     '/markets.html': {t:'Markets', s:'Live prices, moves and trend across every asset.', a:['#4f7cff','#6366f1','#22d3ee'], feed:cb('BTC-USD','BTC / USD')},
     '/coins.html':   {t:'Coins',   s:'The top of the crypto market, ranked and live.', a:['#8b5cf6','#ec4899','#6366f1'], feed:met(CG,'cgcap','Total crypto cap')},
     '/defi.html':    {t:'DeFi',    s:'Total value locked, yields, stablecoins, fees.', a:['#14b8a6','#22d3ee','#6366f1'], feed:ser('https://api.llama.fi/v2/historicalChainTvl','llamaTVL','Total value locked')},
@@ -34,7 +34,7 @@
     '/risk.html':    {t:'Risk Center', s:'Stress, exposure and drawdown, quantified.', a:['#ef4444','#f59e0b','#8b5cf6'], feed:ser('/api/fredseries','fredVIX','VIX · volatility')},
     '/portfolio.html':{t:'Portfolio', s:'Your positions, priced and risk-read live.', a:['#6366f1','#8b5cf6','#14b8a6'], feed:met(CG,'cgcap','Crypto market')},
     '/heatmap.html': {t:'Heatmap', s:'The market’s heat, at a glance.', a:['#fb7185','#f59e0b','#8b5cf6'], feed:met(CG,'cgvol','24h volume')},
-    '/screener.html':{t:'Screener',s:'Filter the entire market in seconds.', a:['#4f7cff','#6366f1','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
+    '/screener.html':{t:'Screener',s:'Describe what you want; AI finds the names.', a:['#4f7cff','#6366f1','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
     '/brief.html':   {t:'Brief',   s:'Your AI morning brief, ready to share.', a:['#8b5cf6','#6366f1','#22d3ee'], feed:met(CG,'cgcap','Total market cap')},
     '/calendar.html':{t:'Calendar',s:'The events that move everything.', a:['#6366f1','#22d3ee','#8b5cf6'], feed:{type:'glow',clock:true}},
     '/ask.html':     {t:'Ask Quantora', s:'Ask anything. Grounded in live data.', a:['#6366f1','#8b5cf6','#ec4899'], feed:{type:'glow'}},
