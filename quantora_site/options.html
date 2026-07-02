@@ -1,57 +1,3 @@
-function calc(){
- var L=readLegs();if(!L.length){out.innerHTML='<div class="body" style="margin-top:14px">Add a leg or load a preset to see the payoff.</div>';return;}
- var S0=parseFloat(document.getElementById('spot').value)||100;
- var sig=(parseFloat(document.getElementById('vol').value)||25)/100;
- var r=(parseFloat(document.getElementById('rate').value)||0)/100;
- var days=parseFloat(document.getElementById('days').value)||30, Tnow=Math.max(1e-6,days/365);
- var strikes=L.map(function(l){return l.K;});var lo=Math.min.apply(null,strikes.concat([S0])),hi=Math.max.apply(null,strikes.concat([S0]));
- var x0=Math.max(0,lo*0.6),x1=hi*1.4;if(x1-x0<1){x0=Math.max(0,S0*0.5);x1=S0*1.5;}
- function legVal(l,S,Trem){if(Trem<=0)return intr(l.type,l.K,S);var o=Q.bsm(S,l.K,Trem,r,0,sig);return l.type==='call'?o.call:o.put;}
- function pnlAt(S,Trem){var v=0;L.forEach(function(l){v+=l.side*l.qty*(legVal(l,S,Trem)-l.prem);});return v;}
- var N=240,xs=[],ys=[],yNow=[],yHalf=[];
- for(var i=0;i<=N;i++){var S=x0+(x1-x0)*i/N;xs.push(S);ys.push(pnlAt(S,0));yNow.push(pnlAt(S,Tnow));yHalf.push(pnlAt(S,Tnow*0.5));}
- var net=0;L.forEach(function(l){net+=l.side*l.qty*l.prem;});
- var maxP=Math.max.apply(null,ys),minP=Math.min.apply(null,ys);
- var bes=[];for(var i=1;i<ys.length;i++){if((ys[i-1]<0&&ys[i]>=0)||(ys[i-1]>0&&ys[i]<=0)){var t=ys[i-1]/(ys[i-1]-ys[i]);bes.push(xs[i-1]+t*(xs[i]-xs[i-1]));}}
- var slopeR=ys[N]-ys[N-1],slopeL=ys[0]-ys[1];
- var maxLbl=(slopeR>1e-6)?'Unbounded':('$'+num(maxP*100,0));
- var minLbl=(slopeL>1e-6&&ys[0]<0)?'Unbounded':('$'+num(minP*100,0));
- var W=900,H=320,pl=8,pt=14,pb=26;
- var allv=ys.concat(yNow,yHalf);var ylo=Math.min(Math.min.apply(null,allv),0),yhi=Math.max(Math.max.apply(null,allv),0);if(yhi-ylo<1e-6)yhi=ylo+1;
- function X(S){return pl+(S-x0)/(x1-x0)*(W-2*pl);}function Y(v){return H-pb-(v-ylo)/(yhi-ylo)*(H-pt-pb);}
- var zeroY=Y(0);
- function pathOf(arr){var s='';for(var i=0;i<=N;i++)s+=(i?'L':'M')+X(xs[i]).toFixed(1)+','+Y(arr[i]).toFixed(1);return s;}
- var d=pathOf(ys);
- var area='M'+X(x0).toFixed(1)+','+zeroY;for(var i=0;i<=N;i++)area+='L'+X(xs[i]).toFixed(1)+','+Y(ys[i]).toFixed(1);area+='L'+X(x1).toFixed(1)+','+zeroY+'Z';
- var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:320px">'+
-  '<clipPath id="up"><rect x="0" y="0" width="'+W+'" height="'+zeroY+'"/></clipPath>'+
-  '<clipPath id="dn"><rect x="0" y="'+zeroY+'" width="'+W+'" height="'+(H-zeroY)+'"/></clipPath>'+
-  '<path d="'+area+'" fill="rgba(15,157,99,.14)" clip-path="url(#up)"/>'+
-  '<path d="'+area+'" fill="rgba(214,69,61,.14)" clip-path="url(#dn)"/>'+
-  '<line x1="'+pl+'" y1="'+zeroY+'" x2="'+(W-pl)+'" y2="'+zeroY+'" stroke="rgba(17,24,39,.25)" stroke-dasharray="4 3"/>'+
-  '<line x1="'+X(S0)+'" y1="'+pt+'" x2="'+X(S0)+'" y2="'+(H-pb)+'" stroke="#9aa1ad" stroke-dasharray="3 3"/>'+
-  '<path d="'+pathOf(yNow)+'" fill="none" stroke="#8a7dff" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity=".95"/>'+
-  '<path d="'+pathOf(yHalf)+'" fill="none" stroke="#b3aaff" stroke-width="1.4" stroke-dasharray="5 3" vector-effect="non-scaling-stroke" opacity=".95"/>'+
-  '<path d="'+d+'" fill="none" stroke="#635bff" stroke-width="2.4" vector-effect="non-scaling-stroke"/>'+
-  bes.map(function(b){return '<line x1="'+X(b)+'" y1="'+pt+'" x2="'+X(b)+'" y2="'+(H-pb)+'" stroke="#0f9d63" stroke-dasharray="2 3" opacity=".7"/>';}).join('')+
-  '<text x="'+(X(S0)+4)+'" y="'+(H-pb-4)+'" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">spot '+num(S0)+'</text>'+
-  '</svg>';
- var legend='<div class="leg" style="display:flex;gap:16px;font-size:12px;color:#3a4150;margin-top:8px;flex-wrap:wrap"><span><i style="display:inline-block;width:14px;height:3px;background:#635bff;border-radius:2px;margin-right:6px;vertical-align:middle"></i>At expiration</span><span><i style="display:inline-block;width:14px;height:3px;background:#8a7dff;border-radius:2px;margin-right:6px;vertical-align:middle"></i>Today ('+Math.round(days)+'d left)</span><span><i style="display:inline-block;width:14px;height:3px;background:#b3aaff;border-radius:2px;margin-right:6px;vertical-align:middle"></i>Halfway</span></div>';
- // position greeks at spot, today
- var nd=0,ng=0,nt=0,nv=0,nvan=0,nch=0,nvom=0;
- L.forEach(function(l){var g=Q.greeks(S0,l.K,Tnow,r,0,sig),gx=Q.greeksX(S0,l.K,Tnow,r,0,sig);var pos=l.side*l.qty*100;var delta=l.type==='call'?g.deltaCall:g.deltaPut;var theta=l.type==='call'?g.thetaCall:g.thetaPut;var charm=l.type==='call'?gx.charmCall:gx.charmPut;nd+=pos*delta;ng+=pos*g.gamma;nt+=pos*theta/365;nv+=pos*g.vega/100;nvan+=pos*gx.vanna/100;nch+=pos*charm/365;nvom+=pos*gx.vomma/10000;});
- var gcells=[['Net delta',num(nd,1)],['Gamma',num(ng,2)],['Theta / day','$'+num(nt,2)],['Vega / 1%','$'+num(nv,2)],['Vanna',num(nvan,3)],['Charm / day',num(nch,3)],['Vomma',num(nvom,3)]];
- out.innerHTML=svg+legend+'<div class="cr">'+
-  '<div class="cell"><div class="cl">Net '+(net>=0?'debit':'credit')+'</div><div class="cv">$'+num(Math.abs(net)*100,0)+'</div></div>'+
-  '<div class="cell"><div class="cl">Max profit</div><div class="cv up">'+maxLbl+'</div></div>'+
-  '<div class="cell"><div class="cl">Max loss</div><div class="cv down">'+(minP<0?minLbl:'$0')+'</div></div>'+
-  '<div class="cell"><div class="cl">Breakeven'+(bes.length>1?'s':'')+'</div><div class="cv">'+(bes.length?bes.map(function(b){return num(b);}).join(' / '):'—')+'</div></div>'+
-  '<div class="cell"><div class="cl">Legs</div><div class="cv">'+L.length+'</div></div>'+
- '</div>'+
- '<div class="cl" style="margin:18px 0 6px;font-size:11px">Position Greeks &middot; at spot, today (per '+Math.round(days)+'d, 100&times; multiplier)</div>'+
- '<div class="cr">'+gcells.map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv">'+c[1]+'</div></div>';}).join('')+'</div>'+
- '<div class="foot" style="margin-top:10px;border:0;padding:0">Per 1 contract = 100 shares. Solid line = payoff at expiration; lighter lines show mark-to-market value today and halfway, revealing theta decay. Greeks are net position sensitivities: delta in shares, theta the daily $ time decay, vega the $ per +1 vol point.</div>';
-}
 <!doctype html><html lang="en"><head>
 <style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -142,24 +88,27 @@ function intr(t,K,S){return t==='call'?Math.max(S-K,0):Math.max(K-S,0);}
 function calc(){
  var L=readLegs();if(!L.length){out.innerHTML='<div class="body" style="margin-top:14px">Add a leg or load a preset to see the payoff.</div>';return;}
  var S0=parseFloat(document.getElementById('spot').value)||100;
+ var sig=(parseFloat(document.getElementById('vol').value)||25)/100;
+ var r=(parseFloat(document.getElementById('rate').value)||0)/100;
+ var days=parseFloat(document.getElementById('days').value)||30, Tnow=Math.max(1e-6,days/365);
  var strikes=L.map(function(l){return l.K;});var lo=Math.min.apply(null,strikes.concat([S0])),hi=Math.max.apply(null,strikes.concat([S0]));
  var x0=Math.max(0,lo*0.6),x1=hi*1.4;if(x1-x0<1){x0=Math.max(0,S0*0.5);x1=S0*1.5;}
- var N=240,xs=[],ys=[];function pnl(S){var v=0;L.forEach(function(l){v+=l.side*l.qty*(intr(l.type,l.K,S)-l.prem);});return v;}
- for(var i=0;i<=N;i++){var S=x0+(x1-x0)*i/N;xs.push(S);ys.push(pnl(S));}
+ function legVal(l,S,Trem){if(Trem<=0)return intr(l.type,l.K,S);var o=Q.bsm(S,l.K,Trem,r,0,sig);return l.type==='call'?o.call:o.put;}
+ function pnlAt(S,Trem){var v=0;L.forEach(function(l){v+=l.side*l.qty*(legVal(l,S,Trem)-l.prem);});return v;}
+ var N=240,xs=[],ys=[],yNow=[],yHalf=[];
+ for(var i=0;i<=N;i++){var S=x0+(x1-x0)*i/N;xs.push(S);ys.push(pnlAt(S,0));yNow.push(pnlAt(S,Tnow));yHalf.push(pnlAt(S,Tnow*0.5));}
  var net=0;L.forEach(function(l){net+=l.side*l.qty*l.prem;});
  var maxP=Math.max.apply(null,ys),minP=Math.min.apply(null,ys);
- // breakevens
  var bes=[];for(var i=1;i<ys.length;i++){if((ys[i-1]<0&&ys[i]>=0)||(ys[i-1]>0&&ys[i]<=0)){var t=ys[i-1]/(ys[i-1]-ys[i]);bes.push(xs[i-1]+t*(xs[i]-xs[i-1]));}}
- // unbounded detection (slope at edges)
  var slopeR=ys[N]-ys[N-1],slopeL=ys[0]-ys[1];
  var maxLbl=(slopeR>1e-6)?'Unbounded':('$'+num(maxP*100,0));
  var minLbl=(slopeL>1e-6&&ys[0]<0)?'Unbounded':('$'+num(minP*100,0));
- // chart
- var W=900,H=320,pl=8,pt=14,pb=26;var ylo=Math.min(minP,0),yhi=Math.max(maxP,0);if(yhi-ylo<1e-6)yhi=ylo+1;
+ var W=900,H=320,pl=8,pt=14,pb=26;
+ var allv=ys.concat(yNow,yHalf);var ylo=Math.min(Math.min.apply(null,allv),0),yhi=Math.max(Math.max.apply(null,allv),0);if(yhi-ylo<1e-6)yhi=ylo+1;
  function X(S){return pl+(S-x0)/(x1-x0)*(W-2*pl);}function Y(v){return H-pb-(v-ylo)/(yhi-ylo)*(H-pt-pb);}
  var zeroY=Y(0);
- var dpos='',dneg='',d='';for(var i=0;i<=N;i++){var px=X(xs[i]).toFixed(1),py=Y(ys[i]).toFixed(1);d+=(i?'L':'M')+px+','+py;}
- // area to zero
+ function pathOf(arr){var s='';for(var i=0;i<=N;i++)s+=(i?'L':'M')+X(xs[i]).toFixed(1)+','+Y(arr[i]).toFixed(1);return s;}
+ var d=pathOf(ys);
  var area='M'+X(x0).toFixed(1)+','+zeroY;for(var i=0;i<=N;i++)area+='L'+X(xs[i]).toFixed(1)+','+Y(ys[i]).toFixed(1);area+='L'+X(x1).toFixed(1)+','+zeroY+'Z';
  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:320px">'+
   '<clipPath id="up"><rect x="0" y="0" width="'+W+'" height="'+zeroY+'"/></clipPath>'+
@@ -168,17 +117,26 @@ function calc(){
   '<path d="'+area+'" fill="rgba(214,69,61,.14)" clip-path="url(#dn)"/>'+
   '<line x1="'+pl+'" y1="'+zeroY+'" x2="'+(W-pl)+'" y2="'+zeroY+'" stroke="rgba(17,24,39,.25)" stroke-dasharray="4 3"/>'+
   '<line x1="'+X(S0)+'" y1="'+pt+'" x2="'+X(S0)+'" y2="'+(H-pb)+'" stroke="#9aa1ad" stroke-dasharray="3 3"/>'+
-  '<path d="'+d+'" fill="none" stroke="#635bff" stroke-width="2.2" vector-effect="non-scaling-stroke"/>'+
+  '<path d="'+pathOf(yNow)+'" fill="none" stroke="#8a7dff" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity=".95"/>'+
+  '<path d="'+pathOf(yHalf)+'" fill="none" stroke="#b3aaff" stroke-width="1.4" stroke-dasharray="5 3" vector-effect="non-scaling-stroke" opacity=".95"/>'+
+  '<path d="'+d+'" fill="none" stroke="#635bff" stroke-width="2.4" vector-effect="non-scaling-stroke"/>'+
   bes.map(function(b){return '<line x1="'+X(b)+'" y1="'+pt+'" x2="'+X(b)+'" y2="'+(H-pb)+'" stroke="#0f9d63" stroke-dasharray="2 3" opacity=".7"/>';}).join('')+
   '<text x="'+(X(S0)+4)+'" y="'+(H-pb-4)+'" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">spot '+num(S0)+'</text>'+
   '</svg>';
- out.innerHTML=svg+'<div class="cr">'+
+ var legend='<div class="leg" style="display:flex;gap:16px;font-size:12px;color:#3a4150;margin-top:8px;flex-wrap:wrap"><span><i style="display:inline-block;width:14px;height:3px;background:#635bff;border-radius:2px;margin-right:6px;vertical-align:middle"></i>At expiration</span><span><i style="display:inline-block;width:14px;height:3px;background:#8a7dff;border-radius:2px;margin-right:6px;vertical-align:middle"></i>Today ('+Math.round(days)+'d left)</span><span><i style="display:inline-block;width:14px;height:3px;background:#b3aaff;border-radius:2px;margin-right:6px;vertical-align:middle"></i>Halfway</span></div>';
+ var nd=0,ng=0,nt=0,nv=0,nvan=0,nch=0,nvom=0;
+ L.forEach(function(l){var g=Q.greeks(S0,l.K,Tnow,r,0,sig),gx=Q.greeksX(S0,l.K,Tnow,r,0,sig);var pos=l.side*l.qty*100;var delta=l.type==='call'?g.deltaCall:g.deltaPut;var theta=l.type==='call'?g.thetaCall:g.thetaPut;var charm=l.type==='call'?gx.charmCall:gx.charmPut;nd+=pos*delta;ng+=pos*g.gamma;nt+=pos*theta/365;nv+=pos*g.vega/100;nvan+=pos*gx.vanna/100;nch+=pos*charm/365;nvom+=pos*gx.vomma/10000;});
+ var gcells=[['Net delta',num(nd,1)],['Gamma',num(ng,2)],['Theta / day','$'+num(nt,2)],['Vega / 1%','$'+num(nv,2)],['Vanna',num(nvan,3)],['Charm / day',num(nch,3)],['Vomma',num(nvom,3)]];
+ out.innerHTML=svg+legend+'<div class="cr">'+
   '<div class="cell"><div class="cl">Net '+(net>=0?'debit':'credit')+'</div><div class="cv">$'+num(Math.abs(net)*100,0)+'</div></div>'+
   '<div class="cell"><div class="cl">Max profit</div><div class="cv up">'+maxLbl+'</div></div>'+
   '<div class="cell"><div class="cl">Max loss</div><div class="cv down">'+(minP<0?minLbl:'$0')+'</div></div>'+
   '<div class="cell"><div class="cl">Breakeven'+(bes.length>1?'s':'')+'</div><div class="cv">'+(bes.length?bes.map(function(b){return num(b);}).join(' / '):'—')+'</div></div>'+
   '<div class="cell"><div class="cl">Legs</div><div class="cv">'+L.length+'</div></div>'+
- '</div><div class="foot" style="margin-top:10px;border:0;padding:0">Per 1 contract = 100 shares. Green = profit, red = loss at expiration.</div>';
+ '</div>'+
+ '<div class="cl" style="margin:18px 0 6px;font-size:11px">Position Greeks &middot; at spot, today (per '+Math.round(days)+'d, 100&times; multiplier)</div>'+
+ '<div class="cr">'+gcells.map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv">'+c[1]+'</div></div>';}).join('')+'</div>'+
+ '<div class="foot" style="margin-top:10px;border:0;padding:0">Per 1 contract = 100 shares. Solid line = payoff at expiration; lighter lines show mark-to-market value today and halfway, revealing theta decay. Greeks are net position sensitivities: delta in shares, theta the daily $ time decay, vega the $ per +1 vol point.</div>';
 }
 loadPreset('Bull call spread');
 </script>
