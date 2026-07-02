@@ -899,7 +899,36 @@ function greeksX(S,K,T,r,q,sig){
 }
 Q.greeksX=greeksX;
 
-Q.version='3.1';
+
+/* ================= RISK PARITY (v3.2) ================= */
+/* Equal-Risk-Contribution weights via fixed-point iteration (long-only). cov = n x n covariance matrix. */
+function riskParity(cov, budget){
+  var n=cov.length; if(!n) return {weights:[],riskContrib:[]};
+  var b=budget&&budget.length===n?budget.slice():[]; if(!b.length){ for(var i=0;i<n;i++) b.push(1/n); }
+  var w=[]; for(var i=0;i<n;i++) w.push(1/n);
+  function matvec(w){ var mv=[]; for(var i=0;i<n;i++){ var s=0; for(var j=0;j<n;j++) s+=cov[i][j]*w[j]; mv.push(s); } return mv; }
+  for(var it=0; it<10000; it++){
+    var mv=matvec(w), wn=[], sum=0, maxd=0;
+    for(var i=0;i<n;i++){ var m=mv[i]>1e-12?mv[i]:1e-12; var wi=Math.sqrt(w[i]*b[i]/m); wn.push(wi); sum+=wi; }
+    for(var i=0;i<n;i++){ wn[i]/=sum; maxd=Math.max(maxd,Math.abs(wn[i]-w[i])); }
+    w=wn; if(maxd<1e-12) break;
+  }
+  var mv=matvec(w), port=0; for(var i=0;i<n;i++) port+=w[i]*mv[i];
+  var rc=[]; for(var i=0;i<n;i++) rc.push(w[i]*mv[i]/(port>0?port:1)); // fractional risk contribution
+  return { weights:w, riskContrib:rc, portVol:Math.sqrt(port) };
+}
+Q.riskParity=riskParity;
+/* Sample covariance matrix from an array of equal-length return series (rows = assets) */
+function covMatrix(series, annualize){
+  var n=series.length; if(!n) return []; var T=series[0].length; var mu=[];
+  for(var i=0;i<n;i++){ var s=0; for(var t=0;t<T;t++) s+=series[i][t]; mu.push(s/T); }
+  var C=[]; var k=annualize?252:1;
+  for(var i=0;i<n;i++){ C.push([]); for(var j=0;j<n;j++){ var c=0; for(var t=0;t<T;t++) c+=(series[i][t]-mu[i])*(series[j][t]-mu[j]); C[i].push((c/(T-1))*k); } }
+  return C;
+}
+Q.covMatrix=covMatrix;
+
+Q.version='3.2';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
