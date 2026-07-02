@@ -841,7 +841,31 @@ Q.svensson=svensson;
 function breakeven(nominal, real){ return (1+nominal)/(1+real) - 1; }
 Q.breakeven=breakeven;
 
-Q.version='2.8';
+
+/* ================= MONTE CARLO & EXPECTED MOVE (v2.9) ================= */
+function _gauss(){ var u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+/* Monte Carlo wealth projection (monthly GBM steps + periodic contributions) */
+function mcWealth(o){
+  var S0=o.start||0, mu=o.mu||0.07, sig=o.sigma||0.15, yrs=o.years||30, contrib=(o.contribAnnual||0)/12, n=o.paths||2000, m=Math.max(1,Math.round(yrs*12));
+  var dt=1/12, drift=(mu-0.5*sig*sig)*dt, vol=sig*Math.sqrt(dt);
+  var cols=[]; for(var t=0;t<=m;t++) cols.push(new Float64Array(n));
+  for(var pi=0;pi<n;pi++){ var v=S0; cols[0][pi]=v; for(var t=1;t<=m;t++){ v=v*Math.exp(drift+vol*_gauss())+contrib; if(v<0)v=0; cols[t][pi]=v; } }
+  function pct(arr,q){ var a=Array.prototype.slice.call(arr).sort(function(x,y){return x-y;}); return a[Math.min(a.length-1,Math.max(0,Math.round(q*(a.length-1))))]; }
+  var times=[],p5=[],p25=[],p50=[],p75=[],p95=[];
+  for(var t=0;t<=m;t++){ times.push(t/12); var c=cols[t]; p5.push(pct(c,.05));p25.push(pct(c,.25));p50.push(pct(c,.5));p75.push(pct(c,.75));p95.push(pct(c,.95)); }
+  var term=cols[m], sum=0; for(var i=0;i<n;i++) sum+=term[i];
+  var probGoal=null; if(o.goal){ var cnt=0; for(i=0;i<n;i++) if(term[i]>=o.goal) cnt++; probGoal=cnt/n; }
+  var invested=S0 + contrib*12*yrs;
+  return { times:times, p5:p5, p25:p25, p50:p50, p75:p75, p95:p95, median:pct(term,.5), mean:sum/n, p10:pct(term,.10), p90:pct(term,.90), probGoal:probGoal, invested:invested, paths:n };
+}
+Q.mcWealth=mcWealth;
+/* Expected move ($) and lognormal probability-cone bounds for a horizon in days */
+function expectedMove(S,sigma,days){ return S*sigma*Math.sqrt(days/365); }
+Q.expectedMove=expectedMove;
+function probCone(S,sigma,days,z){ z=z||1; var t=Math.sqrt(days/365); return { up:S*Math.exp(z*sigma*t), down:S*Math.exp(-z*sigma*t) }; }
+Q.probCone=probCone;
+
+Q.version='2.9';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

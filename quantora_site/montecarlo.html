@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monte Carlo Wealth Simulator - project your portfolio &amp; retirement | Quantora</title>
+<meta name="description" content="Simulate thousands of possible futures for your investments with a Monte Carlo engine: percentile fan chart, median and worst/best-case outcomes, and the probability of hitting your goal. Free, runs in your browser.">
+<link rel="canonical" href="https://www.usequantora.com/montecarlo.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff;width:120px}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer;margin-top:14px}
+svg{display:block;width:100%;height:auto;margin-top:6px}
+.leg{display:flex;gap:18px;font-size:12px;color:#3a4150;margin-top:8px;flex-wrap:wrap}
+.leg i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:16px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.up{color:#0f9d63}.down{color:#d6453d}
+.big{background:linear-gradient(135deg,#635bff,#8a7dff);color:#fff;border-radius:14px;padding:18px 20px;margin-top:16px;display:none}
+.big .l{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.08em}.big .v{font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:4px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Desk</div>
+<h1>Monte Carlo Wealth Simulator</h1>
+<p class="lead">One "average" projection hides the real story. Quantora simulates thousands of possible market paths - each a random walk with your expected return and volatility - to show the full range of where your money could land, and the odds of hitting your goal.</p>
+
+<div class="calc">
+<div class="ci">
+<div class="fld"><label>Starting $</label><input id="start" type="number" value="10000"></div>
+<div class="fld"><label>Annual contribution $</label><input id="contrib" type="number" value="6000"></div>
+<div class="fld"><label>Years</label><input id="years" type="number" value="30"></div>
+<div class="fld"><label>Expected return %</label><input id="mu" type="number" value="7" step="0.5"></div>
+<div class="fld"><label>Volatility %</label><input id="sig" type="number" value="15" step="0.5"></div>
+<div class="fld"><label>Goal $ (optional)</label><input id="goal" type="number" value="500000"></div>
+<button class="run" id="run">Run 4,000 simulations</button>
+</div>
+<div id="out"></div>
+</div>
+
+<div class="body">Each simulated path grows your balance month by month using a <b>geometric Brownian motion</b> model: a steady drift from your expected return, plus random shocks scaled by volatility, with your contributions added along the way. Running thousands of paths produces a distribution of outcomes. The shaded bands show the middle 50% (25th-75th percentile) and the 5th-95th percentile range; the line is the median path. The <b>probability of goal</b> is simply the share of simulations that finished at or above your target - a far more honest planning number than a single deterministic forecast. Higher volatility widens the cone dramatically, which is why risk, not just average return, drives real-world outcomes.</div>
+<div class="foot">A model, not a forecast. Real returns are not normally distributed, sequence-of-returns risk and fat tails matter, and inflation/taxes/fees are not modeled here. Educational tool only - not investment advice. Math from Quantora's verified engine library.</div>
+</div>
+<script>
+var Q=window.QENG||{};
+function money(v){if(v==null||isNaN(v))return '—';var a=Math.abs(v);if(a>=1e6)return '$'+(v/1e6).toFixed(2)+'M';if(a>=1e3)return '$'+(v/1e3).toFixed(0)+'K';return '$'+Math.round(v).toLocaleString();}
+var out=document.getElementById('out');
+function run(){
+  var o={start:+document.getElementById('start').value||0,contribAnnual:+document.getElementById('contrib').value||0,years:Math.max(1,+document.getElementById('years').value||1),mu:(+document.getElementById('mu').value||0)/100,sigma:(+document.getElementById('sig').value||0.0001)/100,goal:+document.getElementById('goal').value||0,paths:4000};
+  var r=Q.mcWealth(o);
+  var termP5=r.p5[r.p5.length-1],termP50=r.p50[r.p50.length-1],termP95=r.p95[r.p95.length-1],termP25=r.p25[r.p25.length-1],termP75=r.p75[r.p75.length-1];
+  var html=chart(r);
+  html+='<div class="big" style="display:block"><div class="l">Median projected value in '+o.years+' years</div><div class="v">'+money(termP50)+'</div>'+(o.goal?'<div class="l" style="margin-top:10px">Probability of reaching '+money(o.goal)+'</div><div class="v">'+(r.probGoal*100).toFixed(0)+'%</div>':'')+'</div>';
+  var cells=[['Total invested',money(r.invested)],['Pessimistic (5th %)',money(termP5)],['Lower-mid (25th %)',money(termP25)],['Median (50th %)',money(termP50)],['Upper-mid (75th %)',money(termP75)],['Optimistic (95th %)',money(termP95)]];
+  html+='<div class="cr">'+cells.map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv">'+c[1]+'</div></div>';}).join('')+'</div>';
+  out.innerHTML=html;
+}
+function chart(r){
+  var W=900,H=360,ml=54,mr=14,mt=14,mb=30,pw=W-ml-mr,ph=H-mt-mb;
+  var n=r.times.length,maxT=r.times[n-1];
+  var lo=Math.max(1,r.p5[0]),hi=r.p95[n-1];for(var i=0;i<n;i++){if(r.p5[i]<lo&&r.p5[i]>0)lo=r.p5[i];if(r.p95[i]>hi)hi=r.p95[i];}
+  var llo=Math.log(lo),lhi=Math.log(hi);
+  function X(i){return ml+pw*(r.times[i]/maxT);}
+  function Y(v){v=Math.max(1,v);return mt+ph*(1-((Math.log(v)-llo)/(lhi-llo)));}
+  function band(a,b,fill){var d='M'+X(0).toFixed(1)+' '+Y(a[0]).toFixed(1);for(var i=1;i<n;i++)d+=' L'+X(i).toFixed(1)+' '+Y(a[i]).toFixed(1);for(i=n-1;i>=0;i--)d+=' L'+X(i).toFixed(1)+' '+Y(b[i]).toFixed(1);return '<path d="'+d+'Z" fill="'+fill+'"/>';}
+  function line(a,col,w){var d=a.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' ');return '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'"/>';}
+  var grid='';for(var g=0;g<=4;g++){var lv=Math.exp(llo+(lhi-llo)*g/4),yy=mt+ph*(1-g/4);grid+='<line x1="'+ml+'" y1="'+yy.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(ml-8)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">'+money(lv)+'</text>';}
+  var xl='';for(var t=0;t<=maxT;t+=Math.ceil(maxT/6)){xl+='<text x="'+(ml+pw*(t/maxT)).toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">'+t+'y</text>';}
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+xl+band(r.p95,r.p5,'rgba(99,91,255,.10)')+band(r.p75,r.p25,'rgba(99,91,255,.22)')+line(r.p50,'#635bff',2.4)+'</svg>';
+}
+document.getElementById('run').onclick=run;
+run();
+</script>
+</body></html>

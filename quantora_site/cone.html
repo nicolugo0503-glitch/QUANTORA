@@ -1,0 +1,83 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Expected Move &amp; Probability Cone - how far a stock could move | Quantora</title>
+<meta name="description" content="Calculate a stock or crypto's expected move and probability cone over any horizon from its volatility: 1-sigma and 2-sigma ranges and the odds of finishing inside them. Free, runs in your browser.">
+<link rel="canonical" href="https://www.usequantora.com/cone.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff;width:120px}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer;margin-top:14px}
+svg{display:block;width:100%;height:auto;margin-top:6px}
+.leg{display:flex;gap:18px;font-size:12px;color:#3a4150;margin-top:8px;flex-wrap:wrap}
+.leg i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.big{background:linear-gradient(135deg,#635bff,#8a7dff);color:#fff;border-radius:14px;padding:18px 20px;margin-top:16px}
+.big .l{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.08em}.big .v{font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:4px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:16px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.up{color:#0f9d63}.down{color:#d6453d}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Derivatives Desk</div>
+<h1>Expected Move &amp; Probability Cone</h1>
+<p class="lead">Given a price and its volatility, how far could it realistically travel by a chosen date? This is the number options traders live by for sizing moves around earnings, weeklies, or any horizon - and the cone that shows the 1&sigma; (~68%) and 2&sigma; (~95%) ranges around it.</p>
+
+<div class="calc">
+<div class="ci">
+<div class="fld"><label>Price $</label><input id="spot" type="number" value="100" step="0.5"></div>
+<div class="fld"><label>Annualized volatility %</label><input id="vol" type="number" value="30" step="1"></div>
+<div class="fld"><label>Horizon (days)</label><input id="days" type="number" value="30" step="1"></div>
+<button class="run" id="run">Compute</button>
+</div>
+<div id="out"></div>
+</div>
+
+<div class="body">The expected move over <b>t</b> days scales with the square root of time: <b>EM = Price &times; &sigma; &times; &radic;(t/365)</b>. Because prices compound multiplicatively, the cone bounds are lognormal - <b>Price &times; e<sup>&plusmn;z&sigma;&radic;t</sup></b> - so the upside is slightly wider than the downside. About 68% of outcomes land inside the 1&sigma; band and 95% inside 2&sigma;, assuming volatility is stable and returns are roughly normal. Traders cross-check this against the at-the-money straddle price (expected move &asymp; 0.85 &times; ATM straddle); a big gap between the two is itself a signal. You can get any ticker's volatility from Quantora's <b>Volatility</b> and <b>Historical VaR</b> engines.</div>
+<div class="foot">Assumes constant volatility and lognormal returns; real markets have volatility clustering, jumps, and fat tails, so true ranges can exceed the cone. Educational tool, not investment advice. Math from Quantora's verified engine library.</div>
+</div>
+<script>
+var Q=window.QENG||{};
+function num(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
+var out=document.getElementById('out');
+function run(){
+  var S=+document.getElementById('spot').value||0, sig=(+document.getElementById('vol').value||0)/100, days=Math.max(1,+document.getElementById('days').value||1);
+  var em=Q.expectedMove(S,sig,days), c1=Q.probCone(S,sig,days,1), c2=Q.probCone(S,sig,days,2);
+  var html=chart(S,sig,days);
+  html+='<div class="big"><div class="l">Expected move (&plusmn;1&sigma;) over '+days+' days</div><div class="v">&plusmn;$'+num(em)+'  <span style="font-size:18px;opacity:.85">('+num(em/S*100)+'%)</span></div></div>';
+  var cells=[
+    ['1&sigma; low (~16%)',num(c1.down)],['1&sigma; high (~84%)',num(c1.up)],
+    ['2&sigma; low (~2.5%)',num(c2.down)],['2&sigma; high (~97.5%)',num(c2.up)],
+    ['Straddle est.',num(em/0.85)]
+  ];
+  html+='<div class="cr">'+cells.map(function(x){return '<div class="cell"><div class="cl">'+x[0]+'</div><div class="cv">$'+x[1]+'</div></div>';}).join('')+'</div>';
+  html+='<div class="leg"><span><i style="background:rgba(99,91,255,.12)"></i>2&sigma; range (~95%)</span><span><i style="background:rgba(99,91,255,.26)"></i>1&sigma; range (~68%)</span><span><i style="background:#635bff;height:3px"></i>Price</span></div>';
+  out.innerHTML=html;
+}
+function chart(S,sig,days){
+  var W=900,H=340,ml=54,mr=14,mt=14,mb=30,pw=W-ml-mr,ph=H-mt-mb,N=60;
+  var up2=S*Math.exp(2*sig*Math.sqrt(days/365)),dn2=S*Math.exp(-2*sig*Math.sqrt(days/365));
+  var lo=dn2*0.99,hi=up2*1.01;
+  function X(i){return ml+pw*(i/N);}
+  function Y(v){return mt+ph*(1-((v-lo)/(hi-lo)));}
+  function b(z){var a=[];for(var i=0;i<=N;i++){var d=days*i/N;a.push(Y(S*Math.exp(z*sig*Math.sqrt(d/365))));}return a;}
+  var u2=b(2),d2=b(-2),u1=b(1),d1=b(-1);
+  function band(top,bot,fill){var p='M'+X(0).toFixed(1)+' '+top[0].toFixed(1);for(var i=1;i<=N;i++)p+=' L'+X(i).toFixed(1)+' '+top[i].toFixed(1);for(i=N;i>=0;i--)p+=' L'+X(i).toFixed(1)+' '+bot[i].toFixed(1);return '<path d="'+p+'Z" fill="'+fill+'"/>';}
+  var grid='';for(var g=0;g<=4;g++){var lv=lo+(hi-lo)*g/4,yy=mt+ph*(1-g/4);grid+='<line x1="'+ml+'" y1="'+yy.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(ml-8)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">'+num(lv,0)+'</text>';}
+  var xl='';for(var t=0;t<=days;t+=Math.max(1,Math.ceil(days/6))){xl+='<text x="'+X(N*t/days).toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">'+t+'d</text>';}
+  var mid='<line x1="'+X(0)+'" y1="'+Y(S).toFixed(1)+'" x2="'+X(N)+'" y2="'+Y(S).toFixed(1)+'" stroke="#635bff" stroke-width="2" stroke-dasharray="4 4"/>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+xl+band(u2,d2,'rgba(99,91,255,.12)')+band(u1,d1,'rgba(99,91,255,.24)')+mid+'</svg>';
+}
+document.getElementById('run').onclick=run;
+run();
+</script>
+</body></html>
