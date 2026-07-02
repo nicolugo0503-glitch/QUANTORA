@@ -208,7 +208,7 @@ var AI_SPEC = {
   npv:['rate','@cfs'], irr:['@cfs'], merton:['V','D','sig','drift','T'], expectedLoss:['pd','lgd','ead'], pdFromSpread:['spread','recovery','T'],
   taylorRule:['inflation','outputGap'], recessionProb:['tenY','threeM'],
   histVaR:['@returns','conf'], histCVaR:['@returns','conf'], paramVaR:['@returns','conf'], annVol:['@returns','P'],
-  sharpe:['@returns','rfPeriod','P'], sortino:['@returns','mar','P'], maxDrawdown:['@returns'], beta:['@asset','@bench'], correlation:['@x','@y'],
+  sharpe:['@returns'], sortino:['@returns'], maxDrawdown:['@returns'], calmar:['@returns'], ulcerIndex:['@returns'], beta:['@asset','@bench'], correlation:['@x','@y'],
   altmanZ:['wc','re','ebit','mktEq','sales','ta','tl'], dupont:['ni','sales','assets','equity']
 };
 function runEngineTool(Q, input){
@@ -235,7 +235,7 @@ async function marketDataTool(input){
   var out={ symbol:sym };
   for(var i=0;i<fields.length;i++){ var fld=fields[i];
     if(fld==='quote'){ var q=await f('quote?symbol='+sym); q=Array.isArray(q)?q[0]:q; if(q) out.quote={ price:q.price, changePct:(q.changePercentage!=null?q.changePercentage:q.changesPercentage), marketCap:q.marketCap, pe:q.pe, name:q.name, dayHigh:q.dayHigh, dayLow:q.dayLow, yearHigh:q.yearHigh, yearLow:q.yearLow }; }
-    else if(fld==='prices'||fld==='returns'){ var pr=await f('historical-price-eod/light?symbol='+sym); var arr=Array.isArray(pr)?pr:((pr&&pr.historical)||[]); var closes=arr.slice(0,260).map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}); var rets=[]; for(var k=0;k<closes.length-1;k++){ rets.push((closes[k]-closes[k+1])/closes[k+1]); } out.returns=rets.slice(0,250); out.lastClose=closes[0]; }
+    else if(fld==='prices'||fld==='returns'){ var pr=await f('historical-price-eod/light?symbol='+sym); var arr=Array.isArray(pr)?pr:((pr&&pr.historical)||[]); var closes=arr.slice(0,260).map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}); var rets=[]; for(var k=0;k<closes.length-1;k++){ rets.push((closes[k]-closes[k+1])/closes[k+1]); } out.returns=rets.slice(0,250).reverse(); out.lastClose=closes[0]; }
     else if(fld==='profile'){ var p=await f('profile?symbol='+sym); p=Array.isArray(p)?p[0]:p; if(p) out.profile={ name:p.companyName, sector:p.sector, beta:p.beta, price:p.price, description:(p.description||'').slice(0,300) }; }
     else if(fld==='income'){ var inc=await f('income-statement?symbol='+sym+'&period=annual&limit=1'); inc=Array.isArray(inc)?inc[0]:inc; if(inc) out.income={ revenue:inc.revenue, operatingIncome:inc.operatingIncome, ebit:inc.operatingIncome, netIncome:inc.netIncome }; }
     else if(fld==='balance'){ var bal=await f('balance-sheet-statement?symbol='+sym+'&period=annual&limit=1'); bal=Array.isArray(bal)?bal[0]:bal; if(bal) out.balance={ totalAssets:bal.totalAssets, totalLiabilities:bal.totalLiabilities, totalEquity:(bal.totalStockholdersEquity!=null?bal.totalStockholdersEquity:bal.totalEquity), retainedEarnings:bal.retainedEarnings, currentAssets:bal.totalCurrentAssets, currentLiabilities:bal.totalCurrentLiabilities }; }
