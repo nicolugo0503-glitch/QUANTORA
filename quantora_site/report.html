@@ -1,0 +1,87 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Research Report - a full equity note on any stock | Quantora</title>
+<meta name="description" content="Generate a structured AI equity research note on any stock: snapshot, business, valuation, profitability, risk, bull and bear case - built on live data and verified quant engines. Free.">
+<link rel="canonical" href="https://www.usequantora.com/report.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:820px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:640px;margin:0 0 20px}
+.box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:7px 7px 7px 14px;display:flex;gap:10px;align-items:center;max-width:460px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.box input{flex:1;border:0;outline:0;font:inherit;font-size:16px;background:transparent;text-transform:uppercase}
+.box button{border:0;background:#635bff;color:#fff;border-radius:10px;padding:10px 16px;font:500 14px Geist;cursor:pointer;white-space:nowrap}
+.box button:disabled{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{font-size:12.5px;color:#3a4150;background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:999px;padding:6px 12px;cursor:pointer}.chip:hover{border-color:rgba(99,91,255,.5);color:#635bff}
+.rep{margin-top:24px;background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:26px 30px;box-shadow:0 1px 2px rgba(16,24,40,.04);display:none}.rep.show{display:block}
+.rep h2{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:0 0 4px}
+.rep .rt{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#9aa1ad;font-weight:500;margin-bottom:16px}
+.rep h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#635bff;font-weight:600;margin:20px 0 7px}
+.rep p{font-size:15px;line-height:1.75;color:#1c2230;margin:0 0 10px}
+.rep b{font-weight:600}
+.rep ul{margin:0 0 10px;padding-left:20px}.rep li{font-size:15px;line-height:1.7;color:#1c2230;margin-bottom:4px}
+.eng{margin-top:18px;padding-top:14px;border-top:1px solid rgba(17,24,39,.08);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.eng .l{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#9aa1ad;font-weight:500;margin-right:2px}
+.chipm{font:11px Geist Mono,monospace;color:#635bff;background:rgba(99,91,255,.07);border:1px solid rgba(99,91,255,.18);border-radius:6px;padding:3px 8px}
+.tools{display:flex;gap:8px;margin-top:16px}
+.tools button{border:1px solid rgba(17,24,39,.14);background:#fafbfc;border-radius:9px;padding:8px 13px;font:500 13px Geist;cursor:pointer;color:#3a4150}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:14px 16px;font-size:14px;margin-top:20px;line-height:1.55}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:8px}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; AI research</div>
+<h1>AI Research Report</h1>
+<p class="lead">A full equity note on any stock in seconds - snapshot, business, valuation, profitability, risk, bull and bear case - written by AI on <b>live data</b> with numbers from the verified engines.</p>
+<div class="box"><input id="sym" placeholder="Ticker - AAPL, NVDA, TSLA" value="NVDA"><button id="go">Generate</button></div>
+<div class="chips" id="chips"></div>
+<div id="out"></div>
+<div class="foot">Educational research generated by AI using live data (Financial Modeling Prep) and Quantora's verified engines - not investment advice, not a recommendation to buy or sell. Figures may be delayed. Quantora is not a registered investment adviser or broker-dealer.</div>
+</div>
+<script>
+var SUG=['NVDA','AAPL','TSLA','MSFT','AMZN','META'];
+var chips=document.getElementById('chips'),sym=document.getElementById('sym'),go=document.getElementById('go'),out=document.getElementById('out');
+SUG.forEach(function(s){var b=document.createElement('div');b.className='chip';b.textContent=s;b.onclick=function(){sym.value=s;run();};chips.appendChild(b);});
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]})}
+function inl(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
+function mdToHtml(t){
+  var lines=t.split('\n'),html='',inul=false;
+  function closeul(){if(inul){html+='</ul>';inul=false;}}
+  lines.forEach(function(ln){var l=ln.trim();
+    if(!l){closeul();return;}
+    var h=l.match(/^#{2,4}\s+(.*)/);
+    if(h){closeul();html+='<h3>'+inl(h[1].replace(/[:#]+$/,''))+'</h3>';return;}
+    if(/^[-*]\s+/.test(l)){if(!inul){html+='<ul>';inul=true;}html+='<li>'+inl(l.replace(/^[-*]\s+/,''))+'</li>';return;}
+    // bold-only line as a subheading
+    var b=l.match(/^\*\*(.+?)\*\*:?\s*$/);
+    if(b){closeul();html+='<h3>'+esc(b[1])+'</h3>';return;}
+    closeul();html+='<p>'+inl(l)+'</p>';
+  });closeul();return html;
+}
+sym.addEventListener('keydown',function(e){if(e.key==='Enter')run();});
+go.addEventListener('click',run);
+async function run(){
+  var s=sym.value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');if(!s)return;
+  go.disabled=true;
+  out.innerHTML='<div class="rep show"><div class="rt">Quantora AI Research</div><div><span class="spin"></span>Researching '+esc(s)+' - pulling live data and running the engines...</div></div>';
+  try{
+    var q='Write a structured equity research note on '+s+'. FIRST call get_market_data for '+s+' with fields ["quote","profile","income","balance","metrics","returns"], and run_engine for any figures (e.g. altmanZ for distress, dupont for ROE drivers, histVaR on the returns). Then write these sections with "## " headers: Snapshot, Business, Valuation, Profitability & Balance Sheet, Risk, Bull Case, Bear Case, Bottom Line. Use the real numbers you fetched/computed. Be concise (about 400-550 words total), specific, and educational - not investment advice.';
+    var r=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:q})});
+    var j=await r.json();
+    if(j.error==='ai_key_needed'){out.innerHTML='<div class="state">AI isn\'t activated yet - add an <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> in Vercel.</div>';go.disabled=false;return;}
+    if(j.error){out.innerHTML='<div class="state">Couldn\'t complete that: '+esc(j.detail||j.message||j.error)+'</div>';go.disabled=false;return;}
+    var eng=(j.engines_used||[]).map(function(e){return e.engine||(e.tool==='market_data'?('data:'+(e.symbol||'')):'')||'';}).filter(Boolean);
+    var engHTML=eng.length?('<div class="eng"><span class="l">Built from</span>'+eng.map(function(e){return '<span class="chipm">'+esc(e)+'</span>';}).join('')+'</div>'):'';
+    window.__rep=j.answer||'';
+    out.innerHTML='<div class="rep show"><div class="rt">Quantora AI Research &middot; '+esc(s)+'</div>'+mdToHtml(j.answer||'(no answer)')+engHTML+'<div class="tools"><button id="cp">Copy report</button><a href="/stock/'+esc(s)+'" style="text-decoration:none"><button>Live data page &rarr;</button></a></div></div>';
+    var cp=document.getElementById('cp');if(cp)cp.onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(window.__rep);cp.textContent='Copied';setTimeout(function(){cp.textContent='Copy report';},1500);};
+  }catch(e){out.innerHTML='<div class="state">Network error: '+esc(String(e&&e.message||e))+'</div>';}
+  go.disabled=false;
+}
+run();
+</script>
+</body></html>

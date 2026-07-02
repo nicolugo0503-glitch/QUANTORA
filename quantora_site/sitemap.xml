@@ -284,4 +284,5 @@
   <url><loc>https://www.usequantora.com/efficient-frontier.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/dashboard.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.usequantora.com/backtest.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/report.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
