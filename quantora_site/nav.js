@@ -34,7 +34,7 @@
     { label: 'Markets', items: [['Markets tape', '/markets.html'], ['Live stream', '/live.html'], ['Coins', '/coins.html'], ['Stocks', '/stocks.html'], ['Global FX & Commodities', '/global.html'], ['Chart', '/chart.html'], ['Heatmap', '/heatmap.html'], ['Screener', '/screener.html']] },
     { label: 'On-Chain', items: [['DeFi', '/defi.html'], ['Bitcoin Chain', '/chain.html'], ['DEX', '/dex.html'], ['Perps · Funding', '/funding.html'], ['Token Unlocks', '/unlocks.html'], ['Staking', '/staking.html'], ['Layer 2s', '/l2.html'], ['Wallet', '/wallet.html'], ['Signals', '/signals.html']] },
     { label: 'Research', items: [['Research Report', '/report.html'], ['News', '/news.html'], ['Global Events', '/events.html'], ['Predictions', '/predictions.html'], ['Macro', '/macro.html'], ['Calendar', '/calendar.html'], ['Fundamentals', '/fundamentals.html'], ['AI Analyst', '/analyst.html'], ['Ask Quantora', '/ask.html']] },
-    { label: 'Desk', items: [['Your Dashboard', '/dashboard.html'], ['Backtester', '/backtest.html'], ['Portfolio', '/portfolio.html'], ['Watchlist', '/watchlist.html'], ['Alerts', '/alerts.html'], ['Risk Center', '/risk.html']] },
+    { label: 'Desk', items: [['Your Dashboard', '/dashboard.html'], ['Backtester', '/backtest.html'], ['Options Builder', '/options.html'], ['Portfolio', '/portfolio.html'], ['Watchlist', '/watchlist.html'], ['Alerts', '/alerts.html'], ['Risk Center', '/risk.html']] },
     { label: 'Platform', href: '/platform.html' }
   ];
 
