@@ -1,0 +1,104 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantora Terminal - ask any market question, watch the AI run the engines | Quantora</title>
+<meta name="description" content="An AI command bar for markets: ask any question in plain English and Quantora fetches live data and runs its verified quant engines to answer - and shows you exactly which engines and data it used. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/terminal.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:900px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:660px;margin:0 0 20px}
+.bar{display:flex;align-items:center;gap:10px;background:#0f1117;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(16,24,40,.12)}
+.bar .car{color:#635bff;font-family:Geist Mono,monospace;font-size:18px;font-weight:700}
+.bar input{flex:1;background:transparent;border:0;outline:0;color:#f4f5f7;font:inherit;font-size:16px;font-family:Geist Mono,monospace}
+.bar input::placeholder{color:#6b7280}
+.bar button{border:0;background:#635bff;color:#fff;border-radius:9px;padding:9px 16px;font:500 14px Geist;cursor:pointer}
+.bar button:disabled{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 6px}
+.chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:20px;padding:6px 12px;font-size:12.5px;color:#3a4150;cursor:pointer;transition:border-color .15s}
+.chip:hover{border-color:#635bff;color:#635bff}
+.log{margin-top:20px;display:flex;flex-direction:column;gap:16px}
+.entry{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;overflow:hidden}
+.q{display:flex;gap:9px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid rgba(17,24,39,.07);background:#fafbfc}
+.q .car{color:#635bff;font-family:Geist Mono,monospace;font-weight:700}
+.q .txt{font-size:14.5px;color:#14161c;font-weight:500}
+.a{padding:14px 16px;font-size:14.5px;line-height:1.7;color:#1c2230;white-space:pre-wrap}
+.a b{font-weight:600}.a h3{font-size:14px;margin:12px 0 4px;font-weight:600}
+.trace{border-top:1px solid rgba(17,24,39,.07);background:#0f1117;padding:0 16px}
+.trace summary{cursor:pointer;list-style:none;color:#9aa1ad;font-size:11.5px;font-family:Geist Mono,monospace;padding:11px 0;letter-spacing:.03em}
+.trace summary::-webkit-details-marker{display:none}
+.trace summary:before{content:"▸ ";color:#635bff}
+.trace[open] summary:before{content:"▾ "}
+.trace .rows{padding:0 0 12px}
+.trow{font-family:Geist Mono,monospace;font-size:12px;color:#c8ccd6;padding:4px 0;display:flex;gap:8px}
+.trow .tg{color:#635bff}.trow .tn{color:#8a7dff}.trow .tv{color:#39d98a;margin-left:auto;font-variant-numeric:tabular-nums}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:10px;padding:11px 14px;font-size:13.5px;margin:14px 16px;line-height:1.5}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Terminal</div>
+<h1>Quantora Terminal</h1>
+<p class="lead">Ask any market question in plain English. Quantora pulls live data and runs its verified quant engines to answer - and shows you <b>exactly which engines and data it used</b>. No black box: every number is traceable.</p>
+<div class="bar"><span class="car">&#10095;</span><input id="cmd" autocomplete="off" placeholder="e.g. What's the Sharpe ratio and max drawdown of NVDA?"><button id="go">Run</button></div>
+<div class="chips" id="chips"></div>
+<div class="log" id="log"></div>
+<div class="foot">Answers are generated by an AI model that calls Quantora's verified engines and live market data (Financial Modeling Prep; may be delayed). Numbers come from the engines, not the model's guesses - but AI can still misinterpret, so verify anything important. Educational analysis only, not investment advice; Quantora is not a registered investment adviser and never tells you to buy or sell.</div>
+</div>
+<script>
+var EX=[
+ "Sharpe ratio and max drawdown of NVDA",
+ "Value at Risk of TSLA at 95% confidence",
+ "Black-Scholes call: spot 100, strike 105, 30 days, 25% vol, 5% rate",
+ "Beta of COIN versus the market",
+ "DuPont ROE breakdown for AAPL",
+ "Altman Z-score of F"
+];
+var log=document.getElementById('log'),cmd=document.getElementById('cmd'),go=document.getElementById('go');
+var hist=[],hi=-1;
+var chips=document.getElementById('chips');
+EX.forEach(function(x){var c=document.createElement('button');c.className='chip';c.textContent=x;c.onclick=function(){cmd.value=x;run();};chips.appendChild(c);});
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]})}
+function md(t){return esc(t).replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
+function fmtVal(v){ if(v==null)return ''; if(typeof v==='number')return (Math.abs(v)>=1000||Number.isInteger(v))?v.toLocaleString('en-US',{maximumFractionDigits:2}):(+v).toPrecision(4); if(typeof v==='object'){var ks=Object.keys(v).slice(0,2);return ks.map(function(k){return k+':'+fmtVal(v[k])}).join(' ');} return String(v).slice(0,40); }
+function traceRows(used){
+  if(!used||!used.length)return '';
+  var rows=used.map(function(u){
+    if(u.engine)return '<div class="trow"><span class="tg">run_engine</span><span class="tn">'+esc(u.engine)+'</span><span class="tv">'+esc(fmtVal(u.result))+'</span></div>';
+    return '<div class="trow"><span class="tg">get_market_data</span><span class="tn">'+esc(u.symbol||'?')+'</span><span class="tv">live</span></div>';
+  }).join('');
+  return '<details class="trace"><summary>How I got this &middot; '+used.length+' engine/data call'+(used.length>1?'s':'')+'</summary><div class="rows">'+rows+'</div></details>';
+}
+function errMsg(e){
+  if(e==='ai_key_needed')return 'The AI layer needs an API key configured on the server to answer live questions.';
+  if(e==='too_many_steps')return 'That query needed too many steps - try breaking it into a simpler, single question.';
+  if(e==='no_question')return 'Type a question first.';
+  return 'The terminal hit an error answering that. Try rephrasing, or a simpler question.';
+}
+async function run(){
+  var q=cmd.value.trim();if(!q)return;
+  hist.unshift(q);hi=-1;cmd.value='';go.disabled=true;
+  var entry=document.createElement('div');entry.className='entry';
+  entry.innerHTML='<div class="q"><span class="car">&#10095;</span><span class="txt">'+esc(q)+'</span></div><div class="state" id="pending"><span class="spin"></span>Pulling data &amp; running engines…</div>';
+  log.insertBefore(entry,log.firstChild);
+  try{
+    var r=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:q})});
+    var j=await r.json();
+    var pend=entry.querySelector('#pending');
+    if(j.error){pend.outerHTML='<div class="state">'+esc(errMsg(j.error))+(j.detail?' ('+esc(j.detail)+')':'')+'</div>';}
+    else{var ans=j.answer||'No answer returned.';pend.outerHTML='<div class="a">'+md(ans)+'</div>'+traceRows(j.engines_used);}
+  }catch(e){var p=entry.querySelector('#pending');if(p)p.outerHTML='<div class="state">Network error reaching the terminal. Try again.</div>';}
+  go.disabled=false;cmd.focus();
+}
+go.onclick=run;
+cmd.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){run();}
+  else if(e.key==='ArrowUp'){if(hist.length){hi=Math.min(hi+1,hist.length-1);cmd.value=hist[hi];e.preventDefault();}}
+  else if(e.key==='ArrowDown'){if(hi>0){hi--;cmd.value=hist[hi];}else{hi=-1;cmd.value='';}e.preventDefault();}
+});
+cmd.focus();
+</script>
+</body></html>
