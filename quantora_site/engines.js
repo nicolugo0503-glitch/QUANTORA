@@ -865,7 +865,25 @@ Q.expectedMove=expectedMove;
 function probCone(S,sigma,days,z){ z=z||1; var t=Math.sqrt(days/365); return { up:S*Math.exp(z*sigma*t), down:S*Math.exp(-z*sigma*t) }; }
 Q.probCone=probCone;
 
-Q.version='2.9';
+
+/* ================= DRAWDOWN & ROLLING ANALYTICS (v3.0) ================= */
+/* Drawdown series (decimal, <=0) from a returns array */
+function drawdownSeries(returns){ var eq=1,peak=1,out=[],i; for(i=0;i<returns.length;i++){ eq*=(1+returns[i]); if(eq>peak)peak=eq; out.push(eq/peak-1); } return out; }
+Q.drawdownSeries=drawdownSeries;
+/* Ulcer Index: RMS of percentage drawdowns */
+function ulcerIndex(returns){ var dd=drawdownSeries(returns),s=0,i; for(i=0;i<dd.length;i++){ var d=dd[i]*100; s+=d*d; } return dd.length?Math.sqrt(s/dd.length):0; }
+Q.ulcerIndex=ulcerIndex;
+/* Calmar ratio: annualized return / |max drawdown| */
+function calmar(returns,P){ P=P||252; var m=0; for(var i=0;i<returns.length;i++)m+=returns[i]; var ann=(m/returns.length)*P; var mdd=Math.abs(maxDrawdown(returns))||1e-9; return ann/mdd; }
+Q.calmar=calmar;
+/* Rolling annualized Sharpe over a window (nulls until first full window) */
+function rollingSharpe(returns,win,P){ P=P||252; win=win||63; var out=[],i,j; for(i=0;i<returns.length;i++){ if(i<win-1){ out.push(null); continue; } var m=0; for(j=i-win+1;j<=i;j++)m+=returns[j]; m/=win; var v=0; for(j=i-win+1;j<=i;j++){ var d=returns[j]-m; v+=d*d; } var sd=Math.sqrt(v/(win-1)); out.push(sd>0?(m/sd)*Math.sqrt(P):0); } return out; }
+Q.rollingSharpe=rollingSharpe;
+/* Up/down capture vs benchmark (aligned arrays) */
+function captureRatios(asset,mkt){ var up=0,um=0,dn=0,dm=0,i,n=Math.min(asset.length,mkt.length); for(i=0;i<n;i++){ if(mkt[i]>0){up+=asset[i];um+=mkt[i];} else if(mkt[i]<0){dn+=asset[i];dm+=mkt[i];} } return { up:um?(up/um):null, down:dm?(dn/dm):null }; }
+Q.captureRatios=captureRatios;
+
+Q.version='3.0';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
