@@ -64,9 +64,8 @@ async function run(){
   document.getElementById('run').disabled=true;
   out.innerHTML='<div class="state"><span class="spin"></span>Fetching '+esc(sym)+' history and running the backtest...</div>';
   try{
-    var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();
-    var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);
-    var closes=arr.map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();
+    var _k='qpx_'+sym+'_'+new Date().toISOString().slice(0,10),closes=null;try{var _c=localStorage.getItem(_k);if(_c)closes=JSON.parse(_c);}catch(e){}
+    if(!closes){var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);closes=arr.map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();try{if(closes.length>30)localStorage.setItem(_k,JSON.stringify(closes));}catch(e){}}
     if(closes.length<slow+10){out.innerHTML='<div class="state">Not enough price history for '+esc(sym)+' (need &gt; '+(slow+10)+' days). The free data feed may be at its daily limit - try again later or a major ticker.</div>';document.getElementById('run').disabled=false;return;}
     function sma(a,p,i){if(i<p-1)return null;var s=0;for(var k=i-p+1;k<=i;k++)s+=a[k];return s/p;}
     var pos=[];for(var i=0;i<closes.length;i++){var f=sma(closes,fast,i),s=sma(closes,slow,i);pos.push((f!=null&&s!=null&&f>s)?1:0);}
