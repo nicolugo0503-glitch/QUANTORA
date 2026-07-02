@@ -883,7 +883,23 @@ Q.rollingSharpe=rollingSharpe;
 function captureRatios(asset,mkt){ var up=0,um=0,dn=0,dm=0,i,n=Math.min(asset.length,mkt.length); for(i=0;i<n;i++){ if(mkt[i]>0){up+=asset[i];um+=mkt[i];} else if(mkt[i]<0){dn+=asset[i];dm+=mkt[i];} } return { up:um?(up/um):null, down:dm?(dn/dm):null }; }
 Q.captureRatios=captureRatios;
 
-Q.version='3.0';
+
+/* ================= HIGHER-ORDER GREEKS (v3.1) ================= */
+/* vanna, charm (delta decay), vomma (volga) - all per year; charm/day = /365 */
+function greeksX(S,K,T,r,q,sig){
+  if(T<=0||sig<=0) return {vanna:0,charmCall:0,charmPut:0,vomma:0,vega:0};
+  var b=bsm(S,K,T,r,q,sig), d1=b.d1, d2=b.d2, dfQ=Math.exp(-q*T), pdf=normPdf(d1), sqT=Math.sqrt(T);
+  var vega=S*dfQ*pdf*sqT;
+  var vanna=-dfQ*pdf*d2/sig;
+  var vomma=vega*d1*d2/sig;
+  var common=dfQ*pdf*(2*(r-q)*T - d2*sig*sqT)/(2*T*sig*sqT);
+  var charmCall= q*dfQ*normCdf(d1) - common;
+  var charmPut = -q*dfQ*normCdf(-d1) - common;
+  return { vanna:vanna, charmCall:charmCall, charmPut:charmPut, vomma:vomma, vega:vega };
+}
+Q.greeksX=greeksX;
+
+Q.version='3.1';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
