@@ -1,0 +1,118 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Strategy Backtester - test a moving-average strategy on any stock | Quantora</title>
+<meta name="description" content="Backtest a moving-average crossover strategy against buy-and-hold on any stock or crypto, with equity curves and verified risk metrics. Free, runs in your browser.">
+<link rel="canonical" href="https://www.usequantora.com/backtest.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:660px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input,.fld select{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff}
+.fld input{width:100px}.fld input.tk{text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.5}
+svg{display:block;width:100%;height:auto;margin-top:16px}
+.leg{display:flex;gap:18px;font-size:12px;color:#3a4150;margin-top:8px}
+.leg i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:18px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.up{color:#0f9d63}.down{color:#d6453d}
+.aibtn{border:0;background:rgba(99,91,255,.08);color:#635bff;border:1px solid rgba(99,91,255,.25);border-radius:10px;padding:9px 14px;font:500 13px Geist;cursor:pointer;margin-top:16px}
+.brief{margin-top:12px;font-size:14.5px;line-height:1.7;color:#1c2230;white-space:pre-wrap;background:#fafbfc;border:1px solid rgba(17,24,39,.08);border-radius:12px;padding:14px 16px;display:none}.brief.show{display:block}.brief b{font-weight:600}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:680px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Backtester</div>
+<h1>Strategy Backtester</h1>
+<p class="lead">Test a moving-average crossover strategy against simply buying and holding - on any stock or crypto. In-market when the fast average is above the slow one, in cash otherwise. Verified risk metrics from Quantora's engines.</p>
+<div class="calc">
+<div class="ci">
+<div class="fld"><label>Ticker</label><input class="tk" id="sym" value="AAPL"></div>
+<div class="fld"><label>Fast MA (days)</label><input id="fast" type="number" value="20"></div>
+<div class="fld"><label>Slow MA (days)</label><input id="slow" type="number" value="50"></div>
+<div class="fld"><label>Start capital $</label><input id="cap" type="number" value="10000"></div>
+<button class="run" id="run">Run backtest</button>
+</div>
+<div id="out"></div>
+</div>
+<div class="body">A moving-average crossover is one of the oldest systematic strategies: hold the asset while short-term momentum (the fast average) leads long-term trend (the slow average), and step aside otherwise. It won't always beat buy-and-hold - in strong uptrends holding usually wins - but it often cuts drawdowns. Compare the two equity curves and the risk stats to see the trade-off for your ticker.</div>
+<div class="foot">Historical prices via Financial Modeling Prep; may be delayed. Backtests use close-to-close returns with next-day execution (no lookahead), no fees or slippage - real results would be lower. Past performance is not indicative of future results. For analysis &amp; education, not investment advice.</div>
+</div>
+<script>
+var Q=window.QENG||{};
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]})}
+function num(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
+var out=document.getElementById('out'),lastCtx='';
+document.getElementById('run').onclick=run;
+document.getElementById('sym').addEventListener('keydown',function(e){if(e.key==='Enter')run();});
+async function run(){
+  var sym=document.getElementById('sym').value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+  var fast=Math.max(2,parseInt(document.getElementById('fast').value)||20),slow=Math.max(3,parseInt(document.getElementById('slow').value)||50),cap=parseFloat(document.getElementById('cap').value)||10000;
+  if(fast>=slow){out.innerHTML='<div class="state">Fast MA must be shorter than slow MA.</div>';return;}
+  if(!sym)return;
+  document.getElementById('run').disabled=true;
+  out.innerHTML='<div class="state"><span class="spin"></span>Fetching '+esc(sym)+' history and running the backtest...</div>';
+  try{
+    var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();
+    var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);
+    var closes=arr.map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();
+    if(closes.length<slow+10){out.innerHTML='<div class="state">Not enough price history for '+esc(sym)+' (need &gt; '+(slow+10)+' days). The free data feed may be at its daily limit - try again later or a major ticker.</div>';document.getElementById('run').disabled=false;return;}
+    function sma(a,p,i){if(i<p-1)return null;var s=0;for(var k=i-p+1;k<=i;k++)s+=a[k];return s/p;}
+    var pos=[];for(var i=0;i<closes.length;i++){var f=sma(closes,fast,i),s=sma(closes,slow,i);pos.push((f!=null&&s!=null&&f>s)?1:0);}
+    var sr=[],br=[];for(var i=1;i<closes.length;i++){var dr=closes[i]/closes[i-1]-1;br.push(dr);sr.push(pos[i-1]*dr);}
+    function eq(rets){var e=[cap];for(var i=0;i<rets.length;i++)e.push(e[e.length-1]*(1+rets[i]));return e;}
+    var se=eq(sr),be=eq(br);
+    var trades=0;for(var i=1;i<pos.length;i++)if(pos[i]!==pos[i-1])trades++;
+    var yrs=closes.length/252;
+    function cagr(e){return Math.pow(e[e.length-1]/e[0],1/yrs)-1;}
+    function mdd(rets){try{return Q.maxDrawdown?Q.maxDrawdown(rets):null;}catch(e){return null;}}
+    function shp(rets){try{return Q.sharpe?Q.sharpe(rets,0,252):null;}catch(e){return null;}}
+    function vol(rets){try{return Q.annVol?Q.annVol(rets,252):null;}catch(e){return null;}}
+    var sTot=se[se.length-1]/cap-1,bTot=be[be.length-1]/cap-1;
+    var sMdd=mdd(sr),bMdd=mdd(br),sShp=shp(sr),bShp=shp(br),sVol=vol(sr),bVol=vol(br);
+    // chart
+    var W=880,H=300,pl=8,pt=10,pb=24,n=se.length;
+    var lo=Math.min.apply(null,se.concat(be)),hi=Math.max.apply(null,se.concat(be));if(hi-lo<1)hi=lo+1;
+    function X(i){return pl+i/(n-1)*(W-2*pl);}function Y(v){return H-pb-(v-lo)/(hi-lo)*(H-pt-pb);}
+    function path(e){var d='';for(var i=0;i<e.length;i++)d+=(i?'L':'M')+X(i).toFixed(1)+','+Y(e[i]).toFixed(1);return d;}
+    var chart='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:300px"><path d="'+path(be)+'" fill="none" stroke="#9aa1ad" stroke-width="1.6" vector-effect="non-scaling-stroke"/><path d="'+path(se)+'" fill="none" stroke="#635bff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';
+    function mp(x){return x==null?'—':(x>=0?'+':'')+num(x*100,1)+'%';}
+    out.innerHTML=chart+'<div class="leg"><span><i style="background:#635bff"></i>MA strategy</span><span><i style="background:#9aa1ad"></i>Buy &amp; hold</span><span style="color:#9aa1ad">'+esc(sym)+' &middot; '+closes.length+' days (~'+yrs.toFixed(1)+'y)</span></div>'+
+    '<div class="cr">'+
+      '<div class="cell"><div class="cl">Strategy return</div><div class="cv '+(sTot>=0?'up':'down')+'">'+mp(sTot)+'</div></div>'+
+      '<div class="cell"><div class="cl">Buy &amp; hold</div><div class="cv '+(bTot>=0?'up':'down')+'">'+mp(bTot)+'</div></div>'+
+      '<div class="cell"><div class="cl">Strategy CAGR</div><div class="cv">'+mp(cagr(se))+'</div></div>'+
+      '<div class="cell"><div class="cl">Max drawdown</div><div class="cv down">'+mp(sMdd)+'</div></div>'+
+      '<div class="cell"><div class="cl">Sharpe</div><div class="cv">'+(sShp==null?'—':num(sShp,2))+'</div></div>'+
+      '<div class="cell"><div class="cl">Volatility</div><div class="cv">'+mp(sVol)+'</div></div>'+
+      '<div class="cell"><div class="cl">Trades</div><div class="cv">'+trades+'</div></div>'+
+      '<div class="cell"><div class="cl">Final equity</div><div class="cv">$'+num(se[se.length-1],0)+'</div></div>'+
+    '</div>'+
+    '<button class="aibtn" id="aiex">&#10022; Explain these results with AI</button><div class="brief" id="brief"></div>';
+    lastCtx='Backtest of a '+fast+'/'+slow+'-day moving-average crossover on '+sym+' over ~'+yrs.toFixed(1)+' years. Strategy total return '+mp(sTot)+', buy-and-hold '+mp(bTot)+', strategy CAGR '+mp(cagr(se))+', max drawdown '+mp(sMdd)+' (vs buy-hold '+mp(bMdd)+'), Sharpe '+(sShp==null?'n/a':num(sShp,2))+' (vs '+(bShp==null?'n/a':num(bShp,2))+'), annualized volatility '+mp(sVol)+', '+trades+' trades, final equity $'+num(se[se.length-1],0)+' from $'+num(cap,0)+'.';
+    document.getElementById('aiex').onclick=explain;
+  }catch(e){out.innerHTML='<div class="state">Error: '+esc(String(e&&e.message||e))+'</div>';}
+  document.getElementById('run').disabled=false;
+}
+async function explain(){
+  var brief=document.getElementById('brief');brief.className='brief show';brief.innerHTML='<span class="spin"></span>Analyzing the backtest with AI...';
+  try{var r=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:'Explain this backtest in plain language: did the strategy beat buy-and-hold, what was the risk trade-off (drawdown, Sharpe, volatility), and what are the key caveats of trusting this result? Be concise and educational, not advice.',context:lastCtx})});var j=await r.json();
+    if(j.error==='ai_key_needed'){brief.innerHTML='AI isn\'t activated yet (needs an API key in Vercel).';return;}
+    if(j.error){brief.textContent='Couldn\'t complete that: '+(j.detail||j.message||j.error);return;}
+    brief.innerHTML=fmt(j.answer||'(no answer)');
+  }catch(e){brief.textContent='Network error.';}
+}
+run();
+</script>
+</body></html>
