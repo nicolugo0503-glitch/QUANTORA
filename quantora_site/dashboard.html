@@ -52,6 +52,8 @@ h1{font-size:clamp(26px,3.4vw,34px);font-weight:600;letter-spacing:-.03em;margin
     <h2>Watchlist <button class="rf" id="wrf">Refresh</button></h2>
     <div class="add"><input id="wadd" placeholder="Add ticker - AAPL, MSFT, BTCUSD"><button id="wbtn">Add</button></div>
     <div id="wlist"></div>
+    <button class="mini" id="wdig" style="margin-top:12px">&#10022; AI digest of my watchlist</button>
+    <div class="brief" id="wbrief"></div>
   </div>
   <div class="card">
     <h2>Price alerts</h2>
@@ -116,6 +118,7 @@ brbtn.onclick=async function(){if(!holds.length){brief.className='brief show';br
     brief.innerHTML=fmt(j.answer||'(no answer)');
   }catch(e){brief.textContent='Network error.';}
 };
+document.getElementById('wdig').onclick=async function(){var wb=document.getElementById('wbrief');if(!watch.length){wb.className='brief show';wb.textContent='Add some tickers first.';return;}wb.className='brief show';wb.innerHTML='<span class="spin"></span>Scanning your watchlist with AI...';for(var i=0;i<watch.length;i++){await q(watch[i]);}var lines=watch.map(function(sy){var Q=quotes[sy];return sy+(Q?(': $'+num(Q.price)+' ('+(Q.chg>=0?'+':'')+num(Q.chg)+'% today)'):'');}).join('\n');try{var r=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:'Give me a concise digest of my watchlist: which names are moving most today, any shared themes, and what to watch next. Educational, not advice.',context:'My watchlist with live prices:\n'+lines})});var j=await r.json();if(j.error==="ai_key_needed"){wb.innerHTML='AI isn\'t activated yet.';return;}if(j.error){wb.textContent='Couldn\'t complete that: '+(j.detail||j.message||j.error);return;}wb.innerHTML=fmt(j.answer||'(no answer)');}catch(e){wb.textContent='Network error.';}};
 renderWatch();renderAlerts();renderHolds();
 setTimeout(function(){for(var i=0;i<holds.length;i++)q(holds[i].sym).then(renderHolds);},400);
 checkAlerts();setInterval(function(){if(!document.hidden)checkAlerts();},60000);
