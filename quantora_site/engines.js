@@ -799,7 +799,49 @@ Q.downsideDeviation=downsideDeviation; Q.burkeRatio=burkeRatio;
 function sterlingRatio(returns,P){ P=P||252; var mdd=Math.abs(maxDrawdown(returns)); return (mean(returns)*P)/(mdd+0.10); }
 Q.sterlingRatio=sterlingRatio;
 
-Q.version='2.7';
+
+/* ================= RATES & FIXED-INCOME SUITE (v2.8) ================= */
+/* Zero-curve bootstrap from annual par-coupon bonds (price=100). tenors in years (1,2,3..), pars as decimals. */
+function bootstrapZero(tenors, pars){
+  var n=tenors.length, dfs=[], zeros=[], i, k;
+  for(i=0;i<n;i++){
+    var c=pars[i]*100, sum=0;
+    for(k=0;k<i;k++) sum+=dfs[k];
+    var df=(100 - c*sum)/(100 + c);
+    dfs.push(df);
+    zeros.push(Math.pow(1/df, 1/tenors[i]) - 1);
+  }
+  return { tenors:tenors, dfs:dfs, zeros:zeros };
+}
+Q.bootstrapZero=bootstrapZero;
+/* Continuous-in-annual-comp forward rate between two zero rates */
+function forwardRate(z1,t1,z2,t2){ return Math.pow(Math.pow(1+z2,t2)/Math.pow(1+z1,t1), 1/(t2-t1)) - 1; }
+Q.forwardRate=forwardRate;
+/* Par swap rate & PV01 from discount factors and accrual fractions (default annual taus=1) */
+function parSwapRate(dfs, taus){ var n=dfs.length, ann=0, i; for(i=0;i<n;i++) ann+= (taus?taus[i]:1)*dfs[i]; return { parRate:(1-dfs[n-1])/ann, annuity:ann, pv01:ann/10000 }; }
+Q.parSwapRate=parSwapRate;
+/* Z-spread: constant spread over the zero curve that reprices cashflows to a market price */
+function zSpread(times, cfs, zeros, price){
+  function pv(s){ var v=0,i; for(i=0;i<times.length;i++) v+=cfs[i]/Math.pow(1+zeros[i]+s, times[i]); return v; }
+  var lo=-0.05, hi=0.5, mid, f;
+  for(var it=0; it<200; it++){ mid=(lo+hi)/2; f=pv(mid)-price; if(Math.abs(f)<1e-8) break; if(f>0) lo=mid; else hi=mid; }
+  return mid;
+}
+Q.zSpread=zSpread;
+/* Nelson-Siegel-Svensson yield at maturity t */
+function svensson(t,b0,b1,b2,b3,tau1,tau2){
+  var a=t/tau1, b=t/tau2;
+  var f1=(1-Math.exp(-a))/a;
+  var f2=f1-Math.exp(-a);
+  var f3=(1-Math.exp(-b))/b - Math.exp(-b);
+  return b0 + b1*f1 + b2*f2 + b3*f3;
+}
+Q.svensson=svensson;
+/* Inflation breakeven (Fisher-exact) */
+function breakeven(nominal, real){ return (1+nominal)/(1+real) - 1; }
+Q.breakeven=breakeven;
+
+Q.version='2.8';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
