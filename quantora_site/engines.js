@@ -928,7 +928,14 @@ function covMatrix(series, annualize){
 }
 Q.covMatrix=covMatrix;
 
-Q.version='3.2';
+
+/* ================= CORRELATION MATRIX (v3.3) ================= */
+function corrMatrix(series){ var n=series.length; if(!n) return []; var C=covMatrix(series,false); var out=[]; for(var i=0;i<n;i++){ out.push([]); for(var j=0;j<n;j++){ var d=Math.sqrt(C[i][i]*C[j][j]); out[i].push(d>0?C[i][j]/d:0); } } return out; }
+Q.corrMatrix=corrMatrix;
+function avgPairwiseCorr(series){ var m=corrMatrix(series), n=m.length, s=0, k=0; for(var i=0;i<n;i++) for(var j=i+1;j<n;j++){ s+=m[i][j]; k++; } return k?s/k:0; }
+Q.avgPairwiseCorr=avgPairwiseCorr;
+
+Q.version='3.3';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

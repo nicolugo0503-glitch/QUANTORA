@@ -1,0 +1,96 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Correlation Matrix Explorer - how your holdings move together | Quantora</title>
+<meta name="description" content="Visualize the correlation matrix across any set of stocks, ETFs or crypto, with a heatmap, average pairwise correlation and a diversification score - from real price history. Free, verified math.">
+<link rel="canonical" href="https://www.usequantora.com/correlation.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px;flex:1;min-width:240px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.5}
+svg{display:block;width:100%;height:auto;margin-top:8px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:16px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 150px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.leg{display:flex;align-items:center;gap:8px;font-size:11px;color:#9aa1ad;margin-top:10px;font-family:Geist Mono,monospace}
+.leg .g{height:10px;flex:1;border-radius:3px;background:linear-gradient(90deg,#0f9d63,#e9edf2,#d6453d)}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Desk</div>
+<h1>Correlation Matrix Explorer</h1>
+<p class="lead">Diversification lives or dies on correlation. Enter a set of tickers and Quantora maps how they actually move together - a heatmap, the average pairwise correlation, and a diversification score - from real daily returns. Assets that all move as one aren't a portfolio; they're one bet.</p>
+<div class="calc">
+<div class="ci">
+<div class="fld"><label>Tickers (comma-separated, 2-10)</label><input id="syms" value="AAPL, MSFT, NVDA, JPM, XOM, GLD, TLT"></div>
+<button class="run" id="run">Build matrix</button>
+</div>
+<div id="out"></div>
+</div>
+<div class="body">Correlation runs from <b>-1</b> (move exactly opposite) through <b>0</b> (unrelated) to <b>+1</b> (move in lockstep). Red cells are highly correlated pairs that give you little diversification; green cells are the diversifiers that cushion each other. The <b>average pairwise correlation</b> is the single best gauge of how concentrated your risk really is - a book of tech names might average 0.8 (basically one position), while mixing equities, bonds, gold and crypto can pull it far lower. The <b>diversification score</b> is simply 1 minus that average. Correlations aren't stable - they tend to spike toward 1 in crashes, exactly when you need diversification most - so treat this as a snapshot, not a guarantee.</div>
+<div class="foot">Pearson correlation on overlapping daily returns (Financial Modeling Prep history; may be delayed, and cached in your browser for the day to conserve the data feed). Educational analysis, not investment advice.</div>
+</div>
+<script>
+var Q=window.QENG||{};
+function nn(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':Number(v).toFixed(d)}
+var out=document.getElementById('out');
+async function prices(sym){var k='qpx_'+sym+'_'+new Date().toISOString().slice(0,10);try{var c=localStorage.getItem(k);if(c)return JSON.parse(c);}catch(e){}var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);var closes=arr.map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();try{if(closes.length>30)localStorage.setItem(k,JSON.stringify(closes));}catch(e){}return closes;}
+function rets(c){var r=[];for(var i=1;i<c.length;i++)r.push(c[i]/c[i-1]-1);return r;}
+document.getElementById('run').onclick=run;
+document.getElementById('syms').addEventListener('keydown',function(e){if(e.key==='Enter')run();});
+function color(v){ // -1 green .. 0 grey .. 1 red
+  var g=[15,157,99],mid=[233,237,242],r=[214,69,61],c;
+  if(v>=0){var t=v;c=[mid[0]+(r[0]-mid[0])*t,mid[1]+(r[1]-mid[1])*t,mid[2]+(r[2]-mid[2])*t];}
+  else{var t=-v;c=[mid[0]+(g[0]-mid[0])*t,mid[1]+(g[1]-mid[1])*t,mid[2]+(g[2]-mid[2])*t];}
+  return 'rgb('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+')';
+}
+async function run(){
+  var syms=document.getElementById('syms').value.toUpperCase().split(',').map(function(s){return s.trim().replace(/[^A-Z0-9.\-]/g,'');}).filter(Boolean).slice(0,10);
+  if(syms.length<2){out.innerHTML='<div class="state">Enter at least two tickers.</div>';return;}
+  document.getElementById('run').disabled=true;out.innerHTML='<div class="state"><span class="spin"></span>Loading '+syms.join(', ')+'…</div>';
+  try{
+    var arrs=await Promise.all(syms.map(prices));
+    var ok=[],labels=[];for(var i=0;i<arrs.length;i++){var rr=rets(arrs[i]);if(rr.length>60){ok.push(rr);labels.push(syms[i]);}}
+    if(ok.length<2){out.innerHTML='<div class="state">Not enough history returned (the free feed may be at its daily limit). Try major tickers or again later.</div>';document.getElementById('run').disabled=false;return;}
+    var L=Math.min.apply(null,ok.map(function(s){return s.length;}));
+    var aligned=ok.map(function(s){return s.slice(s.length-L);});
+    var m=Q.corrMatrix(aligned);
+    var avg=Q.avgPairwiseCorr(aligned);
+    // find most/least correlated pair
+    var hi={v:-2},lo={v:2};
+    for(var i=0;i<labels.length;i++)for(var j=i+1;j<labels.length;j++){if(m[i][j]>hi.v)hi={v:m[i][j],a:labels[i],b:labels[j]};if(m[i][j]<lo.v)lo={v:m[i][j],a:labels[i],b:labels[j]};}
+    out.innerHTML=heatmap(m,labels)+
+      '<div class="cr"><div class="cell"><div class="cl">Avg pairwise corr</div><div class="cv">'+nn(avg)+'</div></div>'+
+      '<div class="cell"><div class="cl">Diversification score</div><div class="cv">'+nn(1-avg)+'</div></div>'+
+      '<div class="cell"><div class="cl">Most correlated</div><div class="cv">'+hi.a+'&ndash;'+hi.b+' '+nn(hi.v)+'</div></div>'+
+      '<div class="cell"><div class="cl">Best diversifier pair</div><div class="cv">'+lo.a+'&ndash;'+lo.b+' '+nn(lo.v)+'</div></div>'+
+      '<div class="cell"><div class="cl">History</div><div class="cv">'+L+'d</div></div></div>';
+  }catch(e){out.innerHTML='<div class="state">Could not build the matrix: '+String(e&&e.message||e)+'</div>';}
+  document.getElementById('run').disabled=false;
+}
+function heatmap(m,labels){
+  var n=labels.length,cell=Math.min(74,Math.floor(620/n)),lab=54,W=lab+n*cell+10,H=lab+n*cell+10;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" style="max-width:'+W+'px">';
+  for(var j=0;j<n;j++){s+='<text x="'+(lab+j*cell+cell/2)+'" y="'+(lab-8)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#3a4150" font-family="Geist,sans-serif">'+labels[j]+'</text>';}
+  for(var i=0;i<n;i++){
+    s+='<text x="'+(lab-8)+'" y="'+(lab+i*cell+cell/2+4)+'" text-anchor="end" font-size="11" font-weight="600" fill="#3a4150" font-family="Geist,sans-serif">'+labels[i]+'</text>';
+    for(var j=0;j<n;j++){var v=m[i][j];var x=lab+j*cell,y=lab+i*cell;var tc=(Math.abs(v)>0.55)?'#fff':'#14161c';
+      s+='<rect x="'+x+'" y="'+y+'" width="'+(cell-2)+'" height="'+(cell-2)+'" rx="4" fill="'+color(v)+'"/><text x="'+(x+cell/2-1)+'" y="'+(y+cell/2+4)+'" text-anchor="middle" font-size="'+(cell>52?11:9)+'" fill="'+tc+'" font-family="Geist Mono,monospace">'+(v).toFixed(2)+'</text>';}
+  }
+  s+='</svg><div class="leg"><span>-1 diversifying</span><span class="g"></span><span>+1 lockstep</span></div>';
+  return s;
+}
+run();
+</script>
+</body></html>
