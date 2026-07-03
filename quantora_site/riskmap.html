@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Risk-Return Map - annualized return vs volatility, Sharpe-ranked | Quantora</title>
+<meta name="description" content="Plot any set of stocks, ETFs or crypto on a risk-return map: annualized return against volatility, colored by Sharpe ratio, from real price history. See what actually pays you for its risk. Free.">
+<link rel="canonical" href="https://www.usequantora.com/riskmap.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px;flex:1;min-width:240px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.5}
+svg{display:block;width:100%;height:auto;margin-top:8px}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9aa1ad;font-weight:500;text-align:right;padding:6px 8px;border-bottom:1px solid rgba(17,24,39,.1)}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.06);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace}
+td.sym{font-family:Geist,sans-serif;font-weight:600}
+.up{color:#0f9d63}.down{color:#d6453d}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Desk</div>
+<h1>Risk-Return Map</h1>
+<p class="lead">Every asset promises return; the question is how much risk you swallow to get it. This map plots each ticker by annualized return against volatility and colors it by Sharpe ratio - so the names that actually pay you for their risk rise to the top-left, and the ones that don't sink to the bottom-right.</p>
+<div class="calc">
+<div class="ci">
+<div class="fld"><label>Tickers (comma-separated, 2-12)</label><input id="syms" value="AAPL, MSFT, NVDA, KO, JNJ, XOM, GLD, TLT, SPY"></div>
+<button class="run" id="run">Map it</button>
+</div>
+<div id="out"></div>
+</div>
+<div class="body">Position on this map is destiny in portfolio theory. <b>Up and to the left</b> is the prize - high return for low volatility - while <b>down and to the right</b> is the trap: you're paying in risk without being paid in return. The color is the <b>Sharpe ratio</b> (return per unit of volatility, risk-free rate taken as zero here): green names earn their keep, red ones don't. The dashed rays from the origin are lines of equal Sharpe - anything on a steeper ray is more efficient. Remember this is backward-looking: a name can look glorious after a big run and still be a poor bet forward. Use it to compare the risk personalities of assets, not to pick winners.</div>
+<div class="foot">Annualized return is the compound growth of the price history; volatility is the annualized standard deviation of daily returns; Sharpe uses a zero risk-free rate. Prices via Financial Modeling Prep (may be delayed; cached in your browser for the day). Educational, not investment advice.</div>
+</div>
+<script>
+var Q=window.QENG||{};
+function pc(v,d){d=d==null?1:d;return(v==null||isNaN(v))?'—':(v*100).toFixed(d)+'%'}
+function nn(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':Number(v).toFixed(d)}
+var out=document.getElementById('out');
+async function prices(sym){var k='qpx_'+sym+'_'+new Date().toISOString().slice(0,10);try{var c=localStorage.getItem(k);if(c)return JSON.parse(c);}catch(e){}var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);var closes=arr.map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();try{if(closes.length>30)localStorage.setItem(k,JSON.stringify(closes));}catch(e){}return closes;}
+function rets(c){var r=[];for(var i=1;i<c.length;i++)r.push(c[i]/c[i-1]-1);return r;}
+document.getElementById('run').onclick=run;
+document.getElementById('syms').addEventListener('keydown',function(e){if(e.key==='Enter')run();});
+function shColor(s){ if(s>=1)return '#0f9d63'; if(s>=0.5)return '#5aa06f'; if(s>=0)return '#635bff'; return '#d6453d'; }
+async function run(){
+  var syms=document.getElementById('syms').value.toUpperCase().split(',').map(function(s){return s.trim().replace(/[^A-Z0-9.\-]/g,'');}).filter(Boolean).slice(0,12);
+  if(syms.length<2){out.innerHTML='<div class="state">Enter at least two tickers.</div>';return;}
+  document.getElementById('run').disabled=true;out.innerHTML='<div class="state"><span class="spin"></span>Loading '+syms.length+' tickers…</div>';
+  try{
+    var arrs=await Promise.all(syms.map(prices));
+    var pts=[];
+    for(var i=0;i<arrs.length;i++){var c=arrs[i];if(c.length<80)continue;var rr=rets(c);var cagr=Math.pow(c[c.length-1]/c[0],252/c.length)-1;var vol=Q.annVol(rr);var sh=Q.sharpe(rr);pts.push({sym:syms[i],ret:cagr,vol:vol,sh:sh});}
+    if(pts.length<2){out.innerHTML='<div class="state">Not enough history returned (the free feed may be at its daily limit). Try major tickers or again later.</div>';document.getElementById('run').disabled=false;return;}
+    pts.sort(function(a,b){return b.sh-a.sh;});
+    var html=scatter(pts);
+    html+='<table><thead><tr><th>Ticker</th><th>Ann. return</th><th>Volatility</th><th>Sharpe</th></tr></thead><tbody>'+
+      pts.map(function(p){return '<tr><td class="sym">'+p.sym+'</td><td class="'+(p.ret>=0?'up':'down')+'">'+pc(p.ret)+'</td><td>'+pc(p.vol)+'</td><td>'+nn(p.sh)+'</td></tr>';}).join('')+'</tbody></table>';
+    out.innerHTML=html;
+  }catch(e){out.innerHTML='<div class="state">Could not build the map: '+String(e&&e.message||e)+'</div>';}
+  document.getElementById('run').disabled=false;
+}
+function scatter(pts){
+  var W=900,H=460,ml=52,mr=16,mt=16,mb=42,pw=W-ml-mr,ph=H-mt-mb;
+  var vmax=Math.max.apply(null,pts.map(function(p){return p.vol;}))*1.15;
+  var rmin=Math.min(0,Math.min.apply(null,pts.map(function(p){return p.ret;}))),rmax=Math.max.apply(null,pts.map(function(p){return p.ret;}))*1.12;
+  if(rmax-rmin<0.05)rmax=rmin+0.05;
+  function X(v){return ml+pw*(v/vmax);}function Y(v){return mt+ph*(1-((v-rmin)/(rmax-rmin)));}
+  var grid='';
+  for(var g=0;g<=4;g++){var vv=vmax*g/4;grid+='<line x1="'+X(vv).toFixed(1)+'" y1="'+mt+'" x2="'+X(vv).toFixed(1)+'" y2="'+(mt+ph)+'" stroke="rgba(17,24,39,.05)"/><text x="'+X(vv).toFixed(1)+'" y="'+(H-24)+'" text-anchor="middle" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">'+(vv*100).toFixed(0)+'%</text>';}
+  for(var g=0;g<=4;g++){var rv=rmin+(rmax-rmin)*g/4;grid+='<line x1="'+ml+'" y1="'+Y(rv).toFixed(1)+'" x2="'+(W-mr)+'" y2="'+Y(rv).toFixed(1)+'" stroke="rgba(17,24,39,.05)"/><text x="'+(ml-8)+'" y="'+(Y(rv)+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad" font-family="Geist Mono,monospace">'+(rv*100).toFixed(0)+'%</text>';}
+  // equal-Sharpe rays (return = sharpe*vol)
+  var rays='';[0.5,1,1.5].forEach(function(s){var vx=vmax,ry=s*vx;if(ry>rmax)ry=rmax,vx=ry/s;rays+='<line x1="'+X(0)+'" y1="'+Y(0).toFixed(1)+'" x2="'+X(vx).toFixed(1)+'" y2="'+Y(ry).toFixed(1)+'" stroke="rgba(99,91,255,.25)" stroke-dasharray="4 4"/><text x="'+X(vx).toFixed(1)+'" y="'+(Y(ry)-4).toFixed(1)+'" text-anchor="end" font-size="9" fill="#9aa1ad" font-family="Geist Mono,monospace">SR '+s+'</text>';});
+  var zero=(rmin<0)?'<line x1="'+ml+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-mr)+'" y2="'+Y(0).toFixed(1)+'" stroke="rgba(17,24,39,.2)" stroke-dasharray="2 2"/>':'';
+  var dots=pts.map(function(p){var x=X(p.vol),y=Y(p.ret);return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="6" fill="'+shColor(p.sh)+'" opacity="0.9"/><text x="'+(x+9).toFixed(1)+'" y="'+(y+3.5).toFixed(1)+'" font-size="11" font-weight="600" fill="#14161c" font-family="Geist,sans-serif">'+p.sym+'</text>';}).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+zero+rays+dots+'<text x="'+(ml+pw/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="11" fill="#3a4150" font-family="Geist,sans-serif">Volatility (annualized) &rarr;</text></svg>';
+}
+run();
+</script>
+</body></html>

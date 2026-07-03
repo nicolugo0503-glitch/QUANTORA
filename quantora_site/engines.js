@@ -935,7 +935,19 @@ Q.corrMatrix=corrMatrix;
 function avgPairwiseCorr(series){ var m=corrMatrix(series), n=m.length, s=0, k=0; for(var i=0;i<n;i++) for(var j=i+1;j<n;j++){ s+=m[i][j]; k++; } return k?s/k:0; }
 Q.avgPairwiseCorr=avgPairwiseCorr;
 
-Q.version='3.3';
+
+/* ================= REGRESSION / PAIRS (v3.4) ================= */
+/* OLS of y on x: returns slope(beta), intercept(alpha), r-squared */
+function ols(y,x){ var n=Math.min(y.length,x.length); if(n<2) return {beta:0,alpha:0,r2:0}; var mx=0,my=0,i; for(i=0;i<n;i++){mx+=x[i];my+=y[i];} mx/=n;my/=n; var sxx=0,sxy=0,syy=0; for(i=0;i<n;i++){var dx=x[i]-mx,dy=y[i]-my; sxx+=dx*dx; sxy+=dx*dy; syy+=dy*dy;} var beta=sxx>0?sxy/sxx:0; var alpha=my-beta*mx; var r2=(sxx*syy>0)?(sxy*sxy)/(sxx*syy):0; return {beta:beta, alpha:alpha, r2:r2}; }
+Q.ols=ols;
+/* Full z-score series + latest z of a series */
+function zscore(series){ var n=series.length,m=0,i; for(i=0;i<n;i++)m+=series[i]; m/=n; var v=0; for(i=0;i<n;i++){var d=series[i]-m;v+=d*d;} var sd=Math.sqrt(v/(n>1?n-1:1)); var z=series.map(function(x){return sd>0?(x-m)/sd:0;}); return {z:z, mean:m, sd:sd, last:z[n-1]}; }
+Q.zscore=zscore;
+/* Mean-reversion half-life from AR(1): d(s)=a+b*s(t-1); half-life=-ln2/ln(1+b) */
+function halfLife(s){ var y=[],x=[],i; for(i=1;i<s.length;i++){y.push(s[i]-s[i-1]);x.push(s[i-1]);} var r=ols(y,x); var b=r.beta; if(b>=0) return Infinity; return -Math.log(2)/Math.log(1+b); }
+Q.halfLife=halfLife;
+
+Q.version='3.4';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
