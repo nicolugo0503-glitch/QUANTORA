@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seasonality Explorer - monthly return patterns for any stock | Quantora</title>
+<meta name="description" content="See a stock or ETF's monthly return seasonality: a year-by-month heatmap, average return per calendar month, and how often each month is positive. From real price history, free.">
+<link rel="canonical" href="https://www.usequantora.com/seasonality.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:960px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff;width:120px;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.5}
+.wrap{overflow-x:auto;margin-top:16px}
+table.hm{border-collapse:collapse;font-size:12px;font-family:Geist Mono,monospace;min-width:640px}
+table.hm th{font-size:10px;color:#9aa1ad;font-weight:500;padding:4px 6px;text-align:center}
+table.hm td{padding:0;text-align:center}
+table.hm td.yr{font-family:Geist,sans-serif;font-weight:600;color:#3a4150;padding-right:8px;text-align:right}
+.cellv{display:block;width:46px;height:30px;line-height:30px;border-radius:4px;font-variant-numeric:tabular-nums}
+.avgrow td{border-top:2px solid rgba(17,24,39,.12);padding-top:6px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:16px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 150px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.up{color:#0f9d63}.down{color:#d6453d}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Desk</div>
+<h1>Seasonality Explorer</h1>
+<p class="lead">Do some months treat a stock better than others? Enter a ticker and Quantora lays out its monthly returns year by year, then averages each calendar month and shows how often it finished green - the raw material behind "sell in May" and every other seasonal tell.</p>
+<div class="calc">
+<div class="ci">
+<div class="fld"><label>Ticker</label><input id="sym" value="SPY"></div>
+<button class="run" id="run">Show seasonality</button>
+</div>
+<div id="out"></div>
+</div>
+<div class="body">Each cell is that month's total return; the bottom rows show the <b>average</b> for that calendar month across all years and the <b>hit rate</b> (share of years it was positive). Patterns like a strong November-December or a weak September show up as columns of green or red. Treat them as curiosities, not certainties: with only a handful of years, apparent seasonality is often noise, it can vanish once discovered, and it says nothing about any single future month. It's a lens on a stock's history, not a calendar you can trade blindly.</div>
+<div class="foot">Monthly returns from month-end closing prices (Financial Modeling Prep; may be delayed, cached in your browser for the day). Small samples - interpret with heavy caution. Educational analysis, not investment advice.</div>
+</div>
+<script>
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function pc(v,d){d=d==null?1:d;return(v==null||isNaN(v))?'':(v>=0?'+':'')+(v*100).toFixed(d)+'%'}
+var out=document.getElementById('out');
+async function datedPrices(sym){
+  var k='qpxd_'+sym+'_'+new Date().toISOString().slice(0,10);
+  try{var c=localStorage.getItem(k);if(c)return JSON.parse(c);}catch(e){}
+  var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();
+  var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);
+  var out=arr.map(function(x){return {d:x.date, c:(x.price!=null?x.price:x.close)};}).filter(function(x){return x.d&&x.c!=null&&isFinite(x.c);}).reverse();
+  try{if(out.length>60)localStorage.setItem(k,JSON.stringify(out));}catch(e){}
+  return out;
+}
+function color(v){ // diverging, saturate at +-8%
+  var t=Math.max(-1,Math.min(1,v/0.08));
+  if(t>=0){var g=[15,157,99],m=[237,240,244];return 'rgb('+Math.round(m[0]+(g[0]-m[0])*t)+','+Math.round(m[1]+(g[1]-m[1])*t)+','+Math.round(m[2]+(g[2]-m[2])*t)+')';}
+  var r=[214,69,61],m=[237,240,244];t=-t;return 'rgb('+Math.round(m[0]+(r[0]-m[0])*t)+','+Math.round(m[1]+(r[1]-m[1])*t)+','+Math.round(m[2]+(r[2]-m[2])*t)+')';
+}
+document.getElementById('run').onclick=run;
+document.getElementById('sym').addEventListener('keydown',function(e){if(e.key==='Enter')run();});
+async function run(){
+  var sym=document.getElementById('sym').value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+  if(!sym)return;
+  document.getElementById('run').disabled=true;out.innerHTML='<div class="state"><span class="spin"></span>Loading '+sym+' history…</div>';
+  try{
+    var data=await datedPrices(sym);
+    if(data.length<200){out.innerHTML='<div class="state">Not enough history for '+sym+' (free feed may be at its daily limit). Try a major ticker or again later.</div>';document.getElementById('run').disabled=false;return;}
+    // month-end closes
+    var meKeys=[],meClose={};
+    data.forEach(function(x){var ym=x.d.slice(0,7);if(!(ym in meClose))meKeys.push(ym);meClose[ym]=x.c;});
+    // monthly returns keyed by ym
+    var mret={};
+    for(var i=1;i<meKeys.length;i++){mret[meKeys[i]]=meClose[meKeys[i]]/meClose[meKeys[i-1]]-1;}
+    // bucket by year/month
+    var years={};
+    Object.keys(mret).forEach(function(ym){var y=+ym.slice(0,4),m=+ym.slice(5,7)-1;if(!years[y])years[y]=new Array(12).fill(null);years[y][m]=mret[ym];});
+    var yl=Object.keys(years).map(Number).sort();
+    // per-month avg + hit rate + best/worst
+    var mavg=[],mhit=[];
+    for(var m=0;m<12;m++){var s=0,k=0,pos=0;yl.forEach(function(y){var v=years[y][m];if(v!=null){s+=v;k++;if(v>0)pos++;}});mavg[m]=k?s/k:null;mhit[m]=k?pos/k:null;}
+    var bestM=0,worstM=0;for(var m=1;m<12;m++){if((mavg[m]||-9)>(mavg[bestM]||-9))bestM=m;if((mavg[m]||9)<(mavg[worstM]||9))worstM=m;}
+    var bestH=0;for(var m=1;m<12;m++){if((mhit[m]||0)>(mhit[bestH]||0))bestH=m;}
+    // build table
+    var h='<div class="wrap"><table class="hm"><thead><tr><th></th>'+MON.map(function(x){return '<th>'+x+'</th>';}).join('')+'<th>Year</th></tr></thead><tbody>';
+    yl.forEach(function(y){
+      var yr=1;years[y].forEach(function(v){if(v!=null)yr*=(1+v);});yr-=1;
+      h+='<tr><td class="yr">'+y+'</td>'+years[y].map(function(v){return '<td>'+(v==null?'<span class="cellv" style="color:#c7ccd6">·</span>':'<span class="cellv" style="background:'+color(v)+';color:'+(Math.abs(v)>0.05?'#fff':'#14161c')+'">'+(v*100).toFixed(1)+'</span>')+'</td>';}).join('')+'<td><span class="cellv" style="background:'+color(yr)+';color:'+(Math.abs(yr)>0.05?'#fff':'#14161c')+'">'+(yr*100).toFixed(0)+'</span></td></tr>';
+    });
+    h+='<tr class="avgrow"><td class="yr">Avg</td>'+mavg.map(function(v){return '<td><span class="cellv" style="background:'+color(v)+';color:'+(Math.abs(v)>0.05?'#fff':'#14161c')+'">'+(v==null?'':(v*100).toFixed(1))+'</span></td>';}).join('')+'<td></td></tr>';
+    h+='<tr><td class="yr">Win%</td>'+mhit.map(function(v){return '<td><span class="cellv" style="color:'+(v>=0.5?'#0f9d63':'#d6453d')+'">'+(v==null?'':Math.round(v*100))+'</span></td>';}).join('')+'<td></td></tr>';
+    h+='</tbody></table></div>';
+    h+='<div class="cr"><div class="cell"><div class="cl">Best month (avg)</div><div class="cv up">'+MON[bestM]+' '+pc(mavg[bestM])+'</div></div>'+
+      '<div class="cell"><div class="cl">Worst month (avg)</div><div class="cv down">'+MON[worstM]+' '+pc(mavg[worstM])+'</div></div>'+
+      '<div class="cell"><div class="cl">Most reliable</div><div class="cv">'+MON[bestH]+' '+Math.round(mhit[bestH]*100)+'%</div></div>'+
+      '<div class="cell"><div class="cl">Years covered</div><div class="cv">'+yl.length+'</div></div></div>';
+    out.innerHTML=h;
+  }catch(e){out.innerHTML='<div class="state">Could not load seasonality: '+String(e&&e.message||e)+'</div>';}
+  document.getElementById('run').disabled=false;
+}
+run();
+</script>
+</body></html>
