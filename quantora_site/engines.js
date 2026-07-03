@@ -1008,7 +1008,30 @@ function blackLitterman(Sigma, wMkt, delta, tau, P, Q_, omega){
 }
 Q.blackLitterman=blackLitterman;
 
-Q.version='3.6';
+
+/* ================= EXOTIC OPTIONS (v3.7) ================= */
+/* Geometric-average Asian option, Kemna-Vorst (1990) closed form */
+function geometricAsian(S,K,T,r,q,sig,isCall){
+  if(T<=0) return {price:Math.max(isCall?S-K:K-S,0)};
+  var b=r-q, sigA=sig/Math.sqrt(3), bA=0.5*(b-sig*sig/6), sq=sigA*Math.sqrt(T);
+  var d1=(Math.log(S/K)+(bA+0.5*sigA*sigA)*T)/sq, d2=d1-sq;
+  var call=S*Math.exp((bA-r)*T)*normCdf(d1)-K*Math.exp(-r*T)*normCdf(d2);
+  var put=K*Math.exp(-r*T)*normCdf(-d2)-S*Math.exp((bA-r)*T)*normCdf(-d1);
+  return { price:(isCall===false?put:call), call:call, put:put, effVol:sigA };
+}
+Q.geometricAsian=geometricAsian;
+/* Margrabe (1978) option to exchange asset 2 for asset 1 */
+function exchangeOption(S1,S2,sig1,sig2,rho,q1,q2,T){
+  q1=q1||0; q2=q2||0;
+  var sig=Math.sqrt(sig1*sig1+sig2*sig2-2*rho*sig1*sig2); if(sig<=0)sig=1e-8;
+  var sq=sig*Math.sqrt(T);
+  var d1=(Math.log(S1/S2)+(q2-q1+0.5*sig*sig)*T)/sq, d2=d1-sq;
+  var price=S1*Math.exp(-q1*T)*normCdf(d1)-S2*Math.exp(-q2*T)*normCdf(d2);
+  return { price:price, spreadVol:sig };
+}
+Q.exchangeOption=exchangeOption;
+
+Q.version='3.7';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
