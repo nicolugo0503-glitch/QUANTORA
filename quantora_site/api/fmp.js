@@ -8,6 +8,8 @@ module.exports = async (req, res) => {
   if (type === 'engine') { return renderEngine(req, res); }
   if (type === 'compare') { return renderCompare(req, res, KEY); }
   if (type === 'ai') { return renderAI(req, res); }
+  if (type === 'sec') { res.setHeader('Access-Control-Allow-Origin','*'); res.setHeader('Cache-Control','s-maxage=600, stale-while-revalidate=1800'); try { const p=(req.query.path||'').toString().replace(/[^\w.\/-]/g,''); const host=p.indexOf('files/')===0?'www.sec.gov':'data.sec.gov'; const r=await fetch('https://'+host+'/'+p,{headers:{'User-Agent':'Quantora nicolugo0503@gmail.com','Accept':'application/json'}}); const j=await r.json(); res.status(200).json({ data:j }); } catch(o){ res.status(200).json({ error:'sec_error' }); } return; }
+  if (type === 'fred') { res.setHeader('Access-Control-Allow-Origin','*'); res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=7200'); const fk=process.env.FRED_KEY; if(!fk){ res.status(200).json({ error:'fred_key_needed' }); return; } try { const s=(req.query.series||'').toString().replace(/[^A-Za-z0-9]/g,''); const r=await fetch('https://api.stlouisfed.org/fred/series/observations?series_id='+s+'&api_key='+fk+'&file_type=json&sort_order=desc&limit=120'); const j=await r.json(); res.status(200).json({ data:j }); } catch(o){ res.status(200).json({ error:'fred_error' }); } return; }
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=900');
   if (!KEY) { res.status(200).json({ error: 'nokey' }); return; }
