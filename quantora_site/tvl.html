@@ -1,0 +1,95 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>On-Chain Dashboard - DeFi TVL, top chains &amp; protocols, Fear &amp; Greed | Quantora</title>
+<meta name="description" content="A live on-chain dashboard: total DeFi TVL, the biggest chains and protocols, stablecoin supply and the Crypto Fear &amp; Greed index - straight from public on-chain data, free and no login.">
+<link rel="canonical" href="https://www.usequantora.com/tvl.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1040px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 18px}
+.status{font-size:12px;color:#9aa1ad;margin:0 0 16px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.cell{background:#fff;padding:15px 17px;flex:1 1 180px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:24px;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card h2{font-size:14px;font-weight:600;margin:0 0 12px;letter-spacing:-.01em}
+.bar{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+.bar .nm{width:88px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{flex:1;height:16px;background:rgba(99,91,255,.08);border-radius:5px;overflow:hidden}
+.bar .track i{display:block;height:100%;background:linear-gradient(90deg,#635bff,#8a7dff);border-radius:5px}
+.bar .vv{width:74px;text-align:right;font-family:Geist Mono,monospace;font-variant-numeric:tabular-nums;color:#3a4150}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9aa1ad;font-weight:500;text-align:right;padding:5px 6px;border-bottom:1px solid rgba(17,24,39,.1)}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 6px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace}
+td.nm{font-family:Geist,sans-serif;font-weight:600}.cat{font-size:10.5px;color:#9aa1ad}
+.up{color:#0f9d63}.down{color:#d6453d}
+.gauge{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gv{font-family:Geist Mono,monospace;font-size:40px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:-30px}
+.gl{font-size:13px;font-weight:600;margin-top:2px}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin:16px 0;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; On-Chain</div>
+<h1>On-Chain Dashboard</h1>
+<p class="lead">The crypto economy at a glance, straight from public on-chain data: how much value is locked across DeFi, which chains and protocols hold it, and where sentiment sits on the Fear &amp; Greed scale. Live, free, no login.</p>
+<p class="status" id="status"><span class="spin"></span>Loading on-chain data…</p>
+<div id="out"></div>
+<div class="foot">Data from DefiLlama (TVL, chains, protocols, stablecoins) and the alternative.me Crypto Fear &amp; Greed Index - public APIs, fetched live in your browser, no key. TVL is value locked in smart contracts and can shift fast. For information and education, not investment advice.</div>
+</div>
+<script>
+function money(v){v=+v||0;var a=Math.abs(v);if(a>=1e12)return '$'+(v/1e12).toFixed(2)+'T';if(a>=1e9)return '$'+(v/1e9).toFixed(1)+'B';if(a>=1e6)return '$'+(v/1e6).toFixed(0)+'M';return '$'+Math.round(v).toLocaleString();}
+var statusEl=document.getElementById('status'),out=document.getElementById('out');
+function fngColor(v){ if(v<25)return '#d6453d'; if(v<45)return '#e0833a'; if(v<55)return '#c8a413'; if(v<75)return '#5aa06f'; return '#0f9d63'; }
+function gauge(v,label){
+  var W=240,H=150,cx=120,cy=130,r=100;
+  var a0=Math.PI, a1=0; // 180deg -> 0deg
+  function pt(ang,rr){return [cx+rr*Math.cos(ang),cy-rr*Math.sin(ang)];}
+  var seg='';var stops=[[0,25,'#d6453d'],[25,45,'#e0833a'],[45,55,'#c8a413'],[55,75,'#5aa06f'],[75,100,'#0f9d63']];
+  stops.forEach(function(s){var b=Math.PI*(1-s[0]/100),e=Math.PI*(1-s[1]/100);var p0=pt(b,r),p1=pt(e,r);seg+='<path d="M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+r+' '+r+' 0 0 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+'" fill="none" stroke="'+s[2]+'" stroke-width="16" stroke-linecap="butt"/>';});
+  var na=Math.PI*(1-v/100),np=pt(na,r-4),base1=[cx+7*Math.cos(na-Math.PI/2),cy-7*Math.sin(na-Math.PI/2)],base2=[cx+7*Math.cos(na+Math.PI/2),cy-7*Math.sin(na+Math.PI/2)];
+  var needle='<polygon points="'+np[0].toFixed(1)+','+np[1].toFixed(1)+' '+base1[0].toFixed(1)+','+base1[1].toFixed(1)+' '+base2[0].toFixed(1)+','+base2[1].toFixed(1)+'" fill="#14161c"/><circle cx="'+cx+'" cy="'+cy+'" r="6" fill="#14161c"/>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="max-width:260px;display:block;margin:0 auto">'+seg+needle+'</svg><div class="gv" style="color:'+fngColor(v)+'">'+v+'</div><div class="gl" style="color:'+fngColor(v)+'">'+label+'</div>';
+}
+async function load(){
+  try{
+    var res=await Promise.all([
+      fetch('https://api.llama.fi/v2/chains').then(r=>r.json()),
+      fetch('https://api.llama.fi/protocols').then(r=>r.json()),
+      fetch('https://api.alternative.me/fng/?limit=1').then(r=>r.json()).catch(function(){return null;}),
+      fetch('https://stablecoins.llama.fi/stablecoins?includePrices=false').then(r=>r.json()).catch(function(){return null;})
+    ]);
+    var chains=res[0],protos=res[1],fng=res[2],stab=res[3];
+    var totalTvl=chains.reduce(function(a,b){return a+(b.tvl||0);},0);
+    var topChains=chains.slice().sort(function(a,b){return b.tvl-a.tvl;}).slice(0,10);
+    var maxC=topChains[0].tvl;
+    var defiProtos=protos.filter(function(p){return p.category!=='CEX'&&p.tvl>0;}).sort(function(a,b){return b.tvl-a.tvl;}).slice(0,15);
+    var stableTotal=0;if(stab&&stab.peggedAssets){stab.peggedAssets.forEach(function(a){var c=a.circulating&&(a.circulating.peggedUSD||0);stableTotal+=c||0;});}
+    var fv=fng&&fng.data?+fng.data[0].value:null, fl=fng&&fng.data?fng.data[0].value_classification:'';
+    var cells=[['Total DeFi TVL',money(totalTvl)],['Chains',chains.length],['Protocols tracked',protos.length.toLocaleString()]];
+    if(stableTotal>0)cells.push(['Stablecoin supply',money(stableTotal)]);
+    var h='<div class="cr">'+cells.map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv">'+c[1]+'</div></div>';}).join('')+'</div>';
+    h+='<div class="grid2">';
+    h+='<div class="card"><h2>Top chains by TVL</h2>'+topChains.map(function(c){return '<div class="bar"><span class="nm">'+c.name+'</span><span class="track"><i style="width:'+(c.tvl/maxC*100).toFixed(1)+'%"></i></span><span class="vv">'+money(c.tvl)+'</span></div>';}).join('')+'</div>';
+    h+='<div class="card">'+(fv!=null?'<h2>Crypto Fear &amp; Greed</h2><div class="gauge">'+gauge(fv,fl)+'</div>':'<h2>Fear &amp; Greed</h2><p style="color:#9aa1ad;font-size:13px">Index unavailable.</p>')+'</div>';
+    h+='</div>';
+    h+='<div class="card" style="margin-top:18px"><h2>Top DeFi protocols</h2><table><thead><tr><th>Protocol</th><th>Category</th><th>TVL</th><th>24h</th></tr></thead><tbody>'+
+      defiProtos.map(function(p){var ch=p.change_1d;return '<tr><td class="nm">'+p.name+'</td><td class="cat">'+(p.category||'')+'</td><td>'+money(p.tvl)+'</td><td class="'+(ch>=0?'up':'down')+'">'+(ch==null?'—':(ch>=0?'+':'')+ch.toFixed(1)+'%')+'</td></tr>';}).join('')+
+      '</tbody></table></div>';
+    out.innerHTML=h;
+    statusEl.textContent='Live · '+chains.length+' chains · '+protos.length.toLocaleString()+' protocols · updated just now';
+  }catch(e){
+    out.innerHTML='<div class="state">Could not reach the on-chain data providers right now. This dashboard pulls live from public crypto APIs - try again in a moment.</div>';
+    statusEl.textContent='Data unavailable';
+  }
+}
+load();
+</script>
+</body></html>
