@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Markets - live prices, market cap, dominance &amp; top coins | Quantora</title>
+<meta name="description" content="A live crypto markets overview: total market capitalization, Bitcoin and Ethereum dominance, 24h volume and the top coins with 7-day sparklines. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/crypto.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1040px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 16px}
+.status{font-size:12px;color:#9aa1ad;margin:0 0 16px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.cell{background:#fff;padding:14px 16px;flex:1 1 150px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:21px;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:6px 6px;box-shadow:0 1px 2px rgba(16,24,40,.04);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:660px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9aa1ad;font-weight:500;text-align:right;padding:10px 12px;border-bottom:1px solid rgba(17,24,39,.08)}
+th:first-child,th:nth-child(2){text-align:left}
+td{padding:9px 12px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace;text-align:right}
+td:first-child{text-align:left;color:#9aa1ad}
+td.nm{text-align:left;font-family:Geist,sans-serif;font-weight:600}
+td.nm .sym{color:#9aa1ad;font-weight:400;text-transform:uppercase;font-size:11px;margin-left:4px}
+tr:hover td{background:#fafbfc}
+.up{color:#0f9d63}.down{color:#d6453d}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin:16px 0;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Markets</div>
+<h1>Crypto Markets</h1>
+<p class="lead">The whole crypto market at a glance - total capitalization, Bitcoin and Ethereum dominance, 24-hour volume, and the largest coins with their 7-day trend. Live, free, no login.</p>
+<p class="status" id="status"><span class="spin"></span>Loading crypto markets…</p>
+<div id="out"></div>
+<div class="foot">Data from the CoinGecko public API, fetched live in your browser. Prices are indicative and can move fast. For information and education, not investment advice.</div>
+</div>
+<script>
+function money(v){v=+v||0;var a=Math.abs(v);if(a>=1e12)return '$'+(v/1e12).toFixed(2)+'T';if(a>=1e9)return '$'+(v/1e9).toFixed(1)+'B';if(a>=1e6)return '$'+(v/1e6).toFixed(0)+'M';return '$'+Math.round(v).toLocaleString();}
+function price(v){v=+v||0;if(v>=1000)return '$'+v.toLocaleString('en-US',{maximumFractionDigits:0});if(v>=1)return '$'+v.toFixed(2);return '$'+v.toFixed(v>=0.01?4:6);}
+function pct(v){if(v==null||isNaN(v))return '<span style="color:#9aa1ad">—</span>';var c=v>=0?'up':'down';return '<span class="'+c+'">'+(v>=0?'+':'')+v.toFixed(2)+'%</span>';}
+var statusEl=document.getElementById('status'),out=document.getElementById('out');
+function spark(arr,upcol){
+  if(!arr||arr.length<2)return '';
+  var W=96,H=28,lo=Math.min.apply(null,arr),hi=Math.max.apply(null,arr),rng=hi-lo||1;
+  var d=arr.map(function(v,i){return (i?'L':'M')+(i/(arr.length-1)*W).toFixed(1)+' '+(H-((v-lo)/rng)*H).toFixed(1);}).join(' ');
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="96" height="28" preserveAspectRatio="none"><path d="'+d+'" fill="none" stroke="'+upcol+'" stroke-width="1.5"/></svg>';
+}
+async function load(){
+  try{
+    var g=await fetch('https://api.coingecko.com/api/v3/global').then(r=>r.json());
+    var d=g.data;
+    var coins=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=25&page=1&sparkline=true&price_change_percentage=24h,7d').then(r=>r.json());
+    var chg=d.market_cap_change_percentage_24h_usd;
+    var cells=[
+      ['Total market cap',money(d.total_market_cap.usd)+' <span style="font-size:13px">'+(chg>=0?'<span class=up>+':'<span class=down>')+chg.toFixed(2)+'%</span></span>'],
+      ['24h volume',money(d.total_volume.usd)],
+      ['BTC dominance',d.market_cap_percentage.btc.toFixed(1)+'%'],
+      ['ETH dominance',d.market_cap_percentage.eth.toFixed(1)+'%'],
+      ['Active coins',(d.active_cryptocurrencies||0).toLocaleString()]
+    ];
+    var h='<div class="cr">'+cells.map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv">'+c[1]+'</div></div>';}).join('')+'</div>';
+    h+='<div class="card"><table><thead><tr><th>#</th><th>Coin</th><th>Price</th><th>24h</th><th>7d</th><th>Market cap</th><th>Volume</th><th>7d trend</th></tr></thead><tbody>'+
+      coins.map(function(c){
+        var c7=c.price_change_percentage_7d_in_currency;
+        var upcol=(c7>=0?'#0f9d63':'#d6453d');
+        var sp=c.sparkline_in_7d&&c.sparkline_in_7d.price?c.sparkline_in_7d.price:null;
+        return '<tr><td>'+c.market_cap_rank+'</td><td class="nm">'+c.name+'<span class="sym">'+c.symbol+'</span></td><td>'+price(c.current_price)+'</td><td>'+pct(c.price_change_percentage_24h)+'</td><td>'+pct(c7)+'</td><td>'+money(c.market_cap)+'</td><td>'+money(c.total_volume)+'</td><td style="text-align:right">'+spark(sp,upcol)+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    out.innerHTML=h;
+    statusEl.textContent='Live · '+coins.length+' coins · '+(d.active_cryptocurrencies||0).toLocaleString()+' tracked · updated just now';
+  }catch(e){
+    out.innerHTML='<div class="state">Could not reach the crypto data provider right now (public API rate limit). Try again in a moment.</div>';
+    statusEl.textContent='Data unavailable';
+  }
+}
+load();
+</script>
+</body></html>
