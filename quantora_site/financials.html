@@ -50,7 +50,7 @@ function pad(c){c=''+c;while(c.length<10)c='0'+c;return c;}
 async function sec(path){var r=await fetch('/api/fmp?type=sec&path='+encodeURIComponent(path));var j=await r.json();if(j.error)throw new Error(j.error);return j.data;}
 async function cikMap(){if(CIKMAP)return CIKMAP;try{var c=localStorage.getItem('qcik_v1');if(c){CIKMAP=JSON.parse(c);return CIKMAP;}}catch(e){}var d=await sec('files/company_tickers.json');CIKMAP={};Object.keys(d).forEach(function(k){var o=d[k];CIKMAP[o.ticker.toUpperCase()]={cik:o.cik_str,name:o.title};});try{localStorage.setItem('qcik_v1',JSON.stringify(CIKMAP));}catch(e){}return CIKMAP;}
 async function concept(cik,names){for(var i=0;i<names.length;i++){try{var d=await sec('api/xbrl/companyconcept/CIK'+pad(cik)+'/us-gaap/'+names[i]+'.json');if(d&&d.units&&d.units.USD&&d.units.USD.length)return d.units.USD;}catch(e){}}return null;}
-function annual(units){if(!units)return[];var byFY={};units.forEach(function(u){if(u.fp==='FY'&&u.form&&u.form.indexOf('10-K')===0&&u.fy){byFY[u.fy]={fy:u.fy,val:u.val,end:u.end};}});return Object.keys(byFY).map(function(k){return byFY[k];}).sort(function(a,b){return a.fy-b.fy;});}
+function annual(units,flow){if(!units)return[];var byFY={};units.forEach(function(u){if(u.fp==='FY'&&u.form&&u.form.indexOf('10-K')===0&&u.fy){if(flow&&u.start){var dd=(new Date(u.end)-new Date(u.start))/86400000;if(dd<300||dd>400)return;}byFY[u.fy]={fy:u.fy,val:u.val,end:u.end};}});return Object.keys(byFY).map(function(k){return byFY[k];}).sort(function(a,b){return a.fy-b.fy;});}
 document.getElementById('run').onclick=go;
 document.getElementById('sym').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
 async function go(){
@@ -67,7 +67,7 @@ async function go(){
       concept(ent.cik,['Liabilities']),
       concept(ent.cik,['StockholdersEquity','StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'])
     ]);
-    var rev=annual(res[0]),ni=annual(res[1]),assets=annual(res[2]),liab=annual(res[3]),eq=annual(res[4]);
+    var rev=annual(res[0],true),ni=annual(res[1],true),assets=annual(res[2]),liab=annual(res[3]),eq=annual(res[4]);
     if(!rev.length&&!ni.length){out.innerHTML='<div class="state">Couldn\'t extract standardized financials for '+sym+' (it may use non-standard XBRL tags). Filings are still browsable in the SEC Filings Explorer.</div>';return;}
     var years=rev.length?rev.slice(-10):ni.slice(-10);
     var revMap={},niMap={},aMap={},eMap={};rev.forEach(function(r){revMap[r.fy]=r.val;});ni.forEach(function(r){niMap[r.fy]=r.val;});assets.forEach(function(r){aMap[r.fy]=r.val;});eq.forEach(function(r){eMap[r.fy]=r.val;});
