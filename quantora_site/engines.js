@@ -1043,7 +1043,39 @@ Q.fxForward=fxForward;
 function impliedCarry(S,F,T){ return Math.log(F/S)/(T||1); }
 Q.impliedCarry=impliedCarry;
 
-Q.version='3.8';
+
+/* ================= TREEMAP + DIVERGING COLOR (v3.9) ================= */
+/* Squarified treemap (Bruls-Huizing-van Wijk). items:[{value,...}] -> adds {x,y,w,h}. */
+function squarify(items, x, y, w, h){
+  items=items.filter(function(it){return it.value>0;}).slice().sort(function(a,b){return b.value-a.value;});
+  var total=items.reduce(function(a,b){return a+b.value;},0)||1;
+  var scale=(w*h)/total;
+  var nodes=items.map(function(it){ var o={}; for(var k in it) o[k]=it[k]; o._a=it.value*scale; return o; });
+  var rect={x:x,y:y,w:w,h:h};
+  function worst(row,len){ var s=row.reduce(function(a,b){return a+b._a;},0); var mx=Math.max.apply(null,row.map(function(r){return r._a;})); var mn=Math.min.apply(null,row.map(function(r){return r._a;})); return Math.max((len*len*mx)/(s*s),(s*s)/(len*len*mn)); }
+  function layoutRow(row, len, rect, horizontal){
+    var s=row.reduce(function(a,b){return a+b._a;},0); var thick=s/len; var off=0;
+    row.forEach(function(r){ var frac=r._a/s*len; if(horizontal){ r.x=rect.x; r.y=rect.y+off; r.w=thick; r.h=frac; } else { r.x=rect.x+off; r.y=rect.y; r.w=frac; r.h=thick; } off+=frac; });
+    if(horizontal){ rect.x+=thick; rect.w-=thick; } else { rect.y+=thick; rect.h-=thick; }
+  }
+  var i=0;
+  while(i<nodes.length){
+    var horizontal=rect.w<rect.h; var len=horizontal?rect.h:rect.w; if(len<=0)break;
+    var row=[nodes[i]]; var j=i+1;
+    while(j<nodes.length){ var test=row.concat([nodes[j]]); if(worst(test,len)<=worst(row,len)) { row=test; j++; } else break; }
+    layoutRow(row,len,rect,horizontal); i=j;
+  }
+  return nodes;
+}
+Q.squarify=squarify;
+/* Diverging color for signed value (e.g. % change), saturating at +/- cap. Returns hex-ish rgb. */
+function divColor(v, cap){ cap=cap||3; var t=Math.max(-1,Math.min(1,v/cap));
+  var pos=[38,166,154], neg=[224,82,78], mid=[42,46,56]; // teal / red / slate (dark theme)
+  var c; if(t>=0){ c=[mid[0]+(pos[0]-mid[0])*t, mid[1]+(pos[1]-mid[1])*t, mid[2]+(pos[2]-mid[2])*t]; } else { var u=-t; c=[mid[0]+(neg[0]-mid[0])*u, mid[1]+(neg[1]-mid[1])*u, mid[2]+(neg[2]-mid[2])*u]; }
+  return 'rgb('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+')'; }
+Q.divColor=divColor;
+
+Q.version='3.9';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
