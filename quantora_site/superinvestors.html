@@ -1,0 +1,205 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Superinvestors - live 13F holdings of Buffett, Burry, Ackman &amp; more | Quantora</title>
+<meta name="description" content="Track what the world's best investors own, straight from their SEC 13F filings: Warren Buffett, Michael Burry, Bill Ackman, David Tepper and more - full holdings, portfolio weights, and quarter-over-quarter buys, sells and exits. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/superinvestors.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1040px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:720px;margin:0 0 18px}
+.ci{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld select{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:10px 12px;font:inherit;font-size:15px;background:#fff;min-width:300px;cursor:pointer}
+.hd{display:flex;align-items:baseline;gap:10px;margin-top:18px;flex-wrap:wrap}.hd h2{font-size:20px;font-weight:600;margin:0}.hd .cik{font-size:12px;color:#9aa1ad;font-family:Geist Mono,monospace}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:12px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 150px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}.cv .sub{font-family:Geist,sans-serif;font-size:11px;color:#9aa1ad;font-weight:400}
+.qoq{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.qc{border:1px solid rgba(17,24,39,.1);background:#fff;border-radius:10px;padding:8px 13px;font-size:12.5px}.qc b{font-family:Geist Mono,monospace;font-size:15px;margin-right:5px}
+.qc.g b{color:#0f9d63}.qc.r b{color:#d6453d}.qc.n b{color:#635bff}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:16px 18px;margin-top:18px}.card h3{font-size:13px;font-weight:600;margin:0 0 4px}.card .cap{font-size:11.5px;color:#9aa1ad;margin:0 0 10px}
+svg{display:block;width:100%;height:auto}
+.tmwrap{position:relative}
+.tmlab{fill:#fff;font-family:Geist,system-ui,sans-serif;pointer-events:none}
+.tmpct{fill:rgba(255,255,255,.8);font-family:Geist Mono,monospace;pointer-events:none}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;font-weight:500;text-align:right;padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.1);white-space:nowrap}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+td{padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace;white-space:nowrap}
+td.nm{font-family:Geist,sans-serif;font-weight:500;white-space:normal;min-width:150px}
+.bar{height:5px;border-radius:3px;background:#635bff;display:block;margin-top:3px}
+.chg{font-weight:600}.chg.g{color:#0f9d63}.chg.r{color:#d6453d}.chg.n{color:#635bff}.chg.z{color:#9aa1ad}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.exit{font-size:12px;color:#6a7180;margin-top:10px;line-height:1.6}.exit b{color:#d6453d;font-weight:600}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:720px;margin-top:26px}.body b{color:#14161c}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Research</div>
+<h1>Superinvestors</h1>
+<p class="lead">Every quarter, big investment managers must disclose their US stock holdings to the SEC on a <b>Form 13F</b>. Quantora reads those filings straight from EDGAR so you can see exactly what the world's most-watched investors own - full positions, portfolio weights, and what they <b>bought, sold and exited</b> versus the quarter before.</p>
+<div class="ci">
+<div class="fld"><label>Investor</label><select id="fund"></select></div>
+</div>
+<div id="out"></div>
+<div class="body">A <b>13F</b> is a quarterly snapshot of a manager's US-listed long positions, filed within 45 days of quarter-end. It's powerful - it's how the public learns that Buffett started a new position or that a hedge fund piled into one name - but it has real limits. It's <b>up to ~4.5 months stale</b> by the time you see it, it shows <b>only long US equity</b> (no shorts, cash, bonds, or foreign listings), and a manager can ask the SEC to temporarily hide a position being built. So read it as a window into conviction, not a live portfolio. The quarter-over-quarter changes below - new buys, adds, trims and exits - are usually the most revealing part.</div>
+<div class="foot">13F data from the SEC EDGAR system via Quantora's server (public domain, no key). Under Exchange Act &sect;13(f) / Rule 13f-1, managers with &ge;$100M in 13(f) securities file within 45 days of quarter-end; figures may be materially stale. 13F covers long US equity only - it excludes shorts, cash, non-US listings, most derivatives and any confidential-treatment holdings, so it is not a fund's full book. CUSIPs shown are reproduced as they appear in the public filing. Following investors is not investment advice; Quantora is not a registered investment adviser. For information and education only.</div>
+</div>
+<script>
+var out=document.getElementById('out');
+var FUNDS=[
+ ['Berkshire Hathaway — Warren Buffett',1067983],
+ ['Pershing Square — Bill Ackman',1336528],
+ ['Scion Asset Mgmt — Michael Burry',1649339],
+ ['Appaloosa — David Tepper',1656456],
+ ['Third Point — Dan Loeb',1040273],
+ ['Baupost Group — Seth Klarman',1061768],
+ ['Duquesne Family Office — Stanley Druckenmiller',1536411],
+ ['Bridgewater Associates — Ray Dalio',1350694],
+ ['Himalaya Capital — Li Lu',1709323],
+ ['Tiger Global Management',1167483],
+ ['Gates Foundation Trust',1166559]
+];
+function money(v){v=+v||0;var a=Math.abs(v),s=v<0?'-':'';if(a>=1e12)return s+'$'+(a/1e12).toFixed(2)+'T';if(a>=1e9)return s+'$'+(a/1e9).toFixed(2)+'B';if(a>=1e6)return s+'$'+(a/1e6).toFixed(1)+'M';if(a>=1e3)return s+'$'+(a/1e3).toFixed(0)+'K';return s+'$'+Math.round(a).toLocaleString();}
+function num(v){v=+v||0;return v.toLocaleString('en-US',{maximumFractionDigits:0});}
+function pad(c){c=''+c;while(c.length<10)c='0'+c;return c;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+async function sec(path){var r=await fetch('/api/fmp?type=sec&path='+encodeURIComponent(path));var j=await r.json();if(j.error)throw new Error(j.error);return j.data;}
+function L(root,n){var k=root.getElementsByTagName('*');for(var i=0;i<k.length;i++)if(k[i].localName===n)return (k[i].textContent||'').trim();return '';}
+function child(n,name){var k=n.getElementsByTagName('*');for(var i=0;i<k.length;i++)if(k[i].localName===name)return (k[i].textContent||'').trim();return '';}
+function eraScale(period){var m=String(period).match(/(\d{4})/);var y=m?+m[1]:9999;return y>=2023?1:1000;}
+function titleCase(s){s=String(s||'');return s.replace(/\w[^\s\/]*/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();});}
+async function loadFiling(cikInt,accDash,period0){
+  var key='q13f_'+accDash;
+  try{var c=localStorage.getItem(key);if(c)return JSON.parse(c);}catch(e){}
+  var accNoDash=accDash.replace(/-/g,'');
+  var base='Archives/edgar/data/'+cikInt+'/'+accNoDash+'/';
+  var idx=await sec(base+'index.json');
+  var items=(idx.directory&&idx.directory.item||[]).map(function(x){return {name:x.name,size:+x.size};});
+  var xmls=items.filter(function(x){return /\.xml$/i.test(x.name)&&!/primary_doc/i.test(x.name)&&!/index/i.test(x.name);}).sort(function(a,b){return b.size-a.size;});
+  var infoName=xmls.length?xmls[0].name:null;
+  var period=period0||'',totVal=0,totCnt=0,mgr='';
+  try{var pd=await sec(base+'primary_doc.xml');var pdoc=new DOMParser().parseFromString(pd,'application/xml');period=L(pdoc,'periodOfReport')||period;totVal=parseFloat(L(pdoc,'tableValueTotal'))||0;totCnt=parseFloat(L(pdoc,'tableEntryTotal'))||0;mgr=L(pdoc,'name');}catch(e){}
+  var scale=eraScale(period);
+  var holdings=[];
+  if(infoName){var xml=await sec(base+infoName);var doc=new DOMParser().parseFromString(xml,'application/xml');
+    var rows=[].filter.call(doc.getElementsByTagName('*'),function(n){return n.localName==='infoTable';});
+    var byC={};
+    rows.forEach(function(n){var cu=child(n,'cusip');if(!cu)return;if(!byC[cu])byC[cu]={issuer:child(n,'nameOfIssuer'),cls:child(n,'titleOfClass'),cusip:cu,value:0,shares:0,typ:child(n,'sshPrnamtType')};
+      byC[cu].value+=(parseFloat(child(n,'value'))||0)*scale;byC[cu].shares+=parseFloat(child(n,'sshPrnamt'))||0;});
+    holdings=Object.keys(byC).map(function(c){return byC[c];}).sort(function(a,b){return b.value-a.value;});
+  }
+  var res={period:period,totVal:totVal*scale,totCnt:totCnt,mgr:mgr,holdings:holdings};
+  try{localStorage.setItem(key,JSON.stringify(res));}catch(e){}
+  return res;
+}
+(function(){var sel=document.getElementById('fund');FUNDS.forEach(function(f,i){var o=document.createElement('option');o.value=i;o.textContent=f[0];sel.appendChild(o);});sel.onchange=go;})();
+async function go(){
+  var i=+document.getElementById('fund').value||0;var f=FUNDS[i];var label=f[0],cik=f[1];
+  out.innerHTML='<div class="state"><span class="spin"></span>Loading '+esc(label.split(' — ')[0])+'’s latest 13F from EDGAR…</div>';
+  try{
+    var sub=await sec('submissions/CIK'+pad(cik)+'.json');var rec=sub.filings&&sub.filings.recent;
+    if(!rec)throw new Error('no filings');
+    var byRep={};
+    for(var k=0;k<rec.form.length;k++){var fm=rec.form[k];if(fm==='13F-HR'||fm==='13F-HR/A'){var rep=(rec.reportDate&&rec.reportDate[k])||rec.filingDate[k];if(!byRep[rep])byRep[rep]={acc:rec.accessionNumber[k],rep:rep,form:fm};else if(fm.indexOf('/A')>0)byRep[rep]={acc:rec.accessionNumber[k],rep:rep,form:fm};}}
+    var reps=Object.keys(byRep).sort().reverse();
+    if(!reps.length)throw new Error('no 13F-HR filings');
+    var cur=byRep[reps[0]],prior=reps[1]?byRep[reps[1]]:null;
+    out.innerHTML='<div class="state"><span class="spin"></span>Reading holdings for '+esc(reps[0])+(prior?' and comparing to '+esc(reps[1]):'')+'…</div>';
+    var curD=await loadFiling(cik,cur.acc,cur.rep);
+    var priorD=prior?await loadFiling(cik,prior.acc,prior.rep):null;
+    render(label,cik,curD,priorD);
+  }catch(e){out.innerHTML='<div class="state">Could not load 13F for '+esc(label)+' ('+esc(String(e.message||e))+'). SEC EDGAR can rate-limit briefly - try again shortly.</div>';}
+}
+function pct(x){return (x*100).toFixed(Math.abs(x*100)<10?1:0)+'%';}
+function render(label,cik,cur,prior){
+  var holds=cur.holdings.slice();
+  var total=cur.totVal||holds.reduce(function(s,h){return s+h.value;},0);
+  var pmap={};if(prior)prior.holdings.forEach(function(h){pmap[h.cusip]=h;});
+  var nNew=0,nAdd=0,nTrim=0;
+  holds.forEach(function(h){var p=pmap[h.cusip];
+    if(!prior){h.chg=null;h.tag='';}
+    else if(!p){h.chg=1;h.tag='NEW';nNew++;}
+    else{var d=p.shares>0?(h.shares-p.shares)/p.shares:0;h.chg=d;if(Math.abs(d)<0.005){h.tag='—';}else if(d>0){h.tag='+'+pct(d);nAdd++;}else{h.tag='−'+pct(-d);nTrim++;}}
+  });
+  var curSet={};holds.forEach(function(h){curSet[h.cusip]=1;});
+  var exited=prior?prior.holdings.filter(function(h){return !curSet[h.cusip];}).sort(function(a,b){return b.value-a.value;}):[];
+  var h='<div class="hd"><h2>'+esc(label.split(' — ')[0])+'</h2><span class="cik">'+(label.indexOf(' — ')>0?esc(label.split(' — ')[1])+' &middot; ':'')+'CIK '+pad(cik)+' &middot; '+esc(cur.mgr||'')+'</span></div>';
+  var topH=holds[0];
+  h+='<div class="cr">'+
+    '<div class="cell"><div class="cl">Portfolio value (13F)</div><div class="cv">'+money(total)+'</div></div>'+
+    '<div class="cell"><div class="cl">Positions</div><div class="cv">'+holds.length+'</div></div>'+
+    '<div class="cell"><div class="cl">Top holding</div><div class="cv" style="font-size:15px">'+(topH?esc(titleCase(topH.issuer)):'—')+(topH?'<div class="sub">'+pct(topH.value/total)+' of book</div>':'')+'</div></div>'+
+    '<div class="cell"><div class="cl">Reported for</div><div class="cv" style="font-size:15px">'+esc(cur.period||'—')+'<div class="sub">filed within 45 days</div></div></div>'+
+  '</div>';
+  if(prior){
+    h+='<div class="qoq">'+
+      '<div class="qc n"><b>'+nNew+'</b>new buys</div>'+
+      '<div class="qc g"><b>'+nAdd+'</b>added to</div>'+
+      '<div class="qc r"><b>'+nTrim+'</b>trimmed</div>'+
+      '<div class="qc r"><b>'+exited.length+'</b>exited</div>'+
+      '<div class="qc"><span style="color:#9aa1ad">vs '+esc(prior.period||'prior quarter')+'</span></div>'+
+    '</div>';
+  }
+  // treemap
+  h+='<div class="card"><h3>Portfolio map</h3><p class="cap">Each tile is a holding, sized by market value'+(prior?'. Green = added or new this quarter, red = trimmed.':'.')+'</p><div class="tmwrap">'+treemap(holds.slice(0,26),total,!!prior)+'</div></div>';
+  // table
+  h+='<table><thead><tr><th class="l">#</th><th class="l">Holding</th><th>Value</th><th>Shares</th><th>% of book</th>'+(prior?'<th>Q/Q</th>':'')+'</tr></thead><tbody>';
+  h+=holds.slice(0,50).map(function(hh,i){var w=Math.max(2,(hh.value/total*100)).toFixed(1);
+    var tag=hh.tag==='NEW'?'<span class="chg n">NEW</span>':(hh.tag&&hh.tag.charAt(0)==='+'?'<span class="chg g">'+hh.tag+'</span>':(hh.tag&&hh.tag.charAt(0)==='−'?'<span class="chg r">'+hh.tag+'</span>':(hh.tag?'<span class="chg z">—</span>':'')));
+    return '<tr><td class="l" style="color:#9aa1ad">'+(i+1)+'</td>'+
+      '<td class="nm l">'+esc(titleCase(hh.issuer))+' <span style="color:#9aa1ad;font-size:11px">'+esc(hh.cls||'')+'</span><div style="font-family:Geist Mono,monospace;font-size:10px;color:#c3c8d2">'+esc(hh.cusip)+'</div></td>'+
+      '<td>'+money(hh.value)+'</td>'+
+      '<td>'+num(hh.shares)+(hh.typ&&hh.typ!=='SH'?' '+esc(hh.typ):'')+'</td>'+
+      '<td>'+pct(hh.value/total)+'<span class="bar" style="width:'+w+'%"></span></td>'+
+      (prior?'<td class="l">'+tag+'</td>':'')+
+    '</tr>';}).join('');
+  h+='</tbody></table>';
+  if(holds.length>50)h+='<div class="exit" style="color:#9aa1ad">Showing the 50 largest of '+holds.length+' positions.</div>';
+  if(exited.length)h+='<div class="exit"><b>Exited this quarter:</b> '+exited.slice(0,12).map(function(e){return esc(titleCase(e.issuer))+' ('+money(e.value)+')';}).join(', ')+(exited.length>12?' and '+(exited.length-12)+' more':'')+'.</div>';
+  out.innerHTML=h;
+}
+// ---- squarified treemap ----
+function treemap(items,total,useChg){
+  items=items.filter(function(d){return d.value>0;});if(!items.length)return '';
+  var W=980,H=470;
+  var laid=squarify(items,0,0,W,H);
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">';
+  laid.forEach(function(r){
+    var col='#635bff';
+    if(useChg){ if(r.tag==='NEW')col='#0f9d63'; else if(r.tag&&r.tag.charAt(0)==='+')col='#12a06a'; else if(r.tag&&r.tag.charAt(0)==='−')col='#d6453d'; else col='#8b93a3'; }
+    else { var t=Math.min(1,r.value/(items[0].value||1)); col='rgb('+Math.round(120-60*t)+','+Math.round(110-40*t)+',255)'; }
+    svg+='<rect x="'+r.x.toFixed(1)+'" y="'+r.y.toFixed(1)+'" width="'+Math.max(0,r.w-1).toFixed(1)+'" height="'+Math.max(0,r.h-1).toFixed(1)+'" rx="3" fill="'+col+'" opacity="'+(useChg?0.92:0.95)+'"/>';
+    if(r.w>58&&r.h>26){
+      var pctv=(r.value/total*100);
+      svg+='<text class="tmlab" x="'+(r.x+7)+'" y="'+(r.y+17)+'" font-size="'+(r.w>120?12.5:11)+'" font-weight="600">'+esc(shortName(r.issuer))+'</text>';
+      if(r.h>40)svg+='<text class="tmpct" x="'+(r.x+7)+'" y="'+(r.y+32)+'" font-size="10.5">'+pctv.toFixed(1)+'%'+(useChg&&r.tag&&r.tag!=='—'?' · '+esc(r.tag):'')+'</text>';
+    }
+  });
+  svg+='</svg>';
+  return svg;
+}
+function shortName(s){s=titleCase(s);if(s.length>18)s=s.slice(0,17)+'…';return s;}
+function squarify(items,x,y,w,h){
+  var total=items.reduce(function(s,d){return s+d.value;},0);if(total<=0)return [];
+  var scale=(w*h)/total;
+  var ch=items.map(function(d){return {issuer:d.issuer,value:d.value,tag:d.tag,area:d.value*scale};});
+  var res=[];var rect={x:x,y:y,w:w,h:h};
+  function worst(row,len){var mx=-Infinity,mn=Infinity,sum=0;for(var i=0;i<row.length;i++){var a=row[i].area;sum+=a;if(a>mx)mx=a;if(a<mn)mn=a;}var s2=sum*sum,l2=len*len;return Math.max((l2*mx)/s2,s2/(l2*mn));}
+  while(ch.length){
+    var len=Math.min(rect.w,rect.h);var row=[];var idx=0;
+    while(idx<ch.length){var test=row.concat([ch[idx]]);if(row.length===0||worst(test,len)<=worst(row,len)){row.push(ch[idx]);idx++;}else break;}
+    var rowArea=row.reduce(function(s,r){return s+r.area;},0);var thick=rowArea/len;var off=0;
+    if(rect.w>=rect.h){for(var i=0;i<row.length;i++){var rh=row[i].area/thick;res.push({issuer:row[i].issuer,value:row[i].value,tag:row[i].tag,x:rect.x,y:rect.y+off,w:thick,h:rh});off+=rh;}rect.x+=thick;rect.w-=thick;}
+    else{for(var j=0;j<row.length;j++){var rw=row[j].area/thick;res.push({issuer:row[j].issuer,value:row[j].value,tag:row[j].tag,x:rect.x+off,y:rect.y,w:rw,h:thick});off+=rw;}rect.y+=thick;rect.h-=thick;}
+    ch=ch.slice(row.length);
+  }
+  return res;
+}
+go();
+</script>
+</body></html>
