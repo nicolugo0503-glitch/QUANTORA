@@ -311,4 +311,5 @@
   <url><loc>https://www.usequantora.com/explain.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.usequantora.com/economy.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.usequantora.com/financials.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.usequantora.com/fincompare.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
