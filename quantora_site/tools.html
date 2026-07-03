@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tools - the complete Quantora quant toolkit | Quantora</title>
+<meta name="description" content="Every Quantora tool in one place: an AI markets terminal, options and derivatives, portfolio and risk analytics, rates and credit, backtesting, live data and a full set of finance calculators. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/tools.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1080px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(28px,4vw,40px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15.5px;line-height:1.6;max-width:660px;margin:0 0 12px}
+.search{margin:18px 0 6px}
+.search input{width:100%;max-width:420px;border:1px solid rgba(17,24,39,.14);border-radius:11px;padding:11px 14px;font:inherit;font-size:15px;background:#fff}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#635bff;margin:30px 0 12px;display:flex;align-items:center;gap:10px}
+h2:after{content:"";flex:1;height:1px;background:rgba(99,91,255,.15)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px}
+a.card{display:block;background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:15px 16px;text-decoration:none;color:inherit;transition:border-color .15s,transform .1s,box-shadow .15s}
+a.card:hover{border-color:rgba(99,91,255,.5);transform:translateY(-2px);box-shadow:0 6px 20px rgba(16,24,40,.07)}
+a.card .nm{font-size:15px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:7px}
+a.card .ds{font-size:12.5px;color:#6a7180;line-height:1.5;margin-top:5px}
+.tag{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:20px;background:rgba(99,91,255,.1);color:#635bff;vertical-align:middle}
+.tag.live{background:rgba(15,157,99,.12);color:#0f9d63}
+.tag.ai{background:rgba(214,110,40,.12);color:#c2410c}
+.none{color:#9aa1ad;font-size:14px;padding:20px 0;display:none}
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora</div>
+<h1>The complete toolkit</h1>
+<p class="lead">Every Quantora tool in one place - an AI markets terminal, options and portfolio analytics, rates and credit, backtesting, live data and a full set of calculators. All free, all in your browser, no login.</p>
+<div class="search"><input id="q" placeholder="Filter tools… (e.g. options, VaR, crypto)"></div>
+<div id="sections"></div>
+<div class="none" id="none">No tools match that filter.</div>
+<div class="foot">Analytics and education only - not investment advice. Data tools use Financial Modeling Prep (may be delayed) and public exchange feeds; math runs on Quantora's verified engine library.</div>
+</div>
+<script>
+var CATS=[
+ ['Terminal &amp; AI',[
+   ['Quantora Terminal','/terminal.html','Ask any market question; it runs live data + engines and shows its work','ai'],
+   ['Ask Quantora','/ask.html','Conversational AI analyst over the engine library','ai'],
+   ['AI Analyst','/analyst.html','Structured AI read on any ticker','ai'],
+   ['Research Report','/report.html','One ticker in, a full structured research note out','ai']
+ ]],
+ ['Options &amp; Derivatives',[
+   ['Options Strategy Builder','/options.html','Multi-leg payoff, P&L-over-time and full Greeks',''],
+   ['Expected Move &amp; Cone','/cone.html','How far a name can travel by any date, with a 1&sigma;/2&sigma; cone',''],
+   ['Black-Scholes','/black-scholes-calculator.html','Option price and Greeks',''],
+   ['Implied Volatility','/implied-volatility-calculator.html','Back out IV from an option price','']
+ ]],
+ ['Portfolio &amp; Risk',[
+   ['Performance &amp; Drawdown Lab','/perf.html','Full risk-adjusted stats, drawdowns, beta vs the market','live'],
+   ['Risk Parity','/riskparity.html','Equal-risk-contribution portfolio weights','live'],
+   ['Correlation Matrix','/correlation.html','Heatmap of how holdings move together','live'],
+   ['Risk-Return Map','/riskmap.html','Return vs volatility scatter, Sharpe-ranked','live'],
+   ['Monte Carlo','/montecarlo.html','Thousands of simulated futures for your money',''],
+   ['Efficient Frontier','/efficient-frontier.html','Mean-variance optimal portfolios','live'],
+   ['Portfolio Analyzer','/portfolio.html','Covariance risk, diversification, contribution','live'],
+   ['Value at Risk','/value-at-risk-calculator.html','Historical & parametric VaR','']
+ ]],
+ ['Strategy &amp; Signals',[
+   ['Backtester','/backtest.html','Test a moving-average strategy vs buy-and-hold','live'],
+   ['Pairs &amp; Spread Analyzer','/pairs.html','Hedge ratio, spread z-score, mean-reversion','live'],
+   ['Seasonality Explorer','/seasonality.html','Month-by-month return heatmap','live']
+ ]],
+ ['Rates &amp; Credit',[
+   ['Yield Curve Builder','/rates.html','Bootstrap zero/forward curves, par swap, Z-spread',''],
+   ['Bond Ladder','/bondladder.html','Build a ladder; duration, convexity, immunization',''],
+   ['Credit Risk Lab','/credit.html','Default probability: Merton, spread-implied, Altman Z',''],
+   ['Bond Duration','/bond-duration-calculator.html','Price, YTM, duration and convexity','']
+ ]],
+ ['Markets &amp; Live',[
+   ['Live Crypto Stream','/stream.html','Real-time prices streamed direct from the exchange','live'],
+   ['Markets Tape','/markets.html','The market on one screen',''],
+   ['Screener','/screener.html','Filter the market',''],
+   ['Heatmap','/heatmap.html','Sector and market heatmap',''],
+   ['Chart','/chart.html','Full charting','']
+ ]],
+ ['Calculators',[
+   ['DCF Valuation','/dcf-calculator.html','Discounted cash flow fair value',''],
+   ['WACC','/wacc-calculator.html','Weighted average cost of capital',''],
+   ['CAGR','/cagr-calculator.html','Compound annual growth rate',''],
+   ['Compound Interest','/compound-interest-calculator.html','Growth with contributions',''],
+   ['Sharpe Ratio','/sharpe-ratio-calculator.html','Risk-adjusted return',''],
+   ['NPV','/npv-calculator.html','Net present value',''],
+   ['IRR','/irr-calculator.html','Internal rate of return',''],
+   ['Kelly Criterion','/kelly-criterion-calculator.html','Optimal bet sizing',''],
+   ['Altman Z-Score','/altman-z-score-calculator.html','Bankruptcy risk score','']
+ ]]
+];
+var sec=document.getElementById('sections');
+function tagHtml(t){return t?(' <span class="tag '+t+'">'+(t==='ai'?'AI':(t==='live'?'Live':t))+'</span>'):'';}
+CATS.forEach(function(c){
+  var wrap=document.createElement('div');wrap.className='catblock';
+  wrap.innerHTML='<h2>'+c[0]+'</h2><div class="grid">'+c[1].map(function(t){
+    return '<a class="card" href="'+t[1]+'" data-s="'+(t[0]+' '+t[2]).toLowerCase().replace(/&amp;/g,'')+'"><div class="nm">'+t[0]+tagHtml(t[3])+'</div><div class="ds">'+t[2]+'</div></a>';
+  }).join('')+'</div>';
+  sec.appendChild(wrap);
+});
+var q=document.getElementById('q'),none=document.getElementById('none');
+q.addEventListener('input',function(){
+  var v=q.value.trim().toLowerCase(),any=false;
+  document.querySelectorAll('.catblock').forEach(function(b){
+    var shown=0;
+    b.querySelectorAll('.card').forEach(function(a){var m=!v||a.getAttribute('data-s').indexOf(v)>-1;a.style.display=m?'':'none';if(m)shown++;});
+    b.style.display=shown?'':'none';if(shown)any=true;
+  });
+  none.style.display=any?'none':'block';
+});
+</script>
+</body></html>
