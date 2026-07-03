@@ -974,7 +974,41 @@ Q.minCVaR=minCVaR;
 function portfolioCVaR(R,w,beta){ beta=beta||0.95; var S=R.length,n=w.length,losses=new Array(S),s,i; for(s=0;s<S;s++){var d=0;for(i=0;i<n;i++)d+=R[s][i]*w[i];losses[s]=-d;} var sorted=losses.slice().sort(function(a,b){return a-b;}); var idx=Math.min(S-1,Math.floor(beta*S)); var VaR=sorted[idx],c=0,k=0; for(s=0;s<S;s++) if(losses[s]>=VaR){c+=losses[s];k++;} return {cvar:k?c/k:VaR, VaR:VaR}; }
 Q.portfolioCVaR=portfolioCVaR;
 
-Q.version='3.5';
+
+/* ================= LINEAR ALGEBRA + BLACK-LITTERMAN (v3.6) ================= */
+function matT(A){ var r=A.length,c=A[0].length,T=[],i,j; for(j=0;j<c;j++){T.push([]);for(i=0;i<r;i++)T[j].push(A[i][j]);} return T; }
+function matMul(A,B){ var r=A.length,k=B.length,c=B[0].length,C=[],i,j,x; for(i=0;i<r;i++){C.push([]);for(j=0;j<c;j++){var s=0;for(x=0;x<k;x++)s+=A[i][x]*B[x][j];C[i].push(s);}} return C; }
+function matVec(A,v){ var r=A.length,c=v.length,o=[],i,j; for(i=0;i<r;i++){var s=0;for(j=0;j<c;j++)s+=A[i][j]*v[j];o.push(s);} return o; }
+function matAdd(A,B){ return A.map(function(row,i){return row.map(function(x,j){return x+B[i][j];});}); }
+function matScale(A,k){ return A.map(function(row){return row.map(function(x){return x*k;});}); }
+function matInv(A){ var n=A.length,i,j,k; var M=A.map(function(row,i){return row.concat(row.map(function(_,j){return i===j?1:0;}));});
+  for(i=0;i<n;i++){ var piv=i; for(k=i+1;k<n;k++){ if(Math.abs(M[k][i])>Math.abs(M[piv][i])) piv=k; } var tmp=M[i];M[i]=M[piv];M[piv]=tmp;
+    var d=M[i][i]; if(Math.abs(d)<1e-12) d=1e-12; for(j=0;j<2*n;j++) M[i][j]/=d;
+    for(k=0;k<n;k++){ if(k!==i){ var f=M[k][i]; for(j=0;j<2*n;j++) M[k][j]-=f*M[i][j]; } } }
+  return M.map(function(row){return row.slice(n);}); }
+Q.matT=matT; Q.matMul=matMul; Q.matVec=matVec; Q.matInv=matInv;
+/* Black-Litterman. Sigma=cov, wMkt=market weights, delta=risk aversion, tau, P/Q/omega optional views. */
+function blackLitterman(Sigma, wMkt, delta, tau, P, Q_, omega){
+  delta=delta||2.5; tau=tau||0.05; var n=Sigma.length, i;
+  var Pi=matVec(Sigma,wMkt).map(function(x){return x*delta;}); // implied equilibrium returns
+  var post=Pi.slice();
+  if(P && P.length){
+    var tauSigInv=matInv(matScale(Sigma,tau));
+    var Pt=matT(P), omInv=matInv(omega);
+    var mid=matAdd(tauSigInv, matMul(matMul(Pt,omInv),P));
+    var M=matInv(mid);
+    var rhs=matVec(tauSigInv,Pi).map(function(x,k){return x+matVec(matMul(Pt,omInv),Q_)[k];});
+    post=matVec(M,rhs);
+  }
+  var SigInv=matInv(Sigma);
+  var wRaw=matVec(SigInv,post).map(function(x){return x/delta;});
+  var sum=wRaw.reduce(function(a,b){return a+b;},0)||1;
+  var wNorm=wRaw.map(function(x){return x/sum;});
+  return { equilibrium:Pi, posterior:post, weights:wNorm, weightsRaw:wRaw };
+}
+Q.blackLitterman=blackLitterman;
+
+Q.version='3.6';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
