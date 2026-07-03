@@ -947,7 +947,34 @@ Q.zscore=zscore;
 function halfLife(s){ var y=[],x=[],i; for(i=1;i<s.length;i++){y.push(s[i]-s[i-1]);x.push(s[i-1]);} var r=ols(y,x); var b=r.beta; if(b>=0) return Infinity; return -Math.log(2)/Math.log(1+b); }
 Q.halfLife=halfLife;
 
-Q.version='3.4';
+
+/* ================= CVaR TAIL-RISK OPTIMIZER (v3.5) ================= */
+/* Euclidean projection onto the probability simplex {w>=0, sum w=1} */
+function projectSimplex(v){ var n=v.length, u=v.slice().sort(function(a,b){return b-a;}); var css=0, rho=0, theta=0; for(var j=0;j<n;j++){ css+=u[j]; var t=(css-1)/(j+1); if(u[j]-t>0){ rho=j+1; theta=t; } } var w=new Array(n); for(var i=0;i<n;i++){ w[i]=Math.max(v[i]-theta,0); } return w; }
+Q.projectSimplex=projectSimplex;
+/* Minimize CVaR (expected shortfall) at confidence beta over scenario matrix R (rows=scenarios, cols=asset returns). Long-only, fully invested. Projected subgradient. */
+function minCVaR(R, beta, opts){
+  beta=beta||0.95; opts=opts||{}; var S=R.length, n=R[0].length, i, s, k;
+  var w=new Array(n); for(i=0;i<n;i++) w[i]=1/n;
+  function tailInfo(w){ var losses=new Array(S); for(s=0;s<S;s++){ var d=0; for(i=0;i<n;i++) d+=R[s][i]*w[i]; losses[s]=-d; } var sorted=losses.slice().sort(function(a,b){return a-b;}); var idx=Math.min(S-1,Math.floor(beta*S)); var VaR=sorted[idx]; var tail=[]; for(s=0;s<S;s++) if(losses[s]>=VaR) tail.push(s); return {losses:losses, VaR:VaR, tail:tail}; }
+  var lr=opts.lr||0.6, iters=opts.iters||2000;
+  for(var it=0; it<iters; it++){
+    var ti=tailInfo(w), g=new Array(n); for(i=0;i<n;i++) g[i]=0;
+    for(k=0;k<ti.tail.length;k++){ s=ti.tail[k]; for(i=0;i<n;i++) g[i]+= -R[s][i]; }
+    for(i=0;i<n;i++) g[i]/=ti.tail.length;
+    var step=lr/Math.sqrt(it+1), wn=new Array(n);
+    for(i=0;i<n;i++) wn[i]=w[i]-step*g[i];
+    w=projectSimplex(wn);
+  }
+  var f=tailInfo(w), cvar=0; for(k=0;k<f.tail.length;k++) cvar+=f.losses[f.tail[k]]; cvar/= (f.tail.length||1);
+  return { weights:w, cvar:cvar, VaR:f.VaR };
+}
+Q.minCVaR=minCVaR;
+/* CVaR of a fixed weight vector over scenarios (loss units, positive=loss) */
+function portfolioCVaR(R,w,beta){ beta=beta||0.95; var S=R.length,n=w.length,losses=new Array(S),s,i; for(s=0;s<S;s++){var d=0;for(i=0;i<n;i++)d+=R[s][i]*w[i];losses[s]=-d;} var sorted=losses.slice().sort(function(a,b){return a-b;}); var idx=Math.min(S-1,Math.floor(beta*S)); var VaR=sorted[idx],c=0,k=0; for(s=0;s<S;s++) if(losses[s]>=VaR){c+=losses[s];k++;} return {cvar:k?c/k:VaR, VaR:VaR}; }
+Q.portfolioCVaR=portfolioCVaR;
+
+Q.version='3.5';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);
