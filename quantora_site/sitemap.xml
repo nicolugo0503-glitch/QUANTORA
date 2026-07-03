@@ -309,4 +309,5 @@
   <url><loc>https://www.usequantora.com/crypto.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.usequantora.com/edgar.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.usequantora.com/explain.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.usequantora.com/economy.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
 </urlset>

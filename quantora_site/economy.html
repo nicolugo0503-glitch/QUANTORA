@@ -1,0 +1,94 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Macro Dashboard - Treasury yield curve, rates, inflation &amp; jobs | Quantora</title>
+<meta name="description" content="A live US macro dashboard from official Federal Reserve data: the Treasury yield curve, the 10Y-2Y recession spread, Fed Funds rate, inflation and unemployment. Authoritative, free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/economy.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1000px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 16px}
+.status{font-size:12px;color:#9aa1ad;margin:0 0 16px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.cell{background:#fff;padding:14px 16px;flex:1 1 140px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:22px;margin-top:5px;font-variant-numeric:tabular-nums}.cs{font-size:10.5px;color:#9aa1ad;margin-top:2px}
+.up{color:#0f9d63}.down{color:#d6453d}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:16px 18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card h2{font-size:14px;font-weight:600;margin:0 0 2px}.card .sub{font-size:11.5px;color:#9aa1ad;margin:0 0 6px}
+svg{display:block;width:100%;height:auto}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin:16px 0;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Macro</div>
+<h1>Macro Dashboard</h1>
+<p class="lead">The US economy in numbers, straight from the Federal Reserve: the Treasury yield curve, the 10Y-2Y spread that has preceded every recent recession, the Fed Funds rate, inflation and unemployment. Official data, live, no login.</p>
+<p class="status" id="status"><span class="spin"></span>Loading Federal Reserve data…</p>
+<div id="out"></div>
+<div class="body">The <b>yield curve</b> plots what the government pays to borrow across maturities. Normally it slopes up - longer loans cost more. When it <b>inverts</b> (short rates above long, a negative <b>10Y-2Y spread</b>), markets are betting the Fed will have to cut rates into a slowdown; that inversion has led every US recession for decades, which is why it's the single most-watched macro signal. Alongside it, the <b>Fed Funds rate</b> is the Fed's policy lever, <b>CPI</b> tracks inflation against the 2% target, and <b>unemployment</b> is the other half of the Fed's mandate. Read together, they tell you where the economy sits in its cycle.</div>
+<div class="foot">Data from the Federal Reserve Bank of St. Louis (FRED). This product uses the FRED API but is not endorsed or certified by the Federal Reserve Bank of St. Louis. For information and education, not investment advice.</div>
+</div>
+<script>
+var statusEl=document.getElementById('status'),out=document.getElementById('out');
+async function fred(s){try{var j=await fetch('/api/fmp?type=fred&series='+s).then(r=>r.json());var o=(j.data&&j.data.observations)||[];return o.map(function(x){return {d:x.date,v:parseFloat(x.value)};}).filter(function(x){return isFinite(x.v);});}catch(e){return [];}}
+function fmtPct(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':v.toFixed(d)+'%';}
+async function load(){
+  try{
+    var series=['DGS1MO','DGS3MO','DGS6MO','DGS1','DGS2','DGS3','DGS5','DGS7','DGS10','DGS20','DGS30','FEDFUNDS','UNRATE','CPIAUCSL'];
+    var arr=await Promise.all(series.map(fred));
+    var S={};series.forEach(function(k,i){S[k]=arr[i];});
+    function latest(k){return S[k]&&S[k][0]?S[k][0].v:null;}
+    var y10=latest('DGS10'),y2=latest('DGS2'),spread=(y10!=null&&y2!=null)?y10-y2:null;
+    var cpi=S['CPIAUCSL'],cpiYoY=(cpi&&cpi.length>12)?(cpi[0].v/cpi[12].v-1)*100:null;
+    var cells=[
+      ['10Y Treasury',fmtPct(y10),S['DGS10']&&S['DGS10'][0]?S['DGS10'][0].d:''],
+      ['2Y Treasury',fmtPct(y2),''],
+      ['10Y - 2Y spread',(spread!=null?(spread>=0?'+':'')+spread.toFixed(2)+'%':'—'),spread!=null?(spread<0?'inverted':'normal'):''],
+      ['Fed Funds',fmtPct(latest('FEDFUNDS')),''],
+      ['Unemployment',fmtPct(latest('UNRATE'),1),''],
+      ['CPI inflation (YoY)',fmtPct(cpiYoY,1),'']
+    ];
+    var h='<div class="cr">'+cells.map(function(c){var cls=(c[0].indexOf('spread')>-1&&spread!=null)?(spread<0?'down':'up'):'';return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv '+cls+'">'+c[1]+'</div>'+(c[2]?'<div class="cs">'+c[2]+'</div>':'')+'</div>';}).join('')+'</div>';
+    // yield curve
+    var tenors=[['1M','DGS1MO'],['3M','DGS3MO'],['6M','DGS6MO'],['1Y','DGS1'],['2Y','DGS2'],['3Y','DGS3'],['5Y','DGS5'],['7Y','DGS7'],['10Y','DGS10'],['20Y','DGS20'],['30Y','DGS30']];
+    var cv=tenors.map(function(t){return {lab:t[0],v:latest(t[1])};}).filter(function(x){return x.v!=null;});
+    // spread history (align DGS10 & DGS2)
+    var m2={};(S['DGS2']||[]).forEach(function(x){m2[x.d]=x.v;});
+    var sp=[];(S['DGS10']||[]).forEach(function(x){if(m2[x.d]!=null)sp.push({d:x.d,v:x.v-m2[x.d]});});sp.reverse();
+    h+='<div class="grid2"><div class="card"><h2>Treasury yield curve</h2><div class="sub">Latest constant-maturity rates across the curve.</div>'+curveChart(cv)+'</div>'+
+       '<div class="card"><h2>10Y - 2Y spread</h2><div class="sub">Below zero = inverted (a classic recession warning).</div>'+spreadChart(sp)+'</div></div>';
+    out.innerHTML=h;
+    statusEl.textContent='Live · Federal Reserve (FRED) · 10Y '+fmtPct(y10)+' · updated '+(S['DGS10']&&S['DGS10'][0]?S['DGS10'][0].d:'');
+  }catch(e){out.innerHTML='<div class="state">Could not load macro data right now. If this persists, the FRED data key may need to be configured. </div>';statusEl.textContent='Data unavailable';}
+}
+function curveChart(cv){
+  if(cv.length<2)return '<div class="sub">Curve unavailable.</div>';
+  var W=460,H=240,ml=42,mr=14,mt=14,mb=28,pw=W-ml-mr,ph=H-mt-mb,n=cv.length;
+  var vals=cv.map(function(p){return p.v;}),lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals),pad=(hi-lo)*0.2||0.3;lo-=pad;hi+=pad;
+  function X(i){return ml+pw*(i/(n-1));}function Y(v){return mt+ph*(1-((v-lo)/(hi-lo)));}
+  var grid='';for(var g=0;g<=4;g++){var vv=lo+(hi-lo)*g/4,yy=mt+ph*(1-g/4);grid+='<line x1="'+ml+'" y1="'+yy.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(ml-6)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#9aa1ad" font-family="Geist Mono,monospace">'+vv.toFixed(1)+'%</text>';}
+  var xl='';cv.forEach(function(p,i){xl+='<text x="'+X(i).toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle" font-size="9" fill="#9aa1ad" font-family="Geist Mono,monospace">'+p.lab+'</text>';});
+  var d=cv.map(function(p,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ');
+  var dots=cv.map(function(p,i){return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="2.6" fill="#635bff"/>';}).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+xl+'<path d="'+d+'" fill="none" stroke="#635bff" stroke-width="2.2" stroke-linejoin="round"/>'+dots+'</svg>';
+}
+function spreadChart(sp){
+  if(sp.length<2)return '<div class="sub">History unavailable.</div>';
+  var W=460,H=240,ml=42,mr=14,mt=14,mb=22,pw=W-ml-mr,ph=H-mt-mb,n=sp.length;
+  var vals=sp.map(function(p){return p.v;}),lo=Math.min(0,Math.min.apply(null,vals)),hi=Math.max(0,Math.max.apply(null,vals)),pad=(hi-lo)*0.15||0.1;lo-=pad;hi+=pad;
+  function X(i){return ml+pw*(i/(n-1));}function Y(v){return mt+ph*(1-((v-lo)/(hi-lo)));}
+  var z=Y(0);
+  var grid='';for(var g=0;g<=4;g++){var vv=lo+(hi-lo)*g/4,yy=mt+ph*(1-g/4);grid+='<line x1="'+ml+'" y1="'+yy.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(ml-6)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#9aa1ad" font-family="Geist Mono,monospace">'+vv.toFixed(1)+'</text>';}
+  var d=sp.map(function(p,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ');
+  var area=d+' L'+X(n-1).toFixed(1)+' '+z.toFixed(1)+' L'+X(0).toFixed(1)+' '+z.toFixed(1)+'Z';
+  var last=sp[n-1].v,col=last<0?'#d6453d':'#0f9d63';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+'<path d="'+area+'" fill="'+(last<0?'rgba(214,69,61,.12)':'rgba(15,157,99,.10)')+'"/><line x1="'+ml+'" y1="'+z.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+z.toFixed(1)+'" stroke="rgba(17,24,39,.3)" stroke-dasharray="3 3"/><path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.8"/></svg>';
+}
+load();
+</script>
+</body></html>
