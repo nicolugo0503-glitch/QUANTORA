@@ -1,0 +1,78 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Why is it moving? - AI explains any stock's move | Quantora</title>
+<meta name="description" content="Ask why a stock moved and get an instant AI explanation grounded in the day's price action and real headlines - the catalysts behind the move, with sources. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/explain.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:820px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:640px;margin:0 0 18px}
+.ci{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:10px 12px;font:inherit;font-size:16px;background:#fff;width:150px;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:12px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.5}
+.quote{display:flex;align-items:baseline;gap:12px;margin-top:18px;flex-wrap:wrap}
+.quote .nm{font-size:20px;font-weight:600}.quote .px{font-family:Geist Mono,monospace;font-size:22px;font-variant-numeric:tabular-nums}.quote .ch{font-family:Geist Mono,monospace;font-size:16px}
+.up{color:#0f9d63}.down{color:#d6453d}
+.answer{margin-top:16px;font-size:15.5px;line-height:1.75;color:#1c2230;white-space:pre-wrap;background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px}.answer b{font-weight:600}
+.srcs{margin-top:16px}.srcs h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#9aa1ad;margin:0 0 8px}
+.src{display:block;padding:10px 0;border-bottom:1px solid rgba(17,24,39,.06);text-decoration:none;color:inherit}
+.src .t{font-size:13.5px;font-weight:500;color:#14161c}.src .m{font-size:11.5px;color:#9aa1ad;margin-top:2px}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.chips button{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:20px;padding:6px 12px;font-size:12.5px;color:#3a4150;cursor:pointer}.chips button:hover{border-color:#635bff;color:#635bff}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; AI</div>
+<h1>Why is it moving?</h1>
+<p class="lead">Type a ticker. Quantora pulls its live price action and the latest headlines, then has AI explain - in plain English - the most likely reasons behind the move, with the sources it used.</p>
+<div class="ci">
+<div class="fld"><label>Ticker</label><input id="sym" value="NVDA"></div>
+<button class="run" id="run">Explain the move</button>
+</div>
+<div class="chips" id="chips"></div>
+<div id="out"></div>
+<div class="foot">Price and news via Financial Modeling Prep (may be delayed; the free feed has daily limits). The explanation is AI-generated from that price action and those headlines - it can be wrong or incomplete, so verify anything important. Educational only, not investment advice.</div>
+</div>
+<script>
+var EX=['NVDA','TSLA','AAPL','AMD','COIN','SMCI'];
+var out=document.getElementById('out'),chips=document.getElementById('chips');
+EX.forEach(function(s){var b=document.createElement('button');b.textContent=s;b.onclick=function(){document.getElementById('sym').value=s;go();};chips.appendChild(b);});
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]})}
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
+function pc(v){return(v==null||isNaN(v))?'':(v>=0?'+':'')+(+v).toFixed(2)+'%';}
+document.getElementById('run').onclick=go;
+document.getElementById('sym').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+async function go(){
+  var sym=document.getElementById('sym').value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+  if(!sym)return;
+  document.getElementById('run').disabled=true;
+  out.innerHTML='<div class="state"><span class="spin"></span>Pulling '+sym+' price &amp; headlines…</div>';
+  try{
+    var qr=await fetch('/api/fmp?type=quote&symbol='+sym).then(r=>r.json());
+    var q=(qr.data&&qr.data[0])||null;
+    var nr=await fetch('/api/fmp?type=news&symbol='+sym).then(r=>r.json()).catch(function(){return{};});
+    var news=Array.isArray(nr.data)?nr.data.slice(0,8):[];
+    if(!q&&!news.length){out.innerHTML='<div class="state">Couldn\'t load data for '+sym+' - the free feed may be at its daily limit. Try a major ticker or again shortly.</div>';document.getElementById('run').disabled=false;return;}
+    var chg=q?(q.changePercentage!=null?q.changePercentage:q.changesPercentage):null;
+    var head=q?'<div class="quote"><span class="nm">'+esc(q.name||sym)+'</span><span class="px">$'+(q.price!=null?(+q.price).toLocaleString('en-US',{maximumFractionDigits:2}):'—')+'</span><span class="ch '+(chg>=0?'up':'down')+'">'+pc(chg)+'</span></div>':'';
+    var ctx=(q?(q.name||sym)+' ('+sym+') is at $'+q.price+', '+pc(chg)+' today. Day range '+q.dayLow+'-'+q.dayHigh+', 52-week '+q.yearLow+'-'+q.yearHigh+'. ':sym+'. ')+
+      (news.length?'Recent headlines: '+news.map(function(n,i){return (i+1)+') '+n.title;}).join(' | '):'No recent headlines available.');
+    out.innerHTML=head+'<div class="answer" id="ans"><span class="spin"></span>Analyzing the move…</div>';
+    var r=await fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:'In 3-5 sentences, explain the most likely reasons '+sym+' has moved the way it has recently, grounded in the price action and headlines provided. Name concrete catalysts (earnings, guidance, products, macro, analyst actions) where the headlines support them; if the headlines don\'t explain it, say so honestly. Be concise and neutral. Educational only, not advice.',context:ctx})});
+    var j=await r.json();
+    var ans=j.answer||j.error||'No explanation returned.';
+    var srcs=news.length?'<div class="srcs"><h3>Headlines used</h3>'+news.map(function(n){return '<a class="src" href="'+esc(n.url||'#')+'" target="_blank" rel="noopener"><div class="t">'+esc(n.title||'')+'</div><div class="m">'+esc(n.site||'')+(n.publishedDate?' &middot; '+esc(String(n.publishedDate).slice(0,10)):'')+'</div></a>';}).join('')+'</div>':'';
+    out.innerHTML=head+'<div class="answer">'+fmt(ans)+'</div>'+srcs;
+  }catch(e){out.innerHTML='<div class="state">Could not generate an explanation right now: '+esc(String(e.message||e))+'</div>';}
+  document.getElementById('run').disabled=false;
+}
+go();
+</script>
+</body></html>
