@@ -1031,7 +1031,19 @@ function exchangeOption(S1,S2,sig1,sig2,rho,q1,q2,T){
 }
 Q.exchangeOption=exchangeOption;
 
-Q.version='3.7';
+
+/* ================= FUTURES & FX FORWARDS (v3.8) ================= */
+/* Cost-of-carry futures fair value. y = net carry yield (dividend/convenience minus storage), continuous. */
+function futureFair(S,r,y,T){ return S*Math.exp((r-(y||0))*T); }
+Q.futureFair=futureFair;
+/* FX forward via covered interest parity (continuous). rd=domestic, rf=foreign. */
+function fxForward(S,rd,rf,T){ return S*Math.exp((rd-rf)*T); }
+Q.fxForward=fxForward;
+/* Implied continuously-compounded net carry from spot & futures */
+function impliedCarry(S,F,T){ return Math.log(F/S)/(T||1); }
+Q.impliedCarry=impliedCarry;
+
+Q.version='3.8';
 global.QENG=Q;
 if(typeof module!=='undefined'&&module.exports) module.exports=Q;
 })(typeof window!=='undefined'?window:globalThis);

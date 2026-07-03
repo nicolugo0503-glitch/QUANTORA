@@ -1,0 +1,84 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Futures &amp; FX Forwards - cost-of-carry fair value &amp; covered interest parity | Quantora</title>
+<meta name="description" content="Price index/commodity futures with the cost-of-carry model and FX forwards with covered interest parity: fair value, basis, forward points and implied carry. Verified math, free in your browser.">
+<link rel="canonical" href="https://www.usequantora.com/futures.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
+.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04);margin-bottom:18px}
+h2{font-size:15px;font-weight:600;margin:0 0 4px}.sub{font-size:12.5px;color:#9aa1ad;margin:0 0 14px}
+.ci{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:8px 10px;font:inherit;font-size:14px;background:#fff;width:96px;font-variant-numeric:tabular-nums}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:14px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:19px;margin-top:4px;font-variant-numeric:tabular-nums}
+.hi{color:#635bff}.up{color:#0f9d63}.down{color:#d6453d}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:8px}.body b{color:#14161c}
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Derivatives Desk</div>
+<h1>Futures &amp; FX Forwards</h1>
+<p class="lead">A future or forward is just spot plus the cost of carrying the asset to delivery. Quantora computes the fair value both ways - <b>cost-of-carry</b> for index and commodity futures, <b>covered interest parity</b> for FX forwards - and flags the basis when the market disagrees.</p>
+
+<div class="calc">
+<h2>1. Futures fair value (cost of carry)</h2>
+<p class="sub">F = S &middot; e^(r + storage &minus; yield)&middot;T. Enter a market futures price to see the basis.</p>
+<div class="ci">
+<div class="fld"><label>Spot $</label><input id="fS" type="number" value="5000"></div>
+<div class="fld"><label>Risk-free %</label><input id="fR" type="number" value="5" step="0.1"></div>
+<div class="fld"><label>Yield % (div/conv.)</label><input id="fQ" type="number" value="1.5" step="0.1"></div>
+<div class="fld"><label>Storage %</label><input id="fU" type="number" value="0" step="0.1"></div>
+<div class="fld"><label>Days</label><input id="fT" type="number" value="90"></div>
+<div class="fld"><label>Market future $</label><input id="fM" type="number" value="5050"></div>
+</div>
+<div class="cr" id="fOut"></div>
+</div>
+
+<div class="calc">
+<h2>2. FX forward (covered interest parity)</h2>
+<p class="sub">F = S &middot; e^(r_domestic &minus; r_foreign)&middot;T. The higher-rate currency trades at a forward discount.</p>
+<div class="ci">
+<div class="fld"><label>Spot (dom/for)</label><input id="xS" type="number" value="1.1000" step="0.0001"></div>
+<div class="fld"><label>Domestic rate %</label><input id="xRd" type="number" value="5" step="0.1"></div>
+<div class="fld"><label>Foreign rate %</label><input id="xRf" type="number" value="3" step="0.1"></div>
+<div class="fld"><label>Days</label><input id="xT" type="number" value="180"></div>
+</div>
+<div class="cr" id="xOut"></div>
+</div>
+
+<div class="body">The <b>cost-of-carry</b> idea is an arbitrage: if you can borrow at the risk-free rate, buy the asset, collect any yield and pay any storage, then a future must equal that all-in carried cost - otherwise there's free money. For stock-index futures the yield is the dividend yield, so futures usually trade slightly <b>below</b> a naive spot-plus-interest number; for commodities, storage pushes them <b>above</b>, unless a convenience yield (the value of holding the physical) pulls them back into <b>backwardation</b>. The <b>basis</b> is market minus fair; persistent basis hints at funding, borrow, or supply-demand frictions the simple model ignores. For currencies the same logic becomes <b>covered interest parity</b>: you can't earn a higher foreign interest rate risk-free, because the currency with the higher rate is priced to depreciate in the forward exactly enough to cancel the pickup.</div>
+<div class="foot">Continuous-compounding cost-of-carry and covered interest parity. Ignores transaction costs, margin, and credit; real bases reflect funding and frictions. Educational tool, not investment advice. Verified engine math.</div>
+</div>
+<script>
+var Q=window.QENG||{};
+function nn(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function val(id){return parseFloat(document.getElementById(id).value)||0;}
+function fut(){
+  var S=val('fS'),r=val('fR')/100,q=val('fQ')/100,u=val('fU')/100,T=Math.max(0.0001,val('fT')/365),M=val('fM');
+  var fair=Q.futureFair(S,r+u,q,T);
+  var basis=M-fair, impl=Q.impliedCarry(S,M,T);
+  document.getElementById('fOut').innerHTML=[
+    ['Fair value','$'+nn(fair,2),'hi'],['Basis (mkt - fair)',(basis>=0?'+':'')+nn(basis,2),basis>=0?'up':'down'],
+    ['Net carry',nn((r+u-q)*100,2)+'%'],['Implied carry (mkt)',nn(impl*100,2)+'%']
+  ].map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv '+(c[2]||'')+'">'+c[1]+'</div></div>';}).join('');
+}
+function fx(){
+  var S=val('xS'),rd=val('xRd')/100,rf=val('xRf')/100,T=Math.max(0.0001,val('xT')/365);
+  var F=Q.fxForward(S,rd,rf,T);var pts=(F-S)*10000;var ann=(F/S-1)/T;
+  document.getElementById('xOut').innerHTML=[
+    ['Forward rate',nn(F,5),'hi'],['Forward points',(pts>=0?'+':'')+nn(pts,1)],
+    ['Premium / disc. (ann.)',(ann>=0?'+':'')+nn(ann*100,2)+'%',ann>=0?'up':'down'],['Rate differential',nn((rd-rf)*100,2)+'%']
+  ].map(function(c){return '<div class="cell"><div class="cl">'+c[0]+'</div><div class="cv '+(c[2]||'')+'">'+c[1]+'</div></div>';}).join('');
+}
+['fS','fR','fQ','fU','fT','fM'].forEach(function(id){document.getElementById(id).addEventListener('input',fut);});
+['xS','xRd','xRf','xT'].forEach(function(id){document.getElementById(id).addEventListener('input',fx);});
+fut();fx();
+</script>
+</body></html>
