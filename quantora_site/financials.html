@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEC Financials - revenue, profit &amp; balance sheet from EDGAR XBRL | Quantora</title>
+<meta name="description" content="Authoritative company financials pulled straight from SEC EDGAR XBRL filings: annual revenue, net income, margins, assets and equity with history charts. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/financials.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:960px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 18px}
+.ci{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:15px;background:#fff;width:150px;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.hd{display:flex;align-items:baseline;gap:10px;margin-top:16px}.hd h2{font-size:20px;font-weight:600;margin:0}.hd .cik{font-size:12px;color:#9aa1ad;font-family:Geist Mono,monospace}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:10px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:16px 18px}.card h3{font-size:13px;font-weight:600;margin:0 0 8px}
+svg{display:block;width:100%;height:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:18px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;font-weight:500;text-align:right;padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.1)}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace}
+td.yr{font-family:Geist,sans-serif;font-weight:600}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Research</div>
+<h1>SEC Financials</h1>
+<p class="lead">A company's real numbers, straight from its SEC filings - not a data vendor's copy. Enter a US ticker and Quantora reads the audited <b>XBRL</b> data EDGAR extracts from every 10-K to chart revenue, profit, margins and the balance sheet over time.</p>
+<div class="ci">
+<div class="fld"><label>Ticker</label><input id="sym" value="AAPL"></div>
+<button class="run" id="run">Load financials</button>
+</div>
+<div id="out"></div>
+<div class="body">Every public company files its financials in <b>XBRL</b> - a machine-readable format the SEC parses into a clean data feed. That's what powers this page, so the revenue and profit you see are the exact figures in the audited annual report, tagged by the filer, with no vendor in between. Charts show fiscal-year values from each 10-K. <b>Net margin</b> is net income over revenue - how many cents of each sales dollar become profit. Because companies choose slightly different accounting tags, coverage is best for large US filers; if a metric is missing, the company likely tags it under a different concept.</div>
+<div class="foot">Data from SEC EDGAR XBRL company facts (public domain) via Quantora's server, no key. Fiscal-year figures from 10-K filings; some companies use non-standard tags, so a metric may occasionally be unavailable. For information and education, not investment advice.</div>
+</div>
+<script>
+var out=document.getElementById('out'),CIKMAP=null;
+function money(v){v=+v||0;var a=Math.abs(v),s=v<0?'-':'';if(a>=1e12)return s+'$'+(a/1e12).toFixed(2)+'T';if(a>=1e9)return s+'$'+(a/1e9).toFixed(1)+'B';if(a>=1e6)return s+'$'+(a/1e6).toFixed(0)+'M';return s+'$'+Math.round(a).toLocaleString();}
+function pad(c){c=''+c;while(c.length<10)c='0'+c;return c;}
+async function sec(path){var r=await fetch('/api/fmp?type=sec&path='+encodeURIComponent(path));var j=await r.json();if(j.error)throw new Error(j.error);return j.data;}
+async function cikMap(){if(CIKMAP)return CIKMAP;try{var c=localStorage.getItem('qcik_v1');if(c){CIKMAP=JSON.parse(c);return CIKMAP;}}catch(e){}var d=await sec('files/company_tickers.json');CIKMAP={};Object.keys(d).forEach(function(k){var o=d[k];CIKMAP[o.ticker.toUpperCase()]={cik:o.cik_str,name:o.title};});try{localStorage.setItem('qcik_v1',JSON.stringify(CIKMAP));}catch(e){}return CIKMAP;}
+async function concept(cik,names){for(var i=0;i<names.length;i++){try{var d=await sec('api/xbrl/companyconcept/CIK'+pad(cik)+'/us-gaap/'+names[i]+'.json');if(d&&d.units&&d.units.USD&&d.units.USD.length)return d.units.USD;}catch(e){}}return null;}
+function annual(units){if(!units)return[];var byFY={};units.forEach(function(u){if(u.fp==='FY'&&u.form&&u.form.indexOf('10-K')===0&&u.fy){byFY[u.fy]={fy:u.fy,val:u.val,end:u.end};}});return Object.keys(byFY).map(function(k){return byFY[k];}).sort(function(a,b){return a.fy-b.fy;});}
+document.getElementById('run').onclick=go;
+document.getElementById('sym').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+async function go(){
+  var sym=document.getElementById('sym').value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+  if(!sym)return;
+  out.innerHTML='<div class="state"><span class="spin"></span>Reading '+sym+'\'s SEC filings…</div>';
+  try{
+    var map=await cikMap(),ent=map[sym];
+    if(!ent){out.innerHTML='<div class="state">No SEC filer found for "'+sym+'". EDGAR covers US-listed companies.</div>';return;}
+    var res=await Promise.all([
+      concept(ent.cik,['RevenueFromContractWithCustomerExcludingAssessedTax','Revenues','RevenueFromContractWithCustomerIncludingAssessedTax','SalesRevenueNet']),
+      concept(ent.cik,['NetIncomeLoss']),
+      concept(ent.cik,['Assets']),
+      concept(ent.cik,['Liabilities']),
+      concept(ent.cik,['StockholdersEquity','StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'])
+    ]);
+    var rev=annual(res[0]),ni=annual(res[1]),assets=annual(res[2]),liab=annual(res[3]),eq=annual(res[4]);
+    if(!rev.length&&!ni.length){out.innerHTML='<div class="state">Couldn\'t extract standardized financials for '+sym+' (it may use non-standard XBRL tags). Filings are still browsable in the SEC Filings Explorer.</div>';return;}
+    var years=rev.length?rev.slice(-10):ni.slice(-10);
+    var revMap={},niMap={},aMap={},eMap={};rev.forEach(function(r){revMap[r.fy]=r.val;});ni.forEach(function(r){niMap[r.fy]=r.val;});assets.forEach(function(r){aMap[r.fy]=r.val;});eq.forEach(function(r){eMap[r.fy]=r.val;});
+    var last=years[years.length-1],lrev=revMap[last.fy],lni=niMap[last.fy];
+    var margin=(lrev&&lni!=null)?(lni/lrev*100):null;
+    var first=years[0],cagr=(rev.length>=2&&revMap[first.fy]>0&&revMap[last.fy]>0)?(Math.pow(revMap[last.fy]/revMap[first.fy],1/(last.fy-first.fy))-1)*100:null;
+    var h='<div class="hd"><h2>'+ent.name+'</h2><span class="cik">'+sym+' &middot; CIK '+pad(ent.cik)+'</span></div>';
+    h+='<div class="cr"><div class="cell"><div class="cl">Revenue (FY'+last.fy+')</div><div class="cv">'+money(lrev)+'</div></div>'+
+      '<div class="cell"><div class="cl">Net income</div><div class="cv">'+money(lni)+'</div></div>'+
+      '<div class="cell"><div class="cl">Net margin</div><div class="cv">'+(margin!=null?margin.toFixed(1)+'%':'—')+'</div></div>'+
+      '<div class="cell"><div class="cl">Total assets</div><div class="cv">'+money(aMap[last.fy])+'</div></div>'+
+      '<div class="cell"><div class="cl">Revenue CAGR</div><div class="cv">'+(cagr!=null?cagr.toFixed(1)+'%':'—')+'</div></div></div>';
+    h+='<div class="grid2"><div class="card"><h3>Revenue by fiscal year</h3>'+bars(years.map(function(y){return {lab:"'"+String(y.fy).slice(2),v:revMap[y.fy]||0};}),'#635bff')+'</div>'+
+       '<div class="card"><h3>Net income by fiscal year</h3>'+bars(years.map(function(y){return {lab:"'"+String(y.fy).slice(2),v:niMap[y.fy]||0};}),'#0f9d63')+'</div></div>';
+    // table
+    h+='<table><thead><tr><th>Fiscal year</th><th>Revenue</th><th>Net income</th><th>Margin</th><th>Assets</th><th>Equity</th></tr></thead><tbody>'+
+      years.slice().reverse().map(function(y){var rv=revMap[y.fy],n=niMap[y.fy];var mg=(rv&&n!=null)?(n/rv*100).toFixed(1)+'%':'—';return '<tr><td class="yr">FY'+y.fy+'</td><td>'+(rv!=null?money(rv):'—')+'</td><td>'+(n!=null?money(n):'—')+'</td><td>'+mg+'</td><td>'+(aMap[y.fy]!=null?money(aMap[y.fy]):'—')+'</td><td>'+(eMap[y.fy]!=null?money(eMap[y.fy]):'—')+'</td></tr>';}).join('')+'</tbody></table>';
+    out.innerHTML=h;
+  }catch(e){out.innerHTML='<div class="state">Could not load financials ('+String(e.message||e)+'). SEC EDGAR can rate-limit briefly - try again shortly.</div>';}
+}
+function bars(data,col){
+  var W=440,H=190,ml=44,mr=10,mt=12,mb=24,pw=W-ml-mr,ph=H-mt-mb,n=data.length;
+  var vals=data.map(function(d){return d.v;});var hi=Math.max.apply(null,vals),lo=Math.min(0,Math.min.apply(null,vals));if(hi===lo)hi=lo+1;
+  function Y(v){return mt+ph*(1-((v-lo)/(hi-lo)));}
+  var z=Y(0),bw=pw/n*0.64;
+  var grid='';for(var g=0;g<=3;g++){var vv=lo+(hi-lo)*g/3,yy=mt+ph*(1-g/3);grid+='<line x1="'+ml+'" y1="'+yy.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(ml-6)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="9" fill="#9aa1ad" font-family="Geist Mono,monospace">'+money(vv).replace('$','')+'</text>';}
+  var rects=data.map(function(d,i){var x=ml+pw*(i/n)+(pw/n-bw)/2;var y=Math.min(Y(d.v),z),hh=Math.abs(Y(d.v)-z);return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,hh).toFixed(1)+'" rx="2" fill="'+(d.v<0?'#d6453d':col)+'"/><text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9" fill="#9aa1ad" font-family="Geist Mono,monospace">'+d.lab+'</text>';}).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+rects+'</svg>';
+}
+go();
+</script>
+</body></html>
