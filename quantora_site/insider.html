@@ -1,0 +1,213 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Insider Trades - live SEC Form 4 buys &amp; sells | Quantora</title>
+<meta name="description" content="Track company insiders - officers, directors and 10% owners - buying and selling their own stock, straight from SEC Form 4 filings. Net insider flow, open-market buys vs sells, and every transaction with codes. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/insider.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1000px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:700px;margin:0 0 18px}
+.ci{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:15px;background:#fff;width:150px;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.55;cursor:default}
+.hd{display:flex;align-items:baseline;gap:10px;margin-top:18px;flex-wrap:wrap}.hd h2{font-size:20px;font-weight:600;margin:0}.hd .cik{font-size:12px;color:#9aa1ad;font-family:Geist Mono,monospace}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:12px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 150px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.cv.pos{color:#0f9d63}.cv.neg{color:#d6453d}.cv .sub{font-family:Geist,sans-serif;font-size:11px;color:#9aa1ad;font-weight:400}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:16px 18px;margin-top:18px}.card h3{font-size:13px;font-weight:600;margin:0 0 4px}.card .cap{font-size:11.5px;color:#9aa1ad;margin:0 0 8px}
+svg{display:block;width:100%;height:auto}
+.tbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.tbar h3{font-size:14px;font-weight:600;margin:0}
+.tog{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#3a4150;cursor:pointer;user-select:none}
+.tog input{accent-color:#635bff;width:15px;height:15px}
+.legend{font-size:11px;color:#9aa1ad;margin-top:6px;line-height:1.6}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;font-weight:500;text-align:right;padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.1);white-space:nowrap}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+td{padding:7px 8px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace;white-space:nowrap}
+td.nm{font-family:Geist,sans-serif;font-weight:500;white-space:normal;min-width:150px}
+td.nm .role{font-weight:400;color:#9aa1ad;font-size:11px}
+td.pos{color:#0f9d63}td.neg{color:#d6453d}
+.cd{display:inline-block;min-width:16px;text-align:center;padding:1px 5px;border-radius:5px;font-size:10.5px;font-weight:600;font-family:Geist Mono,monospace}
+.cd-buy{background:rgba(15,157,99,.12);color:#0f9d63}.cd-sell{background:rgba(214,69,61,.12);color:#d6453d}.cd-neu{background:rgba(17,24,39,.06);color:#6a7180}
+td a{color:#635bff;text-decoration:none}td a:hover{text-decoration:underline}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:720px;margin-top:26px}.body b{color:#14161c}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:20px;padding:5px 12px;font-size:12.5px;color:#3a4150;cursor:pointer;text-decoration:none}
+.chip:hover{border-color:rgba(99,91,255,.5);color:#635bff}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Research</div>
+<h1>Insider Trades</h1>
+<p class="lead">When a company's own officers, directors or 10%+ owners buy or sell its stock, they must tell the SEC within two business days on a <b>Form 4</b>. Quantora reads those filings straight from EDGAR and shows you the net insider flow, open-market buys versus sells, and every transaction - with the codes that separate real conviction from routine grants.</p>
+<div class="ci">
+<div class="fld"><label>Ticker</label><input id="sym" value="NVDA"></div>
+<button class="run" id="run">Load insider trades</button>
+</div>
+<div class="chips" id="chips"></div>
+<div id="out"></div>
+<div class="body">Not every insider transaction means the same thing. An open-market <b>purchase</b> (code <b>P</b>) is the strongest signal - an insider choosing to put their own cash into the stock. An open-market <b>sale</b> (<b>S</b>) can be conviction or just diversification. But a lot of Form 4 activity is mechanical: <b>A</b> is a stock grant or award, <b>M</b> is exercising options, and <b>F</b> is shares automatically withheld to pay taxes on vesting - none of those are discretionary bets. That's why the headline number here counts only open-market buys and sells, and why "cluster buys" - several different insiders buying at once - are one of the most-watched setups in the market. Everything is pulled live from EDGAR, so it's as authoritative as it gets.</div>
+<div class="foot">Form 4 data from the SEC EDGAR system via Quantora's server (public domain, no key). Insiders (officers, directors, 10%+ owners) must report within two business days under Exchange Act &sect;16(a). Codes: P open-market buy, S open-market sale, A grant/award, M option exercise, F tax withholding, G gift, C conversion. Grants, tax-withholding and option mechanics are not discretionary open-market trades. Insider activity is suggestive, not predictive - following insiders is not investment advice. For information and education only.</div>
+</div>
+<script>
+var out=document.getElementById('out'),runBtn=document.getElementById('run'),CIKMAP=null,STATE=null;
+var CODES={P:'Open-market buy',S:'Open-market sale',A:'Grant / award',M:'Option exercise',F:'Tax withholding',G:'Gift',C:'Conversion',D:'Disposition to issuer',X:'Exercise (ITM)',J:'Other',W:'Will/inheritance',I:'Discretionary'};
+function money(v){v=+v||0;var a=Math.abs(v),s=v<0?'-':'';if(a>=1e12)return s+'$'+(a/1e12).toFixed(2)+'T';if(a>=1e9)return s+'$'+(a/1e9).toFixed(2)+'B';if(a>=1e6)return s+'$'+(a/1e6).toFixed(1)+'M';if(a>=1e3)return s+'$'+(a/1e3).toFixed(0)+'K';return s+'$'+Math.round(a).toLocaleString();}
+function num(v){v=+v||0;return v.toLocaleString('en-US',{maximumFractionDigits:0});}
+function shortNum(v){v=+v||0;var a=Math.abs(v),s=v<0?'-':'';if(a>=1e9)return s+(a/1e9).toFixed(1)+'B';if(a>=1e6)return s+(a/1e6).toFixed(1)+'M';if(a>=1e3)return s+(a/1e3).toFixed(0)+'K';return s+Math.round(a);}
+function pad(c){c=''+c;while(c.length<10)c='0'+c;return c;}
+async function sec(path){var r=await fetch('/api/fmp?type=sec&path='+encodeURIComponent(path));var j=await r.json();if(j.error)throw new Error(j.error);return j.data;}
+async function cikMap(){if(CIKMAP)return CIKMAP;try{var c=localStorage.getItem('qcik_v1');if(c){CIKMAP=JSON.parse(c);return CIKMAP;}}catch(e){}var d=await sec('files/company_tickers.json');CIKMAP={};Object.keys(d).forEach(function(k){var o=d[k];CIKMAP[o.ticker.toUpperCase()]={cik:o.cik_str,name:o.title};});try{localStorage.setItem('qcik_v1',JSON.stringify(CIKMAP));}catch(e){}return CIKMAP;}
+// ---- Form 4 XML parsing ----
+function q1(node,tag){var e=node.getElementsByTagName(tag);return e.length?e[0]:null;}
+function txt(node,tag){var e=q1(node,tag);return e?(e.textContent||'').trim():'';}
+function val(node,tag){var e=q1(node,tag);if(!e)return '';var v=e.getElementsByTagName('value');return v.length?(v[0].textContent||'').trim():(e.textContent||'').trim();}
+function parseForm4(xmlText){
+  if(!xmlText||typeof xmlText!=='string')return null;
+  var doc=new DOMParser().parseFromString(xmlText,'application/xml');
+  if(doc.getElementsByTagName('parsererror').length)return null;
+  if(!q1(doc,'ownershipDocument')&&!q1(doc,'issuer'))return null;
+  var issuer=q1(doc,'issuer')||doc,ro=q1(doc,'reportingOwner')||doc,rel=q1(ro,'reportingOwnerRelationship')||ro;
+  var roles=[];
+  if(txt(rel,'isDirector')==='1')roles.push('Director');
+  if(txt(rel,'isOfficer')==='1')roles.push(txt(rel,'officerTitle')||'Officer');
+  if(txt(rel,'isTenPercentOwner')==='1')roles.push('10% owner');
+  if(txt(rel,'isOther')==='1'&&!roles.length)roles.push('Other');
+  var owner={insider:txt(q1(ro,'reportingOwnerId')||ro,'rptOwnerName'),roles:roles,
+    issuerName:txt(issuer,'issuerName'),issuerSymbol:txt(issuer,'issuerTradingSymbol'),
+    period:txt(doc,'periodOfReport'),docType:txt(doc,'documentType')};
+  function collect(tableTag,txTag,isDeriv){
+    var arr=[],tbl=q1(doc,tableTag);if(!tbl)return arr;
+    var tx=tbl.getElementsByTagName(txTag);
+    for(var i=0;i<tx.length;i++){var t=tx[i],coding=q1(t,'transactionCoding')||t;
+      var ps=val(t,'transactionPricePerShare');
+      arr.push({security:val(t,'securityTitle'),date:val(t,'transactionDate'),code:txt(coding,'transactionCode'),
+        shares:parseFloat(val(t,'transactionShares'))||0,price:(ps===''?null:(parseFloat(ps)||0)),
+        ad:val(t,'transactionAcquiredDisposedCode'),
+        ownedAfter:(val(t,'sharesOwnedFollowingTransaction')===''?null:parseFloat(val(t,'sharesOwnedFollowingTransaction'))),
+        direct:(val(t,'directOrIndirectOwnership')||'D'),deriv:!!isDeriv});
+    }
+    return arr;
+  }
+  return {owner:owner,tx:collect('nonDerivativeTable','nonDerivativeTransaction',false).concat(collect('derivativeTable','derivativeTransaction',true))};
+}
+function txValue(t){var v=(t.price||0)*t.shares;return t.ad==='D'?-v:v;}
+// ---- concurrency gate ----
+async function mapLimit(items,limit,fn){var ret=[],i=0;async function w(){while(i<items.length){var idx=i++;try{ret[idx]=await fn(items[idx],idx);}catch(e){ret[idx]=null;}}}var ws=[];for(var k=0;k<Math.min(limit,items.length);k++)ws.push(w());await Promise.all(ws);return ret;}
+async function form4(cikInt,accDash,doc){
+  var key='q_f4_'+accDash;
+  try{var c=localStorage.getItem(key);if(c)return JSON.parse(c);}catch(e){}
+  var accNoDash=accDash.replace(/-/g,'');
+  var d=doc||'';if(/xsl/i.test(d))d=d.split('/').pop();
+  if(!/\.xml$/i.test(d))return null;
+  var xml=await sec('Archives/edgar/data/'+cikInt+'/'+accNoDash+'/'+d);
+  var p=parseForm4(xml);
+  try{if(p)localStorage.setItem(key,JSON.stringify(p));}catch(e){}
+  return p;
+}
+// ---- run ----
+runBtn.onclick=go;
+document.getElementById('sym').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+(function(){var c=document.getElementById('chips');['NVDA','TSLA','AAPL','META','GME','OXY'].forEach(function(s){var a=document.createElement('a');a.className='chip';a.textContent=s;a.href='#';a.onclick=function(e){e.preventDefault();document.getElementById('sym').value=s;go();};c.appendChild(a);});})();
+async function go(){
+  var sym=document.getElementById('sym').value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+  if(!sym)return;
+  runBtn.disabled=true;
+  out.innerHTML='<div class="state"><span class="spin"></span>Reading '+sym+'’s Form 4 filings from EDGAR…</div>';
+  try{
+    var map=await cikMap(),ent=map[sym];
+    if(!ent){out.innerHTML='<div class="state">No SEC filer found for “'+sym+'”. EDGAR covers US-listed companies.</div>';runBtn.disabled=false;return;}
+    var cikInt=ent.cik;
+    var sub=await sec('submissions/CIK'+pad(cikInt)+'.json');
+    var rec=sub.filings&&sub.filings.recent;
+    if(!rec){out.innerHTML='<div class="state">No recent filings returned for '+sym+'.</div>';runBtn.disabled=false;return;}
+    var rows=[];
+    for(var i=0;i<rec.form.length;i++){if(rec.form[i]==='4'||rec.form[i]==='4/A'){rows.push({acc:rec.accessionNumber[i],doc:rec.primaryDocument[i],fdate:rec.filingDate[i],form:rec.form[i]});}}
+    if(!rows.length){out.innerHTML='<div class="state">No Form 4 insider filings found for '+ent.name+' in the recent EDGAR history. Try a company with active insider reporting (e.g. NVDA, TSLA).</div>';runBtn.disabled=false;return;}
+    var take=rows.slice(0,25);
+    out.innerHTML='<div class="state"><span class="spin"></span>Parsing '+take.length+' recent Form 4 filings for '+ent.name+'…</div>';
+    var parsed=await mapLimit(take,3,async function(r){var p=await form4(cikInt,r.acc,r.doc);if(p){p.acc=r.acc;p.fdate=r.fdate;p.form=r.form;}return p;});
+    parsed=parsed.filter(Boolean);
+    if(!parsed.length){out.innerHTML='<div class="state">Found '+rows.length+' Form 4 filings for '+ent.name+' but couldn’t parse their ownership XML right now. SEC EDGAR can rate-limit briefly - try again shortly.</div>';runBtn.disabled=false;return;}
+    var flat=[];
+    parsed.forEach(function(p){var accNoDash=p.acc.replace(/-/g,'');var link='https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK='+cikInt+'&type=4&dateb=&owner=include&count=40';var docLink='https://www.sec.gov/Archives/edgar/data/'+cikInt+'/'+accNoDash+'/';
+      p.tx.forEach(function(t){flat.push({insider:p.owner.insider||'—',roles:p.owner.roles||[],filed:p.fdate,form:p.form,link:docLink,t:t});});});
+    flat.sort(function(a,b){return (b.t.date||b.filed||'').localeCompare(a.t.date||a.filed||'');});
+    STATE={sym:sym,ent:ent,cikInt:cikInt,flat:flat,nFilings:parsed.length,issuerName:(parsed[0].owner.issuerName||ent.name)};
+    render();
+  }catch(e){out.innerHTML='<div class="state">Could not load insider trades ('+String(e.message||e)+'). SEC EDGAR can rate-limit briefly - try again shortly.</div>';}
+  runBtn.disabled=false;
+}
+function render(){
+  var s=STATE;if(!s)return;
+  var open=s.flat.filter(function(f){return f.t.code==='P'||f.t.code==='S';});
+  var net=open.reduce(function(a,f){return a+txValue(f.t);},0);
+  var buyers={},sellers={};open.forEach(function(f){if(f.t.code==='P')buyers[f.insider]=1;if(f.t.code==='S')sellers[f.insider]=1;});
+  var nBuy=Object.keys(buyers).length,nSell=Object.keys(sellers).length;
+  var buys=open.filter(function(f){return f.t.code==='P';});
+  var big=buys.reduce(function(m,f){var v=txValue(f.t);return v>m.v?{v:v,f:f}:m;},{v:0,f:null});
+  var dates=s.flat.map(function(f){return f.t.date||f.filed;}).filter(Boolean).sort();
+  var span=dates.length?(dates[0]+' → '+dates[dates.length-1]):'—';
+  var h='<div class="hd"><h2>'+s.issuerName+'</h2><span class="cik">'+s.sym+' &middot; CIK '+pad(s.cikInt)+'</span></div>';
+  var cluster=nBuy>=3;
+  h+='<div class="cr">'+
+    '<div class="cell"><div class="cl">Net insider flow (open-market)</div><div class="cv '+(net>0?'pos':(net<0?'neg':''))+'">'+(net>0?'+':'')+money(net)+'</div></div>'+
+    '<div class="cell"><div class="cl">Buyers vs sellers</div><div class="cv"><span class="pos">'+nBuy+'</span> / <span class="neg">'+nSell+'</span> <span class="sub">insiders'+(cluster?' · cluster buy':'')+'</span></div></div>'+
+    '<div class="cell"><div class="cl">Biggest single buy</div><div class="cv">'+(big.f?money(big.v):'—')+(big.f?'<div class="sub">'+esc(big.f.insider)+'</div>':'')+'</div></div>'+
+    '<div class="cell"><div class="cl">Filings parsed</div><div class="cv">'+s.nFilings+' <span class="sub">'+span+'</span></div></div>'+
+  '</div>';
+  // cumulative net open-market shares chart
+  var chron=open.slice().sort(function(a,b){return (a.t.date||a.filed||'').localeCompare(b.t.date||b.filed||'');});
+  if(chron.length>=2){var cum=0;var pts=chron.map(function(f){cum+=(f.t.ad==='D'?-1:1)*f.t.shares;return {v:cum};});
+    h+='<div class="card"><h3>Cumulative net insider shares</h3><p class="cap">Running total of open-market shares bought (up) minus sold (down), oldest to newest.</p>'+linechart(pts)+'</div>';}
+  // table
+  h+='<div class="tbar"><h3>Transactions</h3><label class="tog"><input type="checkbox" id="omo" '+(window.__omo!==false?'checked':'')+'> Open-market only (P / S)</label></div>';
+  h+='<div class="legend">Value is signed: green = acquired, red = disposed. Click a row’s date to open the filing folder on SEC.gov.</div>';
+  h+=tableHtml();
+  out.innerHTML=h;
+  var omo=document.getElementById('omo');if(omo)omo.onchange=function(){window.__omo=omo.checked;var t=document.getElementById('txwrap');if(t)t.outerHTML=tableHtml();var o2=document.getElementById('omo');};
+}
+function tableHtml(){
+  var s=STATE;var omo=window.__omo!==false;
+  var rows=s.flat.filter(function(f){return omo?(f.t.code==='P'||f.t.code==='S'):true;});
+  if(!rows.length)return '<div id="txwrap"><div class="state">No open-market (P/S) transactions in the parsed filings. Untick the box to see grants, option exercises and other Form 4 activity.</div></div>';
+  var body=rows.slice(0,120).map(function(f){var t=f.t;var buy=(t.ad==='A');var cd=t.code==='P'?'cd-buy':(t.code==='S'?'cd-sell':'cd-neu');
+    var v=txValue(t);
+    return '<tr>'+
+      '<td class="l"><a href="'+f.link+'" target="_blank" rel="noopener nofollow">'+(t.date||f.filed||'—')+'</a></td>'+
+      '<td class="nm l">'+esc(f.insider)+(f.roles&&f.roles.length?'<div class="role">'+esc(f.roles.join(', '))+'</div>':'')+'</td>'+
+      '<td class="l"><span class="cd '+cd+'" title="'+(CODES[t.code]||'Code '+t.code)+'">'+(t.code||'?')+'</span></td>'+
+      '<td class="l" style="white-space:normal;font-family:Geist,sans-serif;color:#6a7180">'+esc(t.security||'')+(t.deriv?' <span style="color:#c2410c">◈</span>':'')+'</td>'+
+      '<td>'+num(t.shares)+'</td>'+
+      '<td>'+(t.price!=null?'$'+t.price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+      '<td class="'+(v>0?'pos':(v<0?'neg':''))+'">'+(v!==0?(v>0?'+':'')+money(v):'—')+'</td>'+
+      '<td>'+(t.ownedAfter!=null?num(t.ownedAfter):'—')+'</td>'+
+      '<td>'+(t.direct==='I'?'Indirect':'Direct')+'</td>'+
+    '</tr>';}).join('');
+  return '<div id="txwrap"><table><thead><tr><th class="l">Date</th><th class="l">Insider</th><th class="l">Code</th><th class="l">Security</th><th>Shares</th><th>Price</th><th>$ Value</th><th>Owned after</th><th>D/I</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function linechart(pts){
+  var W=940,H=150,ml=52,mr=12,mt=12,mb=16,pw=W-ml-mr,ph=H-mt-mb,n=pts.length;
+  var vals=pts.map(function(p){return p.v;});var hi=Math.max.apply(null,vals),lo=Math.min.apply(null,vals);hi=Math.max(hi,0);lo=Math.min(lo,0);if(hi===lo)hi=lo+1;
+  function X(i){return ml+(n<=1?pw/2:pw*i/(n-1));}
+  function Y(v){return mt+ph*(1-((v-lo)/(hi-lo)));}
+  var z=Y(0);
+  var line=pts.map(function(p,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ');
+  var area='M'+X(0).toFixed(1)+' '+z.toFixed(1)+' '+pts.map(function(p,i){return 'L'+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ')+' L'+X(n-1).toFixed(1)+' '+z.toFixed(1)+' Z';
+  var last=pts[n-1].v,col=last>=0?'#0f9d63':'#d6453d';
+  var grid='';for(var g=0;g<=2;g++){var vv=lo+(hi-lo)*g/2,yy=mt+ph*(1-g/2);grid+='<line x1="'+ml+'" y1="'+yy.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(ml-6)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="9" fill="#9aa1ad" font-family="Geist Mono,monospace">'+shortNum(vv)+'</text>';}
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+grid+'<line x1="'+ml+'" y1="'+z.toFixed(1)+'" x2="'+(W-mr)+'" y2="'+z.toFixed(1)+'" stroke="rgba(17,24,39,.18)"/><path d="'+area+'" fill="'+col+'" opacity="0.08"/><path d="'+line+'" fill="none" stroke="'+col+'" stroke-width="1.6"/></svg>';
+}
+go();
+</script>
+</body></html>
