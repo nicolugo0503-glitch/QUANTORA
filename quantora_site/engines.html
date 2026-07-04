@@ -890,6 +890,20 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .er-stage .card .cr .r .rv{font-family:var(--q-mono)!important;font-variant-numeric:tabular-nums slashed-zero!important;font-feature-settings:"tnum" 1,"zero" 1!important;letter-spacing:-.035em!important;color:var(--q-ink)!important;}
 .er-stage .card .cr .r:first-child .rv{font-size:clamp(34px,4.2vw,46px)!important;}
 .er-stage .card .cr .r .rv.up{color:var(--q-pos)!important;}.er-stage .card .cr .r .rv.down{color:var(--q-neg)!important;}
+
+/* R2 - recompute flash + hero readout + chart caption (shared, every engine) */
+@keyframes qfup{0%{background:rgba(15,157,99,.16)}100%{background:transparent}}
+@keyframes qfdn{0%{background:rgba(214,69,61,.16)}100%{background:transparent}}
+@keyframes qfnu{0%{background:rgba(99,91,255,.13)}100%{background:transparent}}
+.rv{border-radius:5px;padding:0 3px;margin:0 -3px;}
+.rv.fup{animation:qfup .55s ease-out}.rv.fdn{animation:qfdn .55s ease-out}.rv.fnu{animation:qfnu .55s ease-out}
+@media(prefers-reduced-motion:reduce){.rv.fup,.rv.fdn,.rv.fnu{animation:none!important}}
+.cchart-cap{font:500 10.5px/1 var(--q-mono)!important;letter-spacing:.12em!important;text-transform:uppercase;color:var(--q-faint)!important;margin:0 0 11px!important;}
+.cchart-cap b{color:var(--q-mut)!important;font-weight:500!important;}
+.er-stage .card .cchart{margin-top:20px!important;}
+.er-stage .card .cr .r:first-child .rv{font-size:clamp(40px,5vw,54px)!important;line-height:.96!important;letter-spacing:-.04em!important;}
+.er-stage .card .cr .r:first-child .rl{font-size:10.5px!important;letter-spacing:.16em!important;}
+.er-stage .card .cd{border-bottom:1px solid var(--q-hair)!important;padding-bottom:16px!important;margin-bottom:6px!important;}
 </style>
 </head>
 <body>
@@ -1428,9 +1442,13 @@ function buildCard(host,cfg){
   function run(){
     var v={}; inEls.forEach(function(i){ var raw=(i.tagName==='TEXTAREA'||i.tagName==='SELECT'||i.type==='text'); v[i.getAttribute('data-k')]=raw?i.value:parseFloat(i.value); });
     var out; try{ out=cfg.compute(v); }catch(e){ out=[]; }
+    var prev=el.__prev||{}, next={};
     crEl.innerHTML=(out||[]).map(function(o){
-      return '<div class="r"><div class="rl">'+o.l+'</div><div class="rv '+(o.cls||'')+'">'+o.v+'</div></div>';
+      next[o.l]=String(o.v);
+      return '<div class="r"><div class="rl">'+o.l+'</div><div class="rv '+(o.cls||'')+'" data-l="'+String(o.l).replace(/"/g,'')+'">'+o.v+'</div></div>';
     }).join('');
+    if(el.__seen){ crEl.querySelectorAll('.rv').forEach(function(n){ var l=n.getAttribute('data-l'); if(prev[l]==null||prev[l]===next[l])return; var a=parseFloat(prev[l]),b=parseFloat(next[l]); var dir=(isFinite(a)&&isFinite(b)&&a!==b)?(b>a?'fup':'fdn'):'fnu'; void n.offsetWidth; n.classList.add(dir); n.addEventListener('animationend',function(){n.classList.remove('fup','fdn','fnu');},{once:true}); }); }
+    el.__prev=next; el.__seen=true;
     try{ drawCardChart(el,cfg,v,out); }catch(e){ var hh=el.querySelector('.cchart'); if(hh)hh.innerHTML=''; }
   }
   el.__run=run;
