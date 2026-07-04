@@ -921,6 +921,11 @@ body::before{display:none!important;}
 .er-item{border-radius:9px!important;transition:background .12s,color .12s!important;}
 .gtab td{border-bottom:1px solid var(--q-hair-faint)!important;}
 .gtab th{border-bottom:1px solid var(--q-hair)!important;color:var(--q-faint)!important;}
+.o-cap{font:500 10.5px/1 'Geist Mono',ui-monospace,monospace;letter-spacing:.11em;text-transform:uppercase;color:#98a0ad;margin-bottom:10px;}
+.flag .pcard{background:var(--q-sunken,#f6f8fa)!important;border:1px solid var(--q-hair,rgba(20,22,28,.08))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;border-radius:14px!important;}
+.flag .pcard .v{font-size:clamp(30px,3.8vw,40px)!important;letter-spacing:-.04em!important;font-variant-numeric:tabular-nums slashed-zero!important;}
+.flag .gtab td.num{font-size:13.5px!important;}
+.flag .gtab tbody tr:hover{background:rgba(99,91,255,.035)!important;}
 </style>
 </head>
 <body>
@@ -1315,26 +1320,29 @@ function drawOptChart(){
   var host=document.getElementById('o_chart'); if(!host) return;
   var S=num('o_S'),K=num('o_K'),D=num('o_D'),v=num('o_v')/100,r=num('o_r')/100,q=num('o_q')/100,T=D/365;
   if(!(S>0&&K>0&&T>0&&v>0)){ host.innerHTML=''; return; }
-  var lo=K*0.4, hi=K*1.6, N=80, W=720,H=270,padL=48,padR=64,padT=20,padB=30;
-  var xs=[],call=[],put=[];
-  for(var i=0;i<=N;i++){ var sp=lo+(hi-lo)*i/N; var g=Q.greeks(sp,K,T,r,q,v); xs.push(sp); call.push(g.call); put.push(g.put); }
+  var lo=K*0.4, hi=K*1.6, N=80, W=720,H=270,padL=52,padR=70,padT=24,padB=30;
+  var xs=[],call=[],put=[],icall=[],iput=[];
+  for(var i=0;i<=N;i++){ var sp=lo+(hi-lo)*i/N; var g=Q.greeks(sp,K,T,r,q,v); xs.push(sp); call.push(g.call); put.push(g.put); icall.push(Math.max(sp-K,0)); iput.push(Math.max(K-sp,0)); }
   var maxY=Math.max.apply(null,call.concat(put))*1.08||1;
   function px(sp){ return padL+(sp-lo)/(hi-lo)*(W-padL-padR); }
   function py(y){ return H-padB-(y/maxY)*(H-padT-padB); }
   function dpath(arr){ return arr.map(function(y,i){ return (i?'L':'M')+px(xs[i]).toFixed(1)+','+py(y).toFixed(1); }).join(' '); }
   var gN=Q.greeks(S,K,T,r,q,v);
   var grid='';
-  for(var k=0;k<=4;k++){ var gy=padT+(H-padT-padB)*k/4+0.5; grid+='<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" stroke="#eef0f3" stroke-width="1" shape-rendering="crispEdges"/>'; var lab=maxY*(1-k/4); grid+='<text x="'+(padL-9)+'" y="'+(gy+3).toFixed(1)+'" font-size="10.5" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+lab.toFixed(0)+'</text>'; }
-  var xl='';[lo,(lo+hi)/2,hi].forEach(function(sp,i){ var X=px(sp); xl+='<text x="'+X.toFixed(1)+'" y="'+(H-9)+'" font-size="10.5" fill="#9aa1ad" text-anchor="'+(i===0?'start':i===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+sp.toFixed(0)+'</text>'; });
-  var sx=px(S);
-  var spot='<line x1="'+sx.toFixed(1)+'" y1="'+padT+'" x2="'+sx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="#b9bec8" stroke-width="1" stroke-dasharray="2 3"/><text x="'+sx.toFixed(1)+'" y="'+(padT-6)+'" font-size="10" fill="#6b7280" text-anchor="middle" font-family="Geist Mono,monospace">S='+S.toFixed(0)+'</text>';
+  for(var k=0;k<=4;k++){ var gy=Math.round(padT+(H-padT-padB)*k/4)+0.5; grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e9ebf0" stroke-width="1" shape-rendering="crispEdges"/>'; var lab=maxY*(1-k/4); grid+='<text x="'+(padL-10)+'" y="'+(gy+3.5)+'" font-size="10.5" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+lab.toFixed(0)+'</text>'; }
+  var xl='';[lo,K,hi].forEach(function(sp,i){ var X=px(sp); xl+='<text x="'+X.toFixed(1)+'" y="'+(H-9)+'" font-size="10.5" fill="#9aa1ad" text-anchor="'+(i===0?'start':i===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+(i===1?'K '+K.toFixed(0):sp.toFixed(0))+'</text>'; });
+  var sx=px(S),kx=px(K);
+  var strike='<line x1="'+kx.toFixed(1)+'" y1="'+padT+'" x2="'+kx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="#d7dbe3" stroke-width="1" stroke-dasharray="1 4"/>';
+  var spot='<line x1="'+sx.toFixed(1)+'" y1="'+padT+'" x2="'+sx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="#635bff" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/><text x="'+sx.toFixed(1)+'" y="'+(padT-7)+'" font-size="10" fill="#635bff" text-anchor="middle" font-family="Geist Mono,monospace">S '+S.toFixed(0)+'</text>';
   var area='M'+px(xs[0]).toFixed(1)+','+(H-padB).toFixed(1)+' '+dpath(call).slice(1)+' L'+px(xs[N]).toFixed(1)+','+(H-padB).toFixed(1)+' Z';
-  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" font-family="Geist,sans-serif">'+
-    '<defs><linearGradient id="oFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#635bff" stop-opacity="0.13"/><stop offset="100%" stop-color="#635bff" stop-opacity="0"/></linearGradient></defs>'+
-    grid+
+  host.innerHTML='<div class="o-cap">Option value vs spot — dashed = intrinsic · gap = time value</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg">'+
+    '<defs><linearGradient id="oFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#635bff" stop-opacity="0.15"/><stop offset="60%" stop-color="#635bff" stop-opacity="0.04"/><stop offset="100%" stop-color="#635bff" stop-opacity="0"/></linearGradient></defs>'+
+    grid+strike+
     '<path d="'+area+'" fill="url(#oFill)"/>'+
-    '<path d="'+dpath(put)+'" fill="none" stroke="#d6453d" stroke-width="1.6"/>'+
-    '<path d="'+dpath(call)+'" fill="none" stroke="#635bff" stroke-width="1.9"/>'+
+    '<path d="'+dpath(icall)+'" fill="none" stroke="#635bff" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>'+
+    '<path d="'+dpath(iput)+'" fill="none" stroke="#d6453d" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>'+
+    '<path d="'+dpath(put)+'" fill="none" stroke="#d6453d" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'+
+    '<path d="'+dpath(call)+'" fill="none" stroke="#635bff" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'+
     spot+
     '<circle cx="'+sx.toFixed(1)+'" cy="'+py(gN.put).toFixed(1)+'" r="4.5" fill="#fff"/><circle cx="'+sx.toFixed(1)+'" cy="'+py(gN.put).toFixed(1)+'" r="3" fill="#d6453d"/>'+
     '<circle cx="'+sx.toFixed(1)+'" cy="'+py(gN.call).toFixed(1)+'" r="4.5" fill="#fff"/><circle cx="'+sx.toFixed(1)+'" cy="'+py(gN.call).toFixed(1)+'" r="3" fill="#635bff"/>'+
