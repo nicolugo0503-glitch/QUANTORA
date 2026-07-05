@@ -1865,19 +1865,22 @@ function drawMCFan(){
 }
 function drawMCHist(){
   var p=mcInputs(), T=p.D/365, sim=Q.mcGBM(p.S,p.mu,p.v,T,p.paths);
-  var t=sim.terminals, lo=sim.p5*0.9, hi=sim.p95*1.05, nb=44, bins=new Array(nb).fill(0), i;
+  var t=sim.terminals, lo=sim.p5*0.9, hi=sim.p95*1.05, nb=48, bins=new Array(nb).fill(0), i;
   for(i=0;i<t.length;i++){ if(t[i]<lo||t[i]>hi) continue; var b=Math.min(nb-1,Math.floor((t[i]-lo)/(hi-lo)*nb)); bins[b]++; }
-  var maxB=Math.max.apply(null,bins), W=520,H=240,pad=30, bw=(W-2*pad)/nb;
-  function px(x){ return pad+(x-lo)/(hi-lo)*(W-2*pad); }
+  var maxB=Math.max.apply(null,bins), W=720,H=270,padL=20,padR=20,padT=24,padB=30, pw=W-padL-padR, bw=pw/nb, zeroYb=H-padB;
+  function px(x){ return padL+(x-lo)/(hi-lo)*pw; }
+  var p5x=px(sim.p5);
+  var tail='<rect x="'+padL+'" y="'+padT+'" width="'+Math.max(0,p5x-padL).toFixed(1)+'" height="'+(zeroYb-padT).toFixed(1)+'" fill="#d6453d" opacity="0.06"/>';
   var bars='';
-  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-2*pad):0, x=pad+i*bw, binMid=lo+(i+0.5)/nb*(hi-lo), col=binMid>=p.S?'#0a9d63':'#e0483d';
-    bars+='<rect x="'+x.toFixed(1)+'" y="'+(H-pad-h).toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.55"/>'; }
-  var marks=[{x:p.S,c:'#635bff',lab:'spot'},{x:sim.p50,c:'#1a1c22',lab:'median'},{x:sim.p5,c:'#e0483d',lab:'5%'},{x:sim.p95,c:'#0a9d63',lab:'95%'}]
-    .map(function(m){ m.X=px(m.x); return m; }).filter(function(m){ return m.X>=pad&&m.X<=W-pad; }).sort(function(a,b){ return a.X-b.X; });
+  for(i=0;i<nb;i++){ var h=maxB?bins[i]/maxB*(H-padT-padB):0, x=padL+i*bw, binMid=lo+(i+0.5)/nb*(hi-lo), col=binMid>=p.S?'#0f9d63':'#d6453d';
+    bars+='<rect x="'+(x+0.6).toFixed(1)+'" y="'+(zeroYb-h).toFixed(1)+'" width="'+Math.max(0.5,bw-1.2).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="1.5" fill="'+col+'" opacity="'+(binMid<sim.p5?0.72:0.5)+'"/>'; }
+  var marks=[{x:sim.p5,c:'#d6453d',lab:'P5 · VaR'},{x:sim.p50,c:'#14161c',lab:'median'},{x:sim.mean,c:'#635bff',lab:'mean'},{x:sim.p95,c:'#0f9d63',lab:'P95'},{x:p.S,c:'#8a90a2',lab:'spot'}]
+    .map(function(m){ m.X=px(m.x); return m; }).filter(function(m){ return m.X>=padL&&m.X<=W-padR; }).sort(function(a,b){ return a.X-b.X; });
   var lvlLast=[-1e9,-1e9];
-  marks.forEach(function(m){ var lvl=0; if(m.X-lvlLast[0]<40){ lvl=1; if(m.X-lvlLast[1]<40) lvl=0; } lvlLast[lvl]=m.X; m.lvl=lvl; });
-  var vl=marks.map(function(m){ var ly=pad-5-m.lvl*11; return '<line x1="'+m.X.toFixed(1)+'" y1="'+pad+'" x2="'+m.X.toFixed(1)+'" y2="'+(H-pad)+'" stroke="'+m.c+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+m.X.toFixed(1)+'" y="'+ly+'" font-size="9" fill="'+m.c+'" text-anchor="middle" font-family="Geist Mono,monospace">'+m.lab+'</text>'; }).join('');
-  document.getElementById('mc_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+vl+'<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(15,17,22,0.10)"/></svg>';
+  marks.forEach(function(m){ var lvl=0; if(m.X-lvlLast[0]<56){ lvl=1; if(m.X-lvlLast[1]<56) lvl=0; } lvlLast[lvl]=m.X; m.lvl=lvl; });
+  var vl=marks.map(function(m){ var ly=padT-6-m.lvl*11, sw=(m.lab==='median'?1.25:1), dash=(m.lab==='median'?'':' stroke-dasharray="3 3"'); return '<line x1="'+m.X.toFixed(1)+'" y1="'+padT+'" x2="'+m.X.toFixed(1)+'" y2="'+zeroYb+'" stroke="'+m.c+'" stroke-width="'+sw+'"'+dash+'/><text x="'+m.X.toFixed(1)+'" y="'+ly+'" font-size="9.5" fill="'+m.c+'" text-anchor="middle" font-family="Geist Mono,monospace">'+m.lab+'</text>'; }).join('');
+  var xlab='';[lo,sim.p50,hi].forEach(function(xv,ix){ xlab+='<text x="'+px(xv).toFixed(1)+'" y="'+(H-9)+'" font-size="10.5" fill="#9aa1ad" text-anchor="'+(ix===0?'start':ix===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+xv.toFixed(0)+'</text>'; });
+  document.getElementById('mc_chart').innerHTML='<div class="o-cap">Terminal price distribution · '+(p.paths>=1000?Math.round(p.paths/1000)+'k':p.paths)+' paths — shaded band = worst 5% (VaR)</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg">'+tail+bars+vl+'<line x1="'+padL+'" y1="'+zeroYb+'" x2="'+(W-padR)+'" y2="'+zeroYb+'" stroke="#c7cbd6" stroke-width="1"/>'+xlab+'</svg>';
   document.getElementById('mc_metrics').innerHTML=
     '<div class="r"><div class="rl">Median</div><div class="rv">'+fmt(sim.p50,2)+'</div></div>'+
     '<div class="r"><div class="rl">90% range</div><div class="rv">'+fmt(sim.p5,1)+'–'+fmt(sim.p95,1)+'</div></div>'+
