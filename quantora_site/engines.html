@@ -1387,17 +1387,23 @@ function histViz(el,cfg,vBase){ var host=el.querySelector('.cchart'); if(!host) 
   var maxB=Math.max.apply(null,bins)||1;
   var mean=arr.reduce(function(a,b){return a+b;},0)/n;
   var sorted=arr.slice().sort(function(a,b){return a-b;}); var p5=sorted[Math.max(0,Math.ceil(0.05*n)-1)];
-  var W=640,H=220,pL=20,pR=20,pT=18,pB=30, bw=(W-pL-pR)/nb;
+  var p95=sorted[Math.min(n-1,Math.ceil(0.95*n)-1)], p50=sorted[Math.floor(n/2)];
+  var W=720,H=250,pL=20,pR=20,pT=24,pB=30, bw=(W-pL-pR)/nb, zeroYb=H-pB;
   function X(v){ return pL+(v-mn)/(mx-mn)*(W-pL-pR); }
   function Yb(c){ return H-pB-(c/maxB)*(H-pT-pB); }
-  var rects=bins.map(function(c,i){ var x=pL+i*bw, mid=mn+(i+0.5)/nb*(mx-mn), col=mid<0?'#e0483d':'#0f9d63'; return '<rect x="'+x.toFixed(1)+'" y="'+Yb(c).toFixed(1)+'" width="'+(bw-1.5).toFixed(1)+'" height="'+(H-pB-Yb(c)).toFixed(1)+'" fill="'+col+'" opacity="0.5" rx="1.5"/>'; }).join('');
-  function vmark(v,col,t){ var x=X(v); if(x<pL||x>W-pR) return ''; return '<line x1="'+x.toFixed(1)+'" y1="'+pT+'" x2="'+x.toFixed(1)+'" y2="'+(H-pB)+'" stroke="'+col+'" stroke-width="1" stroke-dasharray="3 3"/><text x="'+x.toFixed(1)+'" y="'+(pT-5)+'" font-size="9" fill="'+col+'" text-anchor="middle" font-family="Geist Mono,monospace">'+t+'</text>'; }
+  var p5x=X(p5);
+  var tail='<rect x="'+pL+'" y="'+pT+'" width="'+Math.max(0,p5x-pL).toFixed(1)+'" height="'+(zeroYb-pT).toFixed(1)+'" fill="#d6453d" opacity="0.06"/>';
+  var rects=bins.map(function(c,i){ var x=pL+i*bw, mid=mn+(i+0.5)/nb*(mx-mn), col=mid<0?'#d6453d':'#0f9d63', op=(mid<p5?0.72:0.5); return '<rect x="'+(x+0.75).toFixed(1)+'" y="'+Yb(c).toFixed(1)+'" width="'+Math.max(0.5,bw-1.5).toFixed(1)+'" height="'+(zeroYb-Yb(c)).toFixed(1)+'" fill="'+col+'" opacity="'+op+'" rx="1.5"/>'; }).join('');
+  var marks=[{v:p5,c:'#d6453d',l:'P5 · VaR'},{v:p50,c:'#14161c',l:'median'},{v:mean,c:'#635bff',l:'mean'},{v:p95,c:'#0f9d63',l:'P95'},{v:0,c:'#8a90a2',l:'0'}]
+    .map(function(m){ m.X=X(m.v); return m; }).filter(function(m){ return m.X>=pL&&m.X<=W-pR; }).sort(function(a,b){ return a.X-b.X; });
+  var lvlLast=[-1e9,-1e9];
+  marks.forEach(function(m){ var lv=0; if(m.X-lvlLast[0]<56){ lv=1; if(m.X-lvlLast[1]<56) lv=0; } lvlLast[lv]=m.X; m.lv=lv; });
+  var vl=marks.map(function(m){ var ly=pT-6-m.lv*11, sw=(m.l==='median'?1.25:1), dash=(m.l==='median'?'':' stroke-dasharray="3 3"'); return '<line x1="'+m.X.toFixed(1)+'" y1="'+pT+'" x2="'+m.X.toFixed(1)+'" y2="'+(H-pB)+'" stroke="'+m.c+'" stroke-width="'+sw+'"'+dash+'/><text x="'+m.X.toFixed(1)+'" y="'+ly+'" font-size="9.5" fill="'+m.c+'" text-anchor="middle" font-family="Geist Mono,monospace">'+m.l+'</text>'; }).join('');
   var dec=absMed<0.1?3:2;
   var xl=''; [mn,(mn+mx)/2,mx].forEach(function(v,i){ xl+='<text x="'+X(v).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#9aa1ad" text-anchor="'+(i===0?'start':i===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+v.toFixed(dec)+'</text>'; });
-  host.innerHTML='<div class="cchart-cap">Distribution · '+lab+' ('+n+' obs)</div>'
-    +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'+rects
-    + vmark(0,'#b9bec8','0') + vmark(mean,'#635bff','mean') + vmark(p5,'#e0483d','5%')
-    + xl + '<line x1="'+pL+'" y1="'+(H-pB)+'" x2="'+(W-pR)+'" y2="'+(H-pB)+'" stroke="rgba(15,17,22,0.10)"/></svg>';
+  host.innerHTML='<div class="cchart-cap">Distribution · '+lab+' ('+n+' obs) — shaded = worst 5% (VaR)</div>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg">'+tail+rects+vl
+    + xl + '<line x1="'+pL+'" y1="'+(H-pB)+'" x2="'+(W-pR)+'" y2="'+(H-pB)+'" stroke="#c7cbd6" stroke-width="1"/></svg>';
   return true;
 }
 function chartFallback(el,cfg,v){ return histViz(el,cfg,v)||seriesViz(el,cfg,v); }
