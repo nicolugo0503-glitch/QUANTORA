@@ -1996,29 +1996,31 @@ function drawEF(){
   if(mu.length<2){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter at least 2 assets.</span>'; document.getElementById('ef_metrics').innerHTML=''; return; }
   var Sig=Q.covFromVolCorr(vols,rho), ef;
   try{ ef = EF_MODE==='lo' ? Q.efficientFrontierLO(mu,Sig,rf,{samples:14000}) : Q.efficientFrontier(mu,Sig,rf); }catch(e){ document.getElementById('ef_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Singular covariance — adjust correlation.</span>'; return; }
-  var W=520,H=250,pad=38;
+  var W=720,H=280,padL=52,padR=64,padT=22,padB=34;
   var allVol=ef.frontier.map(function(p){return p.vol;}).concat(vols).concat([0,ef.tangency.vol]);
   var allRet=ef.frontier.map(function(p){return p.ret;}).concat(mu).concat([rf,ef.tangency.ret]);
-  var xmin=0, xmax=Math.max.apply(null,allVol)*1.1;
-  var ymin=Math.min.apply(null,allRet), ymax=Math.max.apply(null,allRet); var yp=(ymax-ymin)*0.1||0.01; ymin-=yp; ymax+=yp;
-  function px(x){ return pad+(x-xmin)/(xmax-xmin)*(W-2*pad); }
-  function py(y){ return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad); }
+  var xmin=0, xmax=Math.max.apply(null,allVol)*1.12;
+  var ymin=Math.min.apply(null,allRet), ymax=Math.max.apply(null,allRet); var yp=(ymax-ymin)*0.12||0.01; ymin-=yp; ymax+=yp;
+  function px(x){ return padL+(x-xmin)/(xmax-xmin)*(W-padL-padR); }
+  function py(y){ return H-padB-(y-ymin)/(ymax-ymin)*(H-padT-padB); }
+  var n=mu.length, cloud='';
+  for(var s=0;s<200;s++){ var w=[],sum=0,r=0,vv=0,a,b; for(a=0;a<n;a++){ w[a]=-Math.log(Math.random()||1e-9); sum+=w[a]; } for(a=0;a<n;a++){ w[a]/=sum; r+=w[a]*mu[a]; } for(a=0;a<n;a++)for(b=0;b<n;b++)vv+=w[a]*w[b]*Sig[a][b]; var cvol=Math.sqrt(Math.max(0,vv)); var cx2=px(cvol), cy2=py(r); if(cx2<padL||cx2>W-padR||cy2<padT||cy2>H-padB) continue; cloud+='<circle cx="'+cx2.toFixed(1)+'" cy="'+cy2.toFixed(1)+'" r="1.7" fill="#b9bec8" opacity="0.5"/>'; }
+  var grid='';
+  for(var g=0;g<=4;g++){ var gy=Math.round(padT+(H-padT-padB)*g/4)+0.5; var yv=ymax-(ymax-ymin)*g/4; grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e9ebf0" stroke-width="1" shape-rendering="crispEdges"/><text x="'+(padL-9)+'" y="'+(gy+3.5)+'" font-size="10" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+(yv*100).toFixed(0)+'%</text>'; }
+  var xg='';[0,xmax/2,xmax].forEach(function(xv,ix){ xg+='<text x="'+px(xv).toFixed(1)+'" y="'+(H-9)+'" font-size="10" fill="#9aa1ad" text-anchor="'+(ix===0?'start':ix===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+(xv*100).toFixed(0)+'%</text>'; });
   var fr=ef.frontier.map(function(p){return px(p.vol).toFixed(1)+','+py(p.ret).toFixed(1);}).join(' ');
-  // capital market line: from (0,rf) through tangency, extended
-  var slope=(ef.tangency.ret-rf)/ef.tangency.vol;
-  var cmlX=xmax, cmlY=rf+slope*cmlX;
-  var assetDots=names.map(function(nm,i){ return '<circle cx="'+px(vols[i]).toFixed(1)+'" cy="'+py(mu[i]).toFixed(1)+'" r="4" fill="#9097a3"/><text x="'+(px(vols[i])+6).toFixed(1)+'" y="'+(py(mu[i])+3).toFixed(1)+'" font-size="9" fill="#6b7280">'+nm+'</text>'; }).join('');
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
-    '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="rgba(15,17,22,0.10)"/>'+
-    '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(H-pad)+'" stroke="rgba(15,17,22,0.10)"/>'+
-    '<text x="'+(W-pad)+'" y="'+(H-pad+14)+'" font-size="9" fill="#6b7280" text-anchor="end">volatility →</text>'+
-    '<text x="'+pad+'" y="'+(pad-6)+'" font-size="9" fill="#6b7280">return ↑</text>'+
-    '<line x1="'+px(0).toFixed(1)+'" y1="'+py(rf).toFixed(1)+'" x2="'+px(cmlX).toFixed(1)+'" y2="'+py(cmlY).toFixed(1)+'" stroke="#0a9d63" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>'+
-    '<polyline points="'+fr+'" fill="none" stroke="#635bff" stroke-width="2"/>'+
+  var slope=(ef.tangency.ret-rf)/ef.tangency.vol; var cmlX=xmax, cmlY=rf+slope*cmlX;
+  var assetDots=names.map(function(nm,i){ return '<circle cx="'+px(vols[i]).toFixed(1)+'" cy="'+py(mu[i]).toFixed(1)+'" r="3.5" fill="#fff" stroke="#8a90a2" stroke-width="1.5"/><text x="'+(px(vols[i])+6).toFixed(1)+'" y="'+(py(mu[i])+3).toFixed(1)+'" font-size="9.5" fill="#6b7280" font-family="Geist,sans-serif">'+nm+'</text>'; }).join('');
+  var svg='<div class="o-cap">Risk–return frontier · cloud = feasible portfolios · CML = capital market line</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg">'+
+    grid+cloud+
+    '<line x1="'+px(0).toFixed(1)+'" y1="'+py(rf).toFixed(1)+'" x2="'+px(cmlX).toFixed(1)+'" y2="'+py(cmlY).toFixed(1)+'" stroke="#0f9d63" stroke-width="1.25" stroke-dasharray="4 3" opacity="0.8"/>'+
+    '<text x="'+(px(cmlX)-4).toFixed(1)+'" y="'+(py(cmlY)-5).toFixed(1)+'" font-size="9.5" fill="#0f9d63" text-anchor="end" font-family="Geist Mono,monospace">CML</text>'+
+    '<polyline points="'+fr+'" fill="none" stroke="#635bff" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>'+
     assetDots+
-    '<circle cx="'+px(ef.gmv.vol).toFixed(1)+'" cy="'+py(ef.gmv.ret).toFixed(1)+'" r="5" fill="#1a1c22"/><text x="'+(px(ef.gmv.vol)+7).toFixed(1)+'" y="'+(py(ef.gmv.ret)-5).toFixed(1)+'" font-size="9" fill="#1a1c22" font-weight="700">GMV</text>'+
-    '<circle cx="'+px(ef.tangency.vol).toFixed(1)+'" cy="'+py(ef.tangency.ret).toFixed(1)+'" r="5" fill="#0a9d63"/><text x="'+(px(ef.tangency.vol)+7).toFixed(1)+'" y="'+(py(ef.tangency.ret)-5).toFixed(1)+'" font-size="9" fill="#0a9d63" font-weight="700">Tangency</text>'+
-    '</svg>';
+    '<circle cx="'+px(0).toFixed(1)+'" cy="'+py(rf).toFixed(1)+'" r="3.5" fill="#fff" stroke="#8a90a2" stroke-width="1.5"/><text x="'+(px(0)+6).toFixed(1)+'" y="'+(py(rf)+3.5).toFixed(1)+'" font-size="9.5" fill="#6b7280" font-family="Geist Mono,monospace">Rf</text>'+
+    '<circle cx="'+px(ef.gmv.vol).toFixed(1)+'" cy="'+py(ef.gmv.ret).toFixed(1)+'" r="5.5" fill="#fff"/><circle cx="'+px(ef.gmv.vol).toFixed(1)+'" cy="'+py(ef.gmv.ret).toFixed(1)+'" r="3.4" fill="#14161c"/><text x="'+(px(ef.gmv.vol)+8).toFixed(1)+'" y="'+(py(ef.gmv.ret)-6).toFixed(1)+'" font-size="9.5" fill="#14161c" font-weight="600" font-family="Geist,sans-serif">GMV</text>'+
+    '<circle cx="'+px(ef.tangency.vol).toFixed(1)+'" cy="'+py(ef.tangency.ret).toFixed(1)+'" r="5.5" fill="#fff"/><circle cx="'+px(ef.tangency.vol).toFixed(1)+'" cy="'+py(ef.tangency.ret).toFixed(1)+'" r="3.4" fill="#0f9d63"/><text x="'+(px(ef.tangency.vol)+8).toFixed(1)+'" y="'+(py(ef.tangency.ret)-6).toFixed(1)+'" font-size="9.5" fill="#0f9d63" font-weight="600" font-family="Geist,sans-serif">Tangency</text>'+
+    xg+'</svg>';
   document.getElementById('ef_chart').innerHTML=svg;
   var wT=ef.tangency.w.map(function(w,i){return names[i]+' '+pct(w,0);}).join(' · ');
   document.getElementById('ef_metrics').innerHTML=
