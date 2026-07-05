@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
     quote: () => 'quote?symbol=' + sym, profile: () => 'profile?symbol=' + sym, targets: () => 'price-target-consensus?symbol=' + sym,
     ratings: () => 'ratings-snapshot?symbol=' + sym, metrics: () => 'key-metrics?symbol=' + sym + '&limit=1', peers: () => 'stock-peers?symbol=' + sym,
     insider: () => sym ? ('insider-trading/search?symbol=' + sym + '&page=0&limit=12') : ('insider-trading/latest?page=0&limit=15'),
-    senate: () => sym ? ('senate-trades?symbol=' + sym) : ('senate-latest?page=0&limit=15'), house: () => 'house-latest?page=0&limit=15',
+    senate: () => sym ? ('senate-trades?symbol=' + sym) : ('senate-latest?page=0&limit=100'), house: () => 'house-latest?page=0&limit=100',
     estimates: () => 'analyst-estimates?symbol=' + sym + '&period=annual&page=0&limit=5', thirteenf: () => 'institutional-ownership/symbol-positions-summary?symbol=' + sym + '&page=0&limit=1',
     etfhold: () => 'etf/holdings?symbol=' + sym, etfsector: () => 'etf/sector-weightings?symbol=' + sym, gainers: () => 'biggest-gainers', losers: () => 'biggest-losers', actives: () => 'most-actives', actives: () => 'most-active',
     news: () => 'stock-news?limit=12', income: () => 'income-statement?symbol=' + sym + '&period=annual&limit=2', balance: () => 'balance-sheet-statement?symbol=' + sym + '&period=annual&limit=2',
