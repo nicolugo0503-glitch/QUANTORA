@@ -2276,20 +2276,23 @@ function drawBT(){
   if(!series.length){ eqHost.innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter return series.</span>'; ddHost.innerHTML=''; met.innerHTML=''; return; }
   if(w.length!==series.length){ w=series.map(function(){return 1/series.length;}); }
   var pr=Q.portfolioReturns(series,w), bt=Q.backtest(pr,P);
-  function area(host,arr,color,fillNeg){
-    var W=520,H=120,pad=26, n=arr.length;
-    var ymin=Math.min.apply(null,arr), ymax=Math.max.apply(null,arr); if(fillNeg){ ymax=Math.max(0,ymax); } var yp=(ymax-ymin)*0.08||0.01; ymin-=yp; ymax+=yp;
-    function X(i){ return pad+i/(n-1)*(W-2*pad); }
-    function Y(v){ return H-pad-(v-ymin)/(ymax-ymin)*(H-2*pad); }
-    var line=arr.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
-    var poly='';
-    if(fillNeg){ var base=Y(0); poly='<polygon points="'+X(0).toFixed(1)+','+base.toFixed(1)+' '+line+' '+X(n-1).toFixed(1)+','+base.toFixed(1)+'" fill="'+color+'" opacity="0.15"/>'; }
-    else { var bot=(H-pad).toFixed(1); poly='<polygon points="'+X(0).toFixed(1)+','+bot+' '+line+' '+X(n-1).toFixed(1)+','+bot+'" fill="'+color+'" opacity="0.05"/>'; }
-    var dot='<circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(arr[n-1]).toFixed(1)+'" r="6" fill="'+color+'" opacity="0.22"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(arr[n-1]).toFixed(1)+'" r="3" fill="'+color+'"/>';
-    host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+poly+'<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="1.6"/>'+dot+'</svg>';
+  function area(host,arr,color,mode,cap){
+    var W=700,H=150,padL=44,padR=50,padT=16,padB=24, n=arr.length; if(n<2){ host.innerHTML=''; return; }
+    var ymin=Math.min.apply(null,arr), ymax=Math.max.apply(null,arr);
+    if(mode==='dd'){ ymax=0; ymin=Math.min(ymin,-0.001); }
+    var yp=(ymax-ymin)*0.08||0.01; ymin-=yp; if(mode!=='dd') ymax+=yp;
+    function X(i){ return padL+i/(n-1)*(W-padL-padR); }
+    function Y(v){ return H-padB-(v-ymin)/(ymax-ymin)*(H-padT-padB); }
+    var line=arr.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
+    var gid='bt'+Math.round(Math.random()*1e6);
+    var grid=''; for(var k=0;k<=3;k++){ var gy=Math.round(padT+(H-padT-padB)*k/3)+0.5, yv=ymax-(ymax-ymin)*k/3; grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e9ebf0" stroke-width="1" shape-rendering="crispEdges"/><text x="'+(padL-8)+'" y="'+(gy+3.5)+'" font-size="9.5" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+(mode==='eq'?yv.toFixed(2)+'x':(yv*100).toFixed(0)+'%')+'</text>'; }
+    var baseY=mode==='dd'?Y(0):(H-padB), areaP=line+' L'+X(n-1).toFixed(1)+','+baseY.toFixed(1)+' L'+X(0).toFixed(1)+','+baseY.toFixed(1)+' Z';
+    var last=arr[n-1], lastLbl=mode==='eq'?last.toFixed(2)+'x':(last*100).toFixed(1)+'%';
+    var mk=''; if(mode==='dd'){ var mi=0; for(var z=1;z<n;z++) if(arr[z]<arr[mi]) mi=z; mk='<circle cx="'+X(mi).toFixed(1)+'" cy="'+Y(arr[mi]).toFixed(1)+'" r="3.2" fill="#fff" stroke="#d6453d" stroke-width="1.5"/><text x="'+X(mi).toFixed(1)+'" y="'+(Y(arr[mi])+13).toFixed(1)+'" font-size="9" fill="#d6453d" text-anchor="middle" font-family="Geist Mono,monospace">'+(arr[mi]*100).toFixed(1)+'%</text>'; }
+    host.innerHTML='<div class="cchart-cap">'+cap+'</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg"><defs><linearGradient id="'+gid+'" x1="0" y1="'+(mode==='dd'?'1':'0')+'" x2="0" y2="'+(mode==='dd'?'0':'1')+'"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.2"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+grid+'<path d="'+areaP+'" fill="url(#'+gid+')"/>'+(mode==='dd'?'<line x1="'+padL+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-padR)+'" y2="'+Y(0).toFixed(1)+'" stroke="#c7cbd6" stroke-width="1"/>':'')+'<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'+mk+'<circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="5" fill="#fff"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3" fill="'+color+'"/><text x="'+(W-padR+5)+'" y="'+(Y(last)+3.5).toFixed(1)+'" font-size="9.5" fill="'+color+'" font-family="Geist Mono,monospace">'+lastLbl+'</text></svg>';
   }
-  area(eqHost,bt.equity,'#1a1c22',false);
-  area(ddHost,bt.drawdown,'#e0483d',true);
+  area(eqHost,bt.equity,'#14161c','eq','Portfolio equity · growth of $1');
+  area(ddHost,bt.drawdown,'#d6453d','dd','Drawdown (underwater) · % below prior peak');
   met.innerHTML=
     '<div class="r"><div class="rl">Total return</div><div class="rv '+(bt.totalReturn>=0?'up':'down')+'">'+pct(bt.totalReturn,1)+'</div></div>'+
     '<div class="r"><div class="rl">Ann. return</div><div class="rv">'+pct(bt.annReturn,1)+'</div></div>'+
