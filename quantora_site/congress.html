@@ -166,7 +166,7 @@ function buildTop(){
   $('toptk').innerHTML=tkArr.map(function(o,i){return barRow(i+1,'<a href="/stock/'+esc(o.k)+'">'+esc(o.k)+'</a>',o.v,tkMx);}).join('')||'<div class="muted">No tickers.</div>';
   var mbArr=Object.keys(mem).map(function(k){return {k:k,v:mem[k]};}).sort(function(x,y){return y.v.n-x.v.n;}).slice(0,8);
   var mbMx=mbArr.length?mbArr[0].v.n:1;
-  $('topmb').innerHTML=mbArr.map(function(o,i){return barRow(i+1,esc(cap(o.k,17))+' <span class="mch">'+(o.v.ch==='senate'?'Sen':'Rep')+'</span>',o.v,mbMx);}).join('')||'<div class="muted">No members.</div>';
+  $('topmb').innerHTML=mbArr.map(function(o,i){return barRow(i+1,esc(cap(o.k,17))+' <span class="mch">'+(o.v.ch==='senate'?'Sen':'House')+'</span>',o.v,mbMx);}).join('')||'<div class="muted">No members.</div>';
 
   $('panels').style.display=''; $('panels2').style.display=''; $('filters').style.display='';
 }
