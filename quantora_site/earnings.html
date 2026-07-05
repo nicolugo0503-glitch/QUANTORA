@@ -1,0 +1,136 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Earnings Calendar - upcoming reports, estimates &amp; surprises | Quantora</title>
+<meta name="description" content="The market's earnings calendar: which companies report when, the EPS and revenue estimates going in, and how recent reports landed versus expectations - beats and misses. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/earnings.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1020px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:710px;margin:0 0 8px}
+.updated{font-size:12px;color:#9aa1ad;font-family:Geist Mono,monospace;margin:2px 0 16px}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:15px 17px;font-size:14px;margin-top:18px;line-height:1.55}.state b{color:#5c4410}.state code{background:rgba(17,24,39,.06);border-radius:5px;padding:1px 6px;font-size:12.5px}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:6px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:19px;margin-top:4px;font-variant-numeric:tabular-nums}
+.cv.pos{color:#0f9d63}.cv.neg{color:#d6453d}
+.tbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}
+.tbar h3{font-size:15px;font-weight:600;margin:0}.tbar .cnt{font-size:11.5px;color:#9aa1ad;font-family:Geist Mono,monospace}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.seg{display:inline-flex;background:#eef0f3;border-radius:9px;padding:2px}
+.seg button{border:0;background:transparent;font:500 12.5px Geist;color:#6a7180;padding:6px 12px;border-radius:7px;cursor:pointer}
+.seg button.on{background:#fff;color:#14161c;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+.filters input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:8px 11px;font:inherit;font-size:13.5px;background:#fff;min-width:180px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;font-weight:500;text-align:right;padding:8px;border-bottom:1px solid rgba(17,24,39,.1);white-space:nowrap;position:sticky;top:0;background:#f7f8fa}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+td{padding:8px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace;white-space:nowrap}
+td.sym a{color:#635bff;text-decoration:none;font-weight:600}td.sym a:hover{text-decoration:underline}
+.tm{display:inline-block;font-size:9.5px;font-weight:600;font-family:Geist,sans-serif;padding:1px 6px;border-radius:5px;background:rgba(17,24,39,.06);color:#6a7180}
+.tm.bmo{background:rgba(214,110,40,.12);color:#c2410c}.tm.amc{background:rgba(99,91,255,.1);color:#635bff}
+.res{display:inline-block;min-width:48px;text-align:center;padding:2px 7px;border-radius:6px;font-size:10.5px;font-weight:600;font-family:Geist,sans-serif}
+.res.beat{background:rgba(15,157,99,.12);color:#0f9d63}.res.miss{background:rgba(214,69,61,.12);color:#d6453d}.res.inline{background:rgba(17,24,39,.06);color:#6a7180}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.muted{color:#9aa1ad;font-size:13.5px;padding:14px 0}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:710px;margin-top:26px}.body b{color:#14161c}
+.foot{margin-top:28px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+.xlink{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.xlink a{border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:20px;padding:6px 13px;font-size:12.5px;color:#3a4150;text-decoration:none}
+.xlink a:hover{border-color:rgba(99,91,255,.5);color:#635bff}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Research</div>
+<h1>Earnings Calendar</h1>
+<p class="lead">Earnings are the market's biggest scheduled catalyst. See which companies report and when, the EPS and revenue estimates going in, and - for reports that already landed - how the actual numbers stacked up against expectations.</p>
+<div class="updated" id="updated"><span class="spin"></span>Loading the calendar&hellip;</div>
+<div id="cells"></div>
+<div class="tbar"><h3 id="secTitle">Upcoming reports</h3><span class="cnt" id="cnt"></span></div>
+<div class="filters" id="filters" style="display:none">
+  <div class="seg" id="segView"><button data-v="up" class="on">Upcoming</button><button data-v="done">Recent results</button></div>
+  <input id="q" placeholder="Filter by ticker&hellip;">
+</div>
+<div id="tbl"><div class="muted"><span class="spin"></span>Loading&hellip;</div></div>
+<div class="xlink">
+  <a href="/ratings.html">Analyst ratings &rarr;</a>
+  <a href="/insider.html">Insider trades &rarr;</a>
+  <a href="/intel.html">Full equity intelligence &rarr;</a>
+</div>
+<div class="body">The number that moves a stock on earnings day is rarely the headline EPS - it's the <b>surprise</b>, how far the result lands from what analysts modelled, plus the forward guidance management gives. A company can beat and still fall if the beat was already priced in, or miss and rally if guidance is strong. Use the estimates here as the bar the market has set, watch the <b>before-open</b> versus <b>after-close</b> timing so you know when a name will move, and treat the beat/miss tags as a starting point, not the whole story.</div>
+<div class="foot">Earnings dates, estimates and actuals via Finnhub, covering US-listed companies; figures may be delayed or revised. Timing (before open / after close) is as reported by the provider. For information and education only - not investment advice or a recommendation to buy or sell any security.</div>
+</div>
+<script>
+var $=function(id){return document.getElementById(id);};
+function api(from,to){var q='/api/fmp?type=fh&path='+encodeURIComponent('calendar/earnings')+'&from='+from+'&to='+to;return fetch(q).then(function(r){return r.json();});}
+function esc(s){return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function nf(x,d){return (x==null||isNaN(x))?'-':Number(x).toLocaleString(undefined,{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d});}
+function bn(x){if(x==null||isNaN(x))return '-';var a=Math.abs(x);if(a>=1e9)return '$'+(x/1e9).toFixed(2)+'B';if(a>=1e6)return '$'+(x/1e6).toFixed(0)+'M';if(a>=1e3)return '$'+(x/1e3).toFixed(0)+'K';return '$'+Math.round(x);}
+function ymd(dt){return dt.toISOString().slice(0,10);}
+function calArr(j){if(!j||!j.data)return [];var d=j.data;if(Array.isArray(d))return d;if(d.earningsCalendar&&Array.isArray(d.earningsCalendar))return d.earningsCalendar;return [];}
+
+var UP=[], DONE=[], fView='up', fQ='';
+
+var today=new Date();
+var to=new Date(today.getTime()+14*86400000), from=new Date(today.getTime()-7*86400000);
+Promise.all([ api(ymd(today),ymd(to)), api(ymd(from),ymd(today)) ]).then(function(res){
+  var upRaw=res[0], doRaw=res[1];
+  if((upRaw&&upRaw.error==='nokey')||(doRaw&&doRaw.error==='nokey')){ connectKey(); return; }
+  var todayStr=ymd(today);
+  UP=calArr(upRaw).filter(function(e){return e.symbol&&e.epsActual==null&&(e.date>=todayStr);}).sort(function(a,b){return (a.date||'').localeCompare(b.date||'')||(a.symbol||'').localeCompare(b.symbol||'');});
+  DONE=calArr(doRaw).filter(function(e){return e.symbol&&e.epsActual!=null;}).sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||(a.symbol||'').localeCompare(b.symbol||'');});
+  if(!UP.length&&!DONE.length){ $('updated').innerHTML='No earnings found for the current window. Please try again shortly.'; $('tbl').innerHTML='<div class="muted">No earnings returned.</div>'; return; }
+  buildCells(); wire(); render();
+  $('updated').innerHTML=UP.length.toLocaleString()+' upcoming &middot; '+DONE.length.toLocaleString()+' recent results &middot; US-listed &middot; via Finnhub';
+}).catch(function(){ $('updated').innerHTML='Earnings feed is temporarily unavailable. Please try again shortly.'; $('tbl').innerHTML='<div class="muted">Could not load the earnings calendar.</div>'; });
+
+function connectKey(){
+  $('updated').innerHTML='';
+  $('tbl').innerHTML='<div class="state">This page is ready - it just needs a data key. <b>The earnings calendar runs on Finnhub\'s free API</b> - the same key that powers Analyst Ratings. To switch it on: create a free key at <b>finnhub.io</b> (no credit card), then add it in Vercel &rarr; your Quantora project &rarr; Settings &rarr; Environment Variables as <code>FINNHUB_KEY</code> and redeploy. The calendar will populate automatically.</div>';
+}
+
+function buildCells(){
+  var beats=DONE.filter(function(e){return e.epsActual>e.epsEstimate;}).length;
+  var miss=DONE.filter(function(e){return e.epsActual<e.epsEstimate;}).length;
+  var surs=DONE.map(function(e){return (e.epsEstimate&&e.epsActual!=null)?((e.epsActual-e.epsEstimate)/Math.abs(e.epsEstimate)*100):null;}).filter(function(v){return v!=null&&isFinite(v);});
+  var avg=surs.length?(surs.reduce(function(s,v){return s+v;},0)/surs.length):null;
+  $('cells').innerHTML=
+    cell('Upcoming',UP.length.toLocaleString(),'')+
+    cell('Reported',DONE.length.toLocaleString(),'')+
+    cell('Beats',beats.toLocaleString(),'pos')+
+    cell('Misses',miss.toLocaleString(),'neg')+
+    cell('Avg surprise',avg==null?'-':((avg>=0?'+':'')+nf(avg,1)+'%'),avg==null?'':(avg>=0?'pos':'neg'));
+  $('cells').className='cr';
+  $('filters').style.display='';
+}
+function cell(l,v,cls){return '<div class="cell"><div class="cl">'+l+'</div><div class="cv '+(cls||'')+'">'+v+'</div></div>';}
+
+function wire(){
+  $('segView').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var ps=this.querySelectorAll('button');for(var i=0;i<ps.length;i++)ps[i].className='';b.className='on';fView=b.getAttribute('data-v');$('secTitle').textContent=fView==='up'?'Upcoming reports':'Recent results';render();});
+  $('q').addEventListener('input',function(){fQ=this.value.trim().toUpperCase();render();});
+}
+
+function render(){
+  var src=(fView==='up'?UP:DONE).filter(function(e){return !fQ||(e.symbol||'').toUpperCase().indexOf(fQ)>=0;});
+  $('cnt').textContent=src.length.toLocaleString()+(src.length>250?' Â· showing 250':'');
+  if(!src.length){$('tbl').innerHTML='<div class="muted">No earnings match that filter.</div>';return;}
+  var rows=src.slice(0,250).map(function(e){
+    var tm=(e.hour||'').toLowerCase();
+    var tmL=tm==='bmo'?'<span class="tm bmo">Pre</span>':(tm==='amc'?'<span class="tm amc">Post</span>':(tm?'<span class="tm">'+esc(e.hour)+'</span>':'-'));
+    var sym='<a href="/stock/'+esc(e.symbol)+'">'+esc(e.symbol)+'</a>';
+    if(fView==='up'){
+      return '<tr><td class="l">'+esc(e.date||'-')+'</td><td class="sym l">'+sym+'</td><td class="l">'+tmL+'</td><td>'+(e.epsEstimate!=null?nf(e.epsEstimate,2):'-')+'</td><td>'+(e.revenueEstimate!=null?bn(e.revenueEstimate):'-')+'</td><td>Q'+(e.quarter||'-')+' '+(e.year||'')+'</td></tr>';
+    } else {
+      var beat=(e.epsEstimate!=null&&e.epsActual!=null)?(e.epsActual>e.epsEstimate?'beat':(e.epsActual<e.epsEstimate?'miss':'inline')):'inline';
+      var sur=(e.epsEstimate&&e.epsActual!=null)?((e.epsActual-e.epsEstimate)/Math.abs(e.epsEstimate)*100):null;
+      var bl=beat==='beat'?'Beat':(beat==='miss'?'Miss':'In line');
+      return '<tr><td class="l">'+esc(e.date||'-')+'</td><td class="sym l">'+sym+'</td><td>'+(e.epsActual!=null?nf(e.epsActual,2):'-')+'</td><td>'+(e.epsEstimate!=null?nf(e.epsEstimate,2):'-')+'</td><td class="'+(sur!=null?(sur>=0?'':''):'')+'">'+(sur!=null?((sur>=0?'+':'')+nf(sur,1)+'%'):'-')+'</td><td class="l"><span class="res '+beat+'">'+bl+'</span></td></tr>';
+    }
+  }).join('');
+  var head=fView==='up'
+    ? '<tr><th class="l">Date</th><th class="l">Ticker</th><th class="l">When</th><th>EPS est</th><th>Rev est</th><th class="l">Period</th></tr>'
+    : '<tr><th class="l">Date</th><th class="l">Ticker</th><th>EPS actual</th><th>EPS est</th><th>Surprise</th><th class="l">Result</th></tr>';
+  $('tbl').innerHTML='<table><thead>'+head+'</thead><tbody>'+rows+'</tbody></table>';
+}
+</script>
+</body></html>
