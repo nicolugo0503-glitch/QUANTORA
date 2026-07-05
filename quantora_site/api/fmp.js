@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
   };
   const build = MAP[type];
   if (!build) { res.status(200).json({ error: 'badtype' }); return; }
-  try { const path = build(); const sep = path.indexOf('?') >= 0 ? '&' : '?'; const r = await fetch('https://financialmodelingprep.com/stable/' + path + sep + 'apikey=' + KEY); let j = await r.json(); if(type==='prices'){ let arr=Array.isArray(j)?j:((j&&j.historical)||[]); if(arr.length<30 && process.env.TWELVEDATA_KEY){ const td=await fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(sym)+'&interval=1day&outputsize=1300&apikey='+process.env.TWELVEDATA_KEY).then(function(x){return x.json();}).catch(function(){return null;}); if(td&&td.values&&td.values.length){ j=td.values.map(function(v){return {date:v.datetime, price:parseFloat(v.close)};}); } } } res.status(200).json({ data: j }); }
+  try { const path = build(); const sep = path.indexOf('?') >= 0 ? '&' : '?'; const r = await fetch('https://financialmodelingprep.com/stable/' + path + sep + 'apikey=' + KEY); let j = await r.json(); if(type==='prices'){ let arr=Array.isArray(j)?j:((j&&j.historical)||[]); if(arr.length<30 && process.env.TWELVEDATA_KEY){ const td=await fetch('https://api.twelvedata.com/time_series?symbol='+encodeURIComponent(sym)+'&interval=1day&outputsize=1300&apikey='+process.env.TWELVEDATA_KEY).then(function(x){return x.json();}).catch(function(){return null;}); if(td&&td.values&&td.values.length){ j=td.values.map(function(v){return {date:v.datetime, price:parseFloat(v.close)};}); } } } res.setHeader('Cache-Control','public, s-maxage=30, stale-while-revalidate=90'); res.status(200).json({ data: j }); }
   catch (e) { res.status(200).json({ error: 'feed' }); }
 };
 
