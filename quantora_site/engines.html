@@ -2118,15 +2118,18 @@ function drawStress(){
     .map(function(a){return {name:(a[0]||'').trim(),cls:(a[1]||'').trim(),value:parseFloat(a[2])};});
   if(!pos.length){ document.getElementById('ss_chart').innerHTML='<span style="color:var(--mut);font-size:12.5px">Enter positions.</span>'; document.getElementById('ss_metrics').innerHTML=''; return; }
   var res=SCENARIOS.map(function(sc){ var r=Q.stressTest(pos,sc.r); return {name:sc.name, pnl:r.pnl, pct:r.pnlPct}; });
-  var W=560,H=235,padL=120,padR=82,padV=14, n=res.length, rowH=(H-2*padV)/n;
+  res.sort(function(a,b){return a.pct-b.pct;});
+  var W=720,H=Math.max(200,res.length*34+52),padL=152,padR=92,padT=34,padB=14, n=res.length, rowH=(H-padT-padB)/n;
   var mx=Math.max.apply(null,res.map(function(r){return Math.abs(r.pct);}))||0.01;
-  var zeroX=padL+(W-padL-padR)*0.5;
-  function bw(pct){ return (pct/mx)*((W-padL-padR)/2); }
-  var bars=res.map(function(r,i){ var y=padV+i*rowH+rowH*0.18, h=rowH*0.64; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#e0483d':'#0a9d63'; var ty=(y+h*0.72).toFixed(1);
-    return '<text x="'+(padL-10)+'" y="'+ty+'" font-size="11" fill="#5f6672" text-anchor="end">'+r.name+'</text>'+
-      '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.abs(w).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="0.78" rx="2"/>'+
+  var plotL=padL, plotR=W-padR, zeroX=plotL+(plotR-plotL)*0.5;
+  function bw(pct){ return (pct/mx)*((plotR-plotL)/2); }
+  var grid=''; [-mx,-mx/2,0,mx/2,mx].forEach(function(gv){ var gx=zeroX+bw(gv); grid+='<line x1="'+gx.toFixed(1)+'" y1="'+padT+'" x2="'+gx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="'+(gv===0?'#8a90a2':'#eceef2')+'" stroke-width="'+(gv===0?'1.25':'1')+'" shape-rendering="crispEdges"/><text x="'+gx.toFixed(1)+'" y="'+(padT-8)+'" font-size="9" fill="#9aa1ad" text-anchor="middle" font-family="Geist Mono,monospace">'+(gv>0?'+':'')+(gv*100).toFixed(0)+'%</text>'; });
+  var worstR=res[0];
+  var bars=res.map(function(r,i){ var y=padT+i*rowH+rowH*0.2, h=rowH*0.6; var w=bw(r.pct); var x=w<0?zeroX+w:zeroX; var col=r.pct<0?'#d6453d':'#0f9d63'; var ty=(y+h*0.72).toFixed(1); var isW=(r===worstR);
+    return '<text x="'+(plotL-12)+'" y="'+ty+'" font-size="11" fill="'+(isW?'#d6453d':'#3a4150')+'" font-weight="'+(isW?'600':'400')+'" text-anchor="end" font-family="Geist,sans-serif">'+r.name+'</text>'+
+      '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.max(0.5,Math.abs(w)).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'" opacity="'+(isW?0.95:0.72)+'" rx="2.5"/>'+
       '<text x="'+(W-8)+'" y="'+ty+'" font-size="10.5" fill="'+col+'" text-anchor="end" font-variant-numeric="tabular-nums" font-family="Geist Mono,monospace">'+(r.pct>=0?'+':'')+(r.pct*100).toFixed(1)+'%</text>'; }).join('');
-  document.getElementById('ss_chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><line x1="'+zeroX+'" y1="'+padV+'" x2="'+zeroX+'" y2="'+(H-padV)+'" stroke="rgba(15,17,22,0.10)"/>'+bars+'</svg>';
+  document.getElementById('ss_chart').innerHTML='<div class="o-cap">Scenario stress test · portfolio P&amp;L under each shock — worst on top</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg">'+grid+bars+'</svg>';
   var worst=res.reduce(function(a,b){return b.pct<a.pct?b:a;});
   var tot=pos.reduce(function(a,b){return a+b.value;},0);
   document.getElementById('ss_metrics').innerHTML=
