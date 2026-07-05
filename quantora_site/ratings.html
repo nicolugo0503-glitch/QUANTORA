@@ -1,0 +1,180 @@
+<!doctype html><html lang="en"><head>
+<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analyst Ratings - consensus, price targets &amp; upgrades | Quantora</title>
+<meta name="description" content="Wall Street analyst consensus on any stock: buy/hold/sell recommendation trend, consensus price target and implied upside, and recent upgrades and downgrades. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/ratings.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
+.sw{max-width:1000px;margin:0 auto;padding:30px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
+h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
+.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:700px;margin:0 0 18px}
+.ci{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:5px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
+.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:15px;background:#fff;width:150px;text-transform:uppercase}
+.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
+.run:disabled{opacity:.55;cursor:default}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:20px;padding:5px 12px;font-size:12.5px;color:#3a4150;cursor:pointer;text-decoration:none}
+.chip:hover{border-color:rgba(99,91,255,.5);color:#635bff}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:15px 17px;font-size:14px;margin-top:18px;line-height:1.55}
+.state b{color:#5c4410}
+.state code{background:rgba(17,24,39,.06);border-radius:5px;padding:1px 6px;font-size:12.5px}
+.hd{display:flex;align-items:baseline;gap:10px;margin-top:20px;flex-wrap:wrap}.hd h2{font-size:20px;font-weight:600;margin:0}.hd .px{font-family:Geist Mono,monospace;font-size:14px;color:#6a7180}
+.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:12px}
+.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
+.cv.pos{color:#0f9d63}.cv.neg{color:#d6453d}.cv .sub{font-family:Geist,sans-serif;font-size:11px;color:#9aa1ad;font-weight:400}
+.cons{font-family:Geist,sans-serif;font-weight:600}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:16px 18px;margin-top:16px}.card h3{font-size:13px;font-weight:600;margin:0 0 3px}.card .cap{font-size:11.5px;color:#9aa1ad;margin:0 0 13px}
+.trend{display:flex;flex-direction:column;gap:8px}
+.trow{display:flex;align-items:center;gap:10px;font-size:12px}
+.trow .mo{width:64px;flex:none;color:#6a7180;font-family:Geist Mono,monospace;font-size:11px}
+.trow .stack{flex:1;height:18px;border-radius:5px;overflow:hidden;display:flex;background:#f3f4f6}
+.trow .seg{height:100%}
+.sb{background:#0f7a4d}.b{background:#3cc98a}.h{background:#c3c7d0}.s{background:#e88a84}.ss{background:#c0392b}
+.trow .tot{width:26px;flex:none;text-align:right;font-family:Geist Mono,monospace;color:#6a7180}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#6a7180;margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:5px}.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.ptbar{position:relative;height:44px;margin:20px 6px 8px}
+.ptline{position:absolute;top:22px;left:0;right:0;height:3px;background:linear-gradient(90deg,#d6453d,#c3c7d0,#0f9d63);border-radius:2px}
+.ptmark{position:absolute;top:12px;width:2px;height:22px;background:#14161c}
+.ptmark.cur{background:#635bff;height:30px;top:8px}
+.ptlab{position:absolute;top:-4px;font-size:10.5px;font-family:Geist Mono,monospace;transform:translateX(-50%);white-space:nowrap}
+.ptlab.cur{color:#635bff;top:32px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;font-weight:500;text-align:left;padding:8px;border-bottom:1px solid rgba(17,24,39,.1);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid rgba(17,24,39,.05);font-family:Geist,sans-serif;white-space:nowrap}
+td.mono{font-family:Geist Mono,monospace;font-variant-numeric:tabular-nums;color:#6a7180}
+.act{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600}
+.act.up{background:rgba(15,157,99,.12);color:#0f9d63}.act.down{background:rgba(214,69,61,.12);color:#d6453d}.act.same{background:rgba(17,24,39,.06);color:#6a7180}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+.muted{color:#9aa1ad;font-size:13.5px;padding:12px 0}
+.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:26px}.body b{color:#14161c}
+.foot{margin-top:28px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
+.xlink{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.xlink a{border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:20px;padding:6px 13px;font-size:12.5px;color:#3a4150;text-decoration:none}
+.xlink a:hover{border-color:rgba(99,91,255,.5);color:#635bff}
+</style><script src="/nav.js" defer></script></head>
+<body><div id="qnav"></div><div class="sw">
+<div class="eyb">Quantora &middot; Research</div>
+<h1>Analyst Ratings</h1>
+<p class="lead">What Wall Street thinks of any stock, on one screen: the buy / hold / sell recommendation trend over recent months, the consensus price target and the upside it implies, and the latest broker upgrades and downgrades.</p>
+<div class="ci">
+<div class="fld"><label>Ticker</label><input id="sym" value="AAPL"></div>
+<button class="run" id="run">Load ratings</button>
+</div>
+<div class="chips" id="chips"></div>
+<div id="out"><div class="muted"><span class="spin"></span>Loading&hellip;</div></div>
+<div class="body">Analyst ratings are a useful sentiment gauge, not a crystal ball. A wall of "buy" ratings can mean genuine conviction - or a crowded trade that has little room left to surprise. The most information often sits in the <b>changes</b>: an upgrade or downgrade, or a moved price target, is a fresh opinion, while a long-standing rating is old news. Compare the consensus <b>price target</b> to where the stock trades now to see how much upside the Street is modelling, and watch when several firms move the same way at once. Ratings here are aggregated across covering analysts and update as new notes are published.</div>
+<div class="xlink">
+  <a href="/insider.html">Insider trades (Form 4) &rarr;</a>
+  <a href="/congress.html">Congressional trades &rarr;</a>
+  <a href="/intel.html">Full equity intelligence &rarr;</a>
+</div>
+<div class="foot">Analyst data via Finnhub. Recommendation trends, consensus price targets and upgrade/downgrade actions are aggregated across covering analysts and may be delayed. Current price via Quantora's market feed. For information and education only - not investment advice or a recommendation to buy or sell any security.</div>
+</div>
+<script>
+var $=function(id){return document.getElementById(id);};
+function api(path,sym){var q='/api/fmp?type=fh&path='+encodeURIComponent(path)+(sym?('&symbol='+encodeURIComponent(sym)):'');return fetch(q).then(function(r){return r.json();});}
+function arr(j){return j&&Array.isArray(j.data)?j.data:(Array.isArray(j)?j:[]);}
+function obj(j){return j&&j.data&&!Array.isArray(j.data)?j.data:{};}
+function nf(x,d){return (x==null||isNaN(x))?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:d==null?2:d});}
+function esc(s){return (s==null?'':''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+var CHIPS=['AAPL','NVDA','TSLA','MSFT','AMZN','META','GOOGL'];
+function drawChips(){$('chips').innerHTML=CHIPS.map(function(t){return '<a class="chip" href="#" data-t="'+t+'">'+t+'</a>';}).join('');}
+
+function connectKey(){
+  $('out').innerHTML='<div class="state">This page is ready - it just needs a data key. <b>Analyst ratings run on Finnhub\'s free API.</b> To switch it on: create a free key at <b>finnhub.io</b> (no credit card), then add it in Vercel &rarr; your Quantora project &rarr; Settings &rarr; Environment Variables as <code>FINNHUB_KEY</code> and redeploy. Everything on this page will light up automatically - recommendation trends, price targets and upgrades - with no further changes.</div>';
+}
+
+function consensus(r){
+  if(!r) return {label:'-',cls:''};
+  var score=(r.strongBuy*2+r.buy*1+r.hold*0+r.sell*-1+r.strongSell*-2);
+  var tot=(r.strongBuy+r.buy+r.hold+r.sell+r.strongSell)||1;
+  var avg=score/tot;
+  if(avg>=1.1) return {label:'Strong Buy',cls:'pos'};
+  if(avg>=0.4) return {label:'Buy',cls:'pos'};
+  if(avg>-0.4) return {label:'Hold',cls:''};
+  if(avg>-1.1) return {label:'Sell',cls:'neg'};
+  return {label:'Strong Sell',cls:'neg'};
+}
+
+function load(sym){
+  sym=(sym||'AAPL').toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+  $('out').innerHTML='<div class="muted"><span class="spin"></span>Loading '+esc(sym)+'&hellip;</div>';
+  Promise.all([
+    api('stock/recommendation',sym),
+    api('stock/price-target',sym),
+    api('stock/upgrade-downgrade',sym),
+    fetch('/api/fmp?type=quote&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).catch(function(){return null;})
+  ]).then(function(res){
+    var reco=res[0],pt=res[1],ud=res[2],q=res[3];
+    if((reco&&reco.error==='nokey')||(pt&&pt.error==='nokey')){ connectKey(); return; }
+    var recoArr=arr(reco), ptO=obj(pt), udArr=arr(ud);
+    var price=(q&&q.data&&q.data[0]&&(q.data[0].price!=null))?q.data[0].price:null;
+    render(sym,recoArr,ptO,udArr,price);
+  }).catch(function(){ $('out').innerHTML='<div class="muted">Could not load analyst data. Please try again.</div>'; });
+}
+
+function render(sym,recoArr,pt,udArr,price){
+  if((!recoArr||!recoArr.length)&&(!pt||pt.targetMean==null)&&(!udArr||!udArr.length)){
+    $('out').innerHTML='<div class="hd"><h2>'+esc(sym)+'</h2></div><div class="muted">No analyst coverage found for this ticker.</div>'; return;
+  }
+  var latest=recoArr&&recoArr.length?recoArr[0]:null;
+  var con=consensus(latest);
+  var nAn=latest?(latest.strongBuy+latest.buy+latest.hold+latest.sell+latest.strongSell):null;
+  var tgt=pt&&pt.targetMean!=null?pt.targetMean:null;
+  var upside=(tgt!=null&&price)?((tgt-price)/price*100):null;
+  var html='<div class="hd"><h2>'+esc(sym)+'</h2>'+(price!=null?'<span class="px">$'+nf(price,2)+'</span>':'')+'</div>';
+  html+='<div class="cr">'+
+    cell('Consensus','<span class="cons '+con.cls+'">'+con.label+'</span>')+
+    cell('Analysts',nAn!=null?nAn:'-')+
+    cell('Price target',tgt!=null?('$'+nf(tgt,2)):'-')+
+    cell('Implied upside',upside!=null?('<span class="'+(upside>=0?'pos':'neg')+'">'+(upside>=0?'+':'')+nf(upside,1)+'%</span>'):'-')+
+    cell('Target range',(pt&&pt.targetLow!=null&&pt.targetHigh!=null)?('$'+nf(pt.targetLow,0)+' - $'+nf(pt.targetHigh,0)):'-')+
+  '</div>';
+
+  if(recoArr&&recoArr.length){
+    var rows=recoArr.slice(0,8).map(function(r){
+      var tot=(r.strongBuy+r.buy+r.hold+r.sell+r.strongSell)||1;
+      function seg(v,c){return v?'<div class="seg '+c+'" style="width:'+(v/tot*100)+'%"></div>':'';}
+      var mo=(r.period||'').slice(0,7);
+      return '<div class="trow"><div class="mo">'+esc(mo)+'</div><div class="stack">'+seg(r.strongBuy,'sb')+seg(r.buy,'b')+seg(r.hold,'h')+seg(r.sell,'s')+seg(r.strongSell,'ss')+'</div><div class="tot">'+tot+'</div></div>';
+    }).join('');
+    html+='<div class="card"><h3>Recommendation trend</h3><p class="cap">Analyst ratings by month, newest first</p><div class="trend">'+rows+'</div>'+
+      '<div class="legend"><span><i class="sb"></i>Strong buy</span><span><i class="b"></i>Buy</span><span><i class="h"></i>Hold</span><span><i class="s"></i>Sell</span><span><i class="ss"></i>Strong sell</span></div></div>';
+  }
+
+  if(pt&&pt.targetLow!=null&&pt.targetHigh!=null){
+    var lo=pt.targetLow,hi=pt.targetHigh,rng=(hi-lo)||1;
+    function pos(v){return Math.max(0,Math.min(100,(v-lo)/rng*100));}
+    var marks='';
+    marks+='<div class="ptmark" style="left:'+pos(lo)+'%"></div><div class="ptlab" style="left:'+pos(lo)+'%">Low $'+nf(lo,0)+'</div>';
+    if(pt.targetMean!=null){marks+='<div class="ptmark" style="left:'+pos(pt.targetMean)+'%"></div><div class="ptlab" style="left:'+pos(pt.targetMean)+'%">Avg $'+nf(pt.targetMean,0)+'</div>';}
+    marks+='<div class="ptmark" style="left:'+pos(hi)+'%"></div><div class="ptlab" style="left:'+pos(hi)+'%">High $'+nf(hi,0)+'</div>';
+    if(price!=null){marks+='<div class="ptmark cur" style="left:'+pos(price)+'%"></div><div class="ptlab cur" style="left:'+pos(price)+'%">Now $'+nf(price,0)+'</div>';}
+    html+='<div class="card"><h3>Price target range</h3><p class="cap">Where the current price sits within analyst targets</p><div class="ptbar"><div class="ptline"></div>'+marks+'</div></div>';
+  }
+
+  if(udArr&&udArr.length){
+    var trows=udArr.slice(0,12).map(function(u){
+      var a=(u.action||'').toLowerCase();var cls=a.indexOf('up')>=0?'up':(a.indexOf('down')>=0?'down':'same');
+      var dt=u.gradeTime?new Date(u.gradeTime*1000).toISOString().slice(0,10):'';
+      return '<tr><td class="mono">'+esc(dt)+'</td><td>'+esc(u.company||'')+'</td><td>'+esc(u.fromGrade||'-')+' &rarr; <b>'+esc(u.toGrade||'-')+'</b></td><td><span class="act '+cls+'">'+esc(u.action||'')+'</span></td></tr>';
+    }).join('');
+    html+='<div class="card"><h3>Recent upgrades &amp; downgrades</h3><p class="cap">Latest broker rating changes</p><table><thead><tr><th>Date</th><th>Firm</th><th>Change</th><th>Action</th></tr></thead><tbody>'+trows+'</tbody></table></div>';
+  }
+
+  $('out').innerHTML=html;
+}
+function cell(l,v){return '<div class="cell"><div class="cl">'+l+'</div><div class="cv">'+v+'</div></div>';}
+
+drawChips();
+$('run').addEventListener('click',function(){load($('sym').value);});
+$('sym').addEventListener('keydown',function(e){if(e.key==='Enter')load(this.value);});
+$('chips').addEventListener('click',function(e){var a=e.target.closest('.chip');if(!a)return;e.preventDefault();$('sym').value=a.getAttribute('data-t');load(a.getAttribute('data-t'));});
+load('AAPL');
+</script>
+</body></html>
