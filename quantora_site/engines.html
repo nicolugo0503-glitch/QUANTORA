@@ -2396,14 +2396,22 @@ function drawVSGrid(){
   var ks=[-0.2,-0.1,0,0.1,0.2], mats=[0.08,0.25,0.5,1,2];
   var g=Q.volSurfaceGrid(skew,curv,sh,lg,lam,ks,mats);
   var flat=[]; g.forEach(function(r){r.forEach(function(x){flat.push(x);});}); var lo=Math.min.apply(null,flat),hi=Math.max.apply(null,flat);
-  var cw=78,ch=26,padL=46,padT=20, W=padL+ks.length*cw+6, H=padT+mats.length*ch+6;
-  var matLab=['1M','3M','6M','1Y','2Y'], kLab=['-20%','-10%','ATM','+10%','+20%'];
-  var cells='';
-  for(var i=0;i<mats.length;i++){ for(var j=0;j<ks.length;j++){ var x=padL+j*cw,y=padT+i*ch;
-    cells+='<rect x="'+x+'" y="'+y+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+gridColor(g[i][j],lo,hi)+'" rx="2"/><text x="'+(x+cw/2-1)+'" y="'+(y+ch/2+3)+'" font-size="9.5" fill="#1a1c22" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(g[i][j]*100).toFixed(1)+'</text>'; }
-    cells+='<text x="'+(padL-5)+'" y="'+(padT+i*ch+ch/2+3)+'" font-size="9" fill="#5f6672" text-anchor="end">'+matLab[i]+'</text>'; }
-  for(var j2=0;j2<ks.length;j2++) cells+='<text x="'+(padL+j2*cw+cw/2)+'" y="'+(padT-6)+'" font-size="9" fill="#6b7280" text-anchor="middle">'+kLab[j2]+'</text>';
-  host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto">'+cells+'</svg>';
+  var matLab=['1M','3M','6M','1Y','2Y'], kLab=['-20%','-10%','ATM','+10%','+20%'], matCol=['#8b93ff','#635bff','#4a42d9','#0f9d63','#c2410c'];
+  function vcol(v){ var t=(v-lo)/(hi-lo||1); t=Math.max(0,Math.min(1,t)); var stops=[[238,240,251],[147,142,246],[99,91,255],[214,110,40],[214,69,61]]; var seg=t*(stops.length-1), a=Math.floor(seg), b=Math.min(stops.length-1,a+1), f=seg-a; var c=stops[a].map(function(v0,idx){return Math.round(v0+(stops[b][idx]-v0)*f);}); return 'rgb('+c[0]+','+c[1]+','+c[2]+')'; }
+  var cw=88,ch=34,padL=52,padT=26, HW=padL+ks.length*cw+8, HH=padT+mats.length*ch+8, cells='';
+  for(var i=0;i<mats.length;i++){ for(var j=0;j<ks.length;j++){ var x=padL+j*cw,y=padT+i*ch, v=g[i][j], t=(v-lo)/(hi-lo||1);
+    cells+='<rect x="'+(x+1)+'" y="'+(y+1)+'" width="'+(cw-2)+'" height="'+(ch-2)+'" fill="'+vcol(v)+'" rx="3"'+(j===2?' stroke="#14161c" stroke-opacity="0.22" stroke-width="1"':'')+'/><text x="'+(x+cw/2)+'" y="'+(y+ch/2+3.5)+'" font-size="10.5" fill="'+(t>0.55?'#fff':'#14161c')+'" text-anchor="middle" font-family="Geist Mono,monospace">'+(v*100).toFixed(1)+'</text>'; }
+    cells+='<text x="'+(padL-8)+'" y="'+(padT+i*ch+ch/2+3.5)+'" font-size="10" fill="#5c6472" text-anchor="end" font-family="Geist Mono,monospace">'+matLab[i]+'</text>'; }
+  for(var j2=0;j2<ks.length;j2++) cells+='<text x="'+(padL+j2*cw+cw/2)+'" y="'+(padT-9)+'" font-size="9.5" fill="'+(j2===2?'#635bff':'#8a90a2')+'" text-anchor="middle" font-family="Geist Mono,monospace">'+kLab[j2]+'</text>';
+  var heat='<svg viewBox="0 0 '+HW+' '+HH+'" style="width:100%;max-width:'+HW+'px;height:auto;display:block" class="qsvg">'+cells+'</svg>';
+  var SW=560,SH=176,sPadL=40,sPadR=52,sPadT=16,sPadB=26;
+  function sx(j){ return sPadL+(j/(ks.length-1))*(SW-sPadL-sPadR); }
+  function sy(v){ return SH-sPadB-(v-lo)/(hi-lo||1)*(SH-sPadT-sPadB); }
+  var sgrid=''; for(var gg=0;gg<=2;gg++){ var yy=Math.round(sPadT+(SH-sPadT-sPadB)*gg/2)+0.5, vv=hi-(hi-lo)*gg/2; sgrid+='<line x1="'+sPadL+'" y1="'+yy+'" x2="'+(SW-sPadR)+'" y2="'+yy+'" stroke="#e9ebf0" stroke-width="1" shape-rendering="crispEdges"/><text x="'+(sPadL-7)+'" y="'+(yy+3.5)+'" font-size="9.5" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+(vv*100).toFixed(0)+'</text>'; }
+  var smiles=''; for(var m=0;m<mats.length;m++){ var pts=g[m].map(function(v,j){return sx(j).toFixed(1)+','+sy(v).toFixed(1);}).join(' '); smiles+='<polyline points="'+pts+'" fill="none" stroke="'+matCol[m]+'" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" opacity="0.92"/><text x="'+(SW-sPadR+5)+'" y="'+(sy(g[m][ks.length-1])+3.5).toFixed(1)+'" font-size="9" fill="'+matCol[m]+'" font-family="Geist Mono,monospace">'+matLab[m]+'</text>'; }
+  var sxl=''; kLab.forEach(function(l,j){ sxl+='<text x="'+sx(j).toFixed(1)+'" y="'+(SH-9)+'" font-size="9.5" fill="#9aa1ad" text-anchor="middle" font-family="Geist Mono,monospace">'+l+'</text>'; });
+  var smile='<svg viewBox="0 0 '+SW+' '+SH+'" style="width:100%;height:auto;display:block;margin-top:4px" class="qsvg">'+sgrid+smiles+sxl+'</svg>';
+  host.innerHTML='<div class="o-cap">Implied vol surface (%) · moneyness × maturity — brighter = higher vol</div>'+heat+'<div class="o-cap" style="margin-top:16px">Vol smile · one line per maturity — curvature = skew, spread = term structure</div>'+smile;
 }
 ['vs_skew','vs_curv','vs_short','vs_long','vs_lam'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('input',drawVSGrid); });
 drawVSGrid();
