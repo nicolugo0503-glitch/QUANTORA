@@ -1707,27 +1707,40 @@ function readLegs(){
   return legs.filter(function(l){return l.kind&&l.qty;});
 }
 function drawPayoff(res,spot){
-  var W=520,H=240,pad=34;
+  var W=720,H=270,padL=54,padR=64,padT=22,padB=30;
   var xs=res.xs,ys=res.ys, xmin=xs[0],xmax=xs[xs.length-1];
   var ymin=Math.min(0,res.maxLoss),ymax=Math.max(0,res.maxProfit);
   if(ymax<=ymin){ymax=ymin+1;}
-  var ypad=(ymax-ymin)*0.08; ymin-=ypad; ymax+=ypad;
-  function px(x){return pad+(x-xmin)/(xmax-xmin)*(W-2*pad);}
-  function py(y){return H-pad-(y-ymin)/(ymax-ymin)*(H-2*pad);}
+  var ypad=(ymax-ymin)*0.1; ymin-=ypad; ymax+=ypad;
+  function px(x){return padL+(x-xmin)/(xmax-xmin)*(W-padL-padR);}
+  function py(y){return H-padB-(y-ymin)/(ymax-ymin)*(H-padT-padB);}
   var zeroY=py(0);
-  // split into profit/loss colored segments
-  var segs='',i;
-  for(i=1;i<xs.length;i++){
-    var c=(ys[i]>=0&&ys[i-1]>=0)?'#0a9d63':((ys[i]<0&&ys[i-1]<0)?'#e0483d':'#6b7280');
-    segs+='<line x1="'+px(xs[i-1]).toFixed(1)+'" y1="'+py(ys[i-1]).toFixed(1)+'" x2="'+px(xs[i]).toFixed(1)+'" y2="'+py(ys[i]).toFixed(1)+'" stroke="'+c+'" stroke-width="2.2"/>';
-  }
+  var line=ys.map(function(y,i){return (i?'L':'M')+px(xs[i]).toFixed(1)+','+py(y).toFixed(1);}).join(' ');
+  var area=line+' L'+px(xmax).toFixed(1)+','+zeroY.toFixed(1)+' L'+px(xmin).toFixed(1)+','+zeroY.toFixed(1)+' Z';
+  var grid='';
+  for(var k=0;k<=4;k++){ var gy=Math.round(padT+(H-padT-padB)*k/4)+0.5; var yv=ymax-(ymax-ymin)*k/4; grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e9ebf0" stroke-width="1" shape-rendering="crispEdges"/><text x="'+(padL-9)+'" y="'+(gy+3.5)+'" font-size="10.5" fill="#9aa1ad" text-anchor="end" font-family="Geist Mono,monospace">'+(yv>0?'+':'')+yv.toFixed(0)+'</text>'; }
+  var xl='';[xmin,(xmin+xmax)/2,xmax].forEach(function(xv,i){ xl+='<text x="'+px(xv).toFixed(1)+'" y="'+(H-9)+'" font-size="10.5" fill="#9aa1ad" text-anchor="'+(i===0?'start':i===2?'end':'middle')+'" font-family="Geist Mono,monospace">'+xv.toFixed(0)+'</text>'; });
   var sx=px(spot);
-  var bedots=res.breakevens.map(function(b){return '<circle cx="'+px(b).toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="3.5" fill="#635bff"/><text x="'+px(b).toFixed(1)+'" y="'+(zeroY-7).toFixed(1)+'" font-size="9" fill="#635bff" text-anchor="middle" font-family="JetBrains Mono,monospace">'+b.toFixed(1)+'</text>';}).join('');
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+
-    '<line x1="'+pad+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zeroY.toFixed(1)+'" stroke="rgba(15,17,22,0.10)" stroke-dasharray="4 4"/>'+
-    '<line x1="'+sx.toFixed(1)+'" y1="'+pad+'" x2="'+sx.toFixed(1)+'" y2="'+(H-pad)+'" stroke="#635bff" stroke-width="1" opacity="0.4"/>'+
-    '<text x="'+sx.toFixed(1)+'" y="'+(H-pad+13)+'" font-size="9" fill="#635bff" text-anchor="middle" font-family="JetBrains Mono,monospace">spot '+spot+'</text>'+
-    segs+bedots+'</svg>';
+  var be=res.breakevens.map(function(b){var bx=px(b);return '<circle cx="'+bx.toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="3.2" fill="#fff" stroke="#14161c" stroke-width="1.5"/><text x="'+bx.toFixed(1)+'" y="'+(zeroY+16).toFixed(1)+'" font-size="9.5" fill="#5c6472" text-anchor="middle" font-family="Geist Mono,monospace">'+b.toFixed(1)+'</text>';}).join('');
+  var atS=res.atSpot, atY=py(atS);
+  var svg='<div class="o-cap">Payoff at expiry — green = profit · red = loss</div><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" class="qsvg">'+
+    '<defs>'+
+    '<linearGradient id="pnlPos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0f9d63" stop-opacity="0.26"/><stop offset="100%" stop-color="#0f9d63" stop-opacity="0"/></linearGradient>'+
+    '<linearGradient id="pnlNeg" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#d6453d" stop-opacity="0.26"/><stop offset="100%" stop-color="#d6453d" stop-opacity="0"/></linearGradient>'+
+    '<clipPath id="clipPos"><rect x="'+padL+'" y="'+padT+'" width="'+(W-padL-padR)+'" height="'+(zeroY-padT).toFixed(1)+'"/></clipPath>'+
+    '<clipPath id="clipNeg"><rect x="'+padL+'" y="'+zeroY.toFixed(1)+'" width="'+(W-padL-padR)+'" height="'+(H-padB-zeroY).toFixed(1)+'"/></clipPath>'+
+    '</defs>'+
+    grid+
+    '<path d="'+area+'" fill="url(#pnlPos)" clip-path="url(#clipPos)"/>'+
+    '<path d="'+area+'" fill="url(#pnlNeg)" clip-path="url(#clipNeg)"/>'+
+    '<line x1="'+padL+'" y1="'+zeroY.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+zeroY.toFixed(1)+'" stroke="#8a90a2" stroke-width="1.25"/>'+
+    '<line x1="'+sx.toFixed(1)+'" y1="'+padT+'" x2="'+sx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="#635bff" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>'+
+    '<text x="'+sx.toFixed(1)+'" y="'+(padT-7)+'" font-size="10" fill="#635bff" text-anchor="middle" font-family="Geist Mono,monospace">Spot '+spot+'</text>'+
+    '<path d="'+line+'" fill="none" stroke="#14161c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'+
+    be+
+    '<circle cx="'+sx.toFixed(1)+'" cy="'+atY.toFixed(1)+'" r="5" fill="#fff"/><circle cx="'+sx.toFixed(1)+'" cy="'+atY.toFixed(1)+'" r="3.2" fill="'+(atS>=0?'#0f9d63':'#d6453d')+'"/>'+
+    xl+
+  '</svg>';
   document.getElementById('st_chart').innerHTML=svg;
 }
 function drawStrategy(){
