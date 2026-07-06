@@ -1,111 +1,152 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quantora · Screener — Live</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="alternate icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<style>
-:root{--ink:#0a0a0a;--mut:#6b7280;--line:#ececec;--bg:#ffffff;--soft:#fafafa}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
-a{color:inherit;text-decoration:none}
-.nav{display:flex;align-items:center;gap:18px;padding:16px 30px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:16px}
-.brand .q{width:22px;height:22px;border-radius:6px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-.nav a.link{color:var(--mut);font-size:14px}
-.nav a.link:hover,.nav a.active{color:var(--ink)}
-.nav .right{margin-left:auto;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:7px}
-.dot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}
-.wrap{max-width:1280px;margin:0 auto;padding:30px 24px 60px}
-h1{font-size:28px;font-weight:680;letter-spacing:-.5px}
-.sub{color:var(--mut);font-size:14.5px;margin-top:5px;max-width:760px}
-.tabs{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
-.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:550;cursor:pointer;color:#333}
-.tab:hover{border-color:#bbb}
-.tab.active{background:#0a0a0a;color:#fff;border-color:#0a0a0a}
-.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:16px;min-height:660px}
-</style>
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Quantora">
-<meta property="og:title" content="Quantora · Screener — Live">
-<meta property="og:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta property="og:url" content="https://www.usequantora.com/screener.html">
-<meta property="og:image" content="https://www.usequantora.com/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Quantora · Screener — Live">
-<meta name="twitter:description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
-<meta name="twitter:image" content="https://www.usequantora.com/og.png">
-<meta name="description" content="Quantora — a free, no-login markets terminal: live crypto, stocks, FX, macro, DeFi, on-chain, derivatives and AI on one screen.">
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Screener - describe what you want, AI finds the names | Quantora</title>
+<meta name="description" content="Quantora's AI screener: describe what you are looking for in plain English - 'profitable small caps with insider buying and rising estimates' - and get a list of matching tickers with the reasoning. Free, no login.">
 <link rel="canonical" href="https://www.usequantora.com/screener.html">
-</head>
-<body>
-<div class="nav">
-  <a href="/" class="brand"><span class="q">Q</span> Quantora</a>
-  <a href="/platform.html" class="link">Platform</a>
-  <a href="/pulse.html" class="link">Pulse</a>
-  <a href="/brief.html" class="link">Brief</a>
-  <a href="/markets.html" class="link">Markets</a>
-  <a href="/live.html" class="link">Live</a>
-  <a href="/coins.html" class="link">Coins</a>
-  <a href="/defi.html" class="link">DeFi</a>
-  <a href="/chain.html" class="link">Chain</a>
-  <a href="/dex.html" class="link">DEX</a>
-  <a href="/chart.html" class="link">Chart</a>
-  <a href="/heatmap.html" class="link">Heatmap</a>
-  <a href="/screener.html" class="link active">Screener</a>
-  <a href="/stocks.html" class="link">Stocks</a>
-  <a href="/global.html" class="link">Global</a>
-  <a href="/signals.html" class="link">Signals</a>
-  <a href="/news.html" class="link">News</a>
-  <a href="/macro.html" class="link">Macro</a>
-  <a href="/fundamentals.html" class="link">Fundamentals</a>
-  <a href="/calendar.html" class="link">Calendar</a>
-  <a href="/analyst.html" class="link">Analyst</a>
-  <a href="/ask.html" class="link">Ask</a>
-  <a href="/portfolio.html" class="link">Portfolio</a>
-  <a href="/watchlist.html" class="link">Watchlist</a>
-  <a href="/alerts.html" class="link">Alerts</a>
-  <div class="right"><span class="dot"></span> Live · market screener</div>
-</div>
-<div class="wrap">
-  <h1>Screener</h1>
-  <div class="sub">Filter the entire market — price, change, volume, market cap, and dozens of fundamentals. Find the movers before anyone tells you about them.</div>
-  <div class="tabs" id="tabs">
-    <span class="tab active" data-k="america">Stocks · US</span>
-    <span class="tab" data-k="crypto">Crypto</span>
-    <span class="tab" data-k="forex">Forex</span>
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .sw{max-width:880px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:64ch;margin:0 0 20px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  textarea{width:100%;box-sizing:border-box;border:0;outline:0;resize:vertical;min-height:66px;font:400 16px/1.5 inherit;color:#14161c;background:transparent}
+  textarea::placeholder{color:#9aa1ad}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
+  .hint{color:#9aa1ad;font-size:12px}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:7px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer;transition:border-color .15s,background .15s}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .exlabel{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9aa1ad;margin:22px 0 2px}
+  .res{margin-top:26px;display:none}
+  .res.on{display:block}
+  .tk{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px}
+  .tk a{display:inline-flex;align-items:baseline;gap:7px;text-decoration:none;background:#0b1220;color:#fff;border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px;transition:transform .12s}
+  .tk a:hover{transform:translateY(-1px)}
+  .tk a span{font-weight:400;font-size:11px;color:#8ea2c9}
+  .why{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px;color:#2c313a;font-size:14px;line-height:1.7}
+  .why h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8a91ad;margin:0 0 8px;font-weight:600}
+  .spin{color:#6b7280;font-size:14px;padding:10px 2px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:14px;line-height:1.6}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  code{background:#eef0f4;border-radius:5px;padding:1px 6px;font-size:12.5px}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="sw">
+  <div class="eyb">QUANTORA &middot; AI SCREENER</div>
+  <h1>Describe what you want. AI finds the names.</h1>
+  <p class="lead">No filter menus, no jargon. Say what you are looking for in plain English and Quantora's AI returns a starting list of tickers - each one opens a full AI-powered research page.</p>
+
+  <div class="box">
+    <textarea id="q" placeholder="e.g. profitable small-cap industrials with insider buying and improving free cash flow"></textarea>
+    <div class="row">
+      <div class="hint">Press <code>Enter</code> to run &middot; <code>Shift+Enter</code> for a new line</div>
+      <button class="go" id="go" type="button">Find names</button>
+    </div>
   </div>
-  <div class="panel"><div id="sc" class="tradingview-widget-container" style="height:660px"></div></div>
+
+  <div class="exlabel">Try one of these</div>
+  <div class="chips" id="ex"></div>
+
+  <div class="res" id="res"></div>
+
+  <div class="muted">Results are AI-generated starting points from the model's general knowledge, not a live fundamental screen, and can be wrong or out of date. Not investment advice - always verify on each company's page before acting.</div>
 </div>
 
 <script>
-function loadScreener(market){
-  var c=document.getElementById('sc');
-  c.innerHTML='<div class="tradingview-widget-container__widget" style="height:660px"></div>';
-  var s=document.createElement('script');
-  s.type='text/javascript'; s.async=true;
-  s.src='https://s3.tradingview.com/external-embedding/embed-widget-screener.js';
-  var screen = market==='crypto' ? 'general' : (market==='forex' ? 'general' : 'most_capitalized');
-  s.innerHTML=JSON.stringify({width:'100%',height:'660',defaultColumn:'overview',defaultScreen:screen,market:market,showToolbar:true,colorTheme:'light',isTransparent:true,locale:'en'});
-  c.appendChild(s);
-}
-var tabs=document.getElementById('tabs');
-Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(t){
-  t.onclick=function(){
-    Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(x){x.classList.remove('active');});
-    t.classList.add('active');
-    loadScreener(t.getAttribute('data-k'));
-  };
-});
-loadScreener('america');
+(function(){
+  var EX = [
+    'Profitable small caps with recent insider buying',
+    'Dividend growers under a P/E of 15',
+    'AI infrastructure plays with rising analyst estimates',
+    'Beaten-down quality: high ROIC trading near 52-week lows',
+    'Cash-rich companies with low debt and strong free cash flow',
+    'Recent congressional buys in energy and defense'
+  ];
+  var qEl = document.getElementById('q');
+  var goEl = document.getElementById('go');
+  var resEl = document.getElementById('res');
+  var exEl = document.getElementById('ex');
+  var busy = false;
+
+  EX.forEach(function(t){
+    var c = document.createElement('div'); c.className='chip'; c.textContent=t;
+    c.addEventListener('click', function(){ qEl.value=t; qEl.focus(); run(); });
+    exEl.appendChild(c);
+  });
+
+  var STOP = {A:1,I:1,AI:1,AN:1,AS:1,AT:1,BE:1,BY:1,DO:1,GO:1,IF:1,IN:1,IS:1,IT:1,ME:1,MY:1,NO:1,OF:1,ON:1,OR:1,SO:1,TO:1,UP:1,US:1,WE:1,THE:1,AND:1,FOR:1,ARE:1,BUT:1,NOT:1,YOU:1,ALL:1,ANY:1,CAN:1,HAS:1,HAD:1,HER:1,WAS:1,ONE:1,OUR:1,OUT:1,DAY:1,GET:1,NEW:1,NOW:1,OLD:1,SEE:1,TWO:1,WHO:1,BOY:1,DID:1,ETF:1,CEO:1,CFO:1,IPO:1,GDP:1,EPS:1,ROE:1,ROI:1,FCF:1,YOY:1,USA:1,PE:1,PB:1,PS:1,USD:1,SEC:1,EPA:1,FDA:1,Q1:1,Q2:1,Q3:1,Q4:1,TICKER:1,TICKERS:1,LIST:1,HIGH:1,LOW:1,BUY:1,SELL:1,HOLD:1,RISK:1,CASH:1,DEBT:1,NOTE:1};
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function parse(ans){
+    var tickers = [];
+    var seen = {};
+    var lines = ans.split(/\n/);
+    var pool = ans;
+    for(var i=0;i<lines.length;i++){
+      if(/TICKERS?\s*:/i.test(lines[i])){ pool = lines[i].split(':').slice(1).join(':'); break; }
+    }
+    var toks = pool.match(/\$?[A-Z]{1,5}(?:\.[A-Z])?\b/g) || [];
+    for(var k=0;k<toks.length;k++){
+      var t = toks[k].replace(/^\$/,'');
+      var base = t.split('.')[0];
+      if(STOP[base]) continue;
+      if(seen[t]) continue;
+      seen[t]=1; tickers.push(t);
+      if(tickers.length>=14) break;
+    }
+    // rationale = the answer minus a leading TICKERS: line
+    var why = ans.replace(/^[\s\S]*?TICKERS?\s*:[^\n]*\n?/i,'').trim();
+    if(!why) why = ans.trim();
+    return { tickers: tickers, why: why };
+  }
+
+  function render(ans){
+    var p = parse(ans);
+    var h = '';
+    if(p.tickers.length){
+      h += '<div class="tk">';
+      p.tickers.forEach(function(t){
+        h += '<a href="/stock/'+encodeURIComponent(t)+'">'+esc(t)+' <span>open &rarr;</span></a>';
+      });
+      h += '</div>';
+    }
+    if(p.why){
+      h += '<div class="why"><h3>Why these</h3>'+esc(p.why).replace(/\n/g,'<br>')+'</div>';
+    }
+    if(!p.tickers.length && !p.why){ h = '<div class="err">No names came back - try rephrasing your request.</div>'; }
+    resEl.innerHTML = h;
+    resEl.classList.add('on');
+  }
+
+  function run(){
+    var q = (qEl.value||'').trim();
+    if(!q || busy) return;
+    busy = true; goEl.disabled = true;
+    resEl.className = 'res on';
+    resEl.innerHTML = '<div class="spin">Screening the market with AI&hellip;</div>';
+    var prompt = 'Act as an equity screener over US-listed stocks. From the request below, return a starting watchlist of 8 to 12 real, currently-listed US ticker symbols that best fit. '
+      + 'Output format: the FIRST line must be exactly "TICKERS: X, Y, Z" (uppercase ticker symbols only, comma separated). '
+      + 'Then 2 to 4 sentences explaining what the group has in common and any caveats. Educational only, not investment advice. Request: ' + q;
+    fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:prompt,context:'AI screener'})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        busy=false; goEl.disabled=false;
+        if(j && j.error==='ai_key_needed'){ resEl.innerHTML='<div class="err">The AI screener needs a model key. Add <code>ANTHROPIC_API_KEY</code> (or the configured provider key) in Vercel and redeploy to switch it on.</div>'; return; }
+        if(j && typeof j.answer==='string'){ render(j.answer); }
+        else { resEl.innerHTML='<div class="err">Something went wrong reaching the AI. Please try again.</div>'; }
+      })
+      .catch(function(){ busy=false; goEl.disabled=false; resEl.innerHTML='<div class="err">Network error - please try again.</div>'; });
+  }
+
+  goEl.addEventListener('click', run);
+  qEl.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); run(); } });
+})();
 </script>
-  <script src="/nav.js"></script>
-<footer class="qfoot" style="max-width:1100px;margin:46px auto 0;padding:18px 24px 34px;border-top:1px solid rgba(120,128,150,.18);color:#9aa0aa;font-size:12px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Quantora is for informational and educational purposes only and is <strong>not</strong> financial, investment, legal, or tax advice. Market data may be delayed or inaccurate; verify before acting. <a href="/disclaimer.html" style="color:#8b93ad;text-decoration:underline">Full disclaimer</a> &middot; © 2026 Quantora</footer>
-<script defer src="/_vercel/insights/script.js"></script>
-</body>
-</html>
+<script src="/nav.js" defer></script>
+</body></html>
