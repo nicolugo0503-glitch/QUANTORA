@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What Markets Are Watching - live crowd attention | Quantora</title>
+<meta name="description" content="The tickers Quantora users are researching right now - a live, anonymous crowd-attention leaderboard that sharpens as more people use it. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/watching.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .sw{max-width:760px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:60ch;margin:0 0 18px}
+  .seg{display:inline-flex;background:#eef0f4;border-radius:10px;padding:3px;margin:6px 0 18px}
+  .seg button{border:0;background:transparent;color:#667085;font-weight:600;font-size:12.5px;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:#fff;color:#14161c;box-shadow:0 1px 2px rgba(17,24,39,.12)}
+  .list{display:flex;flex-direction:column;gap:8px}
+  a.row{display:grid;grid-template-columns:26px 74px 1fr 56px;align-items:center;gap:12px;text-decoration:none;color:inherit;background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:12px 15px;transition:border-color .15s,transform .1s}
+  a.row:hover{border-color:#2f6bff;transform:translateY(-1px)}
+  .rank{color:#9aa1ad;font-size:13px;font-weight:600;text-align:center}
+  .tkr{font-weight:700;font-size:15px;letter-spacing:.01em}
+  .bar{height:8px;background:#eef0f4;border-radius:999px;overflow:hidden}
+  .bar span{display:block;height:100%;background:linear-gradient(90deg,#2f6bff,#7aa2ff);border-radius:999px}
+  .n{text-align:right;color:#3a3f48;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .warm{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;color:#4a4f58;font-size:14px;line-height:1.7}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:18px;line-height:1.6}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="sw">
+  <div class="eyb">QUANTORA &middot; SIGNAL</div>
+  <h1>What markets are watching</h1>
+  <p class="lead">The tickers Quantora users are researching right now. It is live, fully anonymous, and it gets sharper the more people use Quantora - a crowd-attention signal no single desk can see.</p>
+  <div class="seg" id="seg">
+    <button type="button" data-h="24">24h</button>
+    <button type="button" data-h="168" class="on">7d</button>
+    <button type="button" data-h="720">30d</button>
+  </div>
+  <div class="list" id="list"></div>
+  <div class="muted">Anonymous, aggregated view counts across Quantora - no account, no personal data. This reflects attention, not quality, and is not investment advice.</div>
+</div>
+<script>
+(function(){
+  var listEl = document.getElementById('list');
+  var tabs = document.querySelectorAll('#seg button');
+  var curHours = 168;
+  function num(r){ var v = (r && (r.n!=null?r.n:(r.count!=null?r.count:(r.views!=null?r.views:0)))); return (+v)||0; }
+  function esc(s){ return String(s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;'); }
+  function warm(){ return '<div class="warm"><strong>Warming up.</strong> As people browse tickers on Quantora, the most-watched names surface here - live and anonymous. Open a few stock pages like <a href="/stock/NVDA">NVDA</a> or <a href="/stock/AAPL">AAPL</a> to seed the signal.</div>'; }
+  function load(){
+    listEl.innerHTML = '<div class="spin">Reading the crowd&hellip;</div>';
+    fetch('/api/fmp?type=pulsetop&hours=' + curHours).then(function(r){ return r.json(); }).then(function(j){
+      var rows = (j && j.data) || [];
+      if(!rows.length){ listEl.innerHTML = warm(); return; }
+      var max = 0; rows.forEach(function(r){ var n = num(r); if(n>max) max = n; });
+      var h = '';
+      rows.forEach(function(r, i){
+        var t = (r.ticker||'').toString().toUpperCase();
+        if(!t) return;
+        var n = num(r);
+        var pct = max ? Math.round(n/max*100) : 0;
+        h += '<a class="row" href="/stock/' + encodeURIComponent(t) + '">'
+          + '<span class="rank">' + (i+1) + '</span>'
+          + '<span class="tkr">' + esc(t) + '</span>'
+          + '<span class="bar"><span style="width:' + pct + '%"></span></span>'
+          + '<span class="n">' + n + '</span></a>';
+      });
+      listEl.innerHTML = h || warm();
+    }).catch(function(){ listEl.innerHTML = warm(); });
+  }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ tabs.forEach(function(x){ x.classList.remove('on'); }); b.classList.add('on'); curHours = (+b.getAttribute('data-h'))||168; load(); }); });
+  load();
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
