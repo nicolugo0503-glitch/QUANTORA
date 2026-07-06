@@ -1,4 +1,4 @@
-/* Quantora compliance layer v1 - site-wide disclaimer + privacy/cookie consent. Defensive: never blocks or breaks a page. */
+/* Quantora compliance layer v1 - site-wide disclaimer + privacy/cookie consent + anonymous crowd-attention ping. Defensive: never blocks or breaks a page. */
 (function(){
   if(window.__qCompliance)return; window.__qCompliance=true;
   try{
@@ -32,7 +32,18 @@
       if(c)c.addEventListener('click',function(){ close('decline'); });
     }
 
-    function run(){ try{ addDisclaimer(); addBanner(); }catch(e){} }
+    // Anonymous crowd-attention ping: which tickers get viewed. No user id, no cookie, no PII - just the ticker.
+    function pulsePing(){
+      try{
+        var path = location.pathname || '';
+        if(path.indexOf('/stock/') === 0){
+          var t = path.slice(7).replace(/[^A-Za-z0-9.-]/g,'').toUpperCase().slice(0,8);
+          if(t){ fetch('/api/fmp?type=pulse&symbol=' + encodeURIComponent(t), { method:'POST', keepalive:true }).catch(function(){}); }
+        }
+      }catch(e){}
+    }
+
+    function run(){ try{ addDisclaimer(); addBanner(); pulsePing(); }catch(e){} }
     if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',run); } else { run(); }
   }catch(e){}
 })();
