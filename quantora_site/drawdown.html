@@ -1,0 +1,176 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drawdown &amp; Recovery Lab - underwater curve, worst crashes &amp; recovery times | Quantora</title>
+<meta name="description" content="See every drawdown a stock has ever taken: the underwater curve, its five worst peak-to-trough crashes with exact recovery times, current drawdown, Ulcer index and longest time underwater. Five years of daily data, free and no login.">
+<link rel="canonical" href="https://www.usequantora.com/drawdown.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:10px;max-width:520px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .uw{width:100%;height:auto;display:block}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}
+  .summary b{color:#fff}
+  table{width:100%;border-collapse:collapse;margin-top:2px}
+  th,td{text-align:right;padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .neg{color:#c0392b;font-weight:700}
+  .tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdecea;color:#c0392b}
+  .tagok{background:#e7f6ec;color:#1a7f42}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; DRAWDOWN LAB</div>
+  <h1>Drawdown &amp; recovery</h1>
+  <p class="lead">Every gain looks easy in hindsight - the drawdowns are what you actually had to survive. Quantora maps a stock's entire underwater curve, ranks its worst peak-to-trough crashes, and tells you exactly how long each one took to make back. Five years of daily closes, computed live.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">A drawdown is the percentage fall from a prior all-time high (over the sample window) until that high is reclaimed. Depth is peak-to-trough; recovery is trough back to the old high. The Ulcer Index is the root-mean-square of the daily drawdown - a measure of downside "pain" that, unlike volatility, only penalizes losses. Based on split-adjusted daily closes over roughly the last five years. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['NVDA','AAPL','TSLA','AMZN','META','COIN','ARKK','BTCUSD'];
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+
+  function getPrices(sym){
+    return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var arr=Array.isArray(j)?j:(j.data||j.historical||[]);
+      var out=[];
+      for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)out.push({d:(''+d).slice(0,10),v:+p});}
+      out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+      return out;
+    });
+  }
+  function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+  function fmtDate(d){ var p=d.split('-'); var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return mo[+p[1]-1]+' '+(+p[2])+', '+p[0]; }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function run(){
+    var sym=(qEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!sym||busy)return; qEl.value=sym;
+    busy=true; goEl.disabled=true; resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Reconstructing the underwater curve&hellip;</div>';
+    getPrices(sym).then(function(p){
+      if(!p||p.length<120) throw new Error('nodata');
+      analyze(sym,p);
+      busy=false; goEl.disabled=false;
+    }).catch(function(){
+      busy=false; goEl.disabled=false;
+      resEl.innerHTML='<div class="err">No usable price history came back for that symbol - check the ticker and try again.</div>';
+    });
+  }
+
+  function analyze(sym,p){
+    var n=p.length, dd=new Array(n), peak=p[0].v, peakDate=p[0].d;
+    var eps=[], inDD=false, startPeak, startPeakD, trough, troughD;
+    var maxDD=0, maxDDidx=0, sumsq=0, sumabs=0;
+    for(var i=0;i<n;i++){
+      var v=p[i].v;
+      if(v>=peak){
+        if(inDD){ eps.push({peak:startPeak,peakD:startPeakD,trough:trough,troughD:troughD,recD:p[i].d,ongoing:false}); inDD=false; }
+        peak=v; peakDate=p[i].d;
+      } else {
+        if(!inDD){ inDD=true; startPeak=peak; startPeakD=peakDate; trough=v; troughD=p[i].d; }
+        else if(v<trough){ trough=v; troughD=p[i].d; }
+      }
+      var d=v/peak-1; dd[i]=d;
+      if(d<maxDD){ maxDD=d; maxDDidx=i; }
+      sumsq+=(d*100)*(d*100); sumabs+=Math.abs(d);
+    }
+    if(inDD) eps.push({peak:startPeak,peakD:startPeakD,trough:trough,troughD:troughD,recD:null,ongoing:true});
+    eps.forEach(function(e){
+      e.depth=e.trough/e.peak-1;
+      e.ptDays=daysBetween(e.peakD,e.troughD);
+      e.endD=e.recD||p[n-1].d;
+      e.trDays=daysBetween(e.troughD,e.endD);
+      e.uwDays=daysBetween(e.peakD,e.endD);
+    });
+    var worst=eps.slice().sort(function(a,b){return a.depth-b.depth;}).slice(0,5);
+    var ulcer=Math.sqrt(sumsq/n), pain=(sumabs/n)*100;
+    var curDD=dd[n-1], curOngoing=curDD<-0.0001;
+    var longestUW=0, longestEp=null;
+    eps.forEach(function(e){ if(e.uwDays>longestUW){longestUW=e.uwDays; longestEp=e;} });
+
+    // underwater SVG
+    var W=920,H=210,padL=44,padR=10,padT=10,padB=22, iw=W-padL-padR, ih=H-padT-padB;
+    var minY=maxDD; // most negative
+    function xf(i){ return padL + (i/(n-1))*iw; }
+    function yf(d){ return padT + (d/minY)*ih; } // d=0 -> top; d=minY -> bottom
+    var path='M '+xf(0)+' '+yf(0);
+    for(i=0;i<n;i++) path+=' L '+xf(i).toFixed(1)+' '+yf(dd[i]).toFixed(1);
+    path+=' L '+xf(n-1).toFixed(1)+' '+yf(0)+' Z';
+    var line='M '+xf(0)+' '+yf(dd[0]);
+    for(i=1;i<n;i++) line+=' L '+xf(i).toFixed(1)+' '+yf(dd[i]).toFixed(1);
+    var grid='';
+    var levels=[0,0.25,0.5,0.75,1];
+    levels.forEach(function(f){ var dv=minY*f; var y=yf(dv); grid+='<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="rgba(17,24,39,.08)"/>'+'<text x="'+(padL-6)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">'+(dv*100).toFixed(0)+'%</text>'; });
+    var mx=xf(maxDDidx);
+    var svg='<svg class="uw" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
+      +grid
+      +'<path d="'+path+'" fill="rgba(192,57,43,.13)"/>'
+      +'<path d="'+line+'" fill="none" stroke="#c0392b" stroke-width="1.3"/>'
+      +'<line x1="'+mx.toFixed(1)+'" y1="'+padT+'" x2="'+mx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="#c0392b" stroke-dasharray="3 3" stroke-width="1"/>'
+      +'<circle cx="'+mx.toFixed(1)+'" cy="'+yf(maxDD).toFixed(1)+'" r="3.2" fill="#c0392b"/>'
+      +'</svg>';
+
+    var h='';
+    h+='<div class="sect">Summary &middot; '+esc(sym)+' &middot; '+n+' trading days</div>';
+    h+='<div class="cards">';
+    h+='<div class="card"><div class="clab">Max drawdown</div><div class="cval neg">'+(maxDD*100).toFixed(1)+'%</div><div class="csub">'+fmtDate(p[maxDDidx].d)+'</div></div>';
+    h+='<div class="card"><div class="clab">Current drawdown</div><div class="cval '+(curOngoing?'neg':'')+'">'+(curDD*100).toFixed(1)+'%</div><div class="csub">'+(curOngoing?'below prior high':'at/near all-time high')+'</div></div>';
+    h+='<div class="card"><div class="clab">Ulcer index</div><div class="cval">'+ulcer.toFixed(1)+'</div><div class="csub">downside pain (RMS)</div></div>';
+    h+='<div class="card"><div class="clab">Longest underwater</div><div class="cval">'+longestUW+'</div><div class="csub">calendar days</div></div>';
+    h+='</div>';
+
+    h+='<div class="sect">Underwater curve (drawdown from prior high)</div><div class="panel">'+svg+'</div>';
+
+    // summary sentence
+    var big=worst[0];
+    var recTxt = big.ongoing ? ('and it has not fully recovered - still '+Math.abs(curDD*100).toFixed(0)+'% underwater') : ('and took '+big.trDays+' days to climb back to its old high');
+    h+='<div class="summary"><b>'+esc(sym)+'</b> has fallen a maximum of <b>'+(maxDD*100).toFixed(1)+'%</b> from a prior high over this window. Its worst single episode began '+fmtDate(big.peakD)+', bottomed <b>'+(big.depth*100).toFixed(1)+'%</b> lower on '+fmtDate(big.troughD)+' '+recTxt+'. '+(curOngoing?('It is currently <b>'+(curDD*100).toFixed(1)+'%</b> off its high.'):('It is currently at or near an all-time high.'))+'</div>';
+
+    // worst drawdowns table
+    h+='<div class="sect">Five worst drawdowns</div><div class="panel" style="padding:6px 14px 12px"><table><thead><tr><th>Peak</th><th>Trough</th><th>Depth</th><th>Peak&rarr;trough</th><th>Recovery</th><th>Recover days</th></tr></thead><tbody>';
+    worst.forEach(function(e){
+      h+='<tr><td>'+fmtDate(e.peakD)+'</td><td>'+fmtDate(e.troughD)+'</td><td class="neg">'+(e.depth*100).toFixed(1)+'%</td><td>'+e.ptDays+'d</td><td>'+(e.ongoing?'<span class="tag">ongoing</span>':fmtDate(e.recD))+'</td><td>'+(e.ongoing?'-':e.trDays+'d')+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+
+    resEl.innerHTML=h;
+  }
+
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
