@@ -1,0 +1,141 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio Risk Lab - Sharpe, VaR, drawdown & correlation, free | Quantora</title>
+<meta name="description" content="Analyze any basket of stocks: annual return and volatility, Sharpe, Sortino and Calmar ratios, max drawdown, Value at Risk (VaR/CVaR), beta, a correlation heatmap and growth of $10k. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/stock-risk.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .sw{max-width:1000px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .box input{flex:1;min-width:220px;border:0;outline:0;font:400 15px/1.4 inherit;color:#14161c;background:transparent}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 12px;font-size:12px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:24px;display:none}.res.on{display:block}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 14px}
+  .clab{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin:4px 0 0;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:22px 0 8px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8a91ad;font-weight:600;padding:6px 8px;border-bottom:1px solid rgba(17,24,39,.1)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:8px 8px;border-bottom:1px solid rgba(17,24,39,.05);font-variant-numeric:tabular-nums}
+  .tkr{font-weight:700}
+  .hm td{text-align:center;font-size:12px;color:#14161c;border:0;padding:0}
+  .hm th{text-align:center;padding:4px}
+  .cellwrap{padding:2px}
+  .cell{border-radius:6px;padding:8px 4px;font-weight:600}
+  .spin{color:#6b7280;font-size:14px;padding:12px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:16px;line-height:1.6}
+  .lg{display:flex;gap:16px;font-size:12px;color:#6b7280;margin-top:8px}
+  .sw2{width:22px;height:3px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:middle}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="sw">
+  <div class="eyb">QUANTORA &middot; RISK LAB</div>
+  <h1>Portfolio risk lab</h1>
+  <p class="lead">Type a basket of tickers and get the risk numbers a desk actually looks at - annual return and volatility, Sharpe, Sortino and Calmar, max drawdown, Value at Risk, beta, a correlation map and growth of $10k. Equal-weighted, five years of daily data, all free.</p>
+
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. AAPL, MSFT, NVDA, AMZN, GOOGL" value="AAPL, MSFT, NVDA, AMZN, GOOGL">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+
+  <div class="res" id="res"></div>
+  <div class="muted">Equal-weighted portfolio of the tickers entered, computed from up to ~5 years of daily closes vs SPY, risk-free from the 3-month Treasury (FRED). Past performance is not indicative of future results. Educational only - not investment advice.</div>
+</div>
+
+<script>
+(function(){
+  var qEl=document.getElementById('q'), goEl=document.getElementById('go'), resEl=document.getElementById('res'), exEl=document.getElementById('ex'), busy=false;
+  var EX=['AAPL, MSFT, NVDA, AMZN, GOOGL','SPY, TLT, GLD','JPM, BAC, WFC, GS','XOM, CVX, COP','KO, PG, JNJ, WMT'];
+  EX.forEach(function(t){ var c=document.createElement('div'); c.className='chip'; c.textContent=t; c.addEventListener('click',function(){ qEl.value=t; run(); }); exEl.appendChild(c); });
+
+  function fred(id){ return fetch('/api/fmp?type=fred&series='+id,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){var o=(j&&j.data&&j.data.observations)||[];for(var i=0;i<o.length;i++){if(o[i].value&&o[i].value!=='.')return +o[i].value;}return null;}).catch(function(){return null;}); }
+  function prices(sym){ return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ var d=(j&&j.data)||[]; var m={}; d.forEach(function(o){ if(o.price!=null&&o.date) m[o.date]=+o.price; }); return m; }).catch(function(){ return {}; }); }
+  function mean(a){ var s=0; for(var i=0;i<a.length;i++)s+=a[i]; return a.length?s/a.length:0; }
+  function std(a){ var m=mean(a),s=0; for(var i=0;i<a.length;i++)s+=(a[i]-m)*(a[i]-m); return a.length>1?Math.sqrt(s/(a.length-1)):0; }
+  function cov(a,b){ var ma=mean(a),mb=mean(b),s=0; for(var i=0;i<a.length;i++)s+=(a[i]-ma)*(b[i]-mb); return a.length>1?s/(a.length-1):0; }
+  function corr(a,b){ var sa=std(a),sb=std(b); return (sa&&sb)?cov(a,b)/(sa*sb):0; }
+  function pct(x){ return (x*100).toFixed(1)+'%'; }
+  function pctile(sorted,p){ var idx=(sorted.length-1)*p; var lo=Math.floor(idx),hi=Math.ceil(idx); if(lo===hi)return sorted[lo]; return sorted[lo]+(sorted[hi]-sorted[lo])*(idx-lo); }
+  function retsFrom(map,dates){ var r=[]; for(var i=1;i<dates.length;i++){ r.push(map[dates[i]]/map[dates[i-1]]-1); } return r; }
+  function line(series,w,h,color){ if(series.length<2)return ''; var mn=Math.min.apply(null,series),mx=Math.max.apply(null,series),rg=(mx-mn)||1; var pts=series.map(function(v,i){var x=(i/(series.length-1))*w;var y=h-((v-mn)/rg)*(h-8)-4;return x.toFixed(1)+','+y.toFixed(1);}).join(' '); return '<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round"/>'; }
+  function heat(x){ if(x>=0){ var g=Math.round(255-x*150); return 'background:rgb('+g+','+Math.round(200-x*20)+','+Math.round(160-x*30)+');color:'+(x>0.6?'#fff':'#14161c'); } var a=-x; return 'background:rgb('+Math.round(210-a*20)+','+Math.round(225-a*40)+',255);color:#14161c'; }
+
+  function run(){
+    var syms=(qEl.value||'').toUpperCase().split(',').map(function(s){return s.replace(/[^A-Z0-9.-]/g,'').trim();}).filter(function(s){return s.length>0;});
+    syms=syms.filter(function(s,i){return syms.indexOf(s)===i;}).slice(0,10);
+    if(!syms.length||busy)return;
+    busy=true; goEl.disabled=true; resEl.className='res on'; resEl.innerHTML='<div class="spin">Crunching '+syms.length+' names over 5 years&hellip;</div>';
+    var need=syms.slice(); if(syms.indexOf('SPY')<0)need.push('SPY');
+    Promise.all([fred('DGS3MO')].concat(need.map(prices))).then(function(all){
+      var rf=(all[0]!=null?all[0]:4.3)/100;
+      var maps={}; need.forEach(function(s,i){ maps[s]=all[i+1]; });
+      var spy=maps['SPY']||{};
+      // common dates across all held tickers + SPY
+      var base=null; syms.concat(['SPY']).forEach(function(s){ var ks=Object.keys(maps[s]||{}); if(base===null)base=ks; else base=base.filter(function(d){return maps[s][d]!=null;}); });
+      var dates=(base||[]).filter(function(d){return maps['SPY'][d]!=null;}).sort();
+      if(dates.length<30){ resEl.innerHTML='<div class="err">Not enough overlapping history for those tickers. Check the symbols and try again.</div>'; busy=false; goEl.disabled=false; return; }
+      // per-ticker returns
+      var tRets={}; syms.forEach(function(s){ tRets[s]=retsFrom(maps[s],dates); });
+      var spyRets=retsFrom(spy,dates);
+      var n=dates.length-1, w=1/syms.length, yrs=n/252;
+      // portfolio daily returns (equal weight)
+      var pRet=[]; for(var i=0;i<n;i++){ var r=0; syms.forEach(function(s){ r+=w*tRets[s][i]; }); pRet.push(r); }
+      // equity curve + drawdown
+      var eq=[1], peak=1, maxDD=0; for(var i=0;i<n;i++){ var e=eq[i]*(1+pRet[i]); eq.push(e); if(e>peak)peak=e; var dd=e/peak-1; if(dd<maxDD)maxDD=dd; }
+      var total=eq[eq.length-1]-1, cagr=Math.pow(1+total,1/yrs)-1;
+      var vol=std(pRet)*Math.sqrt(252);
+      var down=pRet.map(function(r){return r<0?r:0;}); var dd2=Math.sqrt(mean(down.map(function(r){return r*r;})))*Math.sqrt(252);
+      var sharpe=vol?(cagr-rf)/vol:0, sortino=dd2?(cagr-rf)/dd2:0, calmar=maxDD?cagr/Math.abs(maxDD):0;
+      var beta=cov(pRet,spyRets)/(std(spyRets)*std(spyRets)||1);
+      var sorted=pRet.slice().sort(function(a,b){return a-b;}); var var95=-pctile(sorted,0.05);
+      var tail=sorted.filter(function(r){return r<=pctile(sorted,0.05);}); var cvar95=-mean(tail);
+      // SPY equity for chart
+      var seq=[1]; for(var i=0;i<n;i++){ seq.push(seq[i]*(1+spyRets[i])); }
+
+      var cards=[['Annual return',pct(cagr)],['Annual volatility',pct(vol)],['Sharpe ratio',sharpe.toFixed(2)],['Sortino ratio',sortino.toFixed(2)],['Max drawdown',pct(maxDD)],['Calmar ratio',calmar.toFixed(2)],['Daily VaR 95%',pct(var95)],['Daily CVaR 95%',pct(cvar95)],['Beta vs SPY',beta.toFixed(2)]];
+      var h='<div class="grid">'+cards.map(function(c){return '<div class="card"><div class="clab">'+c[0]+'</div><div class="cval">'+c[1]+'</div></div>';}).join('')+'</div>';
+
+      // growth chart
+      var mn=Math.min(Math.min.apply(null,eq),Math.min.apply(null,seq)), mx=Math.max(Math.max.apply(null,eq),Math.max.apply(null,seq));
+      function scl(v){return (v-mn)/((mx-mn)||1);}
+      var W=940,H=180;
+      var pl=eq.map(function(v,i){var x=(i/(eq.length-1))*W;var y=H-scl(v)*(H-10)-5;return x.toFixed(1)+','+y.toFixed(1);}).join(' ');
+      var sl=seq.map(function(v,i){var x=(i/(seq.length-1))*W;var y=H-scl(v)*(H-10)-5;return x.toFixed(1)+','+y.toFixed(1);}).join(' ');
+      h+='<div class="sect">Growth of $10,000</div><div class="panel"><svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'" preserveAspectRatio="none"><polyline points="'+sl+'" fill="none" stroke="#9aa1ad" stroke-width="1.5"/><polyline points="'+pl+'" fill="none" stroke="#2f6bff" stroke-width="2.5"/></svg><div class="lg"><span><span class="sw2" style="background:#2f6bff"></span>Portfolio &middot; $'+(10000*eq[eq.length-1]).toLocaleString(undefined,{maximumFractionDigits:0})+'</span><span><span class="sw2" style="background:#9aa1ad"></span>SPY &middot; $'+(10000*seq[seq.length-1]).toLocaleString(undefined,{maximumFractionDigits:0})+'</span></div></div>';
+
+      // holdings table
+      h+='<div class="sect">Holdings</div><div class="panel"><table><thead><tr><th>Ticker</th><th>Weight</th><th>Ann. return</th><th>Ann. vol</th><th>Beta</th></tr></thead><tbody>';
+      syms.forEach(function(s){ var tr=tRets[s]; var ttl=1; for(var i=0;i<tr.length;i++)ttl*=(1+tr[i]); var cg=Math.pow(ttl,1/yrs)-1; var v=std(tr)*Math.sqrt(252); var b=cov(tr,spyRets)/(std(spyRets)*std(spyRets)||1); h+='<tr><td class="tkr">'+s+'</td><td>'+pct(w)+'</td><td>'+pct(cg)+'</td><td>'+pct(v)+'</td><td>'+b.toFixed(2)+'</td></tr>'; });
+      h+='</tbody></table></div>';
+
+      // correlation heatmap
+      if(syms.length>1){
+        h+='<div class="sect">Correlation</div><div class="panel" style="overflow-x:auto"><table class="hm"><thead><tr><th></th>'+syms.map(function(s){return '<th>'+s+'</th>';}).join('')+'</tr></thead><tbody>';
+        syms.forEach(function(a){ h+='<tr><th>'+a+'</th>'; syms.forEach(function(b){ var c=(a===b)?1:corr(tRets[a],tRets[b]); h+='<td class="cellwrap"><div class="cell" style="'+heat(c)+'">'+c.toFixed(2)+'</div></td>'; }); h+='</tr>'; });
+        h+='</tbody></table></div>';
+      }
+
+      resEl.innerHTML=h; busy=false; goEl.disabled=false;
+    }).catch(function(){ resEl.innerHTML='<div class="err">Something went wrong fetching data. Please try again.</div>'; busy=false; goEl.disabled=false; });
+  }
+
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
