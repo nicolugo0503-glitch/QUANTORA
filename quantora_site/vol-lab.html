@@ -1,0 +1,124 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Volatility Lab - vol cone, term structure & percentile, free | Quantora</title>
+<meta name="description" content="A volatility cone for any stock: realized volatility across horizons with percentile bands and today's reading, plus the vol term structure, current vol percentile, and return distribution (skew, kurtosis, best/worst day). Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/vol-lab.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .sw{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .box input{flex:1;min-width:200px;border:0;outline:0;font:400 15px/1.4 inherit;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:600;font-size:14px;cursor:pointer}.go:disabled{opacity:.5}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 12px;font-size:12px;color:#3a3f48;cursor:pointer}.chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:24px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:22px 0 8px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 14px}
+  .clab{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin:4px 0 0;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#6b7280;margin-top:10px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+  .bar{height:9px;border-radius:999px;background:#eef0f4;overflow:hidden;margin-top:8px}
+  .bar span{display:block;height:100%;background:linear-gradient(90deg,#2f6bff,#7aa2ff)}
+  .spin{color:#6b7280;font-size:14px;padding:12px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:16px;line-height:1.6}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="sw">
+  <div class="eyb">QUANTORA &middot; VOLATILITY LAB</div>
+  <h1>Volatility cone</h1>
+  <p class="lead">Is a stock calm or coiled? See realized volatility across every horizon with its historical percentile bands and today's reading - the "vol cone" desks use to judge whether options are cheap or rich - plus the vol term structure and return distribution. Five years of daily data, free.</p>
+
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+
+  <div class="res" id="res"></div>
+  <div class="muted">Realized (historical) volatility from up to ~5 years of daily closes, annualized. The cone shows the distribution of past realized vol at each horizon; the marker is today's reading. High vs its own history = options relatively rich; low = relatively cheap. Educational only - not investment advice.</div>
+</div>
+
+<script>
+(function(){
+  var qEl=document.getElementById('q'), goEl=document.getElementById('go'), resEl=document.getElementById('res'), exEl=document.getElementById('ex'), busy=false;
+  ['NVDA','TSLA','AAPL','SPY','GLD','COIN'].forEach(function(t){ var c=document.createElement('div'); c.className='chip'; c.textContent=t; c.addEventListener('click',function(){ qEl.value=t; run(); }); exEl.appendChild(c); });
+
+  function prices(sym){ return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ var d=(j&&j.data)||[]; var out=d.filter(function(o){return o.price!=null&&o.date;}).map(function(o){return {d:o.date,p:+o.price};}); out.sort(function(a,b){return a.d<b.d?-1:1;}); return out; }).catch(function(){return [];}); }
+  function mean(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return a.length?s/a.length:0;}
+  function std(a){var m=mean(a),s=0;for(var i=0;i<a.length;i++)s+=(a[i]-m)*(a[i]-m);return a.length>1?Math.sqrt(s/(a.length-1)):0;}
+  function pctile(sorted,p){ if(!sorted.length)return 0; var idx=(sorted.length-1)*p; var lo=Math.floor(idx),hi=Math.ceil(idx); if(lo===hi)return sorted[lo]; return sorted[lo]+(sorted[hi]-sorted[lo])*(idx-lo); }
+  function rollVol(r,w){ var out=[]; for(var i=w;i<=r.length;i++){ out.push(std(r.slice(i-w,i))*Math.sqrt(252)); } return out; }
+  function pctFmt(x){ return (x*100).toFixed(1)+'%'; }
+
+  function run(){
+    var sym=(qEl.value||'').toUpperCase().replace(/[^A-Z0-9.-]/g,'').trim();
+    if(!sym||busy)return;
+    busy=true; goEl.disabled=true; resEl.className='res on'; resEl.innerHTML='<div class="spin">Measuring volatility for '+sym+'&hellip;</div>';
+    prices(sym).then(function(px){
+      if(px.length<260){ resEl.innerHTML='<div class="err">Not enough price history for '+sym+'. Check the symbol and try again.</div>'; busy=false; goEl.disabled=false; return; }
+      var r=[]; for(var i=1;i<px.length;i++){ r.push(Math.log(px[i].p/px[i-1].p)); }
+      var horizons=[[21,'1m'],[42,'2m'],[63,'3m'],[126,'6m'],[189,'9m'],[252,'12m']];
+      var cone=horizons.filter(function(h){return r.length>h[0]+20;}).map(function(h){
+        var rv=rollVol(r,h[0]); var s=rv.slice().sort(function(a,b){return a-b;});
+        return { w:h[0], lab:h[1], min:s[0], p25:pctile(s,0.25), med:pctile(s,0.5), p75:pctile(s,0.75), max:s[s.length-1], cur:rv[rv.length-1] };
+      });
+      var maxV=Math.max.apply(null,cone.map(function(c){return c.max;}));
+      var minV=Math.min.apply(null,cone.map(function(c){return c.min;}));
+      var pad=(maxV-minV)*0.08||0.05; var top=maxV+pad, bot=Math.max(0,minV-pad);
+      var W=900,H=300,PADL=44,PADB=26,PADT=10;
+      function xOf(i){ return PADL+(i+0.5)/cone.length*(W-PADL-8); }
+      function yOf(v){ return PADT+(1-(v-bot)/((top-bot)||1))*(H-PADT-PADB); }
+      var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:100%">';
+      // y gridlines
+      for(var g=0;g<=4;g++){ var vv=bot+(top-bot)*g/4; var yy=yOf(vv); svg+='<line x1="'+PADL+'" y1="'+yy.toFixed(1)+'" x2="'+W+'" y2="'+yy.toFixed(1)+'" stroke="#eef0f4"/><text x="'+(PADL-6)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">'+(vv*100).toFixed(0)+'%</text>'; }
+      // median line + 25-75 band path
+      var medPts=cone.map(function(c,i){return xOf(i).toFixed(1)+','+yOf(c.med).toFixed(1);}).join(' ');
+      var bandTop=cone.map(function(c,i){return xOf(i).toFixed(1)+','+yOf(c.p75).toFixed(1);});
+      var bandBot=cone.map(function(c,i){return xOf(i).toFixed(1)+','+yOf(c.p25).toFixed(1);}).reverse();
+      svg+='<polygon points="'+bandTop.concat(bandBot).join(' ')+'" fill="rgba(47,107,255,.08)" stroke="none"/>';
+      cone.forEach(function(c,i){ var x=xOf(i);
+        svg+='<line x1="'+x.toFixed(1)+'" y1="'+yOf(c.min).toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+yOf(c.max).toFixed(1)+'" stroke="#c7ccd6" stroke-width="1.5"/>';
+        svg+='<line x1="'+(x-10).toFixed(1)+'" y1="'+yOf(c.max).toFixed(1)+'" x2="'+(x+10).toFixed(1)+'" y2="'+yOf(c.max).toFixed(1)+'" stroke="#c7ccd6"/>';
+        svg+='<line x1="'+(x-10).toFixed(1)+'" y1="'+yOf(c.min).toFixed(1)+'" x2="'+(x+10).toFixed(1)+'" y2="'+yOf(c.min).toFixed(1)+'" stroke="#c7ccd6"/>';
+        svg+='<text x="'+x.toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="#6b7280">'+c.lab+'</text>';
+      });
+      svg+='<polyline points="'+medPts+'" fill="none" stroke="#8a91ad" stroke-width="1.5" stroke-dasharray="4 3"/>';
+      var curPts=cone.map(function(c,i){return xOf(i).toFixed(1)+','+yOf(c.cur).toFixed(1);}).join(' ');
+      svg+='<polyline points="'+curPts+'" fill="none" stroke="#2f6bff" stroke-width="2.5"/>';
+      cone.forEach(function(c,i){ svg+='<circle cx="'+xOf(i).toFixed(1)+'" cy="'+yOf(c.cur).toFixed(1)+'" r="4" fill="#2f6bff"/>'; });
+      svg+='</svg>';
+
+      // vol percentile (current 21d vs its history)
+      var rv21=rollVol(r,21); var cur21=rv21[rv21.length-1]; var s21=rv21.slice().sort(function(a,b){return a-b;});
+      var below=0; for(var i=0;i<s21.length;i++){ if(s21[i]<cur21) below++; } var vpct=below/s21.length;
+      var pctState = vpct>=0.8?'High - options relatively rich':(vpct<=0.2?'Low - options relatively cheap':'Middle of its range');
+
+      // distribution stats (daily)
+      var m=mean(r), sd=std(r); var sk=0,ku=0; for(var i=0;i<r.length;i++){ var z=(r[i]-m)/(sd||1); sk+=z*z*z; ku+=z*z*z*z; } sk/=r.length; ku=ku/r.length-3;
+      var pos=0; for(var i=0;i<r.length;i++){ if(r[i]>0)pos++; }
+      var best=Math.max.apply(null,r), worst=Math.min.apply(null,r);
+      var annMean=m*252;
+
+      var cards=[['Current 1m vol',pctFmt(cur21)],['1y median vol',pctFmt(pctile(s21,0.5))],['Annualized return',pctFmt(annMean)],['Daily skew',sk.toFixed(2)],['Excess kurtosis',ku.toFixed(2)],['% up days',(pos/r.length*100).toFixed(0)+'%'],['Best day',pctFmt(best)],['Worst day',pctFmt(worst)]];
+
+      var h='<div class="sect">Volatility cone (annualized realized vol by horizon)</div><div class="panel">'+svg+'<div class="lg"><span><span class="dot" style="background:#2f6bff"></span>Today</span><span><span class="dot" style="background:#8a91ad"></span>Median</span><span><span class="dot" style="background:rgba(47,107,255,.25)"></span>25-75 percentile</span><span><span class="dot" style="background:#c7ccd6"></span>Min-max range</span></div></div>';
+      h+='<div class="sect">Current volatility percentile (1-month, vs its own history)</div><div class="panel"><div style="font-size:24px;font-weight:700">'+(vpct*100).toFixed(0)+'th percentile</div><div class="bar"><span style="width:'+(vpct*100).toFixed(0)+'%"></span></div><div class="muted" style="margin-top:8px">'+pctState+'.</div></div>';
+      h+='<div class="sect">Return &amp; distribution stats</div><div class="grid">'+cards.map(function(c){return '<div class="card"><div class="clab">'+c[0]+'</div><div class="cval">'+c[1]+'</div></div>';}).join('')+'</div>';
+      resEl.innerHTML=h; busy=false; goEl.disabled=false;
+    }).catch(function(){ resEl.innerHTML='<div class="err">Something went wrong fetching data. Please try again.</div>'; busy=false; goEl.disabled=false; });
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
