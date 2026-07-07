@@ -39,6 +39,7 @@
   <url><loc>https://www.usequantora.com/stock-risk.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/vol-lab.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/trend.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/sector-rotation.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/beta.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/relative.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/distribution.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
