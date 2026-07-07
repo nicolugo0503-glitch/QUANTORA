@@ -39,7 +39,7 @@
 <script>
 (function(){
   var resEl=document.getElementById('res');
-  function fred(series){return fetch('/api/fmp?type=fred&series='+series).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var out=[];for(var i=0;i<obs.length;i++){var v=parseFloat(obs[i].value);if(!isNaN(v))out.push({d:obs[i].date,v:v});}return out;}).catch(function(){return [];});}
+  function fred(series){return fetch('/api/fmp?type=fred&series='+series).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var out=[];for(var i=0;i<obs.length;i++){var v=parseFloat(obs[i].value);if(!isNaN(v))out.push({d:obs[i].date,v:v});}out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;}).catch(function(){return [];});}
   function yoy(s){var out=[];for(var i=12;i<s.length;i++)out.push({d:s[i].d,v:(s[i].v/s[i-12].v-1)*100});return out;}
   function latest(a){return a.length?a[a.length-1]:null;}
   function ago(a,k){return a.length>k?a[a.length-1-k]:null;}

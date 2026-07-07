@@ -41,7 +41,7 @@
 (function(){
   var TEN=[['DGS1MO','1M'],['DGS3MO','3M'],['DGS6MO','6M'],['DGS1','1Y'],['DGS2','2Y'],['DGS3','3Y'],['DGS5','5Y'],['DGS7','7Y'],['DGS10','10Y'],['DGS20','20Y'],['DGS30','30Y']];
   var resEl=document.getElementById('res');
-  function fred(series){return fetch('/api/fmp?type=fred&series='+series).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var out=[];for(var i=0;i<obs.length;i++){var v=parseFloat(obs[i].value);if(!isNaN(v))out.push({d:obs[i].date,v:v});}return out;}).catch(function(){return [];});}
+  function fred(series){return fetch('/api/fmp?type=fred&series='+series).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var out=[];for(var i=0;i<obs.length;i++){var v=parseFloat(obs[i].value);if(!isNaN(v))out.push({d:obs[i].date,v:v});}out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;}).catch(function(){return [];});}
   function latest(a){return a.length?a[a.length-1]:null;}
   function asOf(a,target){var ans=null;for(var i=0;i<a.length;i++){if(a[i].d<=target)ans=a[i];else break;}return ans;}
   function ymd(dt){return dt.toISOString().slice(0,10);}
