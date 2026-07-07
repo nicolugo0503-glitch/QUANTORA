@@ -38,6 +38,17 @@
   <url><loc>https://www.usequantora.com/recession.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.usequantora.com/stock-risk.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/vol-lab.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/trend.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/beta.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/relative.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/distribution.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/riskparity.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/yield-curve.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/inflation.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/cross-asset.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/portfolio-doctor.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/move-explainer.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/earnings-ai.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/factor-lab.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/drawdown.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/screener.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
