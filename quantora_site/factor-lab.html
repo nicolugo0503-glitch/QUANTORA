@@ -1,0 +1,206 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Factor Exposure Lab - market, size, value, momentum &amp; quality betas | Quantora</title>
+<meta name="description" content="Run a real 5-factor regression on any US stock: market beta plus size, value, momentum and quality tilts, with t-stats, R-squared and annualized alpha. Returns-based, five years of daily data, free and no login.">
+<link rel="canonical" href="https://www.usequantora.com/factor-lab.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:10px;max-width:520px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px}
+  .frow{display:grid;grid-template-columns:132px 1fr 74px;align-items:center;gap:12px;margin:11px 0}
+  .flab{font-size:13px;font-weight:600;color:#2c313a}.flab span{display:block;font-weight:400;font-size:11px;color:#9aa1ad}
+  .track{position:relative;height:26px;background:linear-gradient(90deg,rgba(224,122,63,.07),rgba(224,122,63,.07) 50%,rgba(47,107,255,.07) 50%,rgba(47,107,255,.07));border-radius:7px}
+  .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(17,24,39,.22)}
+  .bar{position:absolute;top:5px;height:16px;border-radius:4px}
+  .fval{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+  .fns{font-weight:400;font-size:10.5px;color:#b0b6c0}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}
+  .summary b{color:#fff}
+  table{width:100%;border-collapse:collapse;margin-top:2px}
+  th,td{text-align:right;padding:8px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .pos{color:#1663d6}.neg{color:#c85a2a}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+  code{background:#eef0f4;border-radius:5px;padding:1px 6px;font-size:12.5px}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; FACTOR LAB</div>
+  <h1>Factor exposure</h1>
+  <p class="lead">What actually drives a stock? Quantora regresses five years of daily returns against the classic risk factors - market, size, value, momentum and quality - and shows you the betas, their statistical significance, how much of the stock's movement they explain, and the leftover alpha. Returns-based, computed live in your browser.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Factors are built from liquid proxy ETFs: market = SPY over the risk-free rate; size = IWM &minus; SPY (small minus large); value = IVE &minus; IVW (value minus growth); momentum = MTUM &minus; SPY; quality = QUAL &minus; SPY. This is a returns-based (Sharpe-style) factor regression, not the Fama-French research factors, so loadings are approximate. Prices are split-adjusted daily closes; the risk-free rate is the 3-month Treasury (FRED DGS3MO). Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var ETFS = ['SPY','IWM','IVE','IVW','MTUM','QUAL'];
+  var EX = ['NVDA','AAPL','TSLA','JPM','XOM','KO','COST','GME'];
+  var qEl=document.getElementById('q'), goEl=document.getElementById('go'), resEl=document.getElementById('res'), exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){ var c=document.createElement('div'); c.className='chip'; c.textContent=t; c.addEventListener('click',function(){ qEl.value=t; run(); }); exEl.appendChild(c); });
+
+  function getPrices(sym){
+    return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var arr = Array.isArray(j)?j:(j.data||j.historical||[]);
+      var m={};
+      for(var i=0;i<arr.length;i++){ var d=arr[i].date||arr[i].datetime; var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose); if(d&&p>0) m[(''+d).slice(0,10)]=+p; }
+      return m;
+    });
+  }
+  function getRf(){
+    return fetch('/api/fmp?type=fred&series=DGS3MO').then(function(r){return r.json();}).then(function(j){
+      var obs = (j&&j.data&&j.data.observations)||[]; var m={};
+      for(var i=0;i<obs.length;i++){ var v=parseFloat(obs[i].value); if(!isNaN(v)) m[obs[i].date]=v; }
+      return m;
+    }).catch(function(){ return {}; });
+  }
+
+  function matInv(M){
+    var n=M.length,A=[],i,j,r,col;
+    for(i=0;i<n;i++){ A[i]=M[i].slice(); for(j=0;j<n;j++) A[i].push(i===j?1:0); }
+    for(col=0;col<n;col++){
+      var piv=col,best=Math.abs(A[col][col]);
+      for(r=col+1;r<n;r++){ if(Math.abs(A[r][col])>best){best=Math.abs(A[r][col]);piv=r;} }
+      if(best<1e-13) return null;
+      var tmp=A[col];A[col]=A[piv];A[piv]=tmp;
+      var d=A[col][col];
+      for(j=0;j<2*n;j++) A[col][j]/=d;
+      for(r=0;r<n;r++){ if(r!==col){ var f=A[r][col]; for(j=0;j<2*n;j++) A[r][j]-=f*A[col][j]; } }
+    }
+    var inv=[]; for(i=0;i<n;i++) inv[i]=A[i].slice(n); return inv;
+  }
+  function mVec(M,v){ var o=[],i,j; for(i=0;i<M.length;i++){var s=0;for(j=0;j<v.length;j++)s+=M[i][j]*v[j];o[i]=s;} return o; }
+
+  function fnum(x,d){ if(x==null||isNaN(x))return '-'; return (x>=0?'':'')+x.toFixed(d==null?2:d); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function run(){
+    var sym=(qEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!sym||busy)return; qEl.value=sym;
+    busy=true; goEl.disabled=true; resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Fetching five years of returns and running the regression&hellip;</div>';
+    var jobs=[getPrices(sym)]; ETFS.forEach(function(e){ jobs.push(getPrices(e)); }); jobs.push(getRf());
+    Promise.all(jobs).then(function(a){
+      var tgt=a[0], spy=a[1], iwm=a[2], ive=a[3], ivw=a[4], mtum=a[5], qual=a[6], rf=a[7];
+      if(!tgt||Object.keys(tgt).length<120){ throw new Error('nodata'); }
+      var rfDates=Object.keys(rf).sort();
+      function rfAt(d){ if(rf[d]!=null)return rf[d]; var lo=0,hi=rfDates.length-1,ans=null; while(lo<=hi){var mid=(lo+hi)>>1; if(rfDates[mid]<=d){ans=rfDates[mid];lo=mid+1;}else hi=mid-1;} return ans!=null?rf[ans]:4.0; }
+      var common=[]; var tk=Object.keys(tgt).sort();
+      for(var i=0;i<tk.length;i++){ var d=tk[i]; if(spy[d]&&iwm[d]&&ive[d]&&ivw[d]&&mtum[d]&&qual[d]) common.push(d); }
+      if(common.length<120){ throw new Error('nooverlap'); }
+      var X=[],Y=[];
+      for(i=1;i<common.length;i++){
+        var d0=common[i-1], d1=common[i];
+        function ret(o){ return o[d1]/o[d0]-1; }
+        var rfd=(rfAt(d1)/100)/252;
+        var rMkt=ret(spy)-rfd, rSmb=ret(iwm)-ret(spy), rHml=ret(ive)-ret(ivw), rMom=ret(mtum)-ret(spy), rQmj=ret(qual)-ret(spy);
+        var y=ret(tgt)-rfd;
+        if(!isFinite(y)||Math.abs(y)>0.6) continue;
+        X.push([1,rMkt,rSmb,rHml,rMom,rQmj]); Y.push(y);
+      }
+      var n=X.length,k=6;
+      var XtX=[],Xty=[],aa,bb,t;
+      for(aa=0;aa<k;aa++){ Xty[aa]=0; XtX[aa]=[]; for(bb=0;bb<k;bb++) XtX[aa][bb]=0; }
+      for(t=0;t<n;t++){ for(aa=0;aa<k;aa++){ Xty[aa]+=X[t][aa]*Y[t]; for(bb=0;bb<k;bb++) XtX[aa][bb]+=X[t][aa]*X[t][bb]; } }
+      var inv=matInv(XtX); if(!inv){ throw new Error('singular'); }
+      var b=mVec(inv,Xty);
+      var ybar=0; for(t=0;t<n;t++) ybar+=Y[t]; ybar/=n;
+      var rss=0,tss=0;
+      for(t=0;t<n;t++){ var pred=0; for(aa=0;aa<k;aa++) pred+=b[aa]*X[t][aa]; var e=Y[t]-pred; rss+=e*e; tss+=(Y[t]-ybar)*(Y[t]-ybar); }
+      var r2=1-rss/tss; var sig2=rss/(n-k);
+      var se=[],tstat=[]; for(aa=0;aa<k;aa++){ se[aa]=Math.sqrt(Math.max(0,sig2*inv[aa][aa])); tstat[aa]=se[aa]>0?b[aa]/se[aa]:0; }
+      render(sym,b,tstat,r2,n);
+      busy=false; goEl.disabled=false;
+    }).catch(function(err){
+      busy=false; goEl.disabled=false;
+      var msg = (err&&err.message==='nodata')?'No price history came back for that symbol - check the ticker and try again.':'Could not build enough overlapping history to run the regression for that symbol.';
+      resEl.innerHTML='<div class="err">'+msg+'</div>';
+    });
+  }
+
+  function render(sym,b,tt,r2,n){
+    var alpha=b[0]*252*100, bmkt=b[1];
+    var styleF=[
+      {k:'Size',s:'SMB - small minus large',v:b[2],t:tt[2],pos:'small-cap tilt',neg:'large-cap tilt'},
+      {k:'Value',s:'HML - value minus growth',v:b[3],t:tt[3],pos:'value tilt',neg:'growth tilt'},
+      {k:'Momentum',s:'MOM - winners minus market',v:b[4],t:tt[4],pos:'momentum tilt',neg:'anti-momentum'},
+      {k:'Quality',s:'QMJ - quality minus market',v:b[5],t:tt[5],pos:'quality tilt',neg:'low-quality tilt'}
+    ];
+    var scale=0.25; styleF.forEach(function(f){ scale=Math.max(scale,Math.abs(f.v)); });
+    var h='';
+    // headline cards
+    h+='<div class="sect">Model summary &middot; '+esc(sym)+' &middot; '+n+' trading days</div>';
+    h+='<div class="cards">';
+    h+='<div class="card"><div class="clab">Market beta</div><div class="cval">'+bmkt.toFixed(2)+'</div><div class="csub">'+(bmkt>1.15?'more volatile than market':bmkt<0.85?'less volatile than market':'roughly market-like')+'</div></div>';
+    h+='<div class="card"><div class="clab">Annualized alpha</div><div class="cval '+(alpha>=0?'pos':'neg')+'">'+(alpha>=0?'+':'')+alpha.toFixed(1)+'%</div><div class="csub">'+(Math.abs(tt[0])>1.96?'statistically significant':'not significant')+'</div></div>';
+    h+='<div class="card"><div class="clab">R-squared</div><div class="cval">'+(r2*100).toFixed(0)+'%</div><div class="csub">of daily moves explained</div></div>';
+    h+='<div class="card"><div class="clab">Idiosyncratic</div><div class="cval">'+((1-r2)*100).toFixed(0)+'%</div><div class="csub">stock-specific risk</div></div>';
+    h+='</div>';
+    // style tilt bars
+    h+='<div class="sect">Style tilts (factor loadings)</div><div class="panel">';
+    styleF.forEach(function(f){
+      var sigNS=Math.abs(f.t)<1.96;
+      var w=Math.min(48,Math.abs(f.v)/scale*48);
+      var barStyle, col=f.v>=0?'#2f6bff':'#e07a3f';
+      if(f.v>=0){ barStyle='left:50%;width:'+w+'%;background:'+col+';'; } else { barStyle='left:'+(50-w)+'%;width:'+w+'%;background:'+col+';'; }
+      if(sigNS) barStyle+='opacity:.32;';
+      h+='<div class="frow"><div class="flab">'+f.k+'<span>'+f.s+'</span></div>'
+        +'<div class="track"><div class="mid"></div><div class="bar" style="'+barStyle+'"></div></div>'
+        +'<div class="fval '+(f.v>=0?'pos':'neg')+'">'+(f.v>=0?'+':'')+f.v.toFixed(2)+(sigNS?'<div class="fns">n.s.</div>':'')+'</div></div>';
+    });
+    h+='</div>';
+    // auto summary
+    var parts=[];
+    styleF.forEach(function(f){ if(Math.abs(f.t)>=1.96 && Math.abs(f.v)>=0.05) parts.push(f.v>0?f.pos:f.neg); });
+    var mktTxt = bmkt>1.15?('an aggressive market beta of <b>'+bmkt.toFixed(2)+'</b>'):bmkt<0.85?('a defensive market beta of <b>'+bmkt.toFixed(2)+'</b>'):('a market beta of <b>'+bmkt.toFixed(2)+'</b>');
+    var tiltTxt = parts.length?(' plus '+(parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts[parts.length-1]:parts[0])):' and no other statistically significant style tilts';
+    var alphaTxt = ' Over this window the factors explain <b>'+(r2*100).toFixed(0)+'%</b> of '+esc(sym)+"'s daily moves, leaving an annualized alpha of <b>"+(alpha>=0?'+':'')+alpha.toFixed(1)+'%</b>'+(Math.abs(tt[0])>1.96?'':' (not statistically distinguishable from zero)')+'.';
+    h+='<div class="summary"><b>'+esc(sym)+'</b> carries '+mktTxt+tiltTxt+'.'+alphaTxt+'</div>';
+    // table
+    h+='<div class="sect">Full regression output</div><div class="panel" style="padding:6px 14px 10px">';
+    h+='<table><thead><tr><th>Factor</th><th>Beta</th><th>Std. error</th><th>t-stat</th><th>Sig.</th></tr></thead><tbody>';
+    var rows=[['Alpha (daily)',0],['Market (MKT)',1],['Size (SMB)',2],['Value (HML)',3],['Momentum (MOM)',4],['Quality (QMJ)',5]];
+    rows.forEach(function(rw){
+      var i=rw[1], bv=b[i], tv=tt[i], sev=tv!==0?bv/tv:0;
+      var star=Math.abs(tv)>2.58?'***':Math.abs(tv)>1.96?'**':Math.abs(tv)>1.64?'*':'';
+      var disp = i===0? bv.toFixed(5) : bv.toFixed(3);
+      h+='<tr><td>'+rw[0]+'</td><td class="'+(bv>=0?'pos':'neg')+'">'+disp+'</td><td>'+Math.abs(sev).toFixed(i===0?5:3)+'</td><td>'+tv.toFixed(2)+'</td><td>'+star+'</td></tr>';
+    });
+    h+='</tbody></table><div class="csub" style="padding:6px 4px 2px">*** |t|&gt;2.58 (99%) &middot; ** |t|&gt;1.96 (95%) &middot; * |t|&gt;1.64 (90%)</div></div>';
+    resEl.innerHTML=h;
+  }
+
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
