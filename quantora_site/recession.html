@@ -1,0 +1,106 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recession Probability & Macro Signals - live, free | Quantora</title>
+<meta name="description" content="Live US recession probability from the Treasury yield curve (NY Fed / Estrella-Mishkin model), the Sahm rule, net liquidity, credit stress, real yields and breakeven inflation. Powered by FRED, free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/recession.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .sw{max-width:1000px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 22px}
+  .hero{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:18px;padding:22px 24px;margin-bottom:18px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .herotop{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .herolab{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8a91ad;font-weight:600}
+  .bignum{font-size:clamp(40px,7vw,64px);font-weight:700;line-height:1;letter-spacing:-.02em;margin:6px 0 2px}
+  .heronote{color:#6b7280;font-size:13px;max-width:52ch;line-height:1.55}
+  .pill{display:inline-block;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:600}
+  .spark{margin-top:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:15px 16px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#8a91ad;font-weight:600}
+  .cval{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+  .csub{font-size:12.5px;color:#6b7280;line-height:1.5}
+  .tag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;margin-top:8px}
+  .g{background:#e7f6ec;color:#0a7d3d}.a{background:#fff4e5;color:#a5670a}.r{background:#fdeaea;color:#c0392b}.n{background:#eef0f4;color:#667085}
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid rgba(17,24,39,.08);color:#9aa1ad;font-size:11.5px;line-height:1.65}
+  .asof{color:#9aa1ad;font-size:12px;margin:2px 0 18px}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="sw">
+  <div class="eyb">QUANTORA &middot; MACRO SIGNALS</div>
+  <h1>Is a recession coming?</h1>
+  <p class="lead">The market's own recession gauges, live and free - the Treasury yield curve, the Sahm rule, net liquidity, and credit stress, read the way strategists actually read them. Powered by the Federal Reserve's FRED data.</p>
+  <div class="asof" id="asof">Loading latest data&hellip;</div>
+
+  <div class="hero" id="hero">
+    <div class="herotop">
+      <div>
+        <div class="herolab">12-month recession probability</div>
+        <div class="bignum" id="prob">&mdash;</div>
+        <div id="probtag"></div>
+      </div>
+      <div class="heronote">From the Treasury yield curve (10y minus 3-month) via the NY Fed / Estrella-Mishkin probit model. Historically a reading above ~30% has preceded recessions; it has flagged nearly every US recession since the 1960s. Not a forecast of timing.</div>
+    </div>
+    <div class="spark" id="probspark"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="foot">
+    Data from the Federal Reserve Bank of St. Louis (FRED). This product uses the FRED API but is not endorsed or certified by the Federal Reserve Bank of St. Louis. The recession-probability model is the Estrella-Mishkin (1996) probit on the 10-year minus 3-month Treasury spread. For information and education only - not investment advice.
+  </div>
+</div>
+
+<script>
+(function(){
+  var asof=document.getElementById('asof'), grid=document.getElementById('grid');
+  function fred(id){ return fetch('/api/fmp?type=fred&series='+id, {cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ return (j&&j.data&&j.data.observations)||[]; }).catch(function(){ return []; }); }
+  function latest(obs){ for(var i=0;i<obs.length;i++){ if(obs[i].value && obs[i].value!=='.') return {date:obs[i].date, v:+obs[i].value}; } return null; }
+  function normCdf(x){ var t=1/(1+0.2316419*Math.abs(x)); var d=0.3989423*Math.exp(-x*x/2); var p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274)))); return x>0?1-p:p; }
+  function probit(sp){ return normCdf(-0.5333 - 0.6629*sp)*100; }
+  function spark(vals,w,h,color){ if(vals.length<2) return ''; var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), rg=(mx-mn)||1; var pts=vals.map(function(v,i){ var x=(i/(vals.length-1))*w; var y=h-((v-mn)/rg)*(h-4)-2; return x.toFixed(1)+','+y.toFixed(1); }).join(' '); return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round"/></svg>'; }
+  function fmtT(millions){ return '$'+(millions/1e6).toFixed(2)+'T'; }
+  function card(lab,val,sub,tagText,tagClass){ var t=tagText?('<span class="tag '+tagClass+'">'+tagText+'</span>'):''; return '<div class="card"><div class="clab">'+lab+'</div><div class="cval">'+val+'</div><div class="csub">'+sub+'</div>'+t+'</div>'; }
+
+  var ids=['T10Y3M','T10Y2Y','SAHMREALTIME','BAMLH0A0HYM2','DFII10','T10YIE','WALCL','WTREGEN','RRPONTSYD'];
+  Promise.all(ids.map(fred)).then(function(res){
+    var m={}; ids.forEach(function(id,i){ m[id]=res[i]; });
+    var t103=latest(m.T10Y3M), t102=latest(m.T10Y2Y), sahm=latest(m.SAHMREALTIME), hy=latest(m.BAMLH0A0HYM2), real=latest(m.DFII10), be=latest(m.T10YIE), wal=latest(m.WALCL), tga=latest(m.WTREGEN), rrp=latest(m.RRPONTSYD);
+
+    // hero: recession probability
+    if(t103){
+      var p=probit(t103.v);
+      document.getElementById('prob').innerHTML=p.toFixed(0)+'%';
+      var pc = p>=30?'r':(p>=15?'a':'g'); var ptxt = p>=30?'Elevated risk':(p>=15?'Watch':'Low risk');
+      document.getElementById('probtag').innerHTML='<span class="pill '+pc+'">'+ptxt+'</span>';
+      // spark of probability history (chronological)
+      var hist=m.T10Y3M.filter(function(o){return o.value&&o.value!=='.';}).map(function(o){return probit(+o.value);}).reverse();
+      var scolor = p>=30?'#c0392b':(p>=15?'#a5670a':'#0a7d3d');
+      document.getElementById('probspark').innerHTML=spark(hist,600,46,scolor)+'<div class="csub" style="margin-top:4px">Recent trend (last '+hist.length+' trading days)</div>';
+      asof.textContent='As of '+t103.date+' - live from FRED';
+    } else { document.getElementById('prob').textContent='n/a'; asof.textContent='Data unavailable right now.'; }
+
+    var h='';
+    // 10y-3m
+    if(t103){ var inv=t103.v<0; h+=card('Yield curve 10y - 3m', t103.v.toFixed(2)+' pp', inv?'Inverted - a classic recession warning':'Positive (not inverted)', inv?'Inverted':'Normal', inv?'r':'g'); }
+    // 10y-2y
+    if(t102){ var inv2=t102.v<0; h+=card('Yield curve 10y - 2y', t102.v.toFixed(2)+' pp', inv2?'Inverted':'Positive (not inverted)', inv2?'Inverted':'Normal', inv2?'r':'g'); }
+    // Sahm
+    if(sahm){ var trig=sahm.v>=0.50; h+=card('Sahm rule', sahm.v.toFixed(2), trig?'Triggered (>= 0.50) - recession likely underway':'Below the 0.50 trigger', trig?'Triggered':'No signal', trig?'r':'g'); }
+    // HY credit stress
+    if(hy){ var hc=hy.v>=5?'r':(hy.v>=3.5?'a':'g'); var ht=hy.v>=5?'Stress':(hy.v>=3.5?'Elevated':'Calm'); h+=card('Credit stress (HY spread)', hy.v.toFixed(2)+'%', 'High-yield option-adjusted spread. Wider = more risk aversion.', ht, hc); }
+    // Net liquidity
+    if(wal&&tga&&rrp){ var nl=wal.v - tga.v - (rrp.v*1000); h+=card('Net liquidity', fmtT(nl), 'Fed assets minus Treasury cash minus reverse repo. A liquidity tide for risk assets.', 'Fed - TGA - RRP', 'n'); }
+    // Real yield + breakeven
+    if(real){ h+=card('Real 10y yield', real.v.toFixed(2)+'%', 'Inflation-protected (TIPS) yield - the real cost of money.', '', ''); }
+    if(be){ var bt=be.v>=2.5?'a':'g'; h+=card('10y breakeven inflation', be.v.toFixed(2)+'%', 'Market-implied average inflation over 10 years.', be.v>=2.5?'Above target':'Near target', bt); }
+
+    grid.innerHTML = h || '<div class="card"><div class="csub">Macro data is unavailable right now - please try again shortly.</div></div>';
+  });
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
