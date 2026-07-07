@@ -1,0 +1,101 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yield Curve Lab - Treasury curve shape, spreads &amp; inversions | Quantora</title>
+<meta name="description" content="The live US Treasury yield curve from 1 month to 30 years, overlaid against 1 and 2 years ago, with the 10Y-2Y and 10Y-3M spreads, an inversion tracker and the spread history that has preceded every recent recession. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/yield-curve.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 16px}
+  .res{margin-top:8px}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:24px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:21px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  svg{width:100%;height:auto;display:block}
+  .lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#4a4f58;margin-top:8px}
+  .lg span{display:inline-flex;align-items:center;gap:6px}.dot{width:11px;height:3px;border-radius:2px;display:inline-block}
+  .banner{border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.55;font-weight:500}
+  .binv{background:#fdecea;border:1px solid #f5c4bd;color:#b23125}
+  .bnorm{background:#e7f6ec;border:1px solid #b7e2c6;color:#1a7f42}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; YIELD CURVE LAB</div>
+  <h1>US Treasury yield curve</h1>
+  <p class="lead">The shape of the yield curve is the market's single clearest statement about growth and Fed policy - and its inversions have preceded every US recession of the last half century. Here is the live curve from 1 month to 30 years, how it has shifted over the past two years, and the spreads that matter.</p>
+  <div class="res" id="res"><div class="spin">Loading the Treasury curve from FRED&hellip;</div></div>
+  <div class="muted">Yields are US Treasury constant-maturity rates from FRED (DGS series), updated each business day. The 10Y-2Y and 10Y-3M spreads are classic recession bellwethers: a negative (inverted) spread has historically led downturns by several quarters, though timing varies and it is not a guarantee. Comparison curves use the closest available observation to one and two years ago. Informational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var TEN=[['DGS1MO','1M'],['DGS3MO','3M'],['DGS6MO','6M'],['DGS1','1Y'],['DGS2','2Y'],['DGS3','3Y'],['DGS5','5Y'],['DGS7','7Y'],['DGS10','10Y'],['DGS20','20Y'],['DGS30','30Y']];
+  var resEl=document.getElementById('res');
+  function fred(series){return fetch('/api/fmp?type=fred&series='+series).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var out=[];for(var i=0;i<obs.length;i++){var v=parseFloat(obs[i].value);if(!isNaN(v))out.push({d:obs[i].date,v:v});}return out;}).catch(function(){return [];});}
+  function latest(a){return a.length?a[a.length-1]:null;}
+  function asOf(a,target){var ans=null;for(var i=0;i<a.length;i++){if(a[i].d<=target)ans=a[i];else break;}return ans;}
+  function ymd(dt){return dt.toISOString().slice(0,10);}
+  Promise.all(TEN.map(function(t){return fred(t[0]);})).then(function(series){
+    var now=new Date();var y1=ymd(new Date(now.getTime()-365*864e5)),y2=ymd(new Date(now.getTime()-730*864e5));
+    var curNow=[],cur1=[],cur2=[],labels=[],anyDate='';
+    for(var i=0;i<TEN.length;i++){var s=series[i];var l=latest(s);if(l){curNow.push(l.v);labels.push(TEN[i][1]);anyDate=l.d;var a1=asOf(s,y1),a2=asOf(s,y2);cur1.push(a1?a1.v:null);cur2.push(a2?a2.v:null);}else{curNow.push(null);cur1.push(null);cur2.push(null);labels.push(TEN[i][1]);}}
+    // map for spreads
+    function val(code){var idx=TEN.map(function(t){return t[0];}).indexOf(code);return idx>=0?curNow[idx]:null;}
+    var y10=val('DGS10'),y2v=val('DGS2'),y3m=val('DGS3MO'),y5=val('DGS5'),y30=val('DGS30');
+    var s102=(y10!=null&&y2v!=null)?y10-y2v:null, s103m=(y10!=null&&y3m!=null)?y10-y3m:null, s305=(y30!=null&&y5!=null)?y30-y5:null;
+    // 10-2 spread history
+    var d10=series[TEN.map(function(t){return t[0];}).indexOf('DGS10')],d2=series[TEN.map(function(t){return t[0];}).indexOf('DGS2')];
+    var m2={};d2.forEach(function(o){m2[o.d]=o.v;});var hist=[];d10.forEach(function(o){if(m2[o.d]!=null)hist.push({d:o.d,v:o.v-m2[o.d]});});
+    hist=hist.slice(-1300);
+    render(labels,curNow,cur1,cur2,anyDate,s102,s103m,s305,hist);
+  }).catch(function(){resEl.innerHTML='<div class="err">Could not load the Treasury curve right now. If this persists the FRED key may need to be set in Vercel.</div>';});
+
+  function pathFor(vals,xf,yf){var p='',started=false;for(var i=0;i<vals.length;i++){if(vals[i]==null)continue;p+=(started?'L':'M')+' '+xf(i).toFixed(1)+' '+yf(vals[i]).toFixed(1)+' ';started=true;}return p;}
+  function render(labels,cn,c1,c2,asof,s102,s103m,s305,hist){
+    var all=cn.concat(c1,c2).filter(function(v){return v!=null;});
+    var lo=Math.min.apply(null,all),hi=Math.max.apply(null,all);lo=Math.floor(lo*2)/2-0.2;hi=Math.ceil(hi*2)/2+0.2;
+    var W=920,H=300,padL=38,padR=12,padT=14,padB=28,iw=W-padL-padR,ih=H-padT-padB,N=labels.length;
+    function xf(i){return padL+(i/(N-1))*iw;}function yf(v){return padT+(1-(v-lo)/(hi-lo))*ih;}
+    var grid='';for(var g=Math.ceil(lo);g<=hi;g++){var y=yf(g);grid+='<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(padL-5)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">'+g+'%</text>';}
+    var xlab='';for(var i=0;i<N;i++)xlab+='<text x="'+xf(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="10" fill="#9aa1ad">'+labels[i]+'</text>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+grid+xlab
+      +'<path d="'+pathFor(c2,xf,yf)+'" fill="none" stroke="#c9cfda" stroke-width="1.4"/>'
+      +'<path d="'+pathFor(c1,xf,yf)+'" fill="none" stroke="#8aa0c8" stroke-width="1.6"/>'
+      +'<path d="'+pathFor(cn,xf,yf)+'" fill="none" stroke="#2f6bff" stroke-width="2.4"/>';
+    for(i=0;i<N;i++)if(cn[i]!=null)svg+='<circle cx="'+xf(i).toFixed(1)+'" cy="'+yf(cn[i]).toFixed(1)+'" r="2.6" fill="#2f6bff"/>';
+    svg+='</svg>';
+    var inv=(s102!=null&&s102<0)||(s103m!=null&&s103m<0);
+    var h='';
+    h+='<div class="banner '+(inv?'binv':'bnorm')+'">'+(inv?'&#9888; The curve is <b>inverted</b> - short rates exceed long rates. Historically this has preceded recessions by several quarters.':'&#10003; The curve is <b>upward-sloping</b> (not inverted) - the normal, expansion-consistent shape.')+' &nbsp;Latest data: '+asof+'.</div>';
+    h+='<div class="sect">Key spreads</div><div class="cards">';
+    function sc(lab,v,sub){return '<div class="card"><div class="clab">'+lab+'</div><div class="cval" style="color:'+(v==null?'#14161c':v<0?'#c0392b':'#1a7f42')+'">'+(v==null?'-':(v>=0?'+':'')+(v*100).toFixed(0)+' bp')+'</div><div class="csub">'+sub+'</div></div>';}
+    h+=sc('10Y &minus; 2Y',s102,s102==null?'':(s102<0?'inverted':'positive'));
+    h+=sc('10Y &minus; 3M',s103m,s103m==null?'':(s103m<0?'inverted':'positive'));
+    h+=sc('30Y &minus; 5Y',s305,s305==null?'':(s305<0?'inverted':'positive'));
+    h+='</div>';
+    h+='<div class="sect">Yield curve &middot; now vs 1 &amp; 2 years ago</div><div class="panel">'+svg+'<div class="lg"><span><span class="dot" style="background:#2f6bff"></span>Now</span><span><span class="dot" style="background:#8aa0c8"></span>1 year ago</span><span><span class="dot" style="background:#c9cfda"></span>2 years ago</span></div></div>';
+    // 10-2 history
+    if(hist.length>20){
+      var W2=920,H2=200,pl=40,pr=12,pt=12,pb=20,iw2=W2-pl-pr,ih2=H2-pt-pb;
+      var hlo=Math.min.apply(null,hist.map(function(o){return o.v;})),hhi=Math.max.apply(null,hist.map(function(o){return o.v;}));hlo=Math.min(hlo,0)-0.1;hhi=Math.max(hhi,0)+0.1;
+      function hx(i){return pl+(i/(hist.length-1))*iw2;}function hy(v){return pt+(1-(v-hlo)/(hhi-hlo))*ih2;}
+      var zl=hy(0),ln='M '+hx(0)+' '+hy(hist[0].v);for(i=1;i<hist.length;i++)ln+=' L '+hx(i).toFixed(1)+' '+hy(hist[i].v).toFixed(1);
+      var svg2='<svg viewBox="0 0 '+W2+' '+H2+'" xmlns="http://www.w3.org/2000/svg"><rect x="'+pl+'" y="'+zl.toFixed(1)+'" width="'+iw2+'" height="'+(H2-pb-zl).toFixed(1)+'" fill="rgba(192,57,43,.06)"/><line x1="'+pl+'" y1="'+zl.toFixed(1)+'" x2="'+(W2-pr)+'" y2="'+zl.toFixed(1)+'" stroke="rgba(17,24,39,.25)" stroke-dasharray="4 4"/><text x="'+(pl-5)+'" y="'+(zl+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">0</text><path d="'+ln+'" fill="none" stroke="#14161c" stroke-width="1.4"/></svg>';
+      h+='<div class="sect">10Y &minus; 2Y spread history (shaded = inverted)</div><div class="panel">'+svg2+'</div>';
+    }
+    resEl.innerHTML=h;
+  }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

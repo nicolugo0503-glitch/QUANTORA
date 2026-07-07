@@ -1,0 +1,105 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Move Explainer - why is this stock moving? | Quantora</title>
+<meta name="description" content="Quantora measures exactly how much a stock has moved and how unusual that move is versus its own volatility, then asks an AI for the plausible drivers and what to watch next. Grounded in real prices, honest about uncertainty. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/move-explainer.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:880px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:10px;max-width:520px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:24px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:24px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .dx{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;color:#2c313a;font-size:14.5px;line-height:1.75}
+  .dx h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8a91ad;margin:0 0 10px;font-weight:600}
+  .dx p{margin:0 0 12px}.dx strong{color:#14161c}
+  .spin{color:#6b7280;font-size:14px;padding:10px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  code{background:#eef0f4;border-radius:5px;padding:1px 6px;font-size:12.5px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:18px;line-height:1.6;max-width:76ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; AI MOVE EXPLAINER</div>
+  <h1>Why is it moving?</h1>
+  <p class="lead">Quantora first measures the move - how big, and how unusual versus the stock's own volatility - then asks an AI for the most plausible drivers and what to watch. The size is a fact from the tape; the explanation is a hypothesis, and it says so.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Explain</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Moves and the "sigma" figure (how many daily standard deviations the recent move represents) are computed from daily prices. The written explanation is AI-generated and reasons about likely categories of drivers - it does not have a live news feed for the exact day and may be out of date, so treat it as a starting hypothesis to verify, not fact. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['NVDA','TSLA','AAPL','SMCI','PLTR','COIN','GME','MSTR'];
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+  function getPrices(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var out=[];for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)out.push({d:(''+d).slice(0,10),v:+p});}out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;});}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function run(){
+    var sym=(qEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!sym||busy)return;qEl.value=sym;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Measuring the move&hellip;</div>';
+    getPrices(sym).then(function(p){if(!p||p.length<40)throw new Error('nodata');compute(sym,p);}).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">No usable price history for that symbol - check the ticker and try again.</div>';});
+  }
+  function compute(sym,p){
+    var n=p.length,last=p[n-1].v;
+    function ret(k){return n>k?last/p[n-1-k].v-1:null;}
+    var r1=ret(1),r5=ret(5),r21=ret(21);
+    // daily vol last 120
+    var r=[];for(var i=Math.max(1,n-120);i<n;i++)r.push(p[i].v/p[i-1].v-1);
+    var m=r.reduce(function(a,b){return a+b;},0)/r.length,v=0;for(i=0;i<r.length;i++)v+=(r[i]-m)*(r[i]-m);var dv=Math.sqrt(v/(r.length-1));
+    var sig1=r1!=null?r1/dv:null,sig5=r5!=null?r5/(dv*Math.sqrt(5)):null;
+    // 52w range
+    var look=Math.min(252,n),win=p.slice(n-look),hi=Math.max.apply(null,win.map(function(o){return o.v;})),lo=Math.min.apply(null,win.map(function(o){return o.v;}));
+    var pos=(last-lo)/(hi-lo)*100;
+    var metrics={last:last,r1:r1,r5:r5,r21:r21,sig1:sig1,sig5:sig5,pos:pos,hi:hi,lo:lo,dvol:dv*100};
+    renderM(sym,metrics);askAI(sym,metrics);
+  }
+  function pc(x){return x==null?'-':(x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+  function renderM(sym,m){
+    var h='<div class="sect">The move &middot; '+esc(sym)+'</div><div class="cards">';
+    h+='<div class="card"><div class="clab">1-day</div><div class="cval '+(m.r1>=0?'pos':'neg')+'">'+pc(m.r1)+'</div><div class="csub">'+(m.sig1!=null?Math.abs(m.sig1).toFixed(1)+'&sigma; move':'')+'</div></div>';
+    h+='<div class="card"><div class="clab">5-day</div><div class="cval '+(m.r5>=0?'pos':'neg')+'">'+pc(m.r5)+'</div><div class="csub">'+(m.sig5!=null?Math.abs(m.sig5).toFixed(1)+'&sigma; move':'')+'</div></div>';
+    h+='<div class="card"><div class="clab">1-month</div><div class="cval '+(m.r21>=0?'pos':'neg')+'">'+pc(m.r21)+'</div></div>';
+    h+='<div class="card"><div class="clab">52-week range</div><div class="cval">'+m.pos.toFixed(0)+'%</div><div class="csub">'+(m.pos>85?'near highs':m.pos<15?'near lows':'mid-range')+'</div></div>';
+    h+='</div><div class="sect">AI read</div><div id="dx" class="dx"><div class="spin">Asking the AI what likely drove this&hellip;</div></div>';
+    document.getElementById('res').innerHTML=h;
+  }
+  function askAI(sym,m){
+    var unusual=m.sig5!=null&&Math.abs(m.sig5)>1.5;
+    var facts=sym+' is at '+m.last.toFixed(2)+'. Moves: 1-day '+pc(m.r1)+' ('+(m.sig1!=null?m.sig1.toFixed(1)+' sigma':'n/a')+'), 5-day '+pc(m.r5)+' ('+(m.sig5!=null?m.sig5.toFixed(1)+' sigma':'n/a')+'), 1-month '+pc(m.r21)+'. It sits at '+m.pos.toFixed(0)+'% of its 52-week range. Typical daily move is about '+m.dvol.toFixed(1)+'%.';
+    var prompt='A stock has made the following measured move: '+facts+' In 2-3 short paragraphs, explain the most plausible CATEGORIES of drivers for a move of this size and direction (e.g. earnings or guidance, sector/peer moves, macro or rates, analyst actions, single-stock news, positioning/technicals). Note whether this is a large move for this stock ('+(unusual?'it is unusually large':'it is within normal range')+'). Be explicit that you do not have the live news for the exact date and that the user should verify the actual catalyst. End with 2-3 specific things to check. Do not fabricate specific headlines, numbers, or dates.';
+    fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:prompt,context:'AI move explainer'})})
+      .then(function(r){return r.json();}).then(function(j){var dx=document.getElementById('dx');if(!dx)return;
+        if(j&&j.error==='ai_key_needed'){dx.innerHTML='<div class="err">The AI read needs a model key. Add <code>ANTHROPIC_API_KEY</code> in Vercel and redeploy. The measured move above works without it.</div>';}
+        else if(j&&typeof j.answer==='string'){dx.innerHTML=j.answer.split(/\n\n+/).map(function(pp){return '<p>'+esc(pp).replace(/\n/g,'<br>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</p>';}).join('');}
+        else dx.innerHTML='<div class="err">The AI did not return a read. The measured move above is still valid.</div>';
+        busy=false;goEl.disabled=false;
+      }).catch(function(){var dx=document.getElementById('dx');if(dx)dx.innerHTML='<div class="err">Network error reaching the AI.</div>';busy=false;goEl.disabled=false;});
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

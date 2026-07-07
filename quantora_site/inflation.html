@@ -1,0 +1,86 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inflation &amp; Real-Rate Nowcast - CPI, core PCE, breakevens | Quantora</title>
+<meta name="description" content="A live read on inflation and real rates: headline CPI and core PCE year-over-year, market-implied breakeven inflation, 10-year TIPS real yield and the real policy rate - all in one board, straight from FRED. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/inflation.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 16px}
+  .res{margin-top:8px}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:24px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:21px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .arw{font-size:12px;font-weight:600}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  svg{width:100%;height:auto;display:block}
+  .lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#4a4f58;margin-top:8px}
+  .lg span{display:inline-flex;align-items:center;gap:6px}.dot{width:11px;height:3px;border-radius:2px;display:inline-block}
+  .banner{border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.55;font-weight:500;background:#eef2fb;border:1px solid #d4ddf1;color:#2c3a57}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; INFLATION NOWCAST</div>
+  <h1>Inflation &amp; real rates</h1>
+  <p class="lead">Inflation drives everything the Fed does, and real rates - what is left after inflation - drive everything markets do. This board pulls the numbers that matter into one place: what inflation actually is, what the bond market expects it to be, and how restrictive policy really is once you strip inflation out.</p>
+  <div class="res" id="res"><div class="spin">Loading inflation and rates data from FRED&hellip;</div></div>
+  <div class="muted">Headline CPI and core PCE year-over-year are computed from the FRED price indices (CPIAUCSL, PCEPILFE). Breakeven inflation (T10YIE) is the 10-year inflation rate implied by the gap between nominal Treasuries and TIPS - the market's expectation. The 10-year real yield is the TIPS yield (DFII10). The real policy rate is the fed funds rate minus core PCE. The Fed targets 2% core PCE. Informational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var resEl=document.getElementById('res');
+  function fred(series){return fetch('/api/fmp?type=fred&series='+series).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var out=[];for(var i=0;i<obs.length;i++){var v=parseFloat(obs[i].value);if(!isNaN(v))out.push({d:obs[i].date,v:v});}return out;}).catch(function(){return [];});}
+  function yoy(s){var out=[];for(var i=12;i<s.length;i++)out.push({d:s[i].d,v:(s[i].v/s[i-12].v-1)*100});return out;}
+  function latest(a){return a.length?a[a.length-1]:null;}
+  function ago(a,k){return a.length>k?a[a.length-1-k]:null;}
+  Promise.all(['CPIAUCSL','PCEPILFE','CPILFESL','T10YIE','T5YIFR','DFII10','FEDFUNDS'].map(fred)).then(function(S){
+    var cpi=yoy(S[0]),corePCE=yoy(S[1]),coreCPI=yoy(S[2]);
+    var be10=S[3],fwd=S[4],real10=S[5],ff=S[6];
+    var lCPI=latest(cpi),lCore=latest(corePCE),lCoreCPI=latest(coreCPI),lBE=latest(be10),lFwd=latest(fwd),lReal=latest(real10),lFF=latest(ff);
+    render({cpi:cpi,corePCE:corePCE,coreCPI:coreCPI,be10:be10,lCPI:lCPI,lCore:lCore,lCoreCPI:lCoreCPI,lBE:lBE,lFwd:lFwd,lReal:lReal,lFF:lFF,cpi3:ago(cpi,3),core3:ago(corePCE,3)});
+  }).catch(function(){resEl.innerHTML='<div class="err">Could not load inflation data right now. If this persists the FRED key may need to be set in Vercel.</div>';});
+
+  function arrow(now,prev){if(prev==null)return '';var d=now-prev;return d>0.05?'<span class="arw" style="color:#c0392b">&#9650; rising</span>':d<-0.05?'<span class="arw" style="color:#1a7f42">&#9660; falling</span>':'<span class="arw" style="color:#8a91ad">&#8213; flat</span>';}
+  function lineSvg(seriesList,colors,zeroLabelPct){
+    var W=920,H=250,pl=40,pr=12,pt=14,pb=22,iw=W-pl-pr,ih=H-pt-pb;
+    var all=[];seriesList.forEach(function(s){s.forEach(function(o){all.push(o.v);});});
+    var lo=Math.min.apply(null,all),hi=Math.max.apply(null,all);lo=Math.floor(lo)-0.3;hi=Math.ceil(hi)+0.3;
+    // shared time axis by index over the longest series length window (align by date)
+    var maxlen=0;seriesList.forEach(function(s){maxlen=Math.max(maxlen,s.length);});
+    function yf(v){return pt+(1-(v-lo)/(hi-lo))*ih;}
+    var grid='';for(var g=Math.ceil(lo);g<=hi;g++){var y=yf(g);grid+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(pl-5)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">'+g+'%</text>';}
+    var tgt=yf(2);grid+='<line x1="'+pl+'" y1="'+tgt.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+tgt.toFixed(1)+'" stroke="rgba(26,127,66,.5)" stroke-dasharray="5 4"/><text x="'+(W-pr)+'" y="'+(tgt-4).toFixed(1)+'" text-anchor="end" font-size="10" fill="#1a7f42">2% target</text>';
+    var paths='';seriesList.forEach(function(s,si){var n=s.length;function xf(i){return pl+(i/(maxlen-1))*iw;}var off=maxlen-n;var p='';for(var i=0;i<n;i++)p+=(i===0?'M':'L')+' '+xf(off+i).toFixed(1)+' '+yf(s[i].v).toFixed(1)+' ';paths+='<path d="'+p+'" fill="none" stroke="'+colors[si]+'" stroke-width="1.9"/>';});
+    return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+grid+paths+'</svg>';
+  }
+  function render(D){
+    var realPolicy=(D.lFF&&D.lCore)?D.lFF.v-D.lCore.v:null;
+    var h='';
+    var coreV=D.lCore?D.lCore.v:null;
+    h+='<div class="banner">'+(coreV!=null?('Core PCE is running at <b>'+coreV.toFixed(1)+'%</b> vs the Fed’s <b>2%</b> target'+(coreV>2.5?' - still meaningfully above target':coreV>2.2?' - modestly above target':' - close to target')+'. '):'')+(realPolicy!=null?('The real policy rate (fed funds minus core PCE) is <b>'+(realPolicy>=0?'+':'')+realPolicy.toFixed(1)+'%</b>, '+(realPolicy>1?'a restrictive setting':realPolicy>0?'mildly restrictive':'accommodative')+'.'):'')+'</div>';
+    h+='<div class="sect">Latest readings</div><div class="cards">';
+    function card(lab,val,sub,arw){return '<div class="card"><div class="clab">'+lab+'</div><div class="cval">'+(val==null?'-':val)+'</div><div class="csub">'+sub+(arw?' &nbsp;'+arw:'')+'</div></div>';}
+    h+=card('Headline CPI YoY',D.lCPI?D.lCPI.v.toFixed(1)+'%':null,D.lCPI?D.lCPI.d:'',arrow(D.lCPI&&D.lCPI.v,D.cpi3&&D.cpi3.v));
+    h+=card('Core PCE YoY',D.lCore?D.lCore.v.toFixed(1)+'%':null,'Fed’s preferred gauge',arrow(D.lCore&&D.lCore.v,D.core3&&D.core3.v));
+    h+=card('10Y breakeven',D.lBE?D.lBE.v.toFixed(2)+'%':null,'market-expected inflation','');
+    h+=card('10Y real yield',D.lReal?D.lReal.v.toFixed(2)+'%':null,'TIPS, after inflation','');
+    h+=card('Real policy rate',realPolicy!=null?(realPolicy>=0?'+':'')+realPolicy.toFixed(1)+'%':null,'fed funds &minus; core PCE','');
+    h+='</div>';
+    h+='<div class="sect">Realized inflation (YoY)</div><div class="panel">'+lineSvg([D.cpi.slice(-84),D.corePCE.slice(-84)],['#2f6bff','#e07a3f'])+'<div class="lg"><span><span class="dot" style="background:#2f6bff"></span>Headline CPI</span><span><span class="dot" style="background:#e07a3f"></span>Core PCE</span></div></div>';
+    if(D.be10&&D.be10.length>20)h+='<div class="sect">Market-expected inflation (10Y breakeven)</div><div class="panel">'+lineSvg([D.be10.slice(-1300)],['#6b46c1'])+'</div>';
+    resEl.innerHTML=h;
+  }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

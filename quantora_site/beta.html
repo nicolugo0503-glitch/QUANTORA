@@ -1,0 +1,128 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beta &amp; Regime Lab - up-market vs down-market beta, rolling beta | Quantora</title>
+<meta name="description" content="See a stock's true market sensitivity: full-sample beta, separate up-market and down-market beta (does it fall harder than it rises?), rolling beta over time, correlation and CAPM alpha. Five years of daily data, free.">
+<link rel="canonical" href="https://www.usequantora.com/beta.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:10px;max-width:520px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .ln{width:100%;height:auto;display:block}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .barw{position:relative;height:26px;background:rgba(17,24,39,.05);border-radius:7px;margin-top:6px}
+  .barf{position:absolute;left:0;top:0;bottom:0;border-radius:7px}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}
+  .summary b{color:#fff}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; BETA / REGIME LAB</div>
+  <h1>Beta &amp; regime</h1>
+  <p class="lead">A single beta hides the thing that actually hurts: many stocks are far more sensitive to the market on the way down than on the way up. Quantora splits beta into up-market and down-market halves, tracks how beta drifts over time, and shows the CAPM alpha left over - so you see the real risk profile, not one averaged number.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Beta is the slope of the stock's daily returns regressed on the S&amp;P 500 (SPY). Up-market beta uses only days SPY rose; down-market beta uses only days SPY fell. Rolling beta uses a 63-trading-day window. CAPM alpha is the annualized average return not explained by market exposure (risk-free rate ignored, so it is an approximation). Based on daily returns over roughly five years. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['NVDA','AAPL','TSLA','JPM','KO','XOM','TLT','GLD'];
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+  function getPrices(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;});}
+  function mean(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;}
+  function betaOf(ys,xs){var mx=mean(xs),my=mean(ys),num=0,den=0;for(var i=0;i<xs.length;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)*(xs[i]-mx);}return den>0?num/den:0;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function run(){
+    var sym=(qEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!sym||busy)return;qEl.value=sym;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Regressing against the market&hellip;</div>';
+    Promise.all([getPrices(sym),getPrices('SPY')]).then(function(a){
+      var tgt=a[0],spy=a[1];
+      var dates=Object.keys(tgt).filter(function(d){return spy[d];}).sort();
+      if(dates.length<160)throw new Error('nodata');
+      var rs=[],rm=[],dd=[];
+      for(var i=1;i<dates.length;i++){var d0=dates[i-1],d1=dates[i];rs.push(tgt[d1]/tgt[d0]-1);rm.push(spy[d1]/spy[d0]-1);dd.push(d1);}
+      analyze(sym,rs,rm,dd);busy=false;goEl.disabled=false;
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Not enough overlapping history for that symbol - check the ticker and try again.</div>';});
+  }
+  function analyze(sym,rs,rm,dd){
+    var n=rs.length;
+    var beta=betaOf(rs,rm);
+    var us=[],um=[],ds=[],dm=[];
+    for(var i=0;i<n;i++){if(rm[i]>0){us.push(rs[i]);um.push(rm[i]);}else if(rm[i]<0){ds.push(rs[i]);dm.push(rm[i]);}}
+    var upB=betaOf(us,um),dnB=betaOf(ds,dm);
+    // correlation
+    var ms=mean(rs),mm=mean(rm),cov=0,vs=0,vm=0;for(i=0;i<n;i++){cov+=(rs[i]-ms)*(rm[i]-mm);vs+=(rs[i]-ms)*(rs[i]-ms);vm+=(rm[i]-mm)*(rm[i]-mm);}
+    var corr=cov/Math.sqrt(vs*vm), r2=corr*corr;
+    var alpha=(ms-beta*mm)*252*100;
+    // rolling beta w=63
+    var w=63,roll=[];
+    for(i=w;i<=n;i++){var ss=rs.slice(i-w,i),mmk=rm.slice(i-w,i);roll.push({d:dd[i-1],b:betaOf(ss,mmk)});}
+    // svg rolling
+    var W=920,H=200,padL=40,padR=10,padT=12,padB=20,iw=W-padL-padR,ih=H-padT-padB;
+    var bmin=Math.min.apply(null,roll.map(function(o){return o.b;})),bmax=Math.max.apply(null,roll.map(function(o){return o.b;}));
+    bmin=Math.min(bmin,beta,1)-0.1;bmax=Math.max(bmax,beta,1)+0.1;
+    function xf(i){return padL+(i/(roll.length-1))*iw;}
+    function yf(b){return padT+(1-(b-bmin)/(bmax-bmin))*ih;}
+    var line='M '+xf(0)+' '+yf(roll[0].b);for(i=1;i<roll.length;i++)line+=' L '+xf(i).toFixed(1)+' '+yf(roll[i].b).toFixed(1);
+    var y1=yf(1),yb=yf(beta);
+    var svg='<svg class="ln" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
+      +'<line x1="'+padL+'" y1="'+y1.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y1.toFixed(1)+'" stroke="rgba(17,24,39,.18)" stroke-dasharray="4 4"/>'
+      +'<text x="'+(padL-5)+'" y="'+(y1+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">1.0</text>'
+      +'<line x1="'+padL+'" y1="'+yb.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yb.toFixed(1)+'" stroke="rgba(47,107,255,.35)" stroke-dasharray="2 3"/>'
+      +'<path d="'+line+'" fill="none" stroke="#2f6bff" stroke-width="1.5"/>'
+      +'<text x="'+padL+'" y="'+(padT+8)+'" font-size="10" fill="#9aa1ad">'+bmax.toFixed(1)+'</text>'
+      +'<text x="'+padL+'" y="'+(H-padB)+'" font-size="10" fill="#9aa1ad">'+bmin.toFixed(1)+'</text>'
+      +'</svg>';
+    var asym=dnB-upB;
+    var maxb=Math.max(upB,dnB,1.2);
+    var h='';
+    h+='<div class="sect">Market sensitivity &middot; '+esc(sym)+' &middot; '+n+' days vs SPY</div>';
+    h+='<div class="cards">';
+    h+='<div class="card"><div class="clab">Beta</div><div class="cval">'+beta.toFixed(2)+'</div><div class="csub">'+(beta>1.15?'aggressive':beta<0.85?'defensive':'market-like')+'</div></div>';
+    h+='<div class="card"><div class="clab">Up-market beta</div><div class="cval pos">'+upB.toFixed(2)+'</div><div class="csub">on SPY-up days</div></div>';
+    h+='<div class="card"><div class="clab">Down-market beta</div><div class="cval neg">'+dnB.toFixed(2)+'</div><div class="csub">on SPY-down days</div></div>';
+    h+='<div class="card"><div class="clab">Correlation</div><div class="cval">'+corr.toFixed(2)+'</div><div class="csub">R&sup2; = '+(r2*100).toFixed(0)+'%</div></div>';
+    h+='</div>';
+    h+='<div class="sect">Up-beta vs down-beta</div><div class="panel"><div class="duo">'
+      +'<div><div class="csub">Up-market beta</div><div class="barw"><div class="barf" style="width:'+(upB/maxb*100).toFixed(1)+'%;background:#2f6bff"></div></div><div class="cval pos" style="font-size:18px;margin-top:6px">'+upB.toFixed(2)+'</div></div>'
+      +'<div><div class="csub">Down-market beta</div><div class="barw"><div class="barf" style="width:'+(dnB/maxb*100).toFixed(1)+'%;background:#c0392b"></div></div><div class="cval neg" style="font-size:18px;margin-top:6px">'+dnB.toFixed(2)+'</div></div>'
+      +'</div><div class="csub" style="margin-top:10px">'+(asym>0.12?'Down-beta exceeds up-beta - '+esc(sym)+' tends to fall harder than it rises (negative convexity).':asym<-0.12?'Up-beta exceeds down-beta - '+esc(sym)+' tends to rise more than it falls (positive convexity).':'Up- and down-market betas are roughly symmetric.')+'</div></div>';
+    h+='<div class="sect">Rolling 63-day beta</div><div class="panel">'+svg+'</div>';
+    h+='<div class="summary"><b>'+esc(sym)+'</b> has a market beta of <b>'+beta.toFixed(2)+'</b> with a correlation of <b>'+corr.toFixed(2)+'</b> to the S&amp;P 500 (market moves explain <b>'+(r2*100).toFixed(0)+'%</b> of its variance). It behaves with a beta of <b>'+upB.toFixed(2)+'</b> when the market rises and <b>'+dnB.toFixed(2)+'</b> when it falls'+(Math.abs(asym)>0.12?(asym>0?' - falling harder than it rises':' - rising more than it falls'):'')+'. CAPM alpha over this window is <b>'+(alpha>=0?'+':'')+alpha.toFixed(1)+'%</b> annualized.</div>';
+    resEl.innerHTML=h;
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

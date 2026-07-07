@@ -1,0 +1,111 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cross-Asset Regime Dashboard - stocks, bonds, gold, dollar, commodities | Quantora</title>
+<meta name="description" content="One board for the whole macro picture: trailing returns across stocks, bonds, gold, the dollar, credit and commodities, a live correlation heatmap, the rolling stock-bond correlation that defines the regime, and a plain-English read on risk-on vs risk-off. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/cross-asset.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 16px}
+  .res{margin-top:8px}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:24px 0 10px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:6px 16px 14px}
+  .panp{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  table{width:100%;border-collapse:collapse;margin-top:2px}
+  th,td{text-align:right;padding:9px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left;font-weight:600}
+  td.nm{font-weight:600}td .sub{font-weight:400;color:#9aa1ad;font-size:11px}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .hm{border-collapse:separate;border-spacing:3px}
+  .hm td{width:52px;height:34px;text-align:center;border-radius:6px;color:#fff;font-weight:600;font-size:12px;border:0;padding:0}
+  .hm th{font-size:11px;color:#6b7280;border:0;padding:3px}
+  svg{width:100%;height:auto;display:block}
+  .banner{border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6;font-weight:500;background:#0b1220;color:#e9edf5}
+  .banner b{color:#fff}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; CROSS-ASSET REGIME</div>
+  <h1>Cross-asset regime</h1>
+  <p class="lead">No asset trades in a vacuum. Whether bonds hedge your stocks, whether gold and the dollar are fighting, whether credit confirms the rally - that is the macro regime, and it decides which playbook works. This dashboard reads all of it at once from daily prices.</p>
+  <div class="res" id="res"><div class="spin">Loading cross-asset data&hellip;</div></div>
+  <div class="muted">Assets are represented by liquid ETFs: stocks (SPY), tech (QQQ), long Treasuries (TLT), gold (GLD), the US dollar (UUP), broad commodities (DBC) and high-yield credit (HYG). Correlations use daily returns over the last 126 trading days. The stock-bond correlation is the single most important regime signal: negative means bonds diversify equities (a growth-scare world), positive means they fall together (an inflation world). Trend is price versus its 200-day average. Informational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var ASSETS=[['SPY','US stocks'],['QQQ','US tech'],['TLT','Long Treasuries'],['GLD','Gold'],['UUP','US dollar'],['DBC','Commodities'],['HYG','High-yield credit']];
+  var resEl=document.getElementById('res');
+  function getPrices(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;}).catch(function(){return null;});}
+  function mean(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;}
+  function corr(x,y){var mx=mean(x),my=mean(y),n=0,dx=0,dy=0;for(var i=0;i<x.length;i++){n+=(x[i]-mx)*(y[i]-my);dx+=(x[i]-mx)*(x[i]-mx);dy+=(y[i]-my)*(y[i]-my);}return n/Math.sqrt(dx*dy);}
+  Promise.all(ASSETS.map(function(a){return getPrices(a[0]);})).then(function(maps){
+    var keep=[],km=[];for(var i=0;i<ASSETS.length;i++){if(maps[i]&&Object.keys(maps[i]).length>220){keep.push(ASSETS[i]);km.push(maps[i]);}}
+    if(keep.length<3)throw new Error('nodata');
+    var dates=Object.keys(km[0]);for(i=1;i<km.length;i++){var s=km[i];dates=dates.filter(function(d){return s[d];});}dates.sort();
+    if(dates.length<220)throw new Error('nooverlap');
+    render(keep,km,dates);
+  }).catch(function(){resEl.innerHTML='<div class="err">Could not load cross-asset data right now. Please try again shortly.</div>';});
+
+  function retW(map,dates,w){if(dates.length-1-w<0)return null;var d1=dates[dates.length-1],d0=dates[dates.length-1-w];return map[d1]/map[d0]-1;}
+  function heatColor(c){var t=(c+1)/2;var r,g,b;if(c>=0){r=Math.round(255-(1-c)*90);g=Math.round(120+(1-c)*80);b=Math.round(90+(1-c)*80);}else{r=Math.round(70+(1+c)*90);g=Math.round(130+(1+c)*70);b=Math.round(200);}return 'rgb('+r+','+g+','+b+')';}
+  function render(assets,maps,dates){
+    var N=assets.length,n=dates.length;
+    // returns matrix over last 126 days
+    var win=Math.min(126,n-1);
+    var R=[];for(var i=0;i<N;i++){R[i]=[];for(var t=n-win;t<n;t++)R[i].push(maps[i][dates[t]]/maps[i][dates[t-1]]-1);}
+    // correlation matrix
+    var C=[];for(i=0;i<N;i++){C[i]=[];for(var j=0;j<N;j++)C[i][j]=corr(R[i],R[j]);}
+    // trailing returns + 200dma trend
+    var rows=assets.map(function(a,i){
+      var map=maps[i];
+      var above=null;if(n>=200){var sma=0;for(var t=n-200;t<n;t++)sma+=map[dates[t]];sma/=200;above=map[dates[n-1]]>sma;}
+      return {sym:a[0],name:a[1],r1:retW(map,dates,21),r3:retW(map,dates,63),r6:retW(map,dates,126),r12:retW(map,dates,252),above:above};
+    });
+    // stock-bond rolling corr
+    var si=assets.map(function(a){return a[0];}).indexOf('SPY'),bi=assets.map(function(a){return a[0];}).indexOf('TLT');
+    var sbHist=[],sbNow=null;
+    if(si>=0&&bi>=0){var rs=[],rb=[];for(t=1;t<n;t++){rs.push(maps[si][dates[t]]/maps[si][dates[t-1]]-1);rb.push(maps[bi][dates[t]]/maps[bi][dates[t-1]]-1);}
+      var ww=63;for(t=ww;t<=rs.length;t++)sbHist.push(corr(rs.slice(t-ww,t),rb.slice(t-ww,t)));sbNow=sbHist.length?sbHist[sbHist.length-1]:null;}
+    function pc(x){return x==null?'-':(x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+    function cl(x){return x==null?'':x>=0?'pos':'neg';}
+    var h='';
+    // regime banner
+    var spy=rows[si],riskOn=spy&&spy.above;
+    var regime,detail;
+    if(sbNow!=null&&sbNow>0.15){regime='inflation-driven';detail='stocks and bonds are positively correlated, so Treasuries are <b>not</b> hedging equities - a hallmark of an inflation/rates-driven market.';}
+    else if(sbNow!=null&&sbNow<-0.15){regime='growth-driven';detail='stocks and bonds are negatively correlated, so Treasuries are hedging equities again - the classic growth/recession-fear diversification.';}
+    else{regime='transitional';detail='the stock-bond correlation is near zero - the regime is in flux.';}
+    h+='<div class="banner">Markets look <b>'+(riskOn?'risk-on':'risk-off')+'</b> ('+(spy?'SPY is '+(spy.above?'above':'below')+' its 200-day average':'trend unavailable')+') and <b>'+regime+'</b> - '+detail+(sbNow!=null?' Stock-bond correlation: <b>'+sbNow.toFixed(2)+'</b>.':'')+'</div>';
+    // leaderboard
+    h+='<div class="sect">Asset leaderboard (trailing returns)</div><div class="panel"><table><thead><tr><th>Asset</th><th>1M</th><th>3M</th><th>6M</th><th>12M</th><th>Trend</th></tr></thead><tbody>';
+    rows.slice().sort(function(a,b){return (b.r3||-9)-(a.r3||-9);}).forEach(function(r){h+='<tr><td class="nm">'+r.sym+' <span class="sub">'+r.name+'</span></td><td class="'+cl(r.r1)+'">'+pc(r.r1)+'</td><td class="'+cl(r.r3)+'">'+pc(r.r3)+'</td><td class="'+cl(r.r6)+'">'+pc(r.r6)+'</td><td class="'+cl(r.r12)+'">'+pc(r.r12)+'</td><td>'+(r.above==null?'-':r.above?'<span class="pos">&#9650; up</span>':'<span class="neg">&#9660; down</span>')+'</td></tr>';});
+    h+='</tbody></table></div>';
+    // heatmap
+    h+='<div class="sect">Correlation heatmap (126-day daily returns)</div><div class="panp" style="overflow-x:auto"><table class="hm"><thead><tr><th></th>';
+    assets.forEach(function(a){h+='<th>'+a[0]+'</th>';});h+='</tr></thead><tbody>';
+    for(i=0;i<N;i++){h+='<tr><th style="text-align:right">'+assets[i][0]+'</th>';for(j=0;j<N;j++){h+='<td style="background:'+heatColor(C[i][j])+'">'+C[i][j].toFixed(2)+'</td>';}h+='</tr>';}
+    h+='</tbody></table></div>';
+    // stock-bond corr history
+    if(sbHist.length>20){
+      var W=920,H=200,pl=40,pr=12,pt=12,pb=20,iw=W-pl-pr,ih=H-pt-pb;
+      var lo=Math.min(-1,Math.min.apply(null,sbHist)),hi=Math.max(1,Math.max.apply(null,sbHist));
+      function xf(i){return pl+(i/(sbHist.length-1))*iw;}function yf(v){return pt+(1-(v-lo)/(hi-lo))*ih;}
+      var z=yf(0),ln='M '+xf(0)+' '+yf(sbHist[0]);for(i=1;i<sbHist.length;i++)ln+=' L '+xf(i).toFixed(1)+' '+yf(sbHist[i]).toFixed(1);
+      var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><line x1="'+pl+'" y1="'+z.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+z.toFixed(1)+'" stroke="rgba(17,24,39,.25)" stroke-dasharray="4 4"/><text x="'+(pl-5)+'" y="'+(z+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">0</text><path d="'+ln+'" fill="none" stroke="#6b46c1" stroke-width="1.6"/></svg>';
+      h+='<div class="sect">Rolling 63-day stock-bond (SPY-TLT) correlation</div><div class="panp">'+svg+'</div>';
+    }
+    resEl.innerHTML=h;
+  }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

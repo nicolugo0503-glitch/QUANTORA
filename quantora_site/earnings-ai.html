@@ -1,0 +1,85 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Earnings-Call Summarizer - paste a transcript, get the thesis | Quantora</title>
+<meta name="description" content="Paste an earnings-call transcript or your notes and Quantora's AI distills it into the one-line takeaway, guidance, key metrics, risks and management tone in seconds. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/earnings-ai.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:880px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 18px}
+  .boxw{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  textarea{width:100%;box-sizing:border-box;border:0;outline:0;resize:vertical;min-height:160px;font:400 14px/1.6 inherit;color:#14161c;background:transparent}
+  textarea::placeholder{color:#9aa1ad}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
+  .hint{color:#9aa1ad;font-size:12px}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .res{margin-top:24px;display:none}.res.on{display:block}
+  .dx{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;color:#2c313a;font-size:14.5px;line-height:1.8}
+  .dx h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8a91ad;margin:18px 0 8px;font-weight:600}
+  .dx h3:first-child{margin-top:0}
+  .dx p{margin:0 0 10px}.dx ul{margin:0 0 10px;padding-left:20px}.dx li{margin:4px 0}.dx strong{color:#14161c}
+  .spin{color:#6b7280;font-size:14px;padding:10px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  code{background:#eef0f4;border-radius:5px;padding:1px 6px;font-size:12.5px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:18px;line-height:1.6;max-width:76ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; AI EARNINGS SUMMARIZER</div>
+  <h1>Earnings-call summarizer</h1>
+  <p class="lead">Earnings calls are an hour of hedging wrapped around a few numbers that matter. Paste the transcript - or even rough notes - and Quantora's AI pulls out the one-line takeaway, the guidance, the metrics management actually gave, the risks they downplayed, and the tone in the room.</p>
+  <div class="boxw">
+    <textarea id="q" placeholder="Paste the earnings-call transcript, prepared remarks, or your notes here (the more complete, the better the summary)…"></textarea>
+    <div class="row"><div class="hint"><code>Ctrl/Cmd + Enter</code> to summarize</div><button class="go" id="go" type="button">Summarize</button></div>
+  </div>
+  <div class="res" id="res"></div>
+  <div class="muted">This tool summarizes text you paste - it does not fetch transcripts. The AI works only from what you provide, so accuracy depends on the completeness of the paste, and it can still misread or omit things. Verify anything important against the primary source. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res');
+  var busy=false;
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function run(){
+    var txt=(qEl.value||'').trim();
+    if(txt.length<120){resEl.className='res on';resEl.innerHTML='<div class="err">Paste a bit more text - at least a few paragraphs of the transcript or notes.</div>';return;}
+    if(busy)return;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="dx"><div class="spin">Reading the call and distilling it&hellip;</div></div>';
+    var clipped=txt.slice(0,24000);
+    var prompt='You are an equity analyst. Summarize the earnings-call content below into these labelled sections, using markdown headings exactly as written:\n'
+      +'## Takeaway\nOne or two sentences: the single most important thing for an investor.\n'
+      +'## Guidance\nAny forward guidance given (revenue, margins, growth, capex), or "No explicit guidance given" if none.\n'
+      +'## Key metrics\nA short bullet list of the specific numbers management cited (only ones present in the text).\n'
+      +'## Risks & red flags\nA short bullet list of concerns, soft spots, or things management hedged or downplayed.\n'
+      +'## Tone\nOne line on management tone (confident, cautious, defensive, etc.) with a brief why.\n'
+      +'Use ONLY information in the text. Do not invent numbers. If a section has nothing, say so briefly.\n\nTRANSCRIPT/NOTES:\n'+clipped;
+    fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:prompt,context:'AI earnings summarizer'})})
+      .then(function(r){return r.json();}).then(function(j){
+        busy=false;goEl.disabled=false;
+        if(j&&j.error==='ai_key_needed'){resEl.innerHTML='<div class="err">The summarizer needs a model key. Add <code>ANTHROPIC_API_KEY</code> (or your configured provider key) in Vercel and redeploy.</div>';return;}
+        if(j&&typeof j.answer==='string'){resEl.innerHTML='<div class="dx">'+fmt(j.answer)+'</div>';}
+        else resEl.innerHTML='<div class="err">The AI did not return a summary. Please try again.</div>';
+      }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Network error reaching the AI. Please try again.</div>';});
+  }
+  function fmt(t){
+    var lines=t.split(/\n/),out='',inul=false;
+    lines.forEach(function(l){
+      var h=l.match(/^#{1,3}\s+(.*)/);
+      var b=l.match(/^\s*[-*]\s+(.*)/);
+      if(h){if(inul){out+='</ul>';inul=false;}out+='<h3>'+esc(h[1])+'</h3>';}
+      else if(b){if(!inul){out+='<ul>';inul=true;}out+='<li>'+esc(b[1]).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</li>';}
+      else{if(inul){out+='</ul>';inul=false;}if(l.trim())out+='<p>'+esc(l).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</p>';}
+    });
+    if(inul)out+='</ul>';return out;
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();run();}});
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

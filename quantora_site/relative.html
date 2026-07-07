@@ -1,0 +1,125 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relative Strength Lab - ratio, relative returns &amp; capture | Quantora</title>
+<meta name="description" content="Is this stock leading or lagging the market? Quantora charts the relative-strength ratio, breaks down relative returns over 1/3/6/12 months, and computes up-capture and down-capture ratios versus any benchmark. Five years of daily data, free.">
+<link rel="canonical" href="https://www.usequantora.com/relative.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:8px;max-width:600px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase;min-width:60px}
+  #q{flex:1}#bench{width:66px;border-left:1px solid rgba(17,24,39,.12);padding-left:10px}
+  .vs{color:#9aa1ad;font-size:12px;font-weight:600}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:21px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .ln{width:100%;height:auto;display:block}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}
+  .summary b{color:#fff}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; RELATIVE STRENGTH LAB</div>
+  <h1>Relative strength</h1>
+  <p class="lead">Price alone does not tell you if a stock is winning - beating the market does. Quantora charts the relative-strength ratio against any benchmark, breaks the outperformance down by horizon, and measures how much of the market's upside it captures versus its downside. Leaders and laggards, made obvious.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <span class="vs">vs</span>
+    <input id="bench" type="text" value="SPY" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">The relative-strength ratio is the stock's price divided by the benchmark's, indexed to 100 at the start - a rising line means outperformance. Relative return is the stock's total return minus the benchmark's over each window. Up-capture is the stock's average return on benchmark-up days divided by the benchmark's; down-capture is the same on down days. A capture ratio (up divided by down) above 1 means it captures more upside than downside. Based on daily data over roughly five years. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['NVDA','AAPL','TSLA','META','JPM','XOM','KO','GLD'];
+  var qEl=document.getElementById('q'),bEl=document.getElementById('bench'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+  function getPrices(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;});}
+  function mean(a){if(!a.length)return 0;var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function pct(x){return (x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+  function run(){
+    var sym=(qEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    var bench=(bEl.value||'SPY').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'')||'SPY';
+    if(!sym||busy)return;qEl.value=sym;bEl.value=bench;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Comparing against '+esc(bench)+'&hellip;</div>';
+    Promise.all([getPrices(sym),getPrices(bench)]).then(function(a){
+      var tgt=a[0],bm=a[1];
+      var dates=Object.keys(tgt).filter(function(d){return bm[d];}).sort();
+      if(dates.length<160)throw new Error('nodata');
+      analyze(sym,bench,tgt,bm,dates);busy=false;goEl.disabled=false;
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Not enough overlapping history for that pair - check both tickers and try again.</div>';});
+  }
+  function analyze(sym,bench,tgt,bm,dates){
+    var n=dates.length;
+    var t0=tgt[dates[0]],b0=bm[dates[0]];
+    var ratio=dates.map(function(d){return (tgt[d]/t0)/(bm[d]/b0)*100;});
+    // relative returns by window
+    function relRet(w){if(n-1-w<0)return null;var d1=dates[n-1],d0=dates[n-1-w];return (tgt[d1]/tgt[d0]-1)-(bm[d1]/bm[d0]-1);}
+    var wins=[['1M',21],['3M',63],['6M',126],['12M',252]].map(function(x){return {k:x[0],v:relRet(x[1])};});
+    // capture ratios
+    var us=[],um=[],ds=[],dm=[];
+    for(var i=1;i<n;i++){var rs=tgt[dates[i]]/tgt[dates[i-1]]-1,rm=bm[dates[i]]/bm[dates[i-1]]-1;if(rm>0){us.push(rs);um.push(rm);}else if(rm<0){ds.push(rs);dm.push(rm);}}
+    var upCap=mean(um)!==0?mean(us)/mean(um):0, dnCap=mean(dm)!==0?mean(ds)/mean(dm):0;
+    var capRatio=dnCap!==0?upCap/dnCap:0;
+    // RS new high
+    var cur=ratio[n-1],look=Math.min(252,n),recent=ratio.slice(n-look),rmax=Math.max.apply(null,recent),rmin=Math.min.apply(null,recent);
+    var atHigh=cur>=rmax*0.999, atLow=cur<=rmin*1.001;
+    // svg
+    var W=920,H=210,padL=42,padR=10,padT=12,padB=20,iw=W-padL-padR,ih=H-padT-padB;
+    var rlo=Math.min.apply(null,ratio),rhi=Math.max.apply(null,ratio);
+    function xf(i){return padL+(i/(n-1))*iw;}function yf(v){return padT+(1-(v-rlo)/(rhi-rlo))*ih;}
+    var line='M '+xf(0)+' '+yf(ratio[0]);for(i=1;i<n;i++)line+=' L '+xf(i).toFixed(1)+' '+yf(ratio[i]).toFixed(1);
+    var y100=yf(100);
+    var svg='<svg class="ln" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
+      +'<line x1="'+padL+'" y1="'+y100.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y100.toFixed(1)+'" stroke="rgba(17,24,39,.18)" stroke-dasharray="4 4"/>'
+      +'<text x="'+(padL-5)+'" y="'+(y100+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">100</text>'
+      +'<path d="'+line+'" fill="none" stroke="'+(cur>=100?'#1663d6':'#c0392b')+'" stroke-width="1.6"/>'
+      +'</svg>';
+    var lead=cur>=100;
+    var h='';
+    h+='<div class="sect">'+esc(sym)+' vs '+esc(bench)+' &middot; '+n+' days</div>';
+    h+='<div class="cards">';
+    h+='<div class="card"><div class="clab">RS ratio (now)</div><div class="cval '+(lead?'pos':'neg')+'">'+cur.toFixed(1)+'</div><div class="csub">'+(lead?'ahead of':'behind')+' '+esc(bench)+' since start</div></div>';
+    h+='<div class="card"><div class="clab">Up-capture</div><div class="cval">'+(upCap*100).toFixed(0)+'%</div><div class="csub">of '+esc(bench)+' up-day moves</div></div>';
+    h+='<div class="card"><div class="clab">Down-capture</div><div class="cval">'+(dnCap*100).toFixed(0)+'%</div><div class="csub">of '+esc(bench)+' down-day moves</div></div>';
+    h+='<div class="card"><div class="clab">Capture ratio</div><div class="cval '+(capRatio>=1?'pos':'neg')+'">'+capRatio.toFixed(2)+'</div><div class="csub">'+(capRatio>=1?'more up than down':'more down than up')+'</div></div>';
+    h+='</div>';
+    h+='<div class="sect">Relative-strength ratio ('+esc(sym)+' / '+esc(bench)+', indexed to 100)</div><div class="panel">'+svg+(atHigh?'<div class="csub" style="margin-top:6px">Relative strength is at a 12-month high - '+esc(sym)+' is leading '+esc(bench)+'.</div>':atLow?'<div class="csub" style="margin-top:6px">Relative strength is at a 12-month low - '+esc(sym)+' is lagging '+esc(bench)+'.</div>':'')+'</div>';
+    h+='<div class="sect">Relative return by horizon (stock &minus; '+esc(bench)+')</div><div class="panel"><div class="cards">';
+    wins.forEach(function(w){h+='<div class="card"><div class="clab">'+w.k+'</div><div class="cval '+(w.v==null?'':(w.v>=0?'pos':'neg'))+'" style="font-size:18px">'+(w.v==null?'-':pct(w.v))+'</div></div>';});
+    h+='</div></div>';
+    var capTxt = capRatio>=1.05?'capturing more of the upside than the downside':capRatio<=0.95?'capturing more of the downside than the upside':'capturing roughly as much downside as upside';
+    h+='<div class="summary"><b>'+esc(sym)+'</b> is '+(lead?'<b>outperforming</b>':'<b>underperforming</b>')+' '+esc(bench)+' over this window, with a relative-strength ratio of <b>'+cur.toFixed(1)+'</b>. It captures <b>'+(upCap*100).toFixed(0)+'%</b> of '+esc(bench)+"'s up-day moves and <b>"+(dnCap*100).toFixed(0)+'%</b> of its down-day moves - '+capTxt+' (capture ratio <b>'+capRatio.toFixed(2)+'</b>).</div>';
+    resEl.innerHTML=h;
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+  bEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

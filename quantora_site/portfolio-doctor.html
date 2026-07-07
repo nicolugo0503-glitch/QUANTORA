@@ -1,0 +1,142 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Portfolio Doctor - risk, concentration &amp; correlation diagnosis | Quantora</title>
+<meta name="description" content="Paste your holdings and get an instant check-up: real portfolio volatility, beta, concentration and correlation computed from five years of prices, then a plain-English diagnosis of the risks from Quantora's AI. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/portfolio-doctor.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 18px}
+  .boxw{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  textarea{width:100%;box-sizing:border-box;border:0;outline:0;resize:vertical;min-height:70px;font:400 15px/1.6 inherit;color:#14161c;background:transparent}
+  textarea::placeholder{color:#9aa1ad}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
+  .hint{color:#9aa1ad;font-size:12px}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:24px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:24px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .dx{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;color:#2c313a;font-size:14.5px;line-height:1.75}
+  .dx h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8a91ad;margin:0 0 10px;font-weight:600}
+  .dx p{margin:0 0 12px}.dx strong{color:#14161c}
+  .spin{color:#6b7280;font-size:14px;padding:10px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  code{background:#eef0f4;border-radius:5px;padding:1px 6px;font-size:12.5px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:18px;line-height:1.6;max-width:76ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; AI PORTFOLIO DOCTOR</div>
+  <h1>Portfolio check-up</h1>
+  <p class="lead">Paste your holdings and Quantora computes the real risk numbers - volatility, market beta, concentration and how correlated your names actually are - then hands them to an AI for a plain-English diagnosis. The math is measured from prices; the AI only interprets what the numbers say.</p>
+  <div class="boxw">
+    <textarea id="q" placeholder="Paste tickers, with optional weights. e.g. AAPL 25, MSFT 25, NVDA 20, GOOGL 15, JPM 15"></textarea>
+    <div class="row"><div class="hint">Weights optional - leave them out for equal weight. <code>Enter</code> to run.</div><button class="go" id="go" type="button">Diagnose</button></div>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Volatility, beta and drawdown are computed from up to five years of daily prices, rebalanced daily to your weights. Concentration uses the Herfindahl index (HHI). The correlation figure is the average pairwise correlation of your holdings - high means low real diversification. The written diagnosis is AI-generated from these measured numbers and is educational only, not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['AAPL 25, MSFT 25, NVDA 20, GOOGL 15, JPM 15','SPY 60, TLT 25, GLD 15','TSLA, NVDA, PLTR, COIN, MSTR','VOO 40, VXUS 20, BND 25, VNQ 15'];
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t.split(',').slice(0,3).join(',')+'…';c.title=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+  function getPrices(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;}).catch(function(){return null;});}
+  function mean(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;}
+  function corr(x,y){var mx=mean(x),my=mean(y),n=0,dx=0,dy=0;for(var i=0;i<x.length;i++){n+=(x[i]-mx)*(y[i]-my);dx+=(x[i]-mx)*(x[i]-mx);dy+=(y[i]-my)*(y[i]-my);}return n/Math.sqrt(dx*dy);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function parseHoldings(txt){
+    var parts=txt.split(/[,\n]+/),out=[];
+    parts.forEach(function(p){var m=p.trim().match(/^([A-Za-z][A-Za-z0-9.\-]{0,7})\s*[:=]?\s*([0-9]*\.?[0-9]+)?%?$/);if(m){out.push({sym:m[1].toUpperCase(),w:m[2]?parseFloat(m[2]):null});}});
+    return out.slice(0,15);
+  }
+  function run(){
+    var hold=parseHoldings(qEl.value||'');
+    if(hold.length<2){resEl.className='res on';resEl.innerHTML='<div class="err">Enter at least two tickers (weights optional).</div>';return;}
+    if(busy)return;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Measuring your portfolio&hellip;</div>';
+    var syms=hold.map(function(h){return h.sym;});
+    Promise.all(syms.map(getPrices).concat([getPrices('SPY')])).then(function(maps){
+      var spy=maps[maps.length-1];
+      var keep=[],km=[];for(var i=0;i<hold.length;i++){if(maps[i]&&Object.keys(maps[i]).length>150){keep.push(hold[i]);km.push(maps[i]);}}
+      if(keep.length<2)throw new Error('nodata');
+      var dates=Object.keys(km[0]);for(i=1;i<km.length;i++){var s=km[i];dates=dates.filter(function(d){return s[d];});}
+      if(spy)dates=dates.filter(function(d){return spy[d];});dates.sort();
+      if(dates.length<150)throw new Error('nooverlap');
+      compute(keep,km,spy,dates);
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Could not price that portfolio - check the tickers and try again.</div>';});
+  }
+  function compute(hold,maps,spy,dates){
+    var N=hold.length,n=dates.length;
+    var wsum=0,anyW=false;hold.forEach(function(h){if(h.w!=null){wsum+=h.w;anyW=true;}});
+    var w=hold.map(function(h){return anyW?(h.w!=null?h.w:0):1;});
+    var ws=w.reduce(function(a,b){return a+b;},0);w=w.map(function(x){return x/ws;});
+    var R=[];for(var i=0;i<N;i++){R[i]=[];for(var t=1;t<n;t++)R[i].push(maps[i][dates[t]]/maps[i][dates[t-1]]-1);}
+    var rm=[];if(spy)for(t=1;t<n;t++)rm.push(spy[dates[t]]/spy[dates[t-1]]-1);
+    // portfolio daily returns
+    var rp=[];for(t=0;t<R[0].length;t++){var s=0;for(i=0;i<N;i++)s+=w[i]*R[i][t];rp.push(s);}
+    var ann=Math.sqrt(252);
+    var mp=mean(rp),vp=0;for(t=0;t<rp.length;t++)vp+=(rp[t]-mp)*(rp[t]-mp);var pvol=Math.sqrt(vp/(rp.length-1))*ann*100;
+    // beta
+    var beta=null;if(rm.length===rp.length){var mm=mean(rm),cv=0,vm=0;for(t=0;t<rp.length;t++){cv+=(rp[t]-mp)*(rm[t]-mm);vm+=(rm[t]-mm)*(rm[t]-mm);}beta=cv/vm;}
+    // portfolio cum + maxDD + 1y ret
+    var eq=1,peak=1,mdd=0;for(t=0;t<rp.length;t++){eq*=(1+rp[t]);if(eq>peak)peak=eq;var dd=eq/peak-1;if(dd<mdd)mdd=dd;}
+    var ret1y=null;if(rp.length>252){var e=1;for(t=rp.length-252;t<rp.length;t++)e*=(1+rp[t]);ret1y=(e-1)*100;}
+    // concentration
+    var hhi=0;w.forEach(function(x){hhi+=x*x;});var topi=0;for(i=1;i<N;i++)if(w[i]>w[topi])topi=i;
+    // avg pairwise corr + most correlated pair
+    var sumc=0,cnt=0,maxc=-2,mp1=0,mp2=0;
+    for(i=0;i<N;i++)for(var j=i+1;j<N;j++){var c=corr(R[i],R[j]);sumc+=c;cnt++;if(c>maxc){maxc=c;mp1=i;mp2=j;}}
+    var avgc=cnt?sumc/cnt:0;
+    var metrics={pvol:pvol,beta:beta,mdd:mdd*100,ret1y:ret1y,hhi:hhi,top:hold[topi].sym,topw:w[topi]*100,avgc:avgc,maxc:maxc,pair:hold[mp1].sym+'/'+hold[mp2].sym,neff:1/hhi,N:N};
+    renderMetrics(hold,w,metrics);
+    askAI(hold,w,metrics);
+  }
+  function renderMetrics(hold,w,m){
+    var h='<div class="sect">Measured risk profile &middot; '+m.N+' holdings</div><div class="cards">';
+    h+='<div class="card"><div class="clab">Portfolio vol</div><div class="cval">'+m.pvol.toFixed(1)+'%</div><div class="csub">annualized</div></div>';
+    h+='<div class="card"><div class="clab">Market beta</div><div class="cval">'+(m.beta==null?'-':m.beta.toFixed(2))+'</div><div class="csub">vs SPY</div></div>';
+    h+='<div class="card"><div class="clab">Max drawdown</div><div class="cval" style="color:#c0392b">'+m.mdd.toFixed(1)+'%</div><div class="csub">worst peak-to-trough</div></div>';
+    h+='<div class="card"><div class="clab">Concentration</div><div class="cval">'+m.neff.toFixed(1)+'</div><div class="csub">effective # of names</div></div>';
+    h+='<div class="card"><div class="clab">Top holding</div><div class="cval" style="font-size:16px">'+esc(m.top)+' '+m.topw.toFixed(0)+'%</div><div class="csub">largest weight</div></div>';
+    h+='<div class="card"><div class="clab">Avg correlation</div><div class="cval">'+m.avgc.toFixed(2)+'</div><div class="csub">pairwise (diversification)</div></div>';
+    h+='</div>';
+    h+='<div class="sect">AI diagnosis</div><div id="dx" class="dx"><div class="spin">Consulting the AI on these numbers&hellip;</div></div>';
+    document.getElementById('res').innerHTML=h;
+  }
+  function askAI(hold,w,m){
+    var facts='Portfolio: '+hold.map(function(hh,i){return hh.sym+' '+(w[i]*100).toFixed(0)+'%';}).join(', ')+'. '
+      +'Measured over ~5y of daily data: annualized volatility '+m.pvol.toFixed(1)+'%, market beta '+(m.beta==null?'n/a':m.beta.toFixed(2))+' vs S&P 500, '
+      +'worst drawdown '+m.mdd.toFixed(1)+'%, '+(m.ret1y==null?'':'trailing 1y return '+m.ret1y.toFixed(1)+'%, ')
+      +'effective number of independent names '+m.neff.toFixed(1)+' (HHI '+m.hhi.toFixed(2)+'), largest position '+m.top+' at '+m.topw.toFixed(0)+'%, '
+      +'average pairwise correlation '+m.avgc.toFixed(2)+', most correlated pair '+m.pair+' at '+m.maxc.toFixed(2)+'.';
+    var prompt='You are a risk analyst giving an educational portfolio check-up. Using ONLY the measured statistics below, write a concise diagnosis in 3 short paragraphs: (1) overall risk level and market sensitivity, (2) concentration and diversification - call out if it is effectively fewer names than it looks or dominated by one position or one correlated cluster, (3) one or two things the investor might reasonably consider to reduce unintended risk (frame as considerations, not advice). Do not invent numbers not given. Be direct and specific. '+facts;
+    fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:prompt,context:'AI portfolio doctor'})})
+      .then(function(r){return r.json();}).then(function(j){
+        var dx=document.getElementById('dx');if(!dx)return;
+        if(j&&j.error==='ai_key_needed'){dx.innerHTML='<div class="err">The AI diagnosis needs a model key. Add <code>ANTHROPIC_API_KEY</code> (or your configured provider key) in Vercel and redeploy. The measured metrics above work without it.</div>';return;}
+        if(j&&typeof j.answer==='string'){dx.innerHTML='<h3>What the numbers say</h3>'+j.answer.split(/\n\n+/).map(function(p){return '<p>'+esc(p).replace(/\n/g,'<br>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')+'</p>';}).join('');}
+        else dx.innerHTML='<div class="err">The AI did not return a diagnosis. The measured metrics above are still valid.</div>';
+        busy=false;goEl.disabled=false;
+      }).catch(function(){var dx=document.getElementById('dx');if(dx)dx.innerHTML='<div class="err">Network error reaching the AI. The measured metrics above are still valid.</div>';busy=false;goEl.disabled=false;});
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run();}});
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

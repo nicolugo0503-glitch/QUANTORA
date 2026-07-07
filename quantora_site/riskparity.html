@@ -1,86 +1,118 @@
 <!doctype html><html lang="en"><head>
-<style id="qhold">html.qload::before{content:"QUANTORA";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:46px;background:#f7f8fa;color:#14161c;font:600 20px/1 Geist,system-ui,sans-serif;letter-spacing:.26em;z-index:99990;transition:opacity .3s ease}html.qload::after{content:"";position:fixed;left:50%;top:calc(50% + 24px);width:26px;height:26px;margin-left:-13px;border:2.5px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;z-index:99991;animation:qspin .7s linear infinite;transition:opacity .3s ease}@keyframes qspin{to{transform:rotate(360deg)}}html.qdone::before,html.qdone::after{opacity:0;pointer-events:none}body{opacity:0}body.qshown{opacity:1;transition:opacity .2s ease}</style><script>(function(){var de=document.documentElement;de.className+=" qload";function d(){try{document.body.classList.add("qshown");de.classList.add("qdone");setTimeout(function(){de.classList.remove("qload")},350)}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(d,300)});else setTimeout(d,300);setTimeout(d,1600);})();</script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Risk Parity Allocator - equal-risk-contribution portfolio weights | Quantora</title>
-<meta name="description" content="Build a risk-parity portfolio: Quantora solves the weights where every holding contributes equally to total risk, from real price history. Compare against equal-weight. Free, verified math.">
+<title>Risk Parity &amp; Position Sizing Lab - equal-risk weights | Quantora</title>
+<meta name="description" content="Size a portfolio by risk, not dollars. Quantora computes equal-weight, inverse-volatility and true equal-risk-contribution (risk parity) weights for any basket, with each holding's volatility, portfolio volatility and risk contributions. Free, no login.">
 <link rel="canonical" href="https://www.usequantora.com/riskparity.html">
 <link rel="stylesheet" href="/theme.css">
 <style>
-body{background:#f7f8fa;color:#14161c;font-family:Geist,system-ui,sans-serif;margin:0}
-.sw{max-width:940px;margin:0 auto;padding:30px 24px 90px}
-.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#9aa1ad;font-weight:500}
-h1{font-size:clamp(26px,3.4vw,36px);font-weight:600;letter-spacing:-.03em;margin:8px 0 6px}
-.lead{color:#3a4150;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 20px}
-.calc{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-.ci{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
-.fld{display:flex;flex-direction:column;gap:5px;flex:1;min-width:220px}.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}
-.fld input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;background:#fff;text-transform:uppercase}
-.run{border:0;background:#635bff;color:#fff;border-radius:10px;padding:11px 20px;font:500 15px Geist;cursor:pointer}
-.run:disabled{opacity:.5}
-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px}
-th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9aa1ad;font-weight:500;text-align:right;padding:6px 8px;border-bottom:1px solid rgba(17,24,39,.1)}
-th:first-child,td:first-child{text-align:left}
-td{padding:8px;border-bottom:1px solid rgba(17,24,39,.06);font-variant-numeric:tabular-nums;font-family:Geist Mono,monospace}
-td.sym{font-family:Geist,sans-serif;font-weight:600}
-.bar{height:8px;background:rgba(99,91,255,.14);border-radius:5px;overflow:hidden;min-width:60px}
-.bar i{display:block;height:100%;background:#635bff;border-radius:5px}
-.cr{display:flex;flex-wrap:wrap;gap:1px;background:rgba(17,24,39,.08);border:1px solid rgba(17,24,39,.08);border-radius:12px;overflow:hidden;margin-top:16px}
-.cell{background:#fff;padding:13px 15px;flex:1 1 130px}.cl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:500}.cv{font-family:Geist Mono,monospace;font-size:18px;margin-top:4px;font-variant-numeric:tabular-nums}
-.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;margin-top:16px;line-height:1.55}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,91,255,.25);border-top-color:#635bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:7px}
-.body{color:#3a4150;font-size:14.5px;line-height:1.7;max-width:700px;margin-top:22px}.body b{color:#14161c}
-.foot{margin-top:34px;padding-top:18px;border-top:1px solid rgba(17,24,39,.08);font-size:11.5px;color:#9aa1ad;line-height:1.6}
-</style><script src="/nav.js" defer></script><script src="/engines.js"></script></head>
-<body><div id="qnav"></div><div class="sw">
-<div class="eyb">Quantora &middot; Desk</div>
-<h1>Risk Parity Allocator</h1>
-<p class="lead">Equal-weight isn't equal-risk - a volatile holding can dominate a portfolio's risk even at a small weight. Risk parity solves for the weights where <b>every asset contributes the same share of total risk</b>, the idea behind the famous "All Weather" approach. Enter tickers and Quantora computes it from real price history.</p>
-<div class="calc">
-<div class="ci">
-<div class="fld"><label>Tickers (comma-separated, 2-8)</label><input id="syms" value="SPY, TLT, GLD, QQQ"></div>
-<button class="run" id="run">Build allocation</button>
-</div>
-<div id="out"></div>
-</div>
-<div class="body">Each asset's <b>risk contribution</b> is its weight times how much it moves with the whole portfolio (its marginal contribution to volatility). Equal-weighting ignores this, so high-volatility or highly-correlated assets quietly carry most of the risk. Risk parity down-weights the volatile, correlated names and up-weights the calm, diversifying ones until every position pulls the same weight in risk terms - producing a more balanced, typically lower-volatility portfolio. It's not about maximizing return; it's about not being secretly concentrated. Practitioners often add leverage to lift the expected return back up, which carries its own risks.</div>
-<div class="foot">Weights solved by equal-risk-contribution optimization on the annualized covariance of daily returns (Financial Modeling Prep history; may be delayed and limited on the free tier). Long-only, fully invested. Not a recommendation or investment advice; for analysis and education only.</div>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:15px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:6px 16px 14px}
+  table{width:100%;border-collapse:collapse;margin-top:2px}
+  th,td{text-align:right;padding:9px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left;font-weight:600}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .hl{background:rgba(47,107,255,.05)}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}
+  .summary b{color:#fff}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; RISK PARITY LAB</div>
+  <h1>Risk parity &amp; position sizing</h1>
+  <p class="lead">Equal dollars is not equal risk - a 25% sleeve of a volatile stock can dominate a portfolio's risk while a bond sleeve does nothing. Quantora sizes any basket three ways: equal weight, inverse-volatility, and true equal-risk-contribution (risk parity), so each position pulls its own weight in risk terms.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. SPY, TLT, GLD, QQQ" value="SPY, TLT, GLD, QQQ" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Inverse-volatility weights each holding by 1/volatility (a naive risk parity that ignores correlations). Equal-risk-contribution (ERC, "true" risk parity) solves for weights where every holding contributes the same share of portfolio variance, using the full covariance matrix. Portfolio volatility is the annualized standard deviation of the weighted basket. Long-only, fully invested, no leverage. Based on daily returns over roughly five years. Educational only - not investment advice.</div>
 </div>
 <script>
-var Q=window.QENG||{};
-function pc(v,d){d=d==null?1:d;return(v==null||isNaN(v))?'—':(v*100).toFixed(d)+'%'}
-function nn(v,d){d=d==null?2:d;return(v==null||isNaN(v))?'—':Number(v).toFixed(d)}
-var out=document.getElementById('out');
-async function prices(sym){var k='qpx_'+sym+'_'+new Date().toISOString().slice(0,10);try{var c=localStorage.getItem(k);if(c)return JSON.parse(c);}catch(e){}var r=await fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym));var j=await r.json();var arr=Array.isArray(j.data)?j.data:((j.data&&j.data.historical)||[]);var closes=arr.map(function(x){return x.price!=null?x.price:x.close;}).filter(function(x){return x!=null&&isFinite(x);}).reverse();try{if(closes.length>30)localStorage.setItem(k,JSON.stringify(closes));}catch(e){}return closes;}
-function rets(c){var r=[];for(var i=1;i<c.length;i++)r.push(c[i]/c[i-1]-1);return r;}
-document.getElementById('run').onclick=run;
-document.getElementById('syms').addEventListener('keydown',function(e){if(e.key==='Enter')run();});
-async function run(){
-  var syms=document.getElementById('syms').value.toUpperCase().split(',').map(function(s){return s.trim().replace(/[^A-Z0-9.\-]/g,'');}).filter(Boolean).slice(0,8);
-  if(syms.length<2){out.innerHTML='<div class="state">Enter at least two tickers.</div>';return;}
-  document.getElementById('run').disabled=true;out.innerHTML='<div class="state"><span class="spin"></span>Loading price history for '+syms.join(', ')+'…</div>';
-  try{
-    var arrs=await Promise.all(syms.map(prices));
-    var series=arrs.map(rets);
-    var ok=[],labels=[];for(var i=0;i<series.length;i++){if(series[i].length>60){ok.push(series[i]);labels.push(syms[i]);}}
-    if(ok.length<2){out.innerHTML='<div class="state">Not enough history returned (free feed may be at its daily limit). Try major ETFs/tickers or fewer names.</div>';document.getElementById('run').disabled=false;return;}
-    var L=Math.min.apply(null,ok.map(function(s){return s.length;}));
-    var aligned=ok.map(function(s){return s.slice(s.length-L);});
-    var cov=Q.covMatrix(aligned,true);
-    var rp=Q.riskParity(cov);
-    var vols=labels.map(function(_,i){return Math.sqrt(cov[i][i]);});
-    // equal weight portfolio vol
-    var n=labels.length,ew=1/n,evar=0;for(var i=0;i<n;i++)for(var j=0;j<n;j++)evar+=ew*ew*cov[i][j];var evol=Math.sqrt(evar);
-    var maxw=Math.max.apply(null,rp.weights);
-    var rows=labels.map(function(s,i){return '<tr><td class="sym">'+s+'</td><td>'+pc(vols[i])+'</td><td>'+pc(ew)+'</td><td>'+pc(rp.weights[i])+'</td><td><div class="bar"><i style="width:'+(rp.weights[i]/maxw*100).toFixed(0)+'%"></i></div></td><td>'+pc(rp.riskContrib[i])+'</td></tr>';}).join('');
-    out.innerHTML='<table><thead><tr><th>Ticker</th><th>Volatility</th><th>Equal wt</th><th>Risk-parity wt</th><th>Weight</th><th>Risk share</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-      '<div class="cr"><div class="cell"><div class="cl">Risk-parity vol</div><div class="cv">'+pc(rp.portVol)+'</div></div>'+
-      '<div class="cell"><div class="cl">Equal-weight vol</div><div class="cv">'+pc(evol)+'</div></div>'+
-      '<div class="cell"><div class="cl">Vol reduction</div><div class="cv up">'+pc((evol-rp.portVol)/evol)+'</div></div>'+
-      '<div class="cell"><div class="cl">Assets</div><div class="cv">'+n+'</div></div>'+
-      '<div class="cell"><div class="cl">History</div><div class="cv">'+L+'d</div></div></div>';
-  }catch(e){out.innerHTML='<div class="state">Could not build allocation: '+String(e&&e.message||e)+'</div>';}
-  document.getElementById('run').disabled=false;
-}
-run();
+(function(){
+  var EX=['SPY, TLT, GLD, QQQ','AAPL, MSFT, NVDA, JPM, XOM','SPY, TLT','VTI, BND, GLD, VNQ, DBC'];
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+  function getPrices(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;}).catch(function(){return null;});}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function run(){
+    var raw=(qEl.value||'').toUpperCase().split(/[^A-Z0-9.\-]+/).filter(Boolean);
+    var seen={},syms=[];raw.forEach(function(s){if(!seen[s]){seen[s]=1;syms.push(s);}});
+    syms=syms.slice(0,10);
+    if(syms.length<2||busy){if(syms.length<2)resEl.className='res on',resEl.innerHTML='<div class="err">Enter at least two tickers, comma-separated.</div>';return;}
+    qEl.value=syms.join(', ');busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Building the covariance matrix and solving for risk parity&hellip;</div>';
+    Promise.all(syms.map(getPrices)).then(function(maps){
+      var keep=[],kmaps=[];for(var i=0;i<syms.length;i++){if(maps[i]&&Object.keys(maps[i]).length>150){keep.push(syms[i]);kmaps.push(maps[i]);}}
+      if(keep.length<2)throw new Error('nodata');
+      // common dates
+      var dates=Object.keys(kmaps[0]);for(i=1;i<kmaps.length;i++){var s=kmaps[i];dates=dates.filter(function(d){return s[d];});}
+      dates.sort();if(dates.length<150)throw new Error('nooverlap');
+      var N=keep.length,T=dates.length-1;
+      var R=[];for(i=0;i<N;i++){R[i]=[];for(var t=1;t<dates.length;t++)R[i].push(kmaps[i][dates[t]]/kmaps[i][dates[t-1]]-1);}
+      analyze(keep,R,T);busy=false;goEl.disabled=false;
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Could not build enough overlapping history for that basket - check the tickers and try again.</div>';});
+  }
+  function analyze(syms,R,T){
+    var N=syms.length;
+    var mu=R.map(function(r){var s=0;for(var i=0;i<r.length;i++)s+=r[i];return s/r.length;});
+    var cov=[];for(var i=0;i<N;i++){cov[i]=[];for(var j=0;j<N;j++){var s=0;for(var t=0;t<T;t++)s+=(R[i][t]-mu[i])*(R[j][t]-mu[j]);cov[i][j]=s/(T-1);}}
+    var vol=cov.map(function(row,i){return Math.sqrt(row[i]);});
+    var ann=Math.sqrt(252);
+    function Sw(w){var o=[];for(var i=0;i<N;i++){var s=0;for(var j=0;j<N;j++)s+=cov[i][j]*w[j];o[i]=s;}return o;}
+    function pvar(w){var sw=Sw(w),s=0;for(var i=0;i<N;i++)s+=w[i]*sw[i];return s;}
+    function rc(w){var sw=Sw(w),pv=pvar(w),o=[];for(var i=0;i<N;i++)o[i]=w[i]*sw[i]/pv;return o;}
+    function norm(w){var s=0;for(var i=0;i<N;i++)s+=w[i];return w.map(function(x){return x/s;});}
+    var wEq=norm(new Array(N).fill(1));
+    var wIV=norm(vol.map(function(v){return 1/v;}));
+    // ERC via multiplicative iteration
+    var w=wIV.slice();
+    for(var it=0;it<400;it++){var sw=Sw(w),rcv=w.map(function(wi,i){return wi*sw[i];}),tot=rcv.reduce(function(a,b){return a+b;},0),tgt=tot/N;
+      for(i=0;i<N;i++)w[i]=w[i]*Math.sqrt(tgt/(rcv[i]+1e-18));w=norm(w);}
+    var wERC=w;
+    var schemes=[['Equal weight',wEq],['Inverse-vol',wIV],['Risk parity (ERC)',wERC]];
+    var pvols=schemes.map(function(s){return Math.sqrt(pvar(s[1]))*ann*100;});
+    var rcERC=rc(wERC);
+    var maxRCspread=Math.max.apply(null,rcERC)-Math.min.apply(null,rcERC);
+    var h='';
+    h+='<div class="sect">Portfolio volatility by scheme</div><div class="cards">';
+    schemes.forEach(function(s,i){h+='<div class="card'+(i===2?' hl':'')+'"><div class="clab">'+s[0]+'</div><div class="cval">'+pvols[i].toFixed(1)+'%</div><div class="csub">annualized</div></div>';});
+    h+='</div>';
+    h+='<div class="sect">Weights &amp; risk contribution</div><div class="panel"><table><thead><tr><th>Asset</th><th>Vol</th><th>Equal wt</th><th>Inv-vol</th><th>Risk parity</th><th>RC% (parity)</th></tr></thead><tbody>';
+    for(i=0;i<N;i++){h+='<tr><td>'+esc(syms[i])+'</td><td>'+(vol[i]*ann*100).toFixed(1)+'%</td><td>'+(wEq[i]*100).toFixed(1)+'%</td><td>'+(wIV[i]*100).toFixed(1)+'%</td><td class="hl">'+(wERC[i]*100).toFixed(1)+'%</td><td>'+(rcERC[i]*100).toFixed(1)+'%</td></tr>';}
+    h+='</tbody></table><div class="csub" style="padding:8px 4px 0">Under risk parity every holding contributes about '+(100/N).toFixed(1)+'% of portfolio risk (RC% column'+(maxRCspread<0.02?' - converged':'')+').</div></div>';
+    // find dominant risk asset in equal weight
+    var rcEq=rc(wEq),maxi=0;for(i=1;i<N;i++)if(rcEq[i]>rcEq[maxi])maxi=i;
+    h+='<div class="summary">In an <b>equal-weight</b> version of this basket, <b>'+esc(syms[maxi])+'</b> alone drives <b>'+(rcEq[maxi]*100).toFixed(0)+'%</b> of the risk despite being just '+(wEq[maxi]*100).toFixed(0)+'% of the dollars. <b>Risk parity</b> rebalances to '+schemes[2][1].map(function(x,i){return esc(syms[i])+' '+(x*100).toFixed(0)+'%';}).join(', ')+', equalizing risk at ~'+(100/N).toFixed(0)+'% each and moving portfolio volatility to <b>'+pvols[2].toFixed(1)+'%</b>.</div>';
+    resEl.innerHTML=h;
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+})();
 </script>
+<script src="/nav.js" defer></script>
 </body></html>

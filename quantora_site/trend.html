@@ -1,0 +1,151 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trend vs Mean-Reversion Lab - Hurst exponent &amp; variance ratio | Quantora</title>
+<meta name="description" content="Does this stock trend or mean-revert? Quantora computes the Hurst exponent and the Lo-MacKinlay variance-ratio profile to tell you whether momentum or mean-reversion strategies actually work on it. Five years of daily data, free.">
+<link rel="canonical" href="https://www.usequantora.com/trend.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:10px;max-width:520px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .gauge{position:relative;height:30px;border-radius:8px;background:linear-gradient(90deg,#e07a3f,#e7c26a 40%,#cfd6e0 50%,#7fb4e6 60%,#2f6bff);margin:10px 0 4px}
+  .gmark{position:absolute;top:-4px;width:3px;height:38px;background:#0b1220;border-radius:2px}
+  .glabels{display:flex;justify-content:space-between;font-size:10.5px;color:#9aa1ad;margin-top:6px}
+  .frow{display:grid;grid-template-columns:60px 1fr 96px;align-items:center;gap:12px;margin:10px 0}
+  .flab{font-size:13px;font-weight:600;color:#2c313a}
+  .track{position:relative;height:24px;background:linear-gradient(90deg,rgba(224,122,63,.08) 0,rgba(224,122,63,.08) 50%,rgba(47,107,255,.08) 50%,rgba(47,107,255,.08));border-radius:7px}
+  .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(17,24,39,.22)}
+  .bar{position:absolute;top:5px;height:14px;border-radius:4px}
+  .fval{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:13px}
+  .fns{font-weight:400;font-size:10.5px;color:#b0b6c0}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}
+  .summary b{color:#fff}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; TREND / REVERSION LAB</div>
+  <h1>Trend vs mean-reversion</h1>
+  <p class="lead">Momentum and mean-reversion are opposite bets - and most strategies quietly assume one is true. Quantora measures which regime a stock actually lives in using the Hurst exponent and the Lo-MacKinlay variance-ratio test, so you know before you trade whether trend-following or fading has an edge here.</p>
+  <div class="box">
+    <input id="q" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">The Hurst exponent H is estimated from how return variance scales with horizon (aggregated-variance method): H near 0.5 is a random walk, H above 0.5 is persistent/trending, H below 0.5 is anti-persistent/mean-reverting. The variance ratio VR(q) compares q-day return variance to q times 1-day variance (Lo-MacKinlay, homoskedastic z-statistic); above 1 signals trending, below 1 signals reversion. Based on daily log returns over roughly five years. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['NVDA','SPY','TSLA','KO','TLT','GLD','BTCUSD','JPM'];
+  var qEl=document.getElementById('q'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){qEl.value=t;run();});exEl.appendChild(c);});
+
+  function getPrices(sym){
+    return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var out=[];
+      for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)out.push({d:(''+d).slice(0,10),v:+p});}
+      out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;
+    });
+  }
+  function mean(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;}
+  function variance(a){var m=mean(a),s=0;for(var i=0;i<a.length;i++)s+=(a[i]-m)*(a[i]-m);return s/(a.length-1);}
+  function hurst(r){
+    var taus=[1,2,4,8,16,32],xs=[],ys=[];
+    for(var k=0;k<taus.length;k++){var tau=taus[k],sums=[],i=0;
+      while(i+tau<=r.length){var s=0;for(var j=0;j<tau;j++)s+=r[i+j];sums.push(s);i+=tau;}
+      if(sums.length<8)continue;var v=variance(sums);if(v>0){xs.push(Math.log(tau));ys.push(Math.log(v));}
+    }
+    var mx=mean(xs),my=mean(ys),num=0,den=0;
+    for(i=0;i<xs.length;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)*(xs[i]-mx);}
+    return (num/den)/2;
+  }
+  function varRatio(r,q){
+    var n=r.length,mu=mean(r),v1=variance(r);
+    var sumq=0;
+    for(var t=q;t<=n;t++){var s=0;for(var j=0;j<q;j++)s+=r[t-1-j];var e=s-q*mu;sumq+=e*e;}
+    var m=q*(n-q+1)*(1-q/n);
+    var vq=sumq/m;
+    var vr=vq/v1;
+    var z=(vr-1)/Math.sqrt(2*(2*q-1)*(q-1)/(3*q*n));
+    return {vr:vr,z:z};
+  }
+  function ac1(r){var n=r.length,m=mean(r),num=0,den=0;for(var i=0;i<n;i++)den+=(r[i]-m)*(r[i]-m);for(i=1;i<n;i++)num+=(r[i]-m)*(r[i-1]-m);return num/den;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function run(){
+    var sym=(qEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!sym||busy)return;qEl.value=sym;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Measuring persistence across horizons&hellip;</div>';
+    getPrices(sym).then(function(p){
+      if(!p||p.length<200)throw new Error('nodata');
+      var r=[];for(var i=1;i<p.length;i++){r.push(Math.log(p[i].v/p[i-1].v));}
+      analyze(sym,r);busy=false;goEl.disabled=false;
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Not enough price history for that symbol - check the ticker and try again.</div>';});
+  }
+
+  function analyze(sym,r){
+    var H=hurst(r);
+    var qs=[2,4,8,16],vrs=qs.map(function(q){return varRatio(r,q);});
+    var a1=ac1(r);
+    var vr16=vrs[3].vr, z16=vrs[3].z;
+    // verdict
+    var verdict,vcol,vword;
+    if(H>0.54||vr16>1.10){verdict='trending / persistent';vword='trends';vcol='#2f6bff';}
+    else if(H<0.46||vr16<0.90){verdict='mean-reverting / anti-persistent';vword='mean-reverts';vcol='#e07a3f';}
+    else{verdict='effectively a random walk';vword='behaves like a random walk';vcol='#6b7280';}
+
+    var gpos=Math.max(0,Math.min(1,H))*100;
+    var h='';
+    h+='<div class="sect">Verdict &middot; '+esc(sym)+' &middot; '+r.length+' daily returns</div>';
+    h+='<div class="cards">';
+    h+='<div class="card"><div class="clab">Hurst exponent</div><div class="cval" style="color:'+vcol+'">'+H.toFixed(3)+'</div><div class="csub">'+(H>0.54?'persistent':H<0.46?'anti-persistent':'random-walk range')+'</div></div>';
+    h+='<div class="card"><div class="clab">Variance ratio (16d)</div><div class="cval">'+vr16.toFixed(2)+'</div><div class="csub">z = '+z16.toFixed(2)+(Math.abs(z16)>1.96?' (sig)':' (n.s.)')+'</div></div>';
+    h+='<div class="card"><div class="clab">Lag-1 autocorr</div><div class="cval">'+(a1>=0?'+':'')+a1.toFixed(3)+'</div><div class="csub">'+(a1>0.02?'follow-through':a1<-0.02?'reversal':'~none')+'</div></div>';
+    h+='<div class="card"><div class="clab">Regime</div><div class="cval" style="font-size:15px;line-height:1.35;color:'+vcol+'">'+verdict+'</div></div>';
+    h+='</div>';
+
+    h+='<div class="sect">Hurst exponent</div><div class="panel"><div class="gauge"><div class="gmark" style="left:calc('+gpos.toFixed(1)+'% - 1.5px)"></div></div><div class="glabels"><span>0.0 &middot; strong reversion</span><span>0.5 &middot; random walk</span><span>1.0 &middot; strong trend</span></div></div>';
+
+    h+='<div class="sect">Variance-ratio profile (VR by horizon)</div><div class="panel">';
+    var maxdev=0.35;vrs.forEach(function(o){maxdev=Math.max(maxdev,Math.abs(o.vr-1));});
+    qs.forEach(function(q,idx){
+      var o=vrs[idx],dev=o.vr-1,w=Math.min(48,Math.abs(dev)/maxdev*48),ns=Math.abs(o.z)<1.96;
+      var col=dev>=0?'#2f6bff':'#e07a3f',bs;
+      if(dev>=0)bs='left:50%;width:'+w+'%;background:'+col+';';else bs='left:'+(50-w)+'%;width:'+w+'%;background:'+col+';';
+      if(ns)bs+='opacity:.34;';
+      h+='<div class="frow"><div class="flab">'+q+'-day</div><div class="track"><div class="mid"></div><div class="bar" style="'+bs+'"></div></div><div class="fval">'+o.vr.toFixed(2)+(ns?'<span class="fns"> n.s.</span>':'')+'</div></div>';
+    });
+    h+='<div class="csub" style="padding-top:4px">Bars right of center (&gt;1) indicate trending; left (&lt;1) indicate reversion. Faded bars are not statistically significant.</div></div>';
+
+    var edge = verdict.indexOf('trending')===0?'momentum / trend-following has historically had the wind at its back here':verdict.indexOf('mean')===0?'fading extremes / mean-reversion has historically been favored here':'neither momentum nor mean-reversion shows a reliable statistical edge here';
+    h+='<div class="summary"><b>'+esc(sym)+'</b> '+vword+': its Hurst exponent is <b>'+H.toFixed(3)+'</b> and its 16-day variance ratio is <b>'+vr16.toFixed(2)+'</b> ('+(Math.abs(z16)>1.96?'statistically significant':'not significant')+'). In plain terms, '+edge+'.</div>';
+    resEl.innerHTML=h;
+  }
+  goEl.addEventListener('click',run);
+  qEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
