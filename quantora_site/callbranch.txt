@@ -1,0 +1,39 @@
+if (type === 'call' || type === 'calls') {
+  var _cs = (process.env.SUPABASE_URL || '').trim(); while (_cs.slice(-1) === '/') _cs = _cs.slice(0, -1); if (_cs.slice(-8) === '/rest/v1') _cs = _cs.slice(0, -8);
+  var _ck = process.env.SUPABASE_KEY;
+  var _cbase = "https://" + (req.headers["x-forwarded-host"] || req.headers.host || "www.usequantora.com");
+  if (type === 'calls') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (!_cs || !_ck) { res.status(200).json({ data: [] }); return; }
+    var _h = (req.query.handle || '').toString().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
+    var _lim = Math.max(1, Math.min(500, parseInt(req.query.limit, 10) || 200));
+    res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
+    try {
+      var _q = _cs + '/rest/v1/calls?select=*&order=created_at.desc&limit=' + _lim + (_h ? ('&handle=eq.' + _h) : '');
+      var _r = await fetch(_q, { headers: { 'apikey': _ck, 'Authorization': 'Bearer ' + _ck } });
+      var _j = await _r.json();
+      res.status(200).json({ data: Array.isArray(_j) ? _j : [] });
+    } catch (e) { res.status(200).json({ data: [] }); }
+    return;
+  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (!_cs || !_ck) { res.status(200).json({ error: 'nocfg' }); return; }
+  var _body = req.body; if (typeof _body === 'string') { try { _body = JSON.parse(_body); } catch (e) { _body = {}; } } _body = _body || {};
+  var _handle = ((req.query.handle || _body.handle || 'anon') + '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'anon';
+  var _ticker = ((req.query.symbol || req.query.ticker || _body.ticker || '') + '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 8);
+  var _dir = (((req.query.dir || _body.dir || 'bull') + '').toLowerCase() === 'bear') ? 'bear' : 'bull';
+  var _thesis = ((req.query.thesis || _body.thesis || '') + '').slice(0, 280);
+  if (!_ticker) { res.status(200).json({ error: 'nosym' }); return; }
+  try {
+    var _pr = await fetch(_cbase + '/api/fmp?type=prices&symbol=' + encodeURIComponent(_ticker));
+    var _pj = await _pr.json(); var _arr = Array.isArray(_pj) ? _pj : (_pj.data || _pj.historical || []);
+    var _lastRow = _arr && _arr.length ? _arr[0] : null;
+    var _last = _lastRow ? (_lastRow.price != null ? _lastRow.price : _lastRow.close) : null;
+    if (!_last || !(_last > 0)) { res.status(200).json({ error: 'noprice' }); return; }
+    var _entry = +(+_last).toFixed(4);
+    var _ins = await fetch(_cs + '/rest/v1/calls', { method: 'POST', headers: { 'apikey': _ck, 'Authorization': 'Bearer ' + _ck, 'content-type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ handle: _handle, ticker: _ticker, dir: _dir, thesis: _thesis, entry_price: _entry }) });
+    if (_ins.status >= 300) { res.status(200).json({ error: 'db', status: _ins.status }); return; }
+    res.status(200).json({ ok: true, handle: _handle, ticker: _ticker, dir: _dir, entry_price: _entry });
+  } catch (e) { res.status(200).json({ error: 'feed' }); }
+  return;
+}

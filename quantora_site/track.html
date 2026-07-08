@@ -1,0 +1,149 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Track Record - timestamped, outcome-ranked calls | Quantora</title>
+<meta name="description" content="Make a public call on any stock. It is priced and timestamped the instant you publish - you cannot backdate a win - and scored live against the S&P 500. Build a verifiable track record no one can fake. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/track.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 16px}
+  .pub{background:#0b1220;color:#e9edf5;border-radius:16px;padding:18px 20px;margin:4px 0 8px}
+  .pub .r1{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pub input{border:0;outline:0;border-radius:9px;padding:11px 12px;font-size:15px;font-weight:600}
+  .pub #tk{width:120px;text-transform:uppercase}
+  .pub #hd{width:130px;background:#1b2436;color:#e9edf5}
+  .pub #hd::placeholder{color:#8a94ad}
+  .dirbtn{border:1px solid rgba(255,255,255,.2);background:transparent;color:#cfd6e4;border-radius:9px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer}
+  .dirbtn.bull.on{background:#1663d6;color:#fff;border-color:#1663d6}
+  .dirbtn.bear.on{background:#c0392b;color:#fff;border-color:#c0392b}
+  .pub textarea{width:100%;box-sizing:border-box;margin-top:10px;border:0;outline:0;border-radius:9px;padding:11px 12px;font:400 14px/1.5 inherit;resize:vertical;min-height:44px}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:700;font-size:14px;cursor:pointer;margin-left:auto}
+  .go:disabled{opacity:.5}
+  .msg{font-size:12.5px;margin-top:8px;color:#aeb6c4}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:6px 16px 12px}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:right;padding:9px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .h{font-weight:700}.pos{color:#1663d6}.neg{color:#c0392b}
+  .rank{color:#9aa1ad;width:26px}
+  .feed .row{display:flex;align-items:center;gap:12px;padding:11px 6px;border-bottom:1px solid rgba(17,24,39,.05);flex-wrap:wrap}
+  .feed .row:last-child{border-bottom:0}
+  .bd{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase}
+  .bd.bull{background:#e7f0fd;color:#1663d6}.bd.bear{background:#fdecea;color:#c0392b}
+  .who{font-weight:600}.tkr{font-weight:700}
+  .meta{color:#9aa1ad;font-size:12px}
+  .ret{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  .th{flex-basis:100%;color:#4a4f58;font-size:13px;line-height:1.5;margin-top:2px}
+  .empty{color:#9aa1ad;font-size:13.5px;padding:16px 8px;line-height:1.6}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:80ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; TRACK RECORD</div>
+  <h1>Make a call. Build a record no one can fake.</h1>
+  <p class="lead">Call any stock bullish or bearish. It is priced and timestamped the instant you publish - you cannot backdate a win - and scored live against the S&amp;P 500. Over time, your handle builds a verifiable, outcome-ranked track record. This is the thing fintwit and closed terminals can't give you: proof.</p>
+  <div class="pub">
+    <div class="r1">
+      <input id="hd" type="text" placeholder="@handle" spellcheck="false" maxlength="20">
+      <input id="tk" type="text" placeholder="TICKER" spellcheck="false">
+      <button class="dirbtn bull on" id="bull" type="button">&#9650; Bull</button>
+      <button class="dirbtn bear" id="bear" type="button">&#9660; Bear</button>
+      <button class="go" id="go" type="button">Publish call</button>
+    </div>
+    <textarea id="th" placeholder="Why? (optional, 280 chars)"></textarea>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="sect">Leaderboard <span id="lbnote" style="color:#c9cfda;font-weight:500;text-transform:none;letter-spacing:0"></span></div>
+  <div class="panel" id="lb"></div>
+
+  <div class="sect">Recent calls</div>
+  <div class="panel feed" id="feed"></div>
+
+  <div class="muted">Entry price is locked server-side from delayed/end-of-day data at publish time. "Return" is the directional P&amp;L of the call (a bear call gains when the stock falls); "vs S&amp;P" is that return minus the S&amp;P 500's over the same period (alpha). Leaderboard ranks handles by average alpha (min 1 call). Calls are pseudonymous and public. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  function get(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+  function set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function pc(x){return (x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+  var hd=document.getElementById('hd'),tk=document.getElementById('tk'),th=document.getElementById('th'),go=document.getElementById('go'),msg=document.getElementById('msg');
+  var dir='bull';
+  var handle=get('q_handle',null); if(handle)hd.value=handle;
+  document.getElementById('bull').addEventListener('click',function(){dir='bull';this.classList.add('on');document.getElementById('bear').classList.remove('on');});
+  document.getElementById('bear').addEventListener('click',function(){dir='bear';this.classList.add('on');document.getElementById('bull').classList.remove('on');});
+
+  function _gpRaw(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={},last=null,lastD=null;for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0){var ds=(''+d).slice(0,10);m[ds]=+p;if(!lastD||ds>lastD){lastD=ds;last=+p;}}}return {map:m,last:last,lastD:lastD};}).catch(function(){return {map:{},last:null};});}
+  function getP(sym){return _gpRaw(sym).then(function(o){if(o.last)return o;return new Promise(function(r){setTimeout(r,500);}).then(function(){return _gpRaw(sym);});});}
+  function pMap(items,fn,limit){return new Promise(function(res){var r=new Array(items.length),i=0,a=0,d=0;function nx(){while(a<limit&&i<items.length){(function(k){a++;fn(items[k]).then(function(x){r[k]=x;},function(){r[k]=null;}).then(function(){a--;d++;if(d===items.length)res(r);else nx();});})(i++);}}if(!items.length)res([]);else nx();});}
+
+  function publish(){
+    var H=(hd.value||'').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20);
+    var T=(tk.value||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!H){msg.textContent='Pick a handle first.';return;}
+    if(!T){msg.textContent='Enter a ticker.';return;}
+    set('q_handle',H);handle=H;
+    go.disabled=true;msg.textContent='Locking entry price…';
+    fetch('/api/fmp?type=call',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({handle:H,ticker:T,dir:dir,thesis:(th.value||'').slice(0,280)})})
+      .then(function(r){return r.json();}).then(function(j){
+        go.disabled=false;
+        if(j&&j.ok){msg.innerHTML='Published: <b>@'+esc(H)+'</b> is '+dir+' '+esc(T)+' at $'+(+j.entry_price).toFixed(2)+', timestamped now.';tk.value='';th.value='';load();}
+        else if(j&&j.error==='nocfg'){msg.textContent='The track-record backend is not configured yet (needs SUPABASE_URL/KEY + the calls table).';}
+        else if(j&&j.error==='noprice'){msg.textContent='Could not price that ticker - check the symbol.';}
+        else{msg.textContent='Could not publish - please try again.';}
+      }).catch(function(){go.disabled=false;msg.textContent='Network error - please try again.';});
+  }
+  go.addEventListener('click',publish);
+  tk.addEventListener('keydown',function(e){if(e.key==='Enter')publish();});
+
+  function nearest(mapKeys,map,date){var lo=0,hi=mapKeys.length-1,ans=null;while(lo<=hi){var mid=(lo+hi)>>1;if(mapKeys[mid]<=date){ans=mapKeys[mid];lo=mid+1;}else hi=mid-1;}return ans!=null?map[ans]:null;}
+
+  function load(){
+    var lb=document.getElementById('lb'),feed=document.getElementById('feed');
+    lb.innerHTML='<div class="spin">Scoring calls against the market…</div>';feed.innerHTML='';
+    fetch('/api/fmp?type=calls&limit=200').then(function(r){return r.json();}).then(function(j){
+      var calls=(j&&j.data)||[];
+      if(!calls.length){lb.innerHTML='<div class="empty">No calls yet. Be the first - make one above and start a track record.</div>';document.getElementById('lbnote').textContent='';return;}
+      var tickers=[];var seen={};calls.forEach(function(c){if(!seen[c.ticker]){seen[c.ticker]=1;tickers.push(c.ticker);}});
+      Promise.all([getP('SPY'),pMap(tickers,getP,4)]).then(function(res){
+        var spy=res[0],priced=res[1],pm={};tickers.forEach(function(t,i){pm[t]=priced[i];});
+        var spyKeys=Object.keys(spy.map).sort();
+        calls.forEach(function(c){
+          var ed=(c.created_at||'').slice(0,10);
+          var cur=pm[c.ticker]&&pm[c.ticker].last;
+          var tRet=(cur&&c.entry_price)?cur/c.entry_price-1:null;
+          var spyE=nearest(spyKeys,spy.map,ed),spyN=spy.last;
+          var sRet=(spyE&&spyN)?spyN/spyE-1:null;
+          c._cur=cur;c._callRet=tRet==null?null:(c.dir==='bull'?tRet:-tRet);
+          c._alpha=(tRet==null||sRet==null)?null:(c.dir==='bull'?(tRet-sRet):(sRet-tRet));
+          c._days=Math.max(0,Math.round((Date.now()-new Date(c.created_at))/864e5));
+        });
+        // leaderboard by handle
+        var agg={};calls.forEach(function(c){if(c._alpha==null)return;var a=agg[c.handle]||(agg[c.handle]={n:0,hit:0,sret:0,salpha:0});a.n++;a.salpha+=c._alpha;a.sret+=c._callRet;if(c._callRet>0)a.hit++;});
+        var rows=Object.keys(agg).map(function(h){var a=agg[h];return {h:h,n:a.n,hit:a.hit/a.n,ret:a.sret/a.n,alpha:a.salpha/a.n};}).sort(function(x,y){return y.alpha-x.alpha;});
+        document.getElementById('lbnote').textContent='('+rows.length+' handles · '+calls.length+' calls)';
+        var h='<table><thead><tr><th></th><th>Handle</th><th>Calls</th><th>Hit rate</th><th>Avg return</th><th>Avg vs S&P</th></tr></thead><tbody>';
+        rows.forEach(function(r,i){h+='<tr><td class="rank">'+(i+1)+'</td><td class="h">@'+esc(r.h)+'</td><td>'+r.n+'</td><td>'+(r.hit*100).toFixed(0)+'%</td><td class="'+(r.ret>=0?'pos':'neg')+'">'+pc(r.ret)+'</td><td class="h '+(r.alpha>=0?'pos':'neg')+'">'+pc(r.alpha)+'</td></tr>';});
+        h+='</tbody></table>';lb.innerHTML=h;
+        // feed
+        var fh='';calls.slice(0,40).forEach(function(c){
+          fh+='<div class="row"><span class="bd '+c.dir+'">'+(c.dir==='bull'?'&#9650; Bull':'&#9660; Bear')+'</span><span class="who">@'+esc(c.handle)+'</span><a class="tkr" style="text-decoration:none;color:#14161c" href="/stock/'+esc(c.ticker)+'">'+esc(c.ticker)+'</a><span class="meta">$'+(+c.entry_price).toFixed(2)+' &middot; '+(c._days)+'d ago</span><span class="ret '+(c._callRet==null?'':(c._callRet>=0?'pos':'neg'))+'">'+(c._callRet==null?'—':pc(c._callRet))+'<div class="meta" style="font-weight:400">'+(c._alpha==null?'':'vs S&P '+pc(c._alpha))+'</div></span>'+(c.thesis?'<div class="th">'+esc(c.thesis)+'</div>':'')+'</div>';
+        });
+        feed.innerHTML=fh;
+      }).catch(function(){lb.innerHTML='<div class="empty">Could not score calls right now. Please try again.</div>';});
+    }).catch(function(){document.getElementById('lb').innerHTML='<div class="empty">Could not load calls right now.</div>';});
+  }
+  load();
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
