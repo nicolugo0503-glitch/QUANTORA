@@ -24,6 +24,7 @@
   var lk = document.createElement('link'); lk.rel='stylesheet'; lk.href='/theme.css?v=2'; (document.head || document.documentElement).appendChild(lk);
   var hj=document.createElement('script'); hj.src='/hero.js?v=2'; hj.async=false; (document.head || document.documentElement).appendChild(hj);
   var cj=document.createElement('script'); cj.src='/compliance.js?v=1'; cj.async=true; (document.head || document.documentElement).appendChild(cj);
+var sj=document.createElement('script'); sj.src='/share.js?v=1'; sj.async=true; (document.head || document.documentElement).appendChild(sj);
 
   var NAV = [
     { label: 'Command', href: '/deck.html' },
