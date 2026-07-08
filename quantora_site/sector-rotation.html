@@ -46,7 +46,7 @@
   function _gpRaw(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;}).catch(function(){return {};});}
   function getPrices(sym){return _gpRaw(sym).then(function(m){if(m&&Object.keys(m).length>50)return m;return new Promise(function(r){setTimeout(r,500+Math.random()*500);}).then(function(){return _gpRaw(sym);});}).then(function(m){if(m&&Object.keys(m).length>50)return m;return new Promise(function(r){setTimeout(r,1000+Math.random()*800);}).then(function(){return _gpRaw(sym);});}).then(function(m){return m||{};});}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  Promise.all(SEC.map(function(x){return getPrices(x[0]);}).concat([getPrices('SPY')])).then(function(maps){
+  function pMap(items,fn,limit){return new Promise(function(resolve){var results=new Array(items.length),idx=0,active=0,done=0;function next(){while(active<limit&&idx<items.length){(function(i){active++;fn(items[i]).then(function(r){results[i]=r;},function(){results[i]=null;}).then(function(){active--;done++;if(done===items.length)resolve(results);else next();});})(idx++);}}if(items.length===0)resolve([]);else next();});}pMap(SEC.map(function(x){return x[0];}).concat(['SPY']),getPrices,4).then(function(maps){
     var spy=maps[maps.length-1];
     if(!spy||Object.keys(spy).length<260)throw new Error('nospy');
     var rows=[];
