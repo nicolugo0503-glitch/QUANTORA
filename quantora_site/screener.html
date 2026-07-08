@@ -145,6 +145,7 @@
   }
 
   goEl.addEventListener('click', run);
+  var _qp=location.search.match(/[?&]q=([^&]+)/); if(_qp){ var _qq=decodeURIComponent(_qp[1].replace(/\+/g,' ')); if(_qq){ qEl.value=_qq; run(); } }
   qEl.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); run(); } });
 })();
 </script>
