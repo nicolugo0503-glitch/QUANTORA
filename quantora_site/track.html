@@ -91,7 +91,7 @@
   <div class="sect">Recent calls</div>
   <div class="panel feed" id="feed"></div>
 
-  <div class="muted">Entry price is locked server-side from delayed/end-of-day data at publish time. "Return" is the directional P&amp;L of the call (a bear call gains when the stock falls); "vs S&amp;P" is that return minus the S&amp;P 500's over the same period (alpha). Leaderboard ranks handles by average alpha (min 1 call). Calls are pseudonymous and public. Educational only - not investment advice.</div>
+  <div class="muted">Entry price is locked server-side from delayed/end-of-day data at publish time. "Return" is the directional P&amp;L of the call (a bear call gains when the stock falls); "vs S&amp;P" is that return minus the S&amp;P 500's over the same period (alpha). Leaderboard ranks handles by average alpha, using each call's locked realized outcome once a 30/90/180-day horizon matures and live P&amp;L before that ("Locked" = how many of a handle's calls are already frozen). Calls are pseudonymous and public. Educational only - not investment advice.</div>
   </div>
 
   <div id="subview" style="display:none"></div>
@@ -122,6 +122,12 @@
       c._cur=cur;c._callRet=tRet==null?null:(c.dir==='bull'?tRet:-tRet);
       c._alpha=(tRet==null||sRet==null)?null:(c.dir==='bull'?(tRet-sRet):(sRet-tRet));
       c._days=Math.max(0,Math.round((Date.now()-new Date(c.created_at))/864e5));
+      var _num=function(x){return (x==null||x==='')?null:+x;};
+      c._s30=_num(c.ret_30d);c._a30=_num(c.alpha_30d);c._s90=_num(c.ret_90d);c._a90=_num(c.alpha_90d);c._s180=_num(c.ret_180d);c._a180=_num(c.alpha_180d);
+      c._settled=(c._s30!=null||c._s90!=null||c._s180!=null);
+      c._effRet=(c._s180!=null?c._s180:(c._s90!=null?c._s90:(c._s30!=null?c._s30:c._callRet)));
+      c._effAlpha=(c._a180!=null?c._a180:(c._a90!=null?c._a90:(c._a30!=null?c._a30:c._alpha)));
+      c._effH=(c._s180!=null?'180d':(c._s90!=null?'90d':(c._s30!=null?'30d':'live')));
     });
     return calls;
   }
@@ -153,8 +159,8 @@
         h+='<div class="bignum">'
           +'<div><div class="k">Entry (locked)</div><div class="v">$'+(+c.entry_price).toFixed(2)+'</div></div>'
           +'<div><div class="k">Now</div><div class="v">'+(c._cur?'$'+(+c._cur).toFixed(2):'—')+'</div></div>'
-          +'<div><div class="k">Call return</div><div class="v '+(rc==null?'':(rc>=0?'pos':'neg'))+'">'+(rc==null?'—':pc(rc))+'</div></div>'
-          +'<div><div class="k">vs S&amp;P 500</div><div class="v '+(al==null?'':(al>=0?'pos':'neg'))+'">'+(al==null?'—':pc(al))+'</div></div>'
+          +'<div><div class="k">Call return (live)</div><div class="v '+(rc==null?'':(rc>=0?'pos':'neg'))+'">'+(rc==null?'—':pc(rc))+'</div></div>'
+          +'<div><div class="k">vs S&amp;P (live)</div><div class="v '+(al==null?'':(al>=0?'pos':'neg'))+'">'+(al==null?'—':pc(al))+'</div></div>'
           +'<div><div class="k">Held</div><div class="v">'+c._days+'d</div></div>'
           +'</div>';
         if(c.thesis)h+='<div class="thesis">'+esc(c.thesis)+'</div>';
@@ -164,7 +170,8 @@
           +'<a class="btn" href="/track.html?h='+esc(c.handle)+'">@'+esc(c.handle)+'\'s record</a>'
           +'<a class="btn" href="/stock/'+esc(c.ticker)+'">'+esc(c.ticker)+' page</a>'
           +'</div></div>';
-        h+='<div class="muted">Entry price was locked from delayed/end-of-day data at publish time and cannot be changed. Return is the directional P&amp;L; vs S&amp;P is that minus the index over the same window. Educational only - not investment advice.</div>';
+        if(c._settled){var _sn='<div class="sect" style="margin:18px 0 8px">Locked snapshots</div><div class="panel"><table><thead><tr><th>Horizon</th><th>Return</th><th>vs S&amp;P</th></tr></thead><tbody>';[['30 days',c._s30,c._a30],['90 days',c._s90,c._a90],['180 days',c._s180,c._a180]].forEach(function(r){if(r[1]!=null){_sn+='<tr><td>'+r[0]+'</td><td class="'+(r[1]>=0?'pos':'neg')+'">'+pc(r[1])+'</td><td class="h '+(r[2]==null?'':(r[2]>=0?'pos':'neg'))+'">'+(r[2]==null?'—':pc(r[2]))+'</td></tr>';}});_sn+='</tbody></table></div>';h+=_sn;}
+        h+='<div class="muted">Live figures move with the market; locked snapshots are frozen at each horizon and never change. Entry price was locked from delayed/end-of-day data at publish time. Educational only - not investment advice.</div>';
         sv.innerHTML=h;
         var cpy=document.getElementById('cpy');if(cpy)cpy.addEventListener('click',function(){var u=location.origin+'/track.html?c='+id;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){cpy.textContent='Copied ✓';},function(){cpy.textContent=u;});}else{cpy.textContent=u;}});
       });
@@ -181,32 +188,35 @@
       var tickers=uniqTickers(calls);
       Promise.all([getP('SPY'),pMap(tickers,getP,4)]).then(function(res){
         var spy=res[0],pm=priceMap(tickers,res[1]);score(calls,spy,pm);
-        var scored=calls.filter(function(c){return c._alpha!=null;});
+        var scored=calls.filter(function(c){return c._effAlpha!=null;});
         var n=scored.length;
-        var hit=scored.filter(function(c){return c._callRet>0;}).length;
-        var avgRet=n?scored.reduce(function(a,c){return a+c._callRet;},0)/n:0;
-        var avgAlpha=n?scored.reduce(function(a,c){return a+c._alpha;},0)/n:0;
-        var best=null,worst=null;scored.forEach(function(c){if(best==null||c._alpha>best._alpha)best=c;if(worst==null||c._alpha<worst._alpha)worst=c;});
+        var hit=scored.filter(function(c){return c._effRet>0;}).length;
+        var avgRet=n?scored.reduce(function(a,c){return a+c._effRet;},0)/n:0;
+        var avgAlpha=n?scored.reduce(function(a,c){return a+c._effAlpha;},0)/n:0;
+        var nSettled=calls.filter(function(c){return c._settled;}).length;
+        var best=null,worst=null;scored.forEach(function(c){if(best==null||c._effAlpha>best._effAlpha)best=c;if(worst==null||c._effAlpha<worst._effAlpha)worst=c;});
         var html='<a class="back" href="/track.html">&larr; Leaderboard</a><div class="card">';
         html+='<div class="phead"><span class="pn">@'+esc(h)+'</span><span class="by" style="color:#6b7280">'+calls.length+' call'+(calls.length>1?'s':'')+' &middot; first '+fmtDate(calls[calls.length-1].created_at)+'</span></div>';
         html+='<div class="stats">'
           +'<div><div class="k">Calls scored</div><div class="v">'+n+'</div></div>'
+          +'<div><div class="k">Locked</div><div class="v">'+nSettled+'/'+calls.length+'</div></div>'
           +'<div><div class="k">Hit rate</div><div class="v">'+(n?(hit/n*100).toFixed(0):'—')+'%</div></div>'
           +'<div><div class="k">Avg return</div><div class="v '+(avgRet>=0?'pos':'neg')+'">'+pc(avgRet)+'</div></div>'
           +'<div><div class="k">Avg vs S&amp;P</div><div class="v '+(avgAlpha>=0?'pos':'neg')+'">'+pc(avgAlpha)+'</div></div>'
           +'</div>';
         html+=sparkline(scored);
-        if(best&&worst&&n>1)html+='<div class="meta" style="margin-top:4px">Best: <b>'+esc(best.ticker)+'</b> '+pc(best._alpha)+' vs S&amp;P &middot; Worst: <b>'+esc(worst.ticker)+'</b> '+pc(worst._alpha)+' vs S&amp;P</div>';
+        if(best&&worst&&n>1)html+='<div class="meta" style="margin-top:4px">Best: <b>'+esc(best.ticker)+'</b> '+pc(best._effAlpha)+' vs S&amp;P &middot; Worst: <b>'+esc(worst.ticker)+'</b> '+pc(worst._effAlpha)+' vs S&amp;P</div>';
         html+='</div>';
         var srt=calls.slice().sort(function(a,b){return (b.created_at||'').localeCompare(a.created_at||'');});
-        html+='<div class="sect">All calls</div><div class="panel"><table><thead><tr><th>Date</th><th>Dir</th><th>Ticker</th><th>Entry</th><th>Return</th><th>vs S&amp;P</th><th></th></tr></thead><tbody>';
+        html+='<div class="sect">All calls</div><div class="panel"><table><thead><tr><th>Date</th><th>Dir</th><th>Ticker</th><th>Entry</th><th>Return</th><th>vs S&amp;P</th><th>Basis</th><th></th></tr></thead><tbody>';
         srt.forEach(function(c){
           html+='<tr><td>'+fmtDate(c.created_at)+'</td>'
             +'<td class="'+(c.dir==='bull'?'pos':'neg')+'">'+(c.dir==='bull'?'Bull':'Bear')+'</td>'
             +'<td class="h"><a class="hl" href="/stock/'+esc(c.ticker)+'">'+esc(c.ticker)+'</a></td>'
             +'<td>$'+(+c.entry_price).toFixed(2)+'</td>'
-            +'<td class="'+(c._callRet==null?'':(c._callRet>=0?'pos':'neg'))+'">'+(c._callRet==null?'—':pc(c._callRet))+'</td>'
-            +'<td class="h '+(c._alpha==null?'':(c._alpha>=0?'pos':'neg'))+'">'+(c._alpha==null?'—':pc(c._alpha))+'</td>'
+            +'<td class="'+(c._effRet==null?'':(c._effRet>=0?'pos':'neg'))+'">'+(c._effRet==null?'—':pc(c._effRet))+'</td>'
+            +'<td class="h '+(c._effAlpha==null?'':(c._effAlpha>=0?'pos':'neg'))+'">'+(c._effAlpha==null?'—':pc(c._effAlpha))+'</td>'
+            +'<td class="meta">'+(c._settled?c._effH+' locked':'live')+'</td>'
             +'<td><a class="plk" href="/track.html?c='+c.id+'">view</a></td></tr>';
         });
         html+='</tbody></table></div>';
@@ -219,7 +229,7 @@
   function sparkline(scored){
     if(!scored.length)return '';
     var asc=scored.slice().sort(function(a,b){return (a.created_at||'').localeCompare(b.created_at||'');});
-    var cum=0,pts=[0];asc.forEach(function(c){cum+=c._callRet;pts.push(cum);});
+    var cum=0,pts=[0];asc.forEach(function(c){cum+=(c._effRet!=null?c._effRet:0);pts.push(cum);});
     var W=620,H=90,pad=6;var mn=Math.min.apply(null,pts),mx=Math.max.apply(null,pts);if(mx===mn){mx+=.01;mn-=.01;}
     var last=pts[pts.length-1];var col=last>=0?'#1663d6':'#c0392b';
     var xs=function(i){return pad+i*(W-2*pad)/(pts.length-1);};
@@ -273,14 +283,14 @@
         var tickers=uniqTickers(calls);
         Promise.all([getP('SPY'),pMap(tickers,getP,4)]).then(function(res){
           var spy=res[0],pm=priceMap(tickers,res[1]);score(calls,spy,pm);
-          var agg={};calls.forEach(function(c){if(c._alpha==null)return;var a=agg[c.handle]||(agg[c.handle]={n:0,hit:0,sret:0,salpha:0});a.n++;a.salpha+=c._alpha;a.sret+=c._callRet;if(c._callRet>0)a.hit++;});
-          var rows=Object.keys(agg).map(function(h){var a=agg[h];return {h:h,n:a.n,hit:a.hit/a.n,ret:a.sret/a.n,alpha:a.salpha/a.n};}).sort(function(x,y){return y.alpha-x.alpha;});
+          var agg={};calls.forEach(function(c){if(c._effAlpha==null)return;var a=agg[c.handle]||(agg[c.handle]={n:0,hit:0,sret:0,salpha:0,settled:0});a.n++;a.salpha+=c._effAlpha;a.sret+=c._effRet;if(c._effRet>0)a.hit++;if(c._settled)a.settled++;});
+          var rows=Object.keys(agg).map(function(h){var a=agg[h];return {h:h,n:a.n,hit:a.hit/a.n,ret:a.sret/a.n,alpha:a.salpha/a.n,settled:a.settled};}).sort(function(x,y){return y.alpha-x.alpha;});
           document.getElementById('lbnote').textContent='('+rows.length+' handles · '+calls.length+' calls)';
-          var h='<table><thead><tr><th></th><th>Handle</th><th>Calls</th><th>Hit rate</th><th>Avg return</th><th>Avg vs S&P</th></tr></thead><tbody>';
-          rows.forEach(function(r,i){h+='<tr><td class="rank">'+(i+1)+'</td><td class="h"><a class="hl" style="color:#2f6bff" href="/track.html?h='+esc(r.h)+'">@'+esc(r.h)+'</a></td><td>'+r.n+'</td><td>'+(r.hit*100).toFixed(0)+'%</td><td class="'+(r.ret>=0?'pos':'neg')+'">'+pc(r.ret)+'</td><td class="h '+(r.alpha>=0?'pos':'neg')+'">'+pc(r.alpha)+'</td></tr>';});
+          var h='<table><thead><tr><th></th><th>Handle</th><th>Calls</th><th>Locked</th><th>Hit rate</th><th>Avg return</th><th>Avg vs S&P</th></tr></thead><tbody>';
+          rows.forEach(function(r,i){h+='<tr><td class="rank">'+(i+1)+'</td><td class="h"><a class="hl" style="color:#2f6bff" href="/track.html?h='+esc(r.h)+'">@'+esc(r.h)+'</a></td><td>'+r.n+'</td><td class="meta">'+r.settled+'/'+r.n+'</td><td>'+(r.hit*100).toFixed(0)+'%</td><td class="'+(r.ret>=0?'pos':'neg')+'">'+pc(r.ret)+'</td><td class="h '+(r.alpha>=0?'pos':'neg')+'">'+pc(r.alpha)+'</td></tr>';});
           h+='</tbody></table>';lb.innerHTML=h;
           var fh='';calls.slice(0,40).forEach(function(c){
-            fh+='<div class="row"><span class="bd '+c.dir+'">'+(c.dir==='bull'?'&#9650; Bull':'&#9660; Bear')+'</span><a class="who hl" style="color:#2f6bff" href="/track.html?h='+esc(c.handle)+'">@'+esc(c.handle)+'</a><a class="tkr hl" href="/stock/'+esc(c.ticker)+'">'+esc(c.ticker)+'</a><span class="meta">$'+(+c.entry_price).toFixed(2)+' &middot; '+(c._days)+'d ago &middot; <a class="plk" href="/track.html?c='+c.id+'">view</a></span><span class="ret '+(c._callRet==null?'':(c._callRet>=0?'pos':'neg'))+'">'+(c._callRet==null?'—':pc(c._callRet))+'<div class="meta" style="font-weight:400">'+(c._alpha==null?'':'vs S&P '+pc(c._alpha))+'</div></span>'+(c.thesis?'<div class="th">'+esc(c.thesis)+'</div>':'')+'</div>';
+            fh+='<div class="row"><span class="bd '+c.dir+'">'+(c.dir==='bull'?'&#9650; Bull':'&#9660; Bear')+'</span><a class="who hl" style="color:#2f6bff" href="/track.html?h='+esc(c.handle)+'">@'+esc(c.handle)+'</a><a class="tkr hl" href="/stock/'+esc(c.ticker)+'">'+esc(c.ticker)+'</a><span class="meta">$'+(+c.entry_price).toFixed(2)+' &middot; '+(c._days)+'d ago &middot; <a class="plk" href="/track.html?c='+c.id+'">view</a>'+(c._settled?' &middot; <span style="color:#1663d6">✓ '+c._effH+' locked</span>':'')+'</span><span class="ret '+(c._callRet==null?'':(c._callRet>=0?'pos':'neg'))+'">'+(c._callRet==null?'—':pc(c._callRet))+'<div class="meta" style="font-weight:400">'+(c._alpha==null?'':'vs S&P '+pc(c._alpha))+'</div></span>'+(c.thesis?'<div class="th">'+esc(c.thesis)+'</div>':'')+'</div>';
           });
           feed.innerHTML=fh;
         }).catch(function(){lb.innerHTML='<div class="empty">Could not score calls right now. Please try again.</div>';});
