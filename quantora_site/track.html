@@ -173,7 +173,7 @@
         if(c._settled){var _sn='<div class="sect" style="margin:18px 0 8px">Locked snapshots</div><div class="panel"><table><thead><tr><th>Horizon</th><th>Return</th><th>vs S&amp;P</th></tr></thead><tbody>';[['30 days',c._s30,c._a30],['90 days',c._s90,c._a90],['180 days',c._s180,c._a180]].forEach(function(r){if(r[1]!=null){_sn+='<tr><td>'+r[0]+'</td><td class="'+(r[1]>=0?'pos':'neg')+'">'+pc(r[1])+'</td><td class="h '+(r[2]==null?'':(r[2]>=0?'pos':'neg'))+'">'+(r[2]==null?'—':pc(r[2]))+'</td></tr>';}});_sn+='</tbody></table></div>';h+=_sn;}
         h+='<div class="muted">Live figures move with the market; locked snapshots are frozen at each horizon and never change. Entry price was locked from delayed/end-of-day data at publish time. Educational only - not investment advice.</div>';
         sv.innerHTML=h;
-        var cpy=document.getElementById('cpy');if(cpy)cpy.addEventListener('click',function(){var u=location.origin+'/track.html?c='+id;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){cpy.textContent='Copied ✓';},function(){cpy.textContent=u;});}else{cpy.textContent=u;}});
+        var cpy=document.getElementById('cpy');if(cpy)cpy.addEventListener('click',function(){var u=location.origin+'/call/'+id;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){cpy.textContent='Copied ✓';},function(){cpy.textContent=u;});}else{cpy.textContent=u;}});
       });
     }).catch(function(){sv.innerHTML='<a class="back" href="/track.html">&larr; All calls</a><div class="empty">Could not load that call right now.</div>';});
   }

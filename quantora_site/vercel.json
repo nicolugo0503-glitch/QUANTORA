@@ -4,7 +4,9 @@
     { "source": "/api/v1/:fn", "destination": "/api/fmp?type=engine&fn=:fn" },
     { "source": "/compare/:pair", "destination": "/api/fmp?type=compare&pair=:pair" },
     { "source": "/api/ai", "destination": "/api/fmp?type=ai" },
-    { "source": "/api/settle", "destination": "/api/fmp?type=settle" }
+    { "source": "/api/settle", "destination": "/api/fmp?type=settle" },
+    { "source": "/call/:id", "destination": "/api/fmp?type=ogpage&kind=call&id=:id" },
+    { "source": "/u/:handle", "destination": "/api/fmp?type=ogpage&kind=user&handle=:handle" }
   ],
   "crons": [
     { "path": "/api/settle", "schedule": "0 6 * * *" }
