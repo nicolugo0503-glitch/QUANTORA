@@ -3,6 +3,66 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Origin','*'); res.setHeader('Access-Control-Allow-Methods','POST, GET, OPTIONS'); res.setHeader('Access-Control-Allow-Headers','content-type'); res.statusCode=200; res.end(); return; }
   const KEY = process.env.FMP_KEY;
   const type = (req.query.type || '').toString();
+  if (type === 'settle') {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  var _stSec = process.env.CRON_SECRET;
+  if (_stSec) { var _stAuth = (req.headers['authorization'] || ''); var _stKey = (req.query.key || '').toString(); if (_stAuth !== ('Bearer ' + _stSec) && _stKey !== _stSec) { res.status(401).json({ error: 'unauthorized' }); return; } }
+  var _stU = (process.env.SUPABASE_URL || '').trim(); while (_stU.slice(-1) === '/') _stU = _stU.slice(0, -1); if (_stU.slice(-8) === '/rest/v1') _stU = _stU.slice(0, -8);
+  var _stK = process.env.SUPABASE_KEY;
+  if (!_stU || !_stK) { res.status(200).json({ error: 'nocfg', settled: 0 }); return; }
+  var _stBase = "https://" + (req.headers["x-forwarded-host"] || req.headers.host || "www.usequantora.com");
+  var _stHZ = [[30, 'ret_30d', 'alpha_30d'], [90, 'ret_90d', 'alpha_90d'], [180, 'ret_180d', 'alpha_180d']];
+  var _stHdr = { 'apikey': _stK, 'Authorization': 'Bearer ' + _stK };
+  try {
+    var _stR = await fetch(_stU + '/rest/v1/calls?select=*&order=created_at.desc&limit=1000', { headers: _stHdr });
+    var _stCalls = await _stR.json();
+    if (!Array.isArray(_stCalls) || !_stCalls.length) { res.status(200).json({ ok: true, scanned: 0, settled: 0 }); return; }
+    var _stNow = Date.now();
+    var _stAge = function (c) { return Math.floor((_stNow - new Date(c.created_at).getTime()) / 864e5); };
+    var _stTodo = [];
+    _stCalls.forEach(function (c) { var need = false; _stHZ.forEach(function (h) { if (_stAge(c) >= h[0] && c[h[1]] == null) need = true; }); if (need) _stTodo.push(c); });
+    if (!_stTodo.length) { res.status(200).json({ ok: true, scanned: _stCalls.length, settled: 0 }); return; }
+    if (_stTodo.length > 50) _stTodo = _stTodo.slice(0, 50);
+    var _stHist = async function (sym) { try { var r = await fetch(_stBase + '/api/fmp?type=prices&symbol=' + encodeURIComponent(sym)); var j = await r.json(); var arr = Array.isArray(j) ? j : (j.data || j.historical || []); var m = {}; for (var i = 0; i < arr.length; i++) { var d = arr[i].date || arr[i].datetime; var p = arr[i].price != null ? arr[i].price : (arr[i].close != null ? arr[i].close : arr[i].adjClose); if (d && p > 0) m[('' + d).slice(0, 10)] = +p; } return m; } catch (e) { return {}; } };
+    var _stSpy = await _stHist('SPY');
+    var _stSpyKeys = Object.keys(_stSpy).sort();
+    var _stTset = {}; _stTodo.forEach(function (c) { _stTset[c.ticker] = 1; });
+    var _stTickers = Object.keys(_stTset);
+    var _stPmap = {};
+    for (var _sti = 0; _sti < _stTickers.length; _sti++) { _stPmap[_stTickers[_sti]] = await _stHist(_stTickers[_sti]); }
+    var _stNearest = function (keys, m, date) { var lo = 0, hi = keys.length - 1, ans = null; while (lo <= hi) { var mid = (lo + hi) >> 1; if (keys[mid] <= date) { ans = keys[mid]; lo = mid + 1; } else hi = mid - 1; } return ans != null ? m[ans] : null; };
+    var _stAddDays = function (iso, d) { var dt = new Date(iso + 'T00:00:00Z'); dt.setUTCDate(dt.getUTCDate() + d); return dt.toISOString().slice(0, 10); };
+    var _stSettled = 0;
+    for (var _stc = 0; _stc < _stTodo.length; _stc++) {
+      var c = _stTodo[_stc];
+      var _stTmap = _stPmap[c.ticker] || {}; var _stTkeys = Object.keys(_stTmap).sort();
+      var _stEntry = (c.created_at || '').slice(0, 10);
+      var _stSpyEntry = _stNearest(_stSpyKeys, _stSpy, _stEntry);
+      var _stPatch = {};
+      _stHZ.forEach(function (h) {
+        if (_stAge(c) >= h[0] && c[h[1]] == null) {
+          var td = _stAddDays(_stEntry, h[0]);
+          var pxH = _stNearest(_stTkeys, _stTmap, td);
+          var spyH = _stNearest(_stSpyKeys, _stSpy, td);
+          if (pxH && c.entry_price > 0) {
+            var tRet = pxH / c.entry_price - 1;
+            var callRet = (c.dir === 'bear') ? -tRet : tRet;
+            _stPatch[h[1]] = +callRet.toFixed(6);
+            if (spyH && _stSpyEntry) { var sRet = spyH / _stSpyEntry - 1; var alpha = (c.dir === 'bear') ? (sRet - tRet) : (tRet - sRet); _stPatch[h[2]] = +alpha.toFixed(6); }
+          }
+        }
+      });
+      if (Object.keys(_stPatch).length) {
+        _stPatch.settled_at = new Date().toISOString();
+        var _stUr = await fetch(_stU + '/rest/v1/calls?id=eq.' + c.id, { method: 'PATCH', headers: { 'apikey': _stK, 'Authorization': 'Bearer ' + _stK, 'content-type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify(_stPatch) });
+        if (_stUr.status < 300) _stSettled++;
+      }
+    }
+    res.status(200).json({ ok: true, scanned: _stCalls.length, candidates: _stTodo.length, settled: _stSettled });
+  } catch (e) { res.status(200).json({ error: 'settle_fail', detail: (e && e.message) || String(e), settled: 0 }); }
+  return;
+}
+
   if (type === 'call' || type === 'calls') {
   var _cs = (process.env.SUPABASE_URL || '').trim(); while (_cs.slice(-1) === '/') _cs = _cs.slice(0, -1); if (_cs.slice(-8) === '/rest/v1') _cs = _cs.slice(0, -8);
   var _ck = process.env.SUPABASE_KEY;
