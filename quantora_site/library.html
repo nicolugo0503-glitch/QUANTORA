@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Library - watchlist &amp; saved screens | Quantora</title>
+<meta name="description" content="Your personal Quantora library: a watchlist and saved screens that live in your browser, no account needed. Claim a handle to make it yours - sign-in sync is coming.">
+<link rel="canonical" href="https://www.usequantora.com/library.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 4px}
+  .who{color:#4a4f58;font-size:14.5px;margin:0 0 18px}
+  .who b{color:#14161c}
+  .idbox{display:flex;gap:8px;align-items:center;margin:6px 0 18px;flex-wrap:wrap}
+  .idbox input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:9px 12px;font-size:14px;outline:0;width:180px}
+  .btn{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer}
+  .btn.sec{background:#fff;color:#3a3f48;border:1px solid rgba(17,24,39,.16)}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px;display:flex;justify-content:space-between;align-items:center}
+  .add{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .add input{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:10px 12px;font-size:14px;outline:0}
+  .add input.tk{width:120px;text-transform:uppercase;font-weight:600}
+  .add input.q{flex:1;min-width:200px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:6px 4px}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid rgba(17,24,39,.05)}
+  .row:last-child{border-bottom:0}
+  .sym{font-weight:700;font-size:15px;width:74px}
+  .px{font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;width:88px;text-align:right}
+  .chg{font-size:12.5px;font-weight:600;width:64px;text-align:right}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .links{margin-left:auto;display:flex;gap:12px;font-size:12.5px}
+  .links a{color:#2f6bff;text-decoration:none}
+  .x{color:#b0b6c0;cursor:pointer;font-size:16px;padding:0 4px}.x:hover{color:#c0392b}
+  .scr{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(17,24,39,.05)}.scr:last-child{border-bottom:0}
+  .scr .t{font-weight:600;font-size:14.5px}.scr .qq{color:#6b7280;font-size:12.5px;margin-top:2px;line-height:1.5}
+  .scr .run{margin-left:auto;white-space:nowrap;background:#2f6bff;color:#fff;text-decoration:none;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:600}
+  .empty{color:#9aa1ad;font-size:13.5px;padding:16px 14px;line-height:1.6}.empty a{color:#2f6bff}
+  .note{color:#9aa1ad;font-size:12px;margin-top:22px;line-height:1.6;max-width:76ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; LIBRARY</div>
+  <h1 id="h1">Your library</h1>
+  <p class="who" id="who"></p>
+  <div class="idbox" id="idbox"></div>
+
+  <div class="sect">Watchlist <span id="wcount" style="color:#c9cfda;font-weight:500"></span></div>
+  <div class="add"><input class="tk" id="wt" placeholder="TICKER" spellcheck="false"><button class="btn" id="wadd" type="button">Add</button></div>
+  <div class="panel" id="wl"></div>
+
+  <div class="sect">Saved screens <span id="scount" style="color:#c9cfda;font-weight:500"></span></div>
+  <div class="add"><input class="q" id="sq" placeholder="Describe a screen, e.g. profitable small caps with insider buying"><button class="btn" id="sadd" type="button">Save</button></div>
+  <div class="panel" id="sl"></div>
+
+  <p class="note">Your library is saved in this browser only - no account required. Claim a handle to make it feel like yours; when sign-in launches, your watchlist and screens will sync and move with you across devices. Prices are delayed/end-of-day and for information only, not investment advice.</p>
+</div>
+<script>
+(function(){
+  function get(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+  function set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  var handle=get('q_handle',null), watch=get('q_watch',[]), screens=get('q_screens',[]);
+
+  // seed from ?q= (save-from-explore deep link): /library.html?add_q=...&add_t=...
+  var mq=location.search.match(/[?&]add_q=([^&]+)/), mt=location.search.match(/[?&]add_t=([^&]+)/);
+  if(mq){var qq=decodeURIComponent(mq[1].replace(/\+/g,' ')),tt=mt?decodeURIComponent(mt[1].replace(/\+/g,' ')):qq.slice(0,40);
+    if(!screens.some(function(s){return s.q===qq;})){screens.unshift({t:tt,q:qq});set('q_screens',screens);}
+    try{history.replaceState(null,'','/library.html');}catch(e){}}
+
+  function renderId(){
+    var who=document.getElementById('who'),idbox=document.getElementById('idbox'),h1=document.getElementById('h1');
+    if(handle){h1.textContent='@'+handle+"'s library";who.innerHTML='Saved locally on this browser. <b>'+watch.length+'</b> tickers, <b>'+screens.length+'</b> screens.';
+      idbox.innerHTML='<button class="btn sec" id="edit" type="button">Change handle</button>';
+      document.getElementById('edit').addEventListener('click',function(){handle=null;set('q_handle',null);renderId();});
+    } else {
+      h1.textContent='Your library';who.textContent='Claim a handle to make this library yours (optional, stored on this browser).';
+      idbox.innerHTML='<input id="hin" placeholder="handle" spellcheck="false" maxlength="20"><button class="btn" id="hsave" type="button">Claim</button>';
+      document.getElementById('hsave').addEventListener('click',function(){var v=(document.getElementById('hin').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,20);if(v){handle=v;set('q_handle',v);renderId();}});
+    }
+  }
+  function renderWatch(){
+    var wl=document.getElementById('wl');document.getElementById('wcount').textContent=watch.length?('('+watch.length+')'):'';
+    if(!watch.length){wl.innerHTML='<div class="empty">No tickers yet. Add one above, or open any <a href="/stock/AAPL">stock page</a> and come back.</div>';return;}
+    wl.innerHTML=watch.map(function(s){return '<div class="row" data-s="'+esc(s)+'"><span class="sym">'+esc(s)+'</span><span class="px" id="px_'+esc(s)+'">&hellip;</span><span class="chg" id="cg_'+esc(s)+'"></span><span class="links"><a href="/stock/'+esc(s)+'">Research</a><a href="/vol-lab.html">Vol</a><a href="/drawdown.html">Drawdown</a></span><span class="x" data-rm="'+esc(s)+'">&times;</span></div>';}).join('');
+    [].forEach.call(wl.querySelectorAll('[data-rm]'),function(x){x.addEventListener('click',function(){var s=x.getAttribute('data-rm');watch=watch.filter(function(t){return t!==s;});set('q_watch',watch);renderWatch();renderId();});});
+    watch.forEach(function(s){fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(s)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);if(!arr.length)return;var last=arr[0].price!=null?arr[0].price:arr[0].close,prev=arr[1]?(arr[1].price!=null?arr[1].price:arr[1].close):last;var chg=last/prev-1;var pe=document.getElementById('px_'+s),ce=document.getElementById('cg_'+s);if(pe)pe.textContent='$'+(+last).toFixed(2);if(ce){ce.textContent=(chg>=0?'+':'')+(chg*100).toFixed(2)+'%';ce.className='chg '+(chg>=0?'pos':'neg');}}).catch(function(){});});
+  }
+  function renderScreens(){
+    var sl=document.getElementById('sl');document.getElementById('scount').textContent=screens.length?('('+screens.length+')'):'';
+    if(!screens.length){sl.innerHTML='<div class="empty">No saved screens yet. Save one from <a href="/explore.html">Explore</a>, or type a screen above.</div>';return;}
+    sl.innerHTML=screens.map(function(s,i){return '<div class="scr"><div><div class="t">'+esc(s.t)+'</div><div class="qq">'+esc(s.q)+'</div></div><a class="run" href="/screener.html?q='+encodeURIComponent(s.q)+'">Run &rarr;</a><span class="x" data-i="'+i+'">&times;</span></div>';}).join('');
+    [].forEach.call(sl.querySelectorAll('[data-i]'),function(x){x.addEventListener('click',function(){var i=+x.getAttribute('data-i');screens.splice(i,1);set('q_screens',screens);renderScreens();renderId();});});
+  }
+  document.getElementById('wadd').addEventListener('click',function(){var v=(document.getElementById('wt').value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');if(v&&watch.indexOf(v)<0){watch.unshift(v);set('q_watch',watch);document.getElementById('wt').value='';renderWatch();renderId();}});
+  document.getElementById('wt').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('wadd').click();});
+  document.getElementById('sadd').addEventListener('click',function(){var v=(document.getElementById('sq').value||'').trim();if(v){screens.unshift({t:v.slice(0,48),q:v});set('q_screens',screens);document.getElementById('sq').value='';renderScreens();renderId();}});
+  document.getElementById('sq').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('sadd').click();});
+  renderId();renderWatch();renderScreens();
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

@@ -76,7 +76,7 @@
     var html='';
     SCREENS.forEach(function(s){ if(active!=='All'&&active!==s[0])return;
       var url='/screener.html?q='+encodeURIComponent(s[3]);
-      html+='<div class="card"><span class="tag">'+esc(s[0])+'</span><h3>'+esc(s[1])+'</h3><p>'+esc(s[2])+'</p><div class="act"><a class="run" href="'+url+'">Run screen &rarr;</a><button class="share" data-u="'+esc(url)+'" type="button">Share</button></div></div>';
+      html+='<div class="card"><span class="tag">'+esc(s[0])+'</span><h3>'+esc(s[1])+'</h3><p>'+esc(s[2])+'</p><div class="act"><a class="run" href="'+url+'">Run screen &rarr;</a><a class="share" href="/library.html?add_t='+encodeURIComponent(s[1])+'&add_q='+encodeURIComponent(s[3])+'" title="Save to your library" style="text-decoration:none">&#9733; Save</a><button class="share" data-u="'+esc(url)+'" type="button">Share</button></div></div>';
     });
     TOOLS.forEach(function(t){ if(active!=='All'&&active!==t[0])return;
       html+='<div class="card"><span class="tag tool">'+esc(t[0])+'</span><h3>'+esc(t[1])+'</h3><p>'+esc(t[2])+'</p><div class="act"><a class="run tool" href="'+esc(t[3])+'">Open &rarr;</a><button class="share" data-u="'+esc(t[3])+'" type="button">Share</button></div></div>';
