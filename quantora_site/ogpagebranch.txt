@@ -1,0 +1,76 @@
+if (type === 'ogpage') {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  var _ogU = (process.env.SUPABASE_URL || '').trim(); while (_ogU.slice(-1) === '/') _ogU = _ogU.slice(0, -1); if (_ogU.slice(-8) === '/rest/v1') _ogU = _ogU.slice(0, -8);
+  var _ogK = process.env.SUPABASE_KEY;
+  var _ogKind = (req.query.kind || 'call').toString();
+  var _ogOrigin = "https://" + (req.headers["x-forwarded-host"] || req.headers.host || "www.usequantora.com");
+  var _oge = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  var _ogpage = function (o) {
+    var img = _ogOrigin + o.image;
+    var html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>' + _oge(o.title) + '</title>'
+      + '<meta name="description" content="' + _oge(o.desc) + '">'
+      + '<meta property="og:type" content="' + (o.otype || 'website') + '">'
+      + '<meta property="og:site_name" content="Quantora">'
+      + '<meta property="og:title" content="' + _oge(o.title) + '">'
+      + '<meta property="og:description" content="' + _oge(o.desc) + '">'
+      + '<meta property="og:image" content="' + _oge(img) + '">'
+      + '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
+      + '<meta property="og:url" content="' + _oge(_ogOrigin + o.canon) + '">'
+      + '<meta name="twitter:card" content="summary_large_image">'
+      + '<meta name="twitter:title" content="' + _oge(o.title) + '">'
+      + '<meta name="twitter:description" content="' + _oge(o.desc) + '">'
+      + '<meta name="twitter:image" content="' + _oge(img) + '">'
+      + '<link rel="canonical" href="' + _oge(_ogOrigin + o.canon) + '">'
+      + '<meta http-equiv="refresh" content="0; url=' + _oge(o.go) + '">'
+      + '</head><body style="font-family:system-ui,-apple-system,sans-serif;background:#0b1220;color:#e9edf5;margin:0;padding:44px 40px">'
+      + '<p style="font-size:15px">' + _oge(o.title) + '</p>'
+      + '<p><a style="color:#6ea8ff" href="' + _oge(o.go) + '">Continue to Quantora &rarr;</a></p>'
+      + '<script>location.replace(' + JSON.stringify(o.go) + ');</script>'
+      + '</body></html>';
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    res.status(200).send(html);
+  };
+  try {
+    if (_ogKind === 'user') {
+      var _ogH = (req.query.handle || '').toString().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
+      _ogpage({
+        title: '@' + _ogH + ' - track record on Quantora',
+        desc: 'Timestamped, price-locked, outcome-ranked market calls scored live vs the S&P 500. Follow @' + _ogH + "'s verifiable record on Quantora.",
+        image: '/og-quantora.png', otype: 'profile',
+        canon: '/track.html?h=' + encodeURIComponent(_ogH),
+        go: '/track.html?h=' + encodeURIComponent(_ogH)
+      });
+      return;
+    }
+    var _ogId = (req.query.id || '').toString().replace(/[^0-9]/g, '');
+    if (!_ogId || !_ogU || !_ogK) {
+      _ogpage({ title: 'Quantora - verifiable quant calls', desc: 'Timestamped, outcome-ranked market calls scored live vs the S&P 500. Free, no login.', image: '/og-quantora.png', canon: '/track.html', go: '/track.html' + (_ogId ? ('?c=' + _ogId) : '') });
+      return;
+    }
+    var _ogR = await fetch(_ogU + '/rest/v1/calls?id=eq.' + _ogId + '&select=*&limit=1', { headers: { 'apikey': _ogK, 'Authorization': 'Bearer ' + _ogK } });
+    var _ogArr = await _ogR.json();
+    var _c = (Array.isArray(_ogArr) && _ogArr[0]) ? _ogArr[0] : null;
+    if (!_c) {
+      _ogpage({ title: 'Quantora - verifiable quant calls', desc: 'Timestamped, outcome-ranked market calls scored live vs the S&P 500.', image: '/og-quantora.png', canon: '/track.html', go: '/track.html?c=' + _ogId });
+      return;
+    }
+    var _dir = _c.dir === 'bear' ? 'bear' : 'bull';
+    var _dt = (_c.created_at || '').slice(0, 10);
+    var _th = _c.thesis ? (' "' + _c.thesis + '"') : '';
+    _ogpage({
+      title: '@' + _c.handle + ' is ' + _dir + ' ' + _c.ticker + ' - Quantora Track Record',
+      desc: 'Called ' + _dir + ' at $' + (+_c.entry_price).toFixed(2) + ' on ' + _dt + ', timestamped and scored live vs the S&P 500.' + _th,
+      image: _dir === 'bear' ? '/og-bear.png' : '/og-bull.png',
+      otype: 'article',
+      canon: '/track.html?c=' + _ogId,
+      go: '/track.html?c=' + _ogId
+    });
+    return;
+  } catch (e) {
+    _ogpage({ title: 'Quantora - verifiable quant calls', desc: 'Timestamped, outcome-ranked market calls scored live vs the S&P 500.', image: '/og-quantora.png', canon: '/track.html', go: '/track.html' });
+    return;
+  }
+}
