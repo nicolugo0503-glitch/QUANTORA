@@ -1,0 +1,91 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explore quant screens &amp; strategies - a starting library | Quantora</title>
+<meta name="description" content="A curated, growing library of quant screens and strategies you can run in one click, share, and fork - from insider-buying small caps to quality compounders near their lows. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/explore.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 16px}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}
+  .f{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 14px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .f.on{background:#0b1220;color:#fff;border-color:#0b1220}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 17px;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(17,24,39,.03)}
+  .tag{align-self:flex-start;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;background:#eef2fb;color:#3355bb;margin-bottom:10px}
+  .tag.tool{background:#e7f6ec;color:#1a7f42}
+  .card h3{font-size:15.5px;font-weight:600;margin:0 0 6px;line-height:1.35}
+  .card p{font-size:13px;color:#6b7280;line-height:1.55;margin:0 0 14px;flex:1}
+  .act{display:flex;gap:8px;align-items:center}
+  .run{flex:1;text-align:center;background:#2f6bff;color:#fff;text-decoration:none;border-radius:9px;padding:9px 12px;font-weight:600;font-size:13px}
+  .run.tool{background:#14161c}
+  .share{background:#fff;border:1px solid rgba(17,24,39,.16);border-radius:9px;padding:8px 11px;font-size:12px;color:#6b7280;cursor:pointer}
+  .share:hover{border-color:#2f6bff;color:#2f6bff}
+  .banner{background:#0b1220;color:#e9edf5;border-radius:14px;padding:16px 18px;font-size:14px;line-height:1.6;margin:22px 0 4px}
+  .banner b{color:#fff}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:22px;line-height:1.6;max-width:80ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; EXPLORE</div>
+  <h1>Screens &amp; strategies</h1>
+  <p class="lead">A starting library of quant screens and strategies - each one runs in a single click, and you can share or fork any of them with a link. This is the seed of a community library; today it is curated, and it will open up to your own saved screens.</p>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+  <div class="banner">Have a screen you run every week? Soon you will be able to <b>save, publish, and fork</b> screens under your own handle and build a track record. For now, every card here is shareable - hit <b>Share</b> to copy a link.</div>
+  <div class="muted">Screens run through Quantora's AI screener over US-listed stocks and return a starting watchlist with reasoning; they are AI-generated starting points, not live fundamental screens, and can be wrong or out of date. Strategy cards open the relevant Quantora engine. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var SCREENS=[
+    ['Value','Insider-buying small caps','Profitable small caps where insiders have been buying recently - often an early tell before the market notices.','Profitable small-cap companies with recent insider buying and improving free cash flow'],
+    ['Value','Quality near 52-week lows','Wide-moat, high-ROIC businesses that have sold off hard - the classic "great company, temporary problem" hunt.','High-ROIC wide-moat companies trading within 15% of their 52-week lows'],
+    ['Value','Net-cash below book','Companies trading below book value with more cash than debt - deep-value, balance-sheet-first.','Companies trading below book value with net cash and positive free cash flow'],
+    ['Dividends','Dividend growers under 15x','Consistent dividend raisers with low payout ratios and reasonable valuations.','Dividend growth stocks under a P/E of 15 with payout ratios below 60%'],
+    ['Dividends','Late-cycle defensives','Dividend aristocrats and low-beta defensives for a cautious market.','Defensive dividend aristocrats with low beta and durable cash flows'],
+    ['Growth','AI infrastructure','Data-center, semis and power names levered to the AI build-out with rising estimates.','AI infrastructure and data-center stocks with accelerating revenue and rising analyst estimates'],
+    ['Growth','New-high momentum','Leaders making fresh 52-week highs with accelerating fundamentals - momentum with a growth engine.','Momentum leaders making new 52-week highs with accelerating revenue growth'],
+    ['Growth','Fintech disruptors','High-growth fintech and payments names taking share.','Fintech and payments companies growing revenue over 20% with improving margins'],
+    ['Quality','Cash-rich compounders','Low-debt, high-free-cash-flow compounders that fund their own growth.','Cash-rich companies with low debt, high ROIC and strong free cash flow'],
+    ['Quality','Owner-operated mid-caps','Under-followed mid-caps with high insider ownership and skin in the game.','Under-followed mid-cap companies with insider ownership above 10%'],
+    ['Contrarian','Beaten-down quality','Wide-moat names down 30%+ from highs - contrarian, quality-first.','Wide-moat companies down more than 30% from their highs but still profitable'],
+    ['Contrarian','Cheap improving cyclicals','Out-of-favor cyclicals where margins are quietly turning up.','Cheap cyclical companies with improving operating margins and low valuations'],
+    ['Thematic','Semi supply chain','Beneficiaries across the semiconductor supply chain, beyond the megacaps.','Semiconductor supply-chain beneficiaries with pricing power'],
+    ['Thematic','Energy free-cash-flow','Energy names throwing off free cash flow and buying back stock.','Energy companies with strong free cash flow and aggressive buybacks'],
+    ['Congress','Recent congressional buys','Names recently bought by members of Congress in energy and defense.','Recent congressional buys concentrated in energy and defense'],
+    ['Congress','Politician tech buys','Technology names showing up in recent congressional disclosures.','Technology stocks with recent congressional buying activity']
+  ];
+  var TOOLS=[
+    ['Strategy','Which sectors are leading?','See the whole market on a relative rotation graph - which sectors are leading, weakening, or quietly turning up.','/sector-rotation.html'],
+    ['Strategy','Is a recession being priced in?','The yield-curve, credit and liquidity signals behind recession odds, on one dashboard.','/recession.html'],
+    ['Strategy','Stress-test a portfolio','Sharpe, VaR, max drawdown and correlations for any basket you type in.','/stock-risk.html'],
+    ['Strategy','How fat are the tails?','Return distribution, QQ plot, VaR/CVaR and a normality test for any stock.','/distribution.html'],
+    ['Strategy','Trend or mean-reversion?','Hurst exponent and variance ratio - does momentum or fading actually work on this name?','/trend.html'],
+    ['Strategy','What is really driving a stock?','Factor exposure - market, size, value, momentum and quality betas with significance.','/factor-lab.html']
+  ];
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  var cats=['All','Value','Dividends','Growth','Quality','Contrarian','Thematic','Congress','Strategy'];
+  var active='All';
+  var fEl=document.getElementById('filters'),gEl=document.getElementById('grid');
+  cats.forEach(function(c){var d=document.createElement('div');d.className='f'+(c==='All'?' on':'');d.textContent=c;d.addEventListener('click',function(){active=c;[].forEach.call(fEl.children,function(x){x.className='f'+(x.textContent===c?' on':'');});render();});fEl.appendChild(d);});
+  function render(){
+    var html='';
+    SCREENS.forEach(function(s){ if(active!=='All'&&active!==s[0])return;
+      var url='/screener.html?q='+encodeURIComponent(s[3]);
+      html+='<div class="card"><span class="tag">'+esc(s[0])+'</span><h3>'+esc(s[1])+'</h3><p>'+esc(s[2])+'</p><div class="act"><a class="run" href="'+url+'">Run screen &rarr;</a><button class="share" data-u="'+esc(url)+'" type="button">Share</button></div></div>';
+    });
+    TOOLS.forEach(function(t){ if(active!=='All'&&active!==t[0])return;
+      html+='<div class="card"><span class="tag tool">'+esc(t[0])+'</span><h3>'+esc(t[1])+'</h3><p>'+esc(t[2])+'</p><div class="act"><a class="run tool" href="'+esc(t[3])+'">Open &rarr;</a><button class="share" data-u="'+esc(t[3])+'" type="button">Share</button></div></div>';
+    });
+    gEl.innerHTML=html;
+    [].forEach.call(gEl.querySelectorAll('.share'),function(b){b.addEventListener('click',function(){var u='https://www.usequantora.com'+b.getAttribute('data-u');try{navigator.clipboard.writeText(u);var t=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=t;},1200);}catch(e){}});});
+  }
+  render();
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

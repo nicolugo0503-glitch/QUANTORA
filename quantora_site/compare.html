@@ -1,0 +1,137 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compare stocks side by side - returns, volatility, correlation | Quantora</title>
+<meta name="description" content="Compare any two stocks or ETFs head to head: total return, annualized volatility, beta, max drawdown, Sharpe ratio and the correlation between them, with a growth-of-$10,000 chart. Free, no login.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://www.usequantora.com/compare.html">
+<meta property="og:title" content="Compare stocks side by side | Quantora">
+<meta property="og:description" content="Two tickers, head to head: return, volatility, beta, drawdown, Sharpe and correlation.">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:8px;max-width:560px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{border:0;outline:0;font-size:16px;font-weight:600;color:#14161c;background:transparent;text-transform:uppercase;width:82px}
+  .vs{color:#9aa1ad;font-size:13px;font-weight:600}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer;margin-left:auto}
+  .go:disabled{opacity:.5}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:24px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:24px 0 10px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  svg{width:100%;height:auto;display:block}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px;font-size:13.5px;font-variant-numeric:tabular-nums;text-align:right}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left;color:#6b7280;font-weight:500}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .win{font-weight:700}
+  .a{color:#2f6bff}.b{color:#e07a3f}
+  .lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#4a4f58;margin-top:8px}.lg span{display:inline-flex;align-items:center;gap:6px}.dot{width:11px;height:3px;border-radius:2px;display:inline-block}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:4px}.summary b{color:#fff}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+  a.tk{color:#2f6bff;text-decoration:none;font-weight:600}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; COMPARE</div>
+  <h1 id="h1">Compare two stocks head to head</h1>
+  <p class="lead">Put any two stocks or ETFs side by side - total return, volatility, beta, drawdown, Sharpe ratio, and how correlated they actually are - with a growth-of-$10,000 chart over five years.</p>
+  <div class="box">
+    <input id="a" type="text" placeholder="AAPL" value="AAPL" spellcheck="false">
+    <span class="vs">vs</span>
+    <input id="b" type="text" placeholder="MSFT" value="MSFT" spellcheck="false">
+    <button class="go" id="go" type="button">Compare</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Total return is price appreciation over the window (dividends excluded). Volatility is annualized standard deviation of daily returns; beta is regressed vs the S&amp;P 500 (SPY); Sharpe uses a 0% risk-free approximation; correlation is between the two tickers' daily returns. Based on ~5 years of split-adjusted daily closes. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=[['AAPL','MSFT'],['NVDA','AMD'],['KO','PEP'],['V','MA'],['TSLA','F'],['SPY','QQQ'],['GLD','TLT'],['JPM','GS']];
+  var aEl=document.getElementById('a'),bEl=document.getElementById('b'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(p){var c=document.createElement('div');c.className='chip';c.textContent=p[0]+' vs '+p[1];c.addEventListener('click',function(){aEl.value=p[0];bEl.value=p[1];run();});exEl.appendChild(c);});
+  function _gpRaw(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var m={};for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)m[(''+d).slice(0,10)]=+p;}return m;}).catch(function(){return {};});}
+  function getPrices(sym){return _gpRaw(sym).then(function(m){if(m&&Object.keys(m).length>50)return m;return new Promise(function(r){setTimeout(r,500+Math.random()*500);}).then(function(){return _gpRaw(sym);});}).then(function(m){if(m&&Object.keys(m).length>50)return m;return new Promise(function(r){setTimeout(r,1000+Math.random()*800);}).then(function(){return _gpRaw(sym);});}).then(function(m){return m||{};});}
+  function mean(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function q(name){var m=location.search.match(new RegExp('[?&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
+
+  function run(){
+    var A=(aEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,''),B=(bEl.value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    if(!A||!B||busy)return;aEl.value=A;bEl.value=B;busy=true;goEl.disabled=true;resEl.className='res on';
+    document.title=A+' vs '+B+': return, volatility & correlation | Quantora';
+    document.getElementById('h1').textContent=A+' vs '+B;
+    try{history.replaceState(null,'','/compare.html?a='+A+'&b='+B);}catch(e){}
+    resEl.innerHTML='<div class="spin">Comparing '+esc(A)+' and '+esc(B)+'&hellip;</div>';
+    Promise.all([getPrices(A),getPrices(B),getPrices('SPY')]).then(function(r){
+      var ma=r[0],mb=r[1],spy=r[2];
+      var dates=Object.keys(ma).filter(function(d){return mb[d]&&spy[d];}).sort();
+      if(dates.length<120)throw new Error('nodata');
+      analyze(A,B,ma,mb,spy,dates);busy=false;goEl.disabled=false;
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">Could not price that pair - check both tickers and try again.</div>';});
+  }
+
+  function stats(map,spy,dates){
+    var n=dates.length,r=[],rm=[];
+    for(var i=1;i<n;i++){r.push(map[dates[i]]/map[dates[i-1]]-1);rm.push(spy[dates[i]]/spy[dates[i-1]]-1);}
+    var ann=Math.sqrt(252),m=mean(r),v=0;for(i=0;i<r.length;i++)v+=(r[i]-m)*(r[i]-m);var sd=Math.sqrt(v/(r.length-1));
+    var mm=mean(rm),cov=0,vm=0;for(i=0;i<r.length;i++){cov+=(r[i]-m)*(rm[i]-mm);vm+=(rm[i]-mm)*(rm[i]-mm);}
+    var beta=cov/vm;
+    var tot=map[dates[n-1]]/map[dates[0]]-1;
+    var eq=1,peak=1,mdd=0;for(i=0;i<r.length;i++){eq*=(1+r[i]);if(eq>peak)peak=eq;var dd=eq/peak-1;if(dd<mdd)mdd=dd;}
+    var sharpe=(m*252)/(sd*ann);
+    return {r:r,tot:tot,vol:sd*ann,beta:beta,mdd:mdd,sharpe:sharpe,cagr:Math.pow(1+tot,252/(n-1))-1};
+  }
+  function analyze(A,B,ma,mb,spy,dates){
+    var sa=stats(ma,spy,dates),sb=stats(mb,spy,dates);
+    var ca=0,cb=0,cab=0,na=sa.r.length;var mA=mean(sa.r),mB=mean(sb.r);
+    for(var i=0;i<na;i++){ca+=(sa.r[i]-mA)*(sa.r[i]-mA);cb+=(sb.r[i]-mB)*(sb.r[i]-mB);cab+=(sa.r[i]-mA)*(sb.r[i]-mB);}
+    var corr=cab/Math.sqrt(ca*cb);
+    // growth of 10k
+    var W=920,H=280,pl=48,pr=12,pt=14,pb=24,iw=W-pl-pr,ih=H-pt-pb,n=dates.length;
+    var ea=[10000],eb=[10000];for(i=1;i<n;i++){ea.push(ea[i-1]*(ma[dates[i]]/ma[dates[i-1]]));eb.push(eb[i-1]*(mb[dates[i]]/mb[dates[i-1]]));}
+    var lo=Math.min(Math.min.apply(null,ea),Math.min.apply(null,eb)),hi=Math.max(Math.max.apply(null,ea),Math.max.apply(null,eb));
+    function xf(i){return pl+(i/(n-1))*iw;}function yf(v){return pt+(1-(v-lo)/(hi-lo))*ih;}
+    function path(e){var p='M '+xf(0)+' '+yf(e[0]);for(var i=1;i<n;i++)p+=' L '+xf(i).toFixed(1)+' '+yf(e[i]).toFixed(1);return p;}
+    var grid='';for(var g=0;g<=4;g++){var val=lo+(hi-lo)*g/4,y=yf(val);grid+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="rgba(17,24,39,.06)"/><text x="'+(pl-5)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">$'+Math.round(val/1000)+'k</text>';}
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+grid+'<path d="'+path(ea)+'" fill="none" stroke="#2f6bff" stroke-width="1.9"/><path d="'+path(eb)+'" fill="none" stroke="#e07a3f" stroke-width="1.9"/></svg>';
+
+    function row(label,fmt,va,vb,higherWins){var aw=higherWins?va>vb:va<vb;return '<tr><td>'+label+'</td><td class="a'+(aw?' win':'')+'">'+fmt(va)+'</td><td class="b'+(!aw?' win':'')+'">'+fmt(vb)+'</td></tr>';}
+    function pct(x){return (x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+    function pct0(x){return (x*100).toFixed(1)+'%';}
+    function two(x){return x.toFixed(2);}
+    var h='';
+    h+='<div class="sect">Growth of $10,000 &middot; '+dates.length+' trading days</div><div class="panel">'+svg+'<div class="lg"><span><span class="dot" style="background:#2f6bff"></span><a class="tk" href="/stock/'+esc(A)+'">'+esc(A)+'</a> &rarr; $'+Math.round(ea[n-1]).toLocaleString()+'</span><span><span class="dot" style="background:#e07a3f"></span><a class="tk" href="/stock/'+esc(B)+'">'+esc(B)+'</a> &rarr; $'+Math.round(eb[n-1]).toLocaleString()+'</span></div></div>';
+    h+='<div class="sect">Head to head</div><div class="panel"><table><thead><tr><th>Metric</th><th class="a">'+esc(A)+'</th><th class="b">'+esc(B)+'</th></tr></thead><tbody>';
+    h+=row('Total return',pct,sa.tot,sb.tot,true);
+    h+=row('Annualized (CAGR)',pct,sa.cagr,sb.cagr,true);
+    h+=row('Annualized volatility',pct0,sa.vol,sb.vol,false);
+    h+=row('Max drawdown',pct,sa.mdd,sb.mdd,true);
+    h+=row('Sharpe (rf=0)',two,sa.sharpe,sb.sharpe,true);
+    h+=row('Beta vs S&P 500',two,sa.beta,sb.beta,false);
+    h+='<tr><td>Correlation ('+esc(A)+'&harr;'+esc(B)+')</td><td colspan="2" style="text-align:center;font-weight:700">'+corr.toFixed(2)+'</td></tr>';
+    h+='</tbody></table></div>';
+    var winner=sa.sharpe>sb.sharpe?A:B, wS=Math.max(sa.sharpe,sb.sharpe);
+    h+='<div class="summary">Over this window, <b>'+esc(A)+'</b> returned <b>'+pct(sa.tot)+'</b> (vol '+pct0(sa.vol)+', beta '+two(sa.beta)+') and <b>'+esc(B)+'</b> returned <b>'+pct(sb.tot)+'</b> (vol '+pct0(sb.vol)+', beta '+two(sb.beta)+'). On risk-adjusted return, <b>'+esc(winner)+'</b> led with a Sharpe of <b>'+two(wS)+'</b>. Their daily returns are <b>'+(corr>0.7?'highly':corr>0.4?'moderately':'weakly')+' correlated ('+corr.toFixed(2)+')</b>'+(corr>0.7?' - holding both adds little diversification.':'.')+'</div>';
+    resEl.innerHTML=h;
+  }
+  goEl.addEventListener('click',run);
+  aEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+  bEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+  var qa=q('a'),qb=q('b');if(qa)aEl.value=qa;if(qb)bEl.value=qb;
+  if(qa&&qb)run();
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Embeddable stock widgets - put Quantora on your site | Quantora</title>
+<meta name="description" content="Free, lightweight embeddable stock snapshot widgets. Drop a live price, spark chart and 52-week range for any ticker onto your blog, newsletter or site with one line of HTML. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/embed.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  :root{--bg:#F7F8Fa;--fg:#14161c}
+  body{margin:0;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--fg)}
+  /* widget mode */
+  body.w{background:transparent}
+  .wg{box-sizing:border-box;width:100%;max-width:360px;background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(17,24,39,.06)}
+  .wg .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .wg .sym{font-weight:700;font-size:18px;letter-spacing:.02em}
+  .wg .px{font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+  .wg .chg{font-size:12.5px;font-weight:600}
+  .wg .pos{color:#1663d6}.wg .neg{color:#c0392b}
+  .wg svg{width:100%;height:44px;display:block;margin:8px 0 6px}
+  .wg .rng{height:5px;border-radius:3px;background:linear-gradient(90deg,#e6ebf5,#e6ebf5);position:relative;margin:8px 0 4px}
+  .wg .rmk{position:absolute;top:-3px;width:3px;height:11px;background:#0b1220;border-radius:2px}
+  .wg .rl{display:flex;justify-content:space-between;font-size:10.5px;color:#9aa1ad}
+  .wg .pw{display:block;margin-top:8px;font-size:11px;color:#8a91ad;text-decoration:none}
+  .wg .pw b{color:#2f6bff}
+  /* builder mode */
+  .wrap{max-width:900px;margin:0 auto;padding:28px 24px 90px;background:var(--bg)}
+  body.b{background:var(--bg)}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:70ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:10px;max-width:420px}
+  .box input{flex:1;border:0;outline:0;font-size:16px;font-weight:600;text-transform:uppercase;background:transparent}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:20px;margin-top:22px;align-items:start}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:0 0 8px}
+  .code{background:#0b1220;color:#e6e9ef;border-radius:12px;padding:14px 16px;font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+  .cp{background:#14161c;color:#fff;border:0;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;margin-top:10px}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:18px;line-height:1.6;max-width:76ch}
+</style>
+</head><body>
+<div id="root"></div>
+<script>
+(function(){
+  function q(name){var m=location.search.match(new RegExp('[?&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function _gpRaw(sym){return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var out=[];for(var i=0;i<arr.length;i++){var d=arr[i].date||arr[i].datetime;var p=arr[i].price!=null?arr[i].price:(arr[i].close!=null?arr[i].close:arr[i].adjClose);if(d&&p>0)out.push({d:(''+d).slice(0,10),v:+p});}out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;}).catch(function(){return [];});}
+  function getPrices(sym){return _gpRaw(sym).then(function(a){if(a&&a.length>30)return a;return new Promise(function(r){setTimeout(r,600);}).then(function(){return _gpRaw(sym);});});}
+
+  var sym=q('s');
+  if(sym){ renderWidget(sym.toUpperCase().replace(/[^A-Z0-9.\-]/g,'')); }
+  else { renderBuilder(); }
+
+  function renderWidget(S){
+    document.body.className='w';
+    var root=document.getElementById('root');
+    root.innerHTML='<div class="wg"><div class="top"><span class="sym">'+esc(S)+'</span><span class="px" id="px">&hellip;</span></div><svg id="spark" viewBox="0 0 320 44" preserveAspectRatio="none"></svg><div class="rng"><div class="rmk" id="rmk" style="left:0"></div></div><div class="rl"><span id="lo"></span><span id="hi"></span></div><a class="pw" href="https://www.usequantora.com/stock/'+encodeURIComponent(S)+'" target="_blank" rel="noopener">Powered by <b>Quantora</b> &rarr;</a></div>';
+    getPrices(S).then(function(a){
+      if(!a.length){document.getElementById('px').textContent='n/a';return;}
+      var last=a[a.length-1].v,prev=a.length>1?a[a.length-2].v:last,chg=last/prev-1;
+      var pxEl=document.getElementById('px');pxEl.textContent='$'+last.toFixed(2);
+      pxEl.insertAdjacentHTML('afterend','<div class="chg '+(chg>=0?'pos':'neg')+'" style="text-align:right;width:100%">'+(chg>=0?'+':'')+(chg*100).toFixed(2)+'%</div>');
+      var win=a.slice(-90),vs=win.map(function(o){return o.v;}),lo=Math.min.apply(null,vs),hi=Math.max.apply(null,vs);
+      var W=320,H=44,p='';for(var i=0;i<win.length;i++){var x=(i/(win.length-1))*W,y=H-((win[i].v-lo)/(hi-lo||1))*(H-4)-2;p+=(i===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1)+' ';}
+      document.getElementById('spark').innerHTML='<path d="'+p+'" fill="none" stroke="'+(chg>=0?'#1663d6':'#c0392b')+'" stroke-width="1.6"/>';
+      var w52=a.slice(-252),v52=w52.map(function(o){return o.v;}),l52=Math.min.apply(null,v52),h52=Math.max.apply(null,v52),pos=(last-l52)/(h52-l52||1)*100;
+      document.getElementById('rmk').style.left='calc('+Math.max(0,Math.min(100,pos)).toFixed(0)+'% - 1.5px)';
+      document.getElementById('lo').textContent='$'+l52.toFixed(0);document.getElementById('hi').textContent='$'+h52.toFixed(0);
+    });
+  }
+
+  function renderBuilder(){
+    document.body.className='b';
+    var root=document.getElementById('root');
+    root.innerHTML='<div id="qnav"></div><div class="wrap"><div class="eyb">QUANTORA &middot; EMBED</div><h1>Put Quantora on your site</h1><p class="lead">Drop a live, self-updating stock snapshot - price, spark chart and 52-week range - onto any blog, newsletter or site with one line of HTML. Free, no key, no login. Every widget links back with a "Powered by Quantora" credit.</p><div class="box"><input id="s" type="text" value="AAPL" spellcheck="false"><button class="go" id="go" type="button">Generate</button></div><div class="grid"><div><div class="sect">Live preview</div><iframe id="pv" style="width:360px;height:190px;border:0;overflow:hidden" scrolling="no"></iframe></div><div><div class="sect">Embed code</div><div class="code" id="code"></div><button class="cp" id="cp" type="button">Copy code</button></div></div><p class="muted">The widget is a lightweight iframe that fetches delayed/end-of-day data from Quantora. Data is for information only, not investment advice. Attribution ("Powered by Quantora") must remain visible.</p></div>';
+    var s=document.getElementById('s'),go=document.getElementById('go'),pv=document.getElementById('pv'),code=document.getElementById('code'),cp=document.getElementById('cp');
+    var sc=document.createElement('script');sc.src='/nav.js';sc.defer=true;document.body.appendChild(sc);
+    function build(){
+      var S=(s.value||'AAPL').toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+      var url='https://www.usequantora.com/embed.html?s='+encodeURIComponent(S);
+      pv.src='/embed.html?s='+encodeURIComponent(S);
+      var snippet='<iframe src="'+url+'" width="360" height="190" frameborder="0" scrolling="no" title="'+S+' by Quantora"></iframe>';
+      code.textContent=snippet;
+    }
+    go.addEventListener('click',build);s.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();build();}});
+    cp.addEventListener('click',function(){try{navigator.clipboard.writeText(code.textContent);cp.textContent='Copied';setTimeout(function(){cp.textContent='Copy code';},1400);}catch(e){}});
+    build();
+  }
+})();
+</script>
+</body></html>
