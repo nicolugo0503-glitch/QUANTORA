@@ -1,0 +1,199 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>52-Week Range &amp; Momentum Scanner | Quantora</title>
+<meta name="description" content="See where any stock trades in its 52-week range and how strong its momentum is. Quantora shows the 52-week high, low, range position, 1/3/6/12-month returns and a momentum percentile versus its own history. Five years of daily data, free.">
+<link rel="canonical" href="https://www.usequantora.com/range.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:72ch;margin:0 0 18px}
+  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:10px;max-width:520px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+  .box input{flex:1;min-width:80px;border:0;outline:0;font-size:16px;font-weight:600;letter-spacing:.02em;color:#14161c;background:transparent;text-transform:uppercase}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .hero{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .hcell{min-width:120px}
+  .hcell.rt{text-align:right}
+  .hlab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .hbig{font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px}
+  .hsub{font-size:12.5px;color:#8a91ad;margin-top:3px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .ln{width:100%;height:auto;display:block}
+  .mtab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .mtab th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600;padding:8px 6px;border-bottom:1px solid rgba(17,24,39,.1)}
+  .mtab th.r,.mtab td.r{text-align:right}
+  .mtab td{padding:11px 6px;font-size:14.5px;border-bottom:1px solid rgba(17,24,39,.06)}
+  .mtab tr:last-child td{border-bottom:0}
+  .mtab td.r{font-weight:700}
+  .mtab td.mut{color:#9aa1ad;font-size:12.5px}
+  .pcbig{font-size:clamp(26px,3.6vw,34px);font-weight:700;letter-spacing:-.01em}
+  .pcbig span{font-size:15px;font-weight:600;color:#8a91ad;letter-spacing:0}
+  .pcsub{font-size:13.5px;color:#4a4f58;line-height:1.6;margin-top:6px;max-width:72ch}
+  .pcsub b{color:#14161c}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:20px}
+  .summary b{color:#fff}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:78ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; 52-WEEK RANGE</div>
+  <h1>52-week range &amp; momentum</h1>
+  <p class="lead">Every stock lives somewhere between its 52-week high and low - and where it sits, plus how fast it is moving, tells you a lot about its trend. Quantora pins any ticker inside its yearly range, breaks momentum down by horizon, and scores today's 3-month move against its own history. No login, five years of daily data, free.</p>
+  <div class="box">
+    <input id="sym" type="text" placeholder="e.g. NVDA" value="NVDA" spellcheck="false" autocomplete="off">
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">Range position is (price &minus; 52-week low) &divide; (52-week high &minus; 52-week low), so 0% is at the low and 100% is at the high. Momentum figures are simple price changes over roughly 21, 63, 126 and 252 trading days and are price-only - they exclude dividends. The momentum percentile compares the current 3-month (63-day) return against every 3-month return across the available history. Past performance does not guarantee future results. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  var EX=['NVDA','AAPL','TSLA','SPY'];
+  var symEl=document.getElementById('sym'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  EX.forEach(function(t){var c=document.createElement('div');c.className='chip';c.textContent=t;c.addEventListener('click',function(){symEl.value=t;run();});exEl.appendChild(c);});
+
+  function qp(k){var m=location.search.match(new RegExp('[?&]'+k+'=([^&]+)'));return m?decodeURIComponent(m[1].replace(/\+/g,' ')):null;}
+  function clean(s){return (s||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fmt(v){return '$'+(+v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+  function pct(x){return (x>=0?'+':'')+(x*100).toFixed(1)+'%';}
+  function cls(x){return x==null?'':x>0?'pos':x<0?'neg':'';}
+  function ord(nn){var s=['th','st','nd','rd'],v=nn%100;return nn+(s[(v-20)%10]||s[v]||s[0]);}
+
+  function fetchOnce(sym){
+    return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var arr=Array.isArray(j)?j:(j.data||j.historical||[]);var out=[];
+      for(var i=0;i<arr.length;i++){var row=arr[i];var d=row.date||row.datetime;var p=(row.price!=null?row.price:(row.close!=null?row.close:row.adjClose));if(d&&p>0)out.push({d:(''+d).slice(0,10),v:+p});}
+      out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;
+    });
+  }
+  function getPrices(sym){
+    return fetchOnce(sym).then(function(o){
+      if(o&&o.length)return o;
+      return new Promise(function(res){setTimeout(res,450);}).then(function(){return fetchOnce(sym);});
+    });
+  }
+
+  function run(){
+    var sym=clean(symEl.value);
+    if(!sym){resEl.className='res on';resEl.innerHTML='<div class="err">Enter a ticker symbol to scan its 52-week range.</div>';return;}
+    if(busy)return;
+    symEl.value=sym;busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Scanning '+esc(sym)+' across its 52-week range&hellip;</div>';
+    getPrices(sym).then(function(p){
+      if(!p||p.length<30)throw new Error('nodata');
+      analyze(sym,p);busy=false;goEl.disabled=false;
+    }).catch(function(){busy=false;goEl.disabled=false;resEl.innerHTML='<div class="err">No usable price history came back for that symbol - check the ticker and try again.</div>';});
+  }
+
+  function rangeBar(low,high,pos,priceStr,lowStr,highStr){
+    var W=920,PADL=54,PADR=54,tw=W-PADL-PADR;
+    var mx=PADL+pos*tw;
+    var trackY=56,trackH=16,cy=trackY+trackH/2;
+    var tagW=Math.max(72,priceStr.length*8.4+18);
+    var tagX=Math.min(Math.max(mx,PADL+tagW/2),W-PADR-tagW/2);
+    var fw=Math.max(2,pos*tw);
+    var s='<svg class="ln" viewBox="0 0 '+W+' 120" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">';
+    s+='<defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8fb8f2"/><stop offset="1" stop-color="#2f6bff"/></linearGradient></defs>';
+    s+='<rect x="'+PADL+'" y="'+trackY+'" width="'+tw+'" height="'+trackH+'" rx="8" fill="#eef1f6" stroke="rgba(17,24,39,.08)"/>';
+    s+='<rect x="'+PADL+'" y="'+trackY+'" width="'+fw.toFixed(1)+'" height="'+trackH+'" rx="8" fill="url(#rg)"/>';
+    s+='<line x1="'+mx.toFixed(1)+'" y1="34" x2="'+mx.toFixed(1)+'" y2="86" stroke="#0b1220" stroke-width="2"/>';
+    s+='<circle cx="'+mx.toFixed(1)+'" cy="'+cy+'" r="6" fill="#0b1220" stroke="#fff" stroke-width="1.5"/>';
+    s+='<rect x="'+(tagX-tagW/2).toFixed(1)+'" y="8" width="'+tagW.toFixed(1)+'" height="24" rx="6" fill="#0b1220"/>';
+    s+='<text x="'+tagX.toFixed(1)+'" y="24.5" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">'+priceStr+'</text>';
+    s+='<text x="'+PADL+'" y="106" font-size="12" fill="#9aa1ad">52W LOW <tspan font-weight="700" fill="#14161c">'+lowStr+'</tspan></text>';
+    s+='<text x="'+(W-PADR)+'" y="106" text-anchor="end" font-size="12" fill="#9aa1ad"><tspan font-weight="700" fill="#14161c">'+highStr+'</tspan> 52W HIGH</text>';
+    s+='</svg>';
+    return s;
+  }
+
+  function analyze(sym,p){
+    var n=p.length,i;
+    var win=Math.min(252,n);
+    var slice=p.slice(n-win);
+    var high=-Infinity,low=Infinity;
+    for(i=0;i<slice.length;i++){var v=slice[i].v;if(v>high)high=v;if(v<low)low=v;}
+    var price=p[n-1].v,asof=p[n-1].d;
+    var span=high-low;
+    var pos=span>0?(price-low)/span:0.5;pos=Math.max(0,Math.min(1,pos));
+    var posPct=pos*100;
+    var belowHigh=high>0?price/high-1:0;
+    var aboveLow=low>0?price/low-1:0;
+
+    function ret(w){return (n-1-w)>=0?price/p[n-1-w].v-1:null;}
+    var mo=[['1 month',21],['3 months',63],['6 months',126],['12 months',252]].map(function(x){return {k:x[0],d:x[1],v:ret(x[1])};});
+
+    var W3=63,r63=[];
+    for(i=W3;i<n;i++){r63.push(p[i].v/p[i-W3].v-1);}
+    var cur3=r63.length?r63[r63.length-1]:null;
+    var pctile=null;
+    if(cur3!=null&&r63.length>1){var below=0;for(i=0;i<r63.length;i++){if(r63[i]<cur3)below++;}pctile=below/r63.length*100;}
+
+    var posCol=pos>=0.66?'#1663d6':pos<=0.33?'#c0392b':'#14161c';
+    var posDesc=pos>=0.85?'near the 52-week high':pos>=0.6?'upper part of the range':pos>0.4?'middle of the range':pos>0.15?'lower part of the range':'near the 52-week low';
+
+    var h='';
+    h+='<div class="hero">';
+    h+='<div class="hcell"><div class="hlab">Current price</div><div class="hbig">'+fmt(price)+'</div><div class="hsub">'+esc(sym)+' &middot; as of '+asof+'</div></div>';
+    h+='<div class="hcell rt"><div class="hlab">Range position</div><div class="hbig" style="color:'+posCol+'">'+posPct.toFixed(0)+'%</div><div class="hsub">'+posDesc+'</div></div>';
+    h+='</div>';
+
+    h+='<div class="sect">52-week range</div><div class="panel">'+rangeBar(low,high,pos,fmt(price),fmt(low),fmt(high))+'</div>';
+
+    h+='<div class="sect">Where it stands</div><div class="cards">';
+    h+='<div class="card"><div class="clab">52-week high</div><div class="cval">'+fmt(high)+'</div><div class="csub">highest close in window</div></div>';
+    h+='<div class="card"><div class="clab">52-week low</div><div class="cval">'+fmt(low)+'</div><div class="csub">lowest close in window</div></div>';
+    h+='<div class="card"><div class="clab">Below 52W high</div><div class="cval '+cls(belowHigh)+'">'+pct(belowHigh)+'</div><div class="csub">from the peak</div></div>';
+    h+='<div class="card"><div class="clab">Above 52W low</div><div class="cval '+cls(aboveLow)+'">'+pct(aboveLow)+'</div><div class="csub">off the bottom</div></div>';
+    h+='</div>';
+
+    h+='<div class="sect">Momentum &middot; price return by horizon</div><div class="panel"><table class="mtab"><thead><tr><th>Horizon</th><th>Approx days</th><th class="r">Return</th></tr></thead><tbody>';
+    mo.forEach(function(m){h+='<tr><td>'+m.k+'</td><td class="mut">~'+m.d+'</td><td class="r '+cls(m.v)+'">'+(m.v==null?'&mdash;':pct(m.v))+'</td></tr>';});
+    h+='</tbody></table></div>';
+
+    h+='<div class="sect">Momentum percentile</div><div class="panel">';
+    if(pctile!=null){
+      var pcol=pctile>=50?'#1663d6':'#c0392b';
+      var yrs=(n/252).toFixed(1);
+      h+='<div class="pcbig" style="color:'+pcol+'">'+ord(Math.round(pctile))+'<span> percentile</span></div>';
+      h+='<div class="pcsub">The current 3-month return of <b>'+pct(cur3)+'</b> is stronger than <b>'+pctile.toFixed(0)+'%</b> of all 3-month periods over the past ~'+yrs+' years ('+r63.length+' observations).</div>';
+    }else{
+      h+='<div class="pcsub">Not enough history to compute a momentum percentile.</div>';
+    }
+    h+='</div>';
+
+    h+='<div class="summary"><b>'+esc(sym)+'</b> is trading at <b>'+fmt(price)+'</b>, <b>'+posPct.toFixed(0)+'%</b> of the way up its 52-week range - '+posDesc+'. It sits <b>'+pct(belowHigh)+'</b> from the 52-week high and <b>'+pct(aboveLow)+'</b> above the low.';
+    if(cur3!=null&&pctile!=null){h+=' Its 3-month momentum of <b>'+pct(cur3)+'</b> ranks in the <b>'+ord(Math.round(pctile))+' percentile</b> of its own history.';}
+    h+='</div>';
+
+    resEl.innerHTML=h;
+  }
+
+  goEl.addEventListener('click',run);
+  symEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+
+  var pre=clean(qp('symbol'));
+  if(pre){symEl.value=pre;run();}
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>

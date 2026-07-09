@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelly Criterion Position Sizer | Quantora</title>
+<meta name="description" content="Free Kelly Criterion position sizer: compute the optimal bet size from win probability and payoff, or estimate continuous-Kelly leverage from a ticker's return history. Half and quarter Kelly included. No login.">
+<link rel="canonical" href="https://www.usequantora.com/kelly.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;margin:10px 0 8px;line-height:1.15}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.55;margin:0 0 22px;max-width:700px}
+  .tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+  .tab{background:#fff;border:1px solid rgba(17,24,39,.12);color:#4a4f58;border-radius:9px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .tab.active{background:#14161c;color:#fff;border-color:#14161c}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;margin:0 0 16px}
+  .inputs{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+  .field label{font-size:12.5px;font-weight:600;color:#4a4f58}
+  .field input{font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid rgba(17,24,39,.16);border-radius:9px;background:#fbfbfd;color:#14161c;font-variant-numeric:tabular-nums}
+  .field input:focus{outline:none;border-color:#2f6bff;background:#fff}
+  .hint{font-size:11.5px;color:#9aa1ad;line-height:1.4}
+  .btn{background:#2f6bff;color:#fff;border:none;border-radius:9px;font-weight:700;padding:11px 20px;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:#255ae0}
+  .out{margin:0}
+  .kpi{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;margin:0 0 14px}
+  .kpi-lab{font-size:12.5px;color:#8a91ad;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .kpi-val{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 2px}
+  .kpi-sub{font-size:13px;color:#4a4f58}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 4px}
+  .mini{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:12px;padding:14px 15px}
+  .mini-k{font-size:12px;color:#8a91ad;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .mini-f{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin:3px 0 1px}
+  .mini-g{font-size:12.5px;color:#4a4f58;font-variant-numeric:tabular-nums}
+  .stats{display:flex;flex-wrap:wrap;gap:18px;margin:12px 0 0;padding:14px 16px;background:#f4f6fb;border-radius:12px}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat b{font-size:15px;font-variant-numeric:tabular-nums;font-weight:600}
+  .stat span{font-size:11.5px;color:#8a91ad}
+  .pos{color:#1663d6}
+  .neg{color:#c0392b}
+  .muted{color:#9aa1ad}
+  .note{font-size:13px;color:#4a4f58;line-height:1.5;padding:12px 14px;background:#f4f6fb;border-radius:10px}
+  .note.err{background:#fdecea;color:#c0392b}
+  .note.warn{background:#fff6e9;color:#8a5a12;border:1px solid #f2dcae}
+  .chart-title{font-size:13px;font-weight:600;color:#14161c;margin:0 0 10px}
+  #growthWrap svg{width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 0}
+  .lg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:#4a4f58;font-variant-numeric:tabular-nums}
+  .lg .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .sw.full{background:#c0392b}.sw.half{background:#2f6bff}.sw.quarter{background:#8a91ad}
+  .cap{font-size:12px;color:#9aa1ad;line-height:1.5;margin:10px 0 0}
+  .foot{font-size:12px;color:#9aa1ad;line-height:1.55;margin:26px 0 0;max-width:720px}
+  @media(max-width:640px){.grid3{grid-template-columns:1fr}.kpi-val{font-size:28px}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; KELLY SIZER</div>
+  <h1>Kelly Criterion Position Sizer</h1>
+  <p class="lead">Find the bet or position size that maximizes long-run compound growth. Size a wager from win probability and payoff, or estimate continuous-Kelly leverage from a ticker's return history &mdash; then dial it back with fractional Kelly to tame the drawdowns.</p>
+
+  <div class="tabs" role="tablist">
+    <button id="tab-manual" class="tab active" role="tab" type="button">Manual (bet)</button>
+    <button id="tab-ticker" class="tab" role="tab" type="button">From a ticker</button>
+  </div>
+
+  <section id="panel-manual" class="panel">
+    <div class="card inputs">
+      <div class="field">
+        <label for="p">Win probability p (%)</label>
+        <input id="p" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="55">
+      </div>
+      <div class="field">
+        <label for="b">Win payoff b (net odds)</label>
+        <input id="b" type="number" inputmode="decimal" min="0" step="0.1" value="1">
+        <div class="hint">Amount won per unit risked. b = 1 is even money; b = 2 wins 2&times; your stake, and a loss costs the full stake.</div>
+      </div>
+      <button id="runManual" class="btn" type="button">Compute Kelly</button>
+    </div>
+    <div id="manualOut" class="out"></div>
+    <div class="card">
+      <div class="chart-title">Why full Kelly is volatile &mdash; simulated growth of $1 over 100 bets</div>
+      <div id="growthWrap"></div>
+    </div>
+  </section>
+
+  <section id="panel-ticker" class="panel" style="display:none">
+    <div class="card inputs">
+      <div class="field">
+        <label for="sym">Ticker symbol</label>
+        <input id="sym" type="text" autocomplete="off" spellcheck="false" placeholder="AAPL" value="">
+        <div class="hint">Uses ~2 years of daily closes to estimate mean daily return &mu; and variance &sigma;&sup2;, then continuous Kelly f* = &mu; / &sigma;&sup2;.</div>
+      </div>
+      <button id="runTicker" class="btn" type="button">Compute from ticker</button>
+    </div>
+    <div id="tickerOut" class="out"></div>
+  </section>
+
+  <p class="foot">The Kelly criterion picks the fraction of capital that maximizes expected logarithmic (compound) growth. It is optimal only asymptotically and assumes you know the true odds &mdash; real edges are uncertain and estimated with error, so full Kelly risks severe drawdowns and long underwater stretches. Fractional Kelly (half or quarter) gives up a little growth for much lower volatility and is what most practitioners actually use. The ticker mode's continuous Kelly assumes daily returns are i.i.d. normal and stationary, ignores fat tails, autocorrelation, transaction costs and financing, and is extremely aggressive on a single asset. Educational only - not investment advice.</p>
+</div>
+<script src="/nav.js" defer></script>
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+
+  function fmtPct(x, d){ return (x*100).toFixed(d==null?2:d)+'%'; }
+  function fmtSigned(x, d){ if(!isFinite(x)) return String(x); var s=(x>=0?'+':''); return s+x.toFixed(d==null?4:d); }
+  function niceMult(m){
+    if(!isFinite(m)) return '—';
+    if(m>=100) return m.toFixed(0);
+    if(m>=10) return m.toFixed(1);
+    if(m>=1) return m.toFixed(2);
+    return m.toFixed(3);
+  }
+  function mini(k, f, g, cls){
+    return '<div class="mini"><div class="mini-k">'+k+'</div>'
+      + '<div class="mini-f '+(cls||'')+'">'+f+'</div>'
+      + '<div class="mini-g">'+g+'</div></div>';
+  }
+
+  // ---- Tabs ----
+  function showTab(name){
+    ['manual','ticker'].forEach(function(t){
+      var panel = $('panel-'+t), btn = $('tab-'+t);
+      if(!panel||!btn) return;
+      var on = (t===name);
+      panel.style.display = on ? '' : 'none';
+      btn.classList.toggle('active', on);
+    });
+  }
+
+  // ---- Expected log-growth per bet at bet fraction f ----
+  function gRate(p, f, b){
+    if(f<=0) return 0;
+    var winTerm = p*Math.log(1+f*b);
+    if((1-p)<=0) return winTerm;           // never lose
+    if(1-f<=0) return -Infinity;           // full stake, a loss ruins
+    return winTerm + (1-p)*Math.log(1-f);
+  }
+
+  // ---- Seeded PRNG (mulberry32) so all three curves share the same outcomes ----
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---- Growth illustration using the manual-mode edge ----
+  function buildGrowthSVG(p, b, fstar){
+    var steps = 100;
+    var keys = ['full','half','quarter'];
+    var frac = { full:fstar, half:fstar/2, quarter:fstar/4 };
+    var series = { full:[1], half:[1], quarter:[1] };
+    var val = { full:1, half:1, quarter:1 };
+    var rng = mulberry32(1337);
+    for(var i=0;i<steps;i++){
+      var win = rng() < p;
+      keys.forEach(function(k){
+        var f = frac[k];
+        val[k] *= win ? (1 + f*b) : (1 - f);
+        if(val[k] < 1e-9) val[k] = 1e-9;
+        series[k].push(val[k]);
+      });
+    }
+    var W=680, H=240, padL=48, padR=16, padT=16, padB=26;
+    var logs = {}, minL=Infinity, maxL=-Infinity;
+    keys.forEach(function(k){
+      logs[k] = series[k].map(function(v){ return Math.log(v); });
+      logs[k].forEach(function(l){ if(l<minL) minL=l; if(l>maxL) maxL=l; });
+    });
+    if(!isFinite(minL)||!isFinite(maxL)||minL===maxL){ minL-=0.5; maxL+=0.5; }
+    var n = steps+1;
+    function X(i){ return padL + (W-padL-padR)*(i/(n-1)); }
+    function Y(l){ return padT + (H-padT-padB)*(1 - (l-minL)/(maxL-minL)); }
+    var colors = { full:'#c0392b', half:'#2f6bff', quarter:'#8a91ad' };
+
+    var svg = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Simulated cumulative growth of $1 under full, half and quarter Kelly over 100 bets">';
+    // horizontal gridlines + labels at min / mid / max
+    [minL, (minL+maxL)/2, maxL].forEach(function(l){
+      var y = Y(l);
+      svg += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#eceef4"/>';
+      svg += '<text x="'+(padL-6)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1ad">'+niceMult(Math.exp(l))+'x</text>';
+    });
+    // baseline at $1 (log 0) if in range
+    if(0>minL && 0<maxL){
+      var yz = Y(0);
+      svg += '<line x1="'+padL+'" y1="'+yz.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yz.toFixed(1)+'" stroke="#c7ccda" stroke-dasharray="4 4"/>';
+    }
+    keys.forEach(function(k){
+      var pts = '';
+      logs[k].forEach(function(l,i){ pts += X(i).toFixed(1)+','+Y(l).toFixed(1)+' '; });
+      svg += '<polyline points="'+pts.trim()+'" fill="none" stroke="'+colors[k]+'" stroke-width="'+(k==='full'?2.4:1.7)+'" stroke-linejoin="round"/>';
+    });
+    svg += '<text x="'+padL+'" y="'+(H-8)+'" font-size="10" fill="#9aa1ad">bet 0</text>';
+    svg += '<text x="'+(W-padR)+'" y="'+(H-8)+'" text-anchor="end" font-size="10" fill="#9aa1ad">bet 100</text>';
+    svg += '</svg>';
+
+    var legend = '<div class="legend">'
+      + '<span class="lg"><i class="sw full"></i>Full Kelly <b>&nbsp;'+niceMult(series.full[n-1])+'&times;</b></span>'
+      + '<span class="lg"><i class="sw half"></i>Half Kelly <b>&nbsp;'+niceMult(series.half[n-1])+'&times;</b></span>'
+      + '<span class="lg"><i class="sw quarter"></i>Quarter Kelly <b>&nbsp;'+niceMult(series.quarter[n-1])+'&times;</b></span>'
+      + '</div>';
+    var cap = '<div class="cap">One fixed random sequence of 100 wins/losses drawn from your edge, applied at each staking fraction. Full Kelly (red) has the highest expected end value but the wildest swings; fractional Kelly rides smoother for a modest cut in growth.</div>';
+    return svg + legend + cap;
+  }
+
+  // ---- Manual mode ----
+  function computeManual(){
+    var out = $('manualOut'), wrap = $('growthWrap');
+    var pRaw = parseFloat($('p').value), bRaw = parseFloat($('b').value);
+    if(!isFinite(pRaw) || !isFinite(bRaw)){
+      out.innerHTML = '<div class="note err">Enter both a win probability and a payoff.</div>';
+      wrap.innerHTML = '';
+      return;
+    }
+    if(pRaw < 0 || pRaw > 100){
+      out.innerHTML = '<div class="note err">Win probability must be between 0 and 100%.</div>';
+      wrap.innerHTML = '';
+      return;
+    }
+    if(bRaw <= 0){
+      out.innerHTML = '<div class="note err">Payoff b must be greater than 0.</div>';
+      wrap.innerHTML = '';
+      return;
+    }
+    var p = pRaw/100, b = bRaw;
+    var fstar = p - (1-p)/b;   // = (p*(b+1) - 1)/b
+
+    var html = '<div class="kpi">'
+      + '<div class="kpi-lab">Kelly fraction f*</div>'
+      + '<div class="kpi-val '+(fstar>0?'pos':'neg')+'">'+fmtPct(fstar)+'</div>'
+      + '<div class="kpi-sub">of bankroll to stake per bet ('+fstar.toFixed(4)+')</div>'
+      + '</div>';
+
+    if(fstar <= 0){
+      html += '<div class="note err"><b>No edge &mdash; do not bet.</b> With p = '+fmtPct(p)+' and b = '+b+', the Kelly fraction is not positive, so any wager loses money over the long run. You need p &gt; 1/(b+1) = '+fmtPct(1/(b+1))+' to have an edge here.</div>';
+      out.innerHTML = html;
+      wrap.innerHTML = '<div class="note">No positive-edge path to illustrate. Increase p or b above break-even to see the growth curve.</div>';
+      return;
+    }
+
+    var levels = [
+      { k:'Full Kelly', f:fstar, cls:'neg' },
+      { k:'Half Kelly', f:fstar/2, cls:'pos' },
+      { k:'Quarter Kelly', f:fstar/4, cls:'muted' }
+    ];
+    html += '<div class="grid3">';
+    levels.forEach(function(o){
+      var g = gRate(p, o.f, b);
+      html += mini(o.k, fmtPct(o.f), 'growth g = '+fmtSigned(g)+' / bet', o.cls);
+    });
+    html += '</div>';
+    html += '<div class="note">Full Kelly maximizes long-run growth but is the most volatile. Half and quarter Kelly keep most of the growth (g scales gently) while sharply cutting drawdown risk &mdash; a sensible default when your edge is uncertain.</div>';
+
+    out.innerHTML = html;
+    wrap.innerHTML = buildGrowthSVG(p, b, fstar);
+  }
+
+  // ---- Hardened fetch with one retry on empty ----
+  async function fetchPrices(sym){
+    var url = '/api/fmp?type=prices&symbol=' + encodeURIComponent(sym);
+    var lastErr = null;
+    for(var attempt=0; attempt<2; attempt++){
+      try{
+        var res = await fetch(url);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        var j = await res.json();
+        var arr = Array.isArray(j) ? j : (j.data || j.historical || []);
+        if(arr && arr.length) return arr;
+        lastErr = new Error('empty response');
+      }catch(e){ lastErr = e; }
+      if(attempt===0) await new Promise(function(r){ setTimeout(r, 500); });
+    }
+    throw (lastErr || new Error('no data'));
+  }
+
+  // ---- Ticker mode: continuous Kelly ----
+  async function computeTicker(){
+    var out = $('tickerOut');
+    var sym = ($('sym').value||'').trim().toUpperCase();
+    $('sym').value = sym;
+    if(!sym || !/^[A-Z0-9.\-]{1,12}$/.test(sym)){
+      out.innerHTML = '<div class="note err">Enter a valid ticker symbol (e.g. AAPL).</div>';
+      return;
+    }
+    out.innerHTML = '<div class="note">Loading '+sym+' price history…</div>';
+    try{
+      var arr = await fetchPrices(sym);
+      var rows = arr.map(function(row){
+        var d = row.date || row.datetime;
+        var pr = (row.price!=null ? row.price : (row.close!=null ? row.close : row.adjClose));
+        return { date:d, price:Number(pr) };
+      }).filter(function(x){ return x.date && isFinite(x.price) && x.price>0; });
+
+      if(rows.length < 30){
+        out.innerHTML = '<div class="note err">Not enough price history for '+sym+' to estimate Kelly.</div>';
+        return;
+      }
+      // API is newest-first; build a date-ASCENDING series
+      rows.sort(function(a,b){ return a.date<b.date ? -1 : (a.date>b.date ? 1 : 0); });
+
+      var rets = [];
+      for(var i=1;i<rows.length;i++){ rets.push(rows[i].price/rows[i-1].price - 1); }
+      if(rets.length > 504) rets = rets.slice(rets.length-504);   // ~2y
+      var n = rets.length;
+
+      var mu = 0; for(var a=0;a<n;a++) mu += rets[a]; mu /= n;
+      var vari = 0; for(var c=0;c<n;c++){ var dd = rets[c]-mu; vari += dd*dd; } vari /= (n-1);
+      var sigma = Math.sqrt(vari);
+
+      if(vari <= 0){
+        out.innerHTML = '<div class="note err">Return variance is zero for '+sym+'; Kelly is undefined.</div>';
+        return;
+      }
+
+      var fstar = mu / vari;                        // continuous Kelly leverage
+      var gFull = (mu*mu/(2*vari)) * 252;           // annualized geometric growth at full Kelly
+      var annMu = mu*252, annVol = sigma*Math.sqrt(252);
+
+      var html = '<div class="kpi">'
+        + '<div class="kpi-lab">Continuous Kelly leverage f* = &mu; / &sigma;&sup2;</div>'
+        + '<div class="kpi-val '+(fstar>=0?'pos':'neg')+'">'+fstar.toFixed(2)+'&times;</div>'
+        + '<div class="kpi-sub">fraction of capital in '+sym+' &mdash; '
+        + (fstar>1 ? 'more than 1&times; implies borrowing / leverage' : (fstar>=0 ? 'below 1&times;, no leverage needed' : 'negative &mdash; edge points the other way (hold cash or short)'))
+        + '</div></div>';
+
+      if(fstar < 0){
+        html += '<div class="note warn">Estimated mean return is negative over this window, so Kelly says do <b>not</b> hold '+sym+' long. Negative estimates are especially noisy &mdash; treat with skepticism.</div>';
+      } else {
+        html += '<div class="grid3">'
+          + mini('Full Kelly', fstar.toFixed(2)+'&times;', 'ann. growth '+fmtPct(gFull), 'neg')
+          + mini('Half Kelly', (fstar/2).toFixed(2)+'&times;', 'ann. growth '+fmtPct(gFull*0.75), 'pos')
+          + mini('Quarter Kelly', (fstar/4).toFixed(2)+'&times;', 'ann. growth '+fmtPct(gFull*0.4375), 'muted')
+          + '</div>';
+      }
+
+      html += '<div class="stats">'
+        + '<div class="stat"><b class="'+(mu>=0?'pos':'neg')+'">'+fmtPct(mu,3)+'</b><span>mean daily &mu;</span></div>'
+        + '<div class="stat"><b>'+fmtPct(sigma,2)+'</b><span>daily &sigma;</span></div>'
+        + '<div class="stat"><b class="'+(annMu>=0?'pos':'neg')+'">'+fmtPct(annMu,1)+'</b><span>annualized &mu;</span></div>'
+        + '<div class="stat"><b>'+fmtPct(annVol,1)+'</b><span>annualized &sigma;</span></div>'
+        + '<div class="stat"><b>'+n+'</b><span>daily returns</span></div>'
+        + '</div>';
+
+      html += '<div class="note warn"><b>Read this before sizing anything.</b> Continuous Kelly assumes daily returns are independent, identically distributed and normal &mdash; markets are none of these: they have fat tails, volatility clustering, autocorrelation and regime shifts. The result is highly sensitive to estimation error in &mu; (which is nearly impossible to estimate reliably from 2 years of data) and &sigma;. It ignores transaction costs, financing/borrow costs and gaps. Full Kelly on a single asset is brutally aggressive and can produce catastrophic drawdowns; use a small fraction (quarter Kelly or less), diversify, and never bet the estimate as if it were the truth.</div>';
+
+      out.innerHTML = html;
+    }catch(e){
+      out.innerHTML = '<div class="note err">Could not load data for '+sym+'. '+((e&&e.message)?e.message:'Try again.')+'</div>';
+    }
+  }
+
+  // ---- Init / auto-run from URL ----
+  function init(){
+    $('tab-manual').addEventListener('click', function(){ showTab('manual'); });
+    $('tab-ticker').addEventListener('click', function(){ showTab('ticker'); });
+    $('runManual').addEventListener('click', computeManual);
+    $('runTicker').addEventListener('click', computeTicker);
+    ['p','b'].forEach(function(id){
+      $(id).addEventListener('keydown', function(e){ if(e.key==='Enter') computeManual(); });
+      $(id).addEventListener('input', computeManual);
+    });
+    $('sym').addEventListener('keydown', function(e){ if(e.key==='Enter') computeTicker(); });
+    $('sym').addEventListener('input', function(){ this.value = this.value.toUpperCase(); });
+
+    var params = new URLSearchParams(location.search);
+    var pv = params.get('p'), bv = params.get('b'), sv = params.get('sym');
+    var hasManual = (pv!=null || bv!=null);
+    var hasTicker = (sv!=null && sv.trim()!=='');
+
+    if(pv!=null && isFinite(parseFloat(pv))) $('p').value = pv;
+    if(bv!=null && isFinite(parseFloat(bv))) $('b').value = bv;
+    if(hasTicker) $('sym').value = sv.trim().toUpperCase();
+
+    showTab(hasTicker && !hasManual ? 'ticker' : 'manual');
+
+    // Always render the manual result + illustration so the page is never blank.
+    computeManual();
+    if(hasTicker) computeTicker();
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

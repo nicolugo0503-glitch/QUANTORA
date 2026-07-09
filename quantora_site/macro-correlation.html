@@ -1,0 +1,254 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cross-Asset Correlation - a stock vs equities, bonds, gold, oil &amp; the dollar | Quantora</title>
+<meta name="description" content="See how any stock or ETF correlates with equities (SPY), long Treasuries (TLT), gold (GLD), crude oil (USO) and the US dollar (UUP) over the trailing ~1 year of daily returns. Free, no login, verified math.">
+<link rel="canonical" href="https://www.usequantora.com/macro-correlation.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+.wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+.eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:9px 0 8px}
+.lead{color:#4a4f58;font-size:15px;line-height:1.6;max-width:720px;margin:0 0 20px}
+.card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.fld{display:flex;flex-direction:column;gap:5px;flex:1;min-width:220px}
+.fld label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#9aa1ad;font-weight:600}
+#sym{border:1px solid rgba(17,24,39,.14);border-radius:9px;padding:10px 12px;font:inherit;font-size:15px;background:#fff;text-transform:uppercase;width:100%;box-sizing:border-box}
+#sym:focus{outline:none;border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+#go{border:0;background:#2f6bff;color:#fff;border-radius:10px;padding:11px 22px;font:600 15px Geist,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+#go:disabled{opacity:.5;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chip{border:1px solid rgba(17,24,39,.14);background:#fff;color:#4a4f58;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
+.chip:hover{border-color:#2f6bff;color:#2f6bff}
+.num{font-variant-numeric:tabular-nums}
+#out{margin-top:16px}
+.result{margin-top:16px}
+.terp{font-size:15px;line-height:1.6;color:#14161c;margin:2px 0 14px}
+.terp b.pos{color:#1663d6}.terp b.neg{color:#c0392b}
+svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:12px;font-size:11.5px;color:#9aa1ad}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.cap{font-size:11.5px;color:#9aa1ad;margin-top:10px;line-height:1.55}
+.state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;line-height:1.55}
+.state.err{background:#fdf2f2;border-color:#f2c8c8;color:#8a2b2b}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes qspin{to{transform:rotate(360deg)}}
+.body{color:#4a4f58;font-size:14px;line-height:1.7;max-width:720px;margin-top:22px}.body b{color:#14161c}
+.foot{margin-top:14px;font-size:12px;color:#9aa1ad;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+<div class="eyb">QUANTORA &middot; CROSS-ASSET CORRELATION</div>
+<h1>Cross-Asset Correlation</h1>
+<p class="lead">Enter any stock or ETF and Quantora measures how its daily returns actually move against the five pillars of a macro book - US equities, long Treasuries, gold, crude oil and the dollar - over the trailing year. It's the fast read on what your position is secretly a bet on.</p>
+<div class="card">
+<div class="row">
+<div class="fld"><label for="sym">Ticker</label><input id="sym" value="NVDA" placeholder="e.g. NVDA" autocomplete="off" spellcheck="false"></div>
+<button id="go">Analyze</button>
+</div>
+<div class="chips" id="chips"></div>
+<div id="out"></div>
+</div>
+<div class="body">Each bar is the <b>Pearson correlation</b> of the ticker's daily returns against a proxy asset, aligned on their common trading days over roughly the last year (~252 sessions). <b>+1</b> means they move in lockstep, <b>0</b> means unrelated, <b>-1</b> means they move exactly opposite. The proxies: <b>SPY</b> for the US equity market, <b>TLT</b> for long-dated Treasuries (the rates and duration trade), <b>GLD</b> for gold, <b>USO</b> for crude oil, and <b>UUP</b> for the US dollar. A high equity correlation means a name trades as market beta; a strongly negative dollar reading flags a currency-sensitive position. Correlations are not stable - they drift with the regime and tend to converge toward 1 in a crash - so read this as a snapshot, not a constant.</div>
+<div class="foot">Pearson correlation on overlapping daily returns from Financial Modeling Prep history (may be delayed); trailing window is capped near 252 trading sessions and shifts over time. Educational only - not investment advice.</div>
+</div>
+<script src="/nav.js" defer></script>
+<script>
+(function(){
+"use strict";
+var PROX=[
+  {s:"SPY",desc:"US equity market",word:"equities"},
+  {s:"TLT",desc:"20y+ Treasuries · rates",word:"long-term Treasuries"},
+  {s:"GLD",desc:"Gold",word:"gold"},
+  {s:"USO",desc:"Crude oil",word:"crude oil"},
+  {s:"UUP",desc:"US dollar index",word:"the dollar"}
+];
+var WIN=252;
+var sym=document.getElementById("sym");
+var go=document.getElementById("go");
+var out=document.getElementById("out");
+
+/* ---- quick chips ---- */
+(function(){
+  var box=document.getElementById("chips"),list=["NVDA","AAPL","XOM","GLD"];
+  for(var i=0;i<list.length;i++){(function(t){
+    var b=document.createElement("button");b.className="chip";b.type="button";b.textContent=t;
+    b.onclick=function(){sym.value=t;run();};
+    box.appendChild(b);
+  })(list[i]);}
+})();
+
+/* ---- concurrency limiter (cap 4) ---- */
+function pMap(items,fn,limit){return new Promise(function(res){var r=new Array(items.length),i=0,a=0,d=0;function nx(){while(a<limit&&i<items.length){(function(k){a++;fn(items[k]).then(function(x){r[k]=x;},function(){r[k]=null;}).then(function(){a--;d++;if(d===items.length)res(r);else nx();});})(i++);}}if(!items.length)res([]);else nx();});}
+
+/* ---- hardened fetch: one retry ---- */
+function getJSON(url){return fetch(url).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});}
+function fetchRetry(url){return getJSON(url)["catch"](function(){return new Promise(function(res){setTimeout(res,650);}).then(function(){return getJSON(url);});});}
+
+function toArr(j){
+  if(Array.isArray(j))return j;
+  if(j&&Array.isArray(j.data))return j.data;
+  if(j&&Array.isArray(j.historical))return j.historical;
+  if(j&&j.data&&Array.isArray(j.data.historical))return j.data.historical;
+  return [];
+}
+function loadSym(s){
+  return fetchRetry("/api/fmp?type=prices&symbol="+encodeURIComponent(s)).then(function(j){
+    var arr=toArr(j),map={},k;
+    for(k=0;k<arr.length;k++){
+      var row=arr[k]||{};
+      var d=row.date||row.datetime;
+      var p=(row.price!=null?row.price:(row.close!=null?row.close:row.adjClose));
+      p=+p;
+      if(d&&isFinite(p)&&p>0)map[String(d).slice(0,10)]=p;
+    }
+    return map;
+  })["catch"](function(){return null;});
+}
+
+function retsOf(px){var r=[],i;for(i=1;i<px.length;i++)r.push(px[i]/px[i-1]-1);return r;}
+function pearson(x,y){
+  var n=Math.min(x.length,y.length),i,mx=0,my=0;
+  if(n<3)return NaN;
+  for(i=0;i<n;i++){mx+=x[i];my+=y[i];}mx/=n;my/=n;
+  var sxy=0,sxx=0,syy=0,dx,dy;
+  for(i=0;i<n;i++){dx=x[i]-mx;dy=y[i]-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;}
+  var den=Math.sqrt(sxx*syy);
+  if(!(den>0))return NaN;
+  return sxy/den;
+}
+function fmtSigned(v){var a=Math.abs(v)<0.005?0:v;return(a>0?"+":a<0?"":"")+a.toFixed(2);}
+function corrColor(v){return v>0.005?"#1663d6":v<-0.005?"#c0392b":"#9aa1ad";}
+
+/* ---- diverging bar chart (inline SVG) ---- */
+function chart(rows){
+  var n=rows.length;
+  var W=900,labelW=196,x0=labelW+18,x1=W-18;
+  var cx=(x0+x1)/2,half=(x1-x0)/2;
+  var top=54,rowH=58,H=top+n*rowH+18;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img" font-family="Geist,system-ui,sans-serif">';
+  var ticks=[-1,-0.5,0,0.5,1],t,xv,isZ;
+  for(t=0;t<ticks.length;t++){
+    xv=cx+ticks[t]*half;isZ=ticks[t]===0;
+    s+='<line x1="'+xv+'" y1="'+(top-6)+'" x2="'+xv+'" y2="'+(H-12)+'" stroke="'+(isZ?"#c7ccd6":"#eef0f4")+'" stroke-width="'+(isZ?1.4:1)+'"/>';
+    s+='<text x="'+xv+'" y="'+(top-14)+'" text-anchor="middle" font-size="10.5" fill="#9aa1ad" font-variant-numeric="tabular-nums">'+(ticks[t]>0?"+":"")+ticks[t].toFixed(1)+'</text>';
+  }
+  var i;
+  for(i=0;i<n;i++){
+    var r=rows[i],y=top+i*rowH,midY=y+rowH/2;
+    s+='<text x="6" y="'+(midY-4)+'" font-size="14.5" font-weight="600" fill="#14161c">'+r.s+'</text>';
+    s+='<text x="6" y="'+(midY+13)+'" font-size="11" fill="#9aa1ad">'+r.desc+'</text>';
+    var v=r.corr,col=corrColor(v);
+    var bh=20,by=midY-bh/2;
+    var bw=Math.max(Math.abs(v)*half,1.5);
+    var bx=v>=0?cx:cx-bw;
+    s+='<rect x="'+bx.toFixed(1)+'" y="'+by+'" width="'+bw.toFixed(1)+'" height="'+bh+'" rx="4" fill="'+col+'"/>';
+    var vt=fmtSigned(v),TW=40;
+    if(v>=0){
+      var txo=cx+bw+7;
+      if(txo+TW>x1)s+='<text x="'+(cx+bw-7).toFixed(1)+'" y="'+(midY+4)+'" text-anchor="end" font-size="13" font-weight="600" fill="#fff" font-variant-numeric="tabular-nums">'+vt+'</text>';
+      else s+='<text x="'+txo.toFixed(1)+'" y="'+(midY+4)+'" font-size="13" font-weight="600" fill="'+col+'" font-variant-numeric="tabular-nums">'+vt+'</text>';
+    }else{
+      var txn=cx-bw-7;
+      if(txn-TW<x0)s+='<text x="'+(cx-bw+7).toFixed(1)+'" y="'+(midY+4)+'" font-size="13" font-weight="600" fill="#fff" font-variant-numeric="tabular-nums">'+vt+'</text>';
+      else s+='<text x="'+txn.toFixed(1)+'" y="'+(midY+4)+'" text-anchor="end" font-size="13" font-weight="600" fill="'+col+'" font-variant-numeric="tabular-nums">'+vt+'</text>';
+    }
+  }
+  s+='</svg>';
+  return s;
+}
+
+function interpret(rows){
+  var pos=null,neg=null,i;
+  for(i=0;i<rows.length;i++){
+    var v=rows[i].corr;
+    if(v>0&&(!pos||v>pos.corr))pos=rows[i];
+    if(v<0&&(!neg||v<neg.corr))neg=rows[i];
+  }
+  var parts=[];
+  if(pos)parts.push('Moves most with <b class="pos">'+pos.word+'</b> ('+pos.s+' '+fmtSigned(pos.corr)+')');
+  if(neg)parts.push((pos?"most inversely with ":"Moves most inversely with ")+'<b class="neg">'+neg.word+'</b> ('+neg.s+' '+fmtSigned(neg.corr)+')');
+  if(!parts.length)return "";
+  return parts.join("; ")+".";
+}
+
+var busy=false;
+function run(){
+  if(busy)return;
+  var raw=(sym.value||"").toUpperCase().replace(/[^A-Z0-9.\-]/g,"").slice(0,10);
+  sym.value=raw;
+  if(!raw||raw.length<1){out.innerHTML='<div class="state err">Enter a ticker symbol (e.g. NVDA, AAPL, XOM).</div>';return;}
+  busy=true;go.disabled=true;
+  out.innerHTML='<div class="state result"><span class="spin"></span>Loading '+raw+' vs SPY, TLT, GLD, USO, UUP…</div>';
+
+  var want=[raw];
+  for(var p=0;p<PROX.length;p++)if(PROX[p].s!==raw)want.push(PROX[p].s);
+
+  pMap(want,loadSym,4).then(function(maps){
+    var dict={};for(var i=0;i<want.length;i++)dict[want[i]]=maps[i];
+    var tmap=dict[raw];
+    if(!tmap||Object.keys(tmap).length<40){
+      out.innerHTML='<div class="state err">Couldn’t load enough price history for <b>'+raw+'</b>. Check the symbol, or the free data feed may be at its daily limit - try again shortly.</div>';
+      done();return;
+    }
+    var rows=[],missing=[],latest="",maxN=0;
+    for(var k in tmap)if(k>latest)latest=k;
+    for(var j=0;j<PROX.length;j++){
+      var P=PROX[j];
+      if(P.s===raw)continue;                       // don't correlate an asset with itself
+      var pmap=dict[P.s];
+      if(!pmap){missing.push(P.s);continue;}
+      var cd=[];for(var d in tmap)if(pmap[d]!=null)cd.push(d);
+      cd.sort();
+      if(cd.length<40){missing.push(P.s);continue;}
+      var tp=[],pp=[],c;
+      for(c=0;c<cd.length;c++){tp.push(tmap[cd[c]]);pp.push(pmap[cd[c]]);}
+      var trA=retsOf(tp),prA=retsOf(pp);
+      var tr=trA.slice(Math.max(0,trA.length-WIN)),pr=prA.slice(Math.max(0,prA.length-WIN));
+      var corr=pearson(tr,pr);
+      if(isNaN(corr)){missing.push(P.s);continue;}
+      if(tr.length>maxN)maxN=tr.length;
+      rows.push({s:P.s,desc:P.desc,word:P.word,corr:corr,n:tr.length});
+    }
+    if(rows.length<2){
+      out.innerHTML='<div class="state err">Not enough overlapping history to compute correlations for <b>'+raw+'</b>'+(missing.length?" (unavailable: "+missing.join(", ")+")":"")+'. Try a major, liquid ticker.</div>';
+      done();return;
+    }
+    rows.sort(function(a,b){return Math.abs(b.corr)-Math.abs(a.corr);});
+
+    var html='<div class="result">';
+    var terp=interpret(rows);
+    if(terp)html+='<div class="terp">'+terp+'</div>';
+    html+=chart(rows);
+    html+='<div class="legend"><span><i class="sw" style="background:#1663d6"></i>Positive - moves together</span><span><i class="sw" style="background:#c0392b"></i>Negative - moves opposite</span></div>';
+    var noteMiss=missing.length?" Proxies without enough overlapping data are omitted: "+missing.join(", ")+".":"";
+    html+='<div class="cap">Based on '+maxN+' overlapping daily returns through '+latest+', capped near '+WIN+' trailing sessions. Correlations reflect the last ~1 year and shift over time.'+noteMiss+'</div>';
+    html+='</div>';
+    out.innerHTML=html;
+    done();
+  })["catch"](function(e){
+    out.innerHTML='<div class="state err">Something went wrong: '+String(e&&e.message||e)+'</div>';
+    done();
+  });
+}
+function done(){busy=false;go.disabled=false;}
+
+go.onclick=run;
+sym.addEventListener("keydown",function(e){if(e.key==="Enter")run();});
+
+/* ---- auto-run from ?symbol= ---- */
+(function(){
+  var m=/[?&]symbol=([^&]+)/i.exec(location.search);
+  if(m&&m[1]){
+    try{sym.value=decodeURIComponent(m[1]).toUpperCase();}catch(e){sym.value=m[1].toUpperCase();}
+    run();
+  }
+})();
+})();
+</script>
+</body></html>
