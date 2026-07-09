@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Position VaR / CVaR Calculator | Quantora</title>
+<meta name="description" content="Free single-position Value-at-Risk and CVaR calculator: enter a stock and dollar position size to see 1-day and 1-week VaR at 95% and 99% (parametric and historical) plus expected shortfall, from ~3 years of daily returns.">
+<link rel="canonical" href="https://www.usequantora.com/position-var.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 10px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 24px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  input{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none}
+  input:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  #sym{width:130px;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+  #pos{width:160px}
+  #go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px}
+  #go:hover{background:#2560ea}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:#4a4f58;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .card.load{color:#4a4f58;font-size:14px;display:flex;align-items:center}
+  .card.err{color:#c0392b;border-color:rgba(192,57,43,.28)}
+  .tnum{font-variant-numeric:tabular-nums}
+  .pos{color:#1663d6}
+  .neg{color:#c0392b}
+  .mut{color:#9aa1ad}
+  .head .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:#8a91ad}
+  .bighead{font-size:clamp(21px,3vw,30px);font-weight:700;letter-spacing:-.02em;margin:8px 0 8px;color:#14161c}
+  .sub{font-size:15px;color:#4a4f58;line-height:1.55}
+  .win{font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:14px 16px}
+  .stat .k{font-size:12px;color:#9aa1ad;font-weight:600;margin-bottom:7px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .stat.hi{border-color:rgba(192,57,43,.34);background:linear-gradient(180deg,#ffffff,#fff6f4)}
+  .stat.hi .k{color:#c0392b}
+  .stat.hi .v{color:#c0392b}
+  .cardttl{font-size:13px;font-weight:600;color:#4a4f58;margin-bottom:6px}
+  .tbl{width:100%;border-collapse:collapse;font-size:14px}
+  .tbl th,.tbl td{padding:12px 12px;text-align:right;border-bottom:1px solid rgba(17,24,39,.08);vertical-align:top}
+  .tbl th:first-child,.tbl td:first-child{text-align:left}
+  .tbl thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#8a91ad;font-weight:600;border-bottom:1px solid rgba(17,24,39,.16)}
+  .tbl tbody tr:last-child td{border-bottom:0}
+  .tbl .rowh{font-weight:600;color:#14161c;white-space:nowrap}
+  .tbl .cmain{font-weight:700;font-size:15px;color:#c0392b;font-variant-numeric:tabular-nums}
+  .tbl .csub{font-size:11px;color:#9aa1ad;margin-top:3px;font-variant-numeric:tabular-nums}
+  .tbl td.na{color:#c9ccd6;font-weight:600}
+  .tbl tbody tr.hl td{background:#fff6f4}
+  .expl{font-size:14.5px;color:#14161c;line-height:1.6;margin:0}
+  .expl+.expl{margin-top:12px}
+  .expl b.term{color:#c0392b}
+  .cap{font-size:12px;color:#9aa1ad;line-height:1.55;margin-top:10px}
+  .foot{color:#9aa1ad;font-size:12px;line-height:1.6;margin-top:8px;max-width:78ch}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:sp .7s linear infinite;margin-right:9px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; POSITION VAR</div>
+  <h1>Position VaR / CVaR Calculator</h1>
+  <p class="lead">Enter a stock and a dollar position size to see how much you could lose on a single bad day. This tool measures <b>Value-at-Risk (VaR)</b> and <b>Conditional VaR / Expected Shortfall (CVaR)</b> from roughly three years of daily returns &mdash; both the textbook normal-distribution estimate and the historical, actual-returns estimate &mdash; so you can size risk before it sizes you.</p>
+  <div class="controls">
+    <div class="field"><label for="sym">Ticker</label><input id="sym" type="text" placeholder="NVDA" autocomplete="off" spellcheck="false" maxlength="12"></div>
+    <div class="field"><label for="pos">Position size ($)</label><input id="pos" type="number" value="10000" min="0" step="500"></div>
+    <button id="go">Analyze</button>
+  </div>
+  <div class="chips">
+    <span class="chip" data-sym="NVDA">NVDA</span>
+    <span class="chip" data-sym="AAPL">AAPL</span>
+    <span class="chip" data-sym="SPY">SPY</span>
+    <span class="chip" data-sym="TLT">TLT</span>
+  </div>
+  <div id="status"></div>
+  <div id="out"></div>
+  <p class="foot">Method: VaR and CVaR are estimated from up to ~756 trailing daily returns (~3 years). Parametric VaR = position &times; z &times; daily &sigma;, with z = 1.645 (95%) and z = 2.326 (99%), assuming a zero mean daily return (a conservative, standard short-horizon simplification); the 1-week figure scales the 1-day VaR by &radic;5 under the square-root-of-time rule, which assumes independent daily returns. Historical VaR reads the 5th / 1st percentile worst daily return directly from the sample; CVaR (expected shortfall) averages every daily return beyond that threshold. All figures are modeled estimates from a limited history and will understate rare crashes. Educational only - not investment advice.</p>
+</div>
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  // ---- data parsing --------------------------------------------------------
+  function parseRows(j){
+    var arr = Array.isArray(j) ? j : ((j && (j.data || j.historical)) || []);
+    var out = [];
+    for(var i=0;i<arr.length;i++){
+      var row = arr[i]; if(!row) continue;
+      var d = (row.date!=null) ? row.date : row.datetime;
+      var p = (row.price!=null) ? row.price : ((row.close!=null) ? row.close : row.adjClose);
+      if(d==null || p==null) continue;
+      p = +p; if(!isFinite(p) || p<=0) continue;
+      out.push({date:String(d).slice(0,10), price:p});
+    }
+    // API is newest-first; build a strictly date-ASCENDING series for return math
+    out.sort(function(a,b){ return a.date<b.date ? -1 : (a.date>b.date ? 1 : 0); });
+    return out;
+  }
+
+  // hardened fetch with ONE retry on empty/failure
+  function fetchPrices(sym){
+    return new Promise(function(resolve, reject){
+      function attempt(triesLeft){
+        fetch('/api/fmp?type=prices&symbol=' + encodeURIComponent(sym))
+          .then(function(r){ return r.json(); })
+          .then(function(j){
+            var rows = parseRows(j);
+            if(!rows.length){
+              if(triesLeft>0){ setTimeout(function(){ attempt(triesLeft-1); }, 500); return; }
+              reject(new Error('No price data returned for ' + sym + '.')); return;
+            }
+            resolve(rows);
+          })
+          .catch(function(){
+            if(triesLeft>0){ setTimeout(function(){ attempt(triesLeft-1); }, 500); return; }
+            reject(new Error('Network error while loading ' + sym + '.'));
+          });
+      }
+      attempt(1);
+    });
+  }
+
+  // ---- math ----------------------------------------------------------------
+  function retsOf(p){ var r=[]; for(var i=1;i<p.length;i++){ r.push(p[i].price/p[i-1].price-1); } return r; }
+  function mean(a){ var s=0; for(var i=0;i<a.length;i++){ s+=a[i]; } return a.length ? s/a.length : 0; }
+  function std(a){ var m=mean(a),s=0,i; for(i=0;i<a.length;i++){ var d=a[i]-m; s+=d*d; } return Math.sqrt(a.length>1 ? s/(a.length-1) : 0); }
+  // linear-interpolation quantile on an ASCENDING-sorted array, p in [0,1]
+  function quantile(sortedAsc, p){
+    var n=sortedAsc.length; if(!n) return 0; if(n===1) return sortedAsc[0];
+    var idx=p*(n-1), lo=Math.floor(idx), hi=Math.ceil(idx);
+    if(lo===hi) return sortedAsc[lo];
+    var w=idx-lo; return sortedAsc[lo]*(1-w) + sortedAsc[hi]*w;
+  }
+  // mean of all values worse than or equal to a (negative) threshold, on ascending array
+  function tailMean(sortedAsc, thresh){
+    var s=0,c=0;
+    for(var i=0;i<sortedAsc.length;i++){
+      if(sortedAsc[i] <= thresh){ s+=sortedAsc[i]; c++; } else break;
+    }
+    return c ? s/c : thresh;
+  }
+
+  var SQ252 = Math.sqrt(252);
+  var Z95 = 1.645, Z99 = 2.326;
+
+  // ---- formatting ----------------------------------------------------------
+  function money(x){ var neg=x<0; var v=Math.round(Math.abs(x)); var s='$'+v.toLocaleString('en-US'); return neg?'-'+s:s; }
+  function pct(x){ return (x*100).toFixed(1)+'%'; }
+  function pct2(x){ return (x*100).toFixed(2)+'%'; }
+
+  // ---- return-distribution histogram (inline SVG) --------------------------
+  function histSVG(rets, q05, q01){
+    var n=rets.length, i, b;
+    var lo=rets[0], hi=rets[0];
+    for(i=1;i<n;i++){ if(rets[i]<lo)lo=rets[i]; if(rets[i]>hi)hi=rets[i]; }
+    var span=(hi-lo)||1, bins=33;
+    var counts=[]; for(i=0;i<bins;i++){ counts.push(0); }
+    for(i=0;i<n;i++){ b=Math.floor((rets[i]-lo)/span*bins); if(b<0)b=0; if(b>=bins)b=bins-1; counts[b]++; }
+    var maxC=0; for(i=0;i<bins;i++){ if(counts[i]>maxC)maxC=counts[i]; }
+    var W=680,H=280,padL=20,padR=18,padT=22,padB=46;
+    var plotW=W-padL-padR, plotH=H-padT-padB, baseY=padT+plotH, bw=plotW/bins;
+    function xv(v){ return padL + (v-lo)/span*plotW; }
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Distribution of daily returns with 95% and 99% VaR thresholds" style="display:block;margin:4px auto 0;max-width:700px">';
+    s+='<line x1="'+padL+'" y1="'+baseY+'" x2="'+(W-padR)+'" y2="'+baseY+'" stroke="rgba(17,24,39,.18)"/>';
+    for(b=0;b<bins;b++){
+      var mid=lo + (b+0.5)/bins*span;
+      var h=maxC? counts[b]/maxC*plotH : 0;
+      var x=padL + b*bw, y=baseY-h;
+      var col = mid<=q01 ? '#8f2015' : (mid<=q05 ? '#c0392b' : '#b9c4da');
+      var op = mid>q05 ? ' opacity="0.85"' : '';
+      s+='<rect x="'+(x+0.6).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-1.2).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="1.5" fill="'+col+'"'+op+'/>';
+    }
+    if(0>=lo && 0<=hi){ var xz=xv(0); s+='<line x1="'+xz.toFixed(1)+'" y1="'+padT+'" x2="'+xz.toFixed(1)+'" y2="'+baseY+'" stroke="rgba(17,24,39,.16)" stroke-dasharray="2 4"/>'; }
+    var x95=xv(q05), x99=xv(q01);
+    s+='<line x1="'+x99.toFixed(1)+'" y1="'+(padT+14)+'" x2="'+x99.toFixed(1)+'" y2="'+baseY+'" stroke="#8f2015" stroke-width="1.2" stroke-dasharray="2 3"/>';
+    s+='<text x="'+x99.toFixed(1)+'" y="'+(padT+9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#8f2015">99%</text>';
+    s+='<line x1="'+x95.toFixed(1)+'" y1="'+padT+'" x2="'+x95.toFixed(1)+'" y2="'+baseY+'" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4 3"/>';
+    s+='<text x="'+x95.toFixed(1)+'" y="'+(padT-6)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#c0392b">95% VaR</text>';
+    s+='<text x="'+padL+'" y="'+(baseY+16)+'" text-anchor="start" font-size="10" fill="#9aa1ad">'+(lo*100).toFixed(1)+'%</text>';
+    s+='<text x="'+x95.toFixed(1)+'" y="'+(baseY+30)+'" text-anchor="middle" font-size="10" fill="#c0392b">'+(q05*100).toFixed(1)+'%</text>';
+    s+='<text x="'+(W-padR)+'" y="'+(baseY+16)+'" text-anchor="end" font-size="10" fill="#9aa1ad">+'+(hi*100).toFixed(1)+'%</text>';
+    s+='</svg>';
+    return s;
+  }
+
+  // ---- ui states -----------------------------------------------------------
+  function setLoading(sym){ $('out').innerHTML=''; $('status').innerHTML='<div class="card load"><span class="spin"></span>Loading '+esc(sym)+' price history&hellip;</div>'; }
+  function showError(msg){ $('status').innerHTML=''; $('out').innerHTML='<div class="card err">'+msg+'</div>'; }
+  function stat(k,v,cls){ return '<div class="stat'+(cls?(' '+cls):'')+'"><div class="k">'+k+'</div><div class="v tnum">'+v+'</div></div>'; }
+  function cell(dollar, ofpos){ return '<td><div class="cmain">'+money(dollar)+'</div><div class="csub">'+pct(ofpos)+' of position</div></td>'; }
+
+  // ---- main ----------------------------------------------------------------
+  function analyze(){
+    var sym = (($('sym').value)||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    $('sym').value = sym;
+    var pos = parseFloat($('pos').value);
+    if(!sym){ showError('Please enter a ticker symbol.'); return; }
+    if(!isFinite(pos) || pos<=0){ pos = 10000; $('pos').value = 10000; }
+    setLoading(sym);
+    fetchPrices(sym).then(function(rows){
+      try{ render(sym, pos, rows); }
+      catch(err){ showError('Could not compute VaR: ' + (err&&err.message?err.message:'unknown error') + '.'); }
+    }).catch(function(e){
+      showError(e&&e.message ? e.message : 'Could not load market data. Please try again.');
+    });
+  }
+
+  function render(sym, pos, rows){
+    var allRets = retsOf(rows);
+    var N = Math.min(756, allRets.length);          // ~3 years of trading days
+    var rets = allRets.slice(allRets.length - N);
+    if(rets.length < 60){ showError('Not enough return history for ' + esc(sym) + ' to estimate VaR (need at least ~60 daily returns).'); return; }
+    N = rets.length;
+
+    var sigma = std(rets);
+    if(!(sigma>0)){ showError('Daily volatility is zero over this window; cannot compute VaR for ' + esc(sym) + '.'); return; }
+    var annVol = sigma*SQ252;
+
+    // parametric (normal, zero-mean) VaR
+    var p95_1d = pos*Z95*sigma, p95_1d_r = Z95*sigma;
+    var p99_1d = pos*Z99*sigma, p99_1d_r = Z99*sigma;
+    var rootWk  = Math.sqrt(5);
+    var p95_1w = p95_1d*rootWk, p95_1w_r = p95_1d_r*rootWk;
+
+    // historical VaR + CVaR (expected shortfall)
+    var sortedAsc = rets.slice().sort(function(a,b){ return a-b; });
+    var q05 = quantile(sortedAsc, 0.05), q01 = quantile(sortedAsc, 0.01);
+    var h95_r = Math.abs(q05),  h99_r = Math.abs(q01);
+    var h95 = pos*h95_r,        h99 = pos*h99_r;
+    var cv95_r = Math.abs(tailMean(sortedAsc, q05)), cv99_r = Math.abs(tailMean(sortedAsc, q01));
+    var cv95 = pos*cv95_r,      cv99 = pos*cv99_r;
+
+    var worst = sortedAsc[0], best = sortedAsc[sortedAsc.length-1];
+    var lastDate = rows[rows.length-1].date;
+
+    var html='';
+
+    // headline card
+    html+='<div class="card head">';
+    html+='<div class="kicker">Value-at-Risk &middot; 95% &middot; 1 day</div>';
+    html+='<div class="bighead tnum">95% 1-day VaR: '+money(p95_1d)+'</div>';
+    html+='<div class="sub">&mdash; on a typical bad day (1 in 20) you could lose about this much or more on your <b>'+money(pos)+'</b> position in <b>'+esc(sym)+'</b>.</div>';
+    html+='<div class="sub" style="margin-top:8px">Historical VaR reads <b class="neg tnum">'+money(h95)+'</b> from the actual return sample, and expected shortfall &mdash; the average loss on the worst 5% of days (CVaR) &mdash; is <b class="neg tnum">'+money(cv95)+'</b>.</div>';
+    html+='<div class="mut win">Based on '+N+' daily returns through '+esc(lastDate)+'.</div>';
+    html+='</div>';
+
+    // stats grid
+    html+='<div class="grid">';
+    html+=stat('Daily volatility (&sigma;)', pct2(sigma), '');
+    html+=stat('Annualized volatility', pct(annVol), '');
+    html+=stat('Worst 1-day (sample)', '<span class="neg">'+pct(worst)+'</span>', '');
+    html+=stat('Best 1-day (sample)', '<span class="pos">+'+pct(best)+'</span>', '');
+    html+=stat('95% 1-day CVaR', money(cv95), 'hi');
+    html+=stat('Daily returns used', String(N), '');
+    html+='</div>';
+
+    // VaR / CVaR matrix
+    html+='<div class="card">';
+    html+='<div class="cardttl">Estimated loss on '+money(pos)+' in '+esc(sym)+' &mdash; VaR &amp; CVaR</div>';
+    html+='<table class="tbl"><thead><tr>';
+    html+='<th>Horizon &amp; confidence</th><th>Parametric VaR</th><th>Historical VaR</th><th>CVaR (expected shortfall)</th>';
+    html+='</tr></thead><tbody>';
+    html+='<tr class="hl"><td class="rowh">1-day &middot; 95%</td>'+cell(p95_1d,p95_1d_r)+cell(h95,h95_r)+cell(cv95,cv95_r)+'</tr>';
+    html+='<tr><td class="rowh">1-day &middot; 99%</td>'+cell(p99_1d,p99_1d_r)+cell(h99,h99_r)+cell(cv99,cv99_r)+'</tr>';
+    html+='<tr><td class="rowh">1-week &middot; 95%</td>'+cell(p95_1w,p95_1w_r)+'<td class="na">&mdash;</td><td class="na">&mdash;</td></tr>';
+    html+='</tbody></table>';
+    html+='<div class="cap">Each cell shows the dollar loss and, below it, that loss as a percentage of your '+money(pos)+' position. The 1-week row scales the parametric 1-day VaR by &radic;5; historical VaR and CVaR are computed for the 1-day horizon only (marked &mdash;), since they read directly from single-day returns.</div>';
+    html+='</div>';
+
+    // distribution card
+    html+='<div class="card">';
+    html+='<div class="cardttl">Daily return distribution &mdash; where the VaR thresholds fall</div>';
+    html+=histSVG(rets, q05, q01);
+    html+='<div class="cap">Histogram of '+N+' daily returns for '+esc(sym)+'. The dashed line marks the 95% 1-day VaR threshold ('+pct(q05)+'); <b class="neg">red bars</b> are the worst ~5% of days that sit beyond it. <b>VaR</b> is the edge of that tail; <b>CVaR</b> is the average of everything inside it &mdash; here about '+pct(cv95_r)+' per day, or '+money(cv95)+' on your position.</div>';
+    html+='</div>';
+
+    // explainer card
+    html+='<div class="card">';
+    html+='<div class="cardttl">VaR vs. CVaR &mdash; what these numbers mean</div>';
+    html+='<p class="expl"><b class="term">VaR is a threshold.</b> A 95% 1-day VaR of '+money(p95_1d)+' means that on about 19 of every 20 days your loss should stay under that amount, and on the 1 bad day in 20 it will be at least that much. Crucially, VaR tells you where the tail begins &mdash; not how deep it goes.</p>';
+    html+='<p class="expl"><b class="term">CVaR (expected shortfall) measures the tail itself.</b> It is the average loss on the days you do breach VaR &mdash; here '+money(cv95)+' at 95% versus the '+money(p95_1d)+' threshold. CVaR is always at least as large as VaR, and the gap between them tells you how severe a bad day tends to get once things go wrong.</p>';
+    html+='<p class="expl"><b class="term">Both estimates understate rare crashes.</b> Parametric VaR assumes returns follow a neat bell curve, but real markets have fat tails, so the normal figure tends to be too optimistic in a crisis. Historical VaR and CVaR use the actual returns instead &mdash; but they can only reflect the shocks that happened to occur in the last ~3 years. If the worst is still ahead, both numbers are a floor on risk, not a ceiling.</p>';
+    html+='</div>';
+
+    $('status').innerHTML='';
+    $('out').innerHTML=html;
+  }
+
+  // ---- init + auto-run from URL -------------------------------------------
+  function init(){
+    var qs = location.search || '';
+    var mS = qs.match(/[?&]symbol=([^&]+)/i);
+    var mP = qs.match(/[?&]pos=([^&]+)/i);
+    if(mS){ try{ $('sym').value = decodeURIComponent(mS[1]).toUpperCase().replace(/[^A-Z0-9.\-]/g,''); }catch(e){} }
+    if(mP){ try{ var pv = parseFloat(decodeURIComponent(mP[1]).replace(/[^0-9.]/g,'')); if(isFinite(pv)&&pv>0){ $('pos').value = pv; } }catch(e2){} }
+
+    $('go').addEventListener('click', analyze);
+    $('sym').addEventListener('input', function(){ this.value = this.value.toUpperCase(); });
+    $('sym').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+    $('pos').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+    var chips = document.querySelectorAll('.chip');
+    for(var i=0;i<chips.length;i++){
+      chips[i].addEventListener('click', function(){ $('sym').value = this.getAttribute('data-sym'); analyze(); });
+    }
+    if(mS && $('sym').value){ analyze(); }
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body>
+</html>

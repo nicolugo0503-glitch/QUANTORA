@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Single-Stock Monte Carlo Simulator | Quantora</title>
+<meta name="description" content="Free single-stock Monte Carlo simulator: estimate daily drift and volatility from ~3 years of returns, run 500 Geometric Brownian Motion paths, and see the median projection, a 5th-95th percentile fan chart, and the probability of finishing above today's price or your target.">
+<link rel="canonical" href="https://www.usequantora.com/stock-montecarlo.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 10px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 24px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  input{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none}
+  input:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  #sym{width:130px;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+  #days{width:150px}
+  #target{width:160px}
+  #go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px}
+  #go:hover{background:#2560ea}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:#4a4f58;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .card.load{color:#4a4f58;font-size:14px;display:flex;align-items:center}
+  .card.err{color:#c0392b;border-color:rgba(192,57,43,.28)}
+  .tnum{font-variant-numeric:tabular-nums}
+  .pos{color:#1663d6}
+  .neg{color:#c0392b}
+  .mut{color:#9aa1ad}
+  .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:#8a91ad}
+  .bighead{font-size:clamp(21px,3vw,30px);font-weight:700;letter-spacing:-.02em;margin:8px 0 8px;color:#14161c}
+  .sub{font-size:15px;color:#4a4f58;line-height:1.55}
+  .win{font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:14px 16px}
+  .stat .k{font-size:12px;color:#9aa1ad;font-weight:600;margin-bottom:7px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .stat .s{font-size:11.5px;margin-top:5px;color:#9aa1ad}
+  .stat.hi{border-color:rgba(47,107,255,.4);background:linear-gradient(180deg,#ffffff,#f4f8ff)}
+  .stat.hi .k{color:#2f6bff}
+  .stat.hi .v{color:#2f6bff}
+  .cardttl{font-size:13px;font-weight:600;color:#4a4f58;margin-bottom:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12px;color:#4a4f58}
+  .legend i{display:inline-block;width:22px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .ptable{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin-top:2px}
+  .ptable th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600;padding:8px 6px;border-bottom:1px solid rgba(17,24,39,.1)}
+  .ptable th.r,.ptable td.r{text-align:right}
+  .ptable td{padding:10px 6px;font-size:14px;border-bottom:1px solid rgba(17,24,39,.06)}
+  .ptable tr:last-child td{border-bottom:0}
+  .ptable td.lab{font-weight:600;color:#14161c}
+  .ln{width:100%;height:auto;display:block}
+  .foot{color:#9aa1ad;font-size:12px;line-height:1.6;margin-top:8px;max-width:80ch}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:sp .7s linear infinite;margin-right:9px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; MONTE CARLO</div>
+  <h1>Single-stock Monte Carlo</h1>
+  <p class="lead">Where could a stock trade a year from now? Quantora estimates daily drift and volatility from roughly three years of returns, then runs 500 Geometric Brownian Motion simulations forward from today's price to build a distribution of outcomes &mdash; a median path, a 90% cone, the ending percentiles, and the odds of finishing above where it trades now (or above a target you set). No login, free.</p>
+  <div class="controls">
+    <div class="field"><label for="sym">Ticker</label><input id="sym" type="text" placeholder="NVDA" autocomplete="off" spellcheck="false" maxlength="12"></div>
+    <div class="field"><label for="days">Horizon (trading days)</label><input id="days" type="number" value="252" min="1" max="1260" step="1"></div>
+    <div class="field"><label for="target">Target price (optional)</label><input id="target" type="number" min="0" step="0.01" placeholder="&mdash;"></div>
+    <button id="go">Simulate</button>
+  </div>
+  <div class="chips">
+    <span class="chip" data-sym="NVDA">NVDA</span>
+    <span class="chip" data-sym="AAPL">AAPL</span>
+    <span class="chip" data-sym="SPY">SPY</span>
+    <span class="chip" data-sym="TSLA">TSLA</span>
+  </div>
+  <div id="status"></div>
+  <div id="out"></div>
+  <p class="foot">Method: we take daily log returns over roughly the last three years, then use their mean as the daily drift (mu) and their standard deviation as the daily volatility (sigma). From today's price S0, 500 Geometric Brownian Motion paths each step forward as S_t = S_(t&minus;1) &times; exp((mu &minus; &frac12;sigma&sup2;) + sigma &times; Z), with Z a standard-normal draw (Box&ndash;Muller) and a fixed random seed so the results are reproducible. Percentiles and probabilities are read off the 500 simulated ending prices. GBM assumes constant drift and volatility and lognormal returns &mdash; real markets have fat tails, regime shifts, and drift is very hard to estimate, so treat this as a rough distribution of possibilities, NOT a forecast. Annualized figures scale drift by 252 and volatility by &radic;252. Educational only - not investment advice.</p>
+</div>
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  var NPATHS  = 500;
+  var SEED    = 0x9E3779B9;   // fixed seed -> reproducible
+  var LOOKBACK= 756;          // ~3 years of trading days
+  var SQ252   = Math.sqrt(252);
+  var DAYS_MIN= 1, DAYS_MAX = 1260;
+
+  // ---- data parsing --------------------------------------------------------
+  function parseRows(j){
+    var arr = Array.isArray(j) ? j : ((j && (j.data || j.historical)) || []);
+    var out = [];
+    for(var i=0;i<arr.length;i++){
+      var row = arr[i]; if(!row) continue;
+      var d = (row.date!=null) ? row.date : row.datetime;
+      var p = (row.price!=null) ? row.price : ((row.close!=null) ? row.close : row.adjClose);
+      if(d==null || p==null) continue;
+      p = +p; if(!isFinite(p) || p<=0) continue;
+      out.push({date:String(d).slice(0,10), price:p});
+    }
+    // API is newest-first; build a strictly date-ASCENDING series
+    out.sort(function(a,b){ return a.date<b.date ? -1 : (a.date>b.date ? 1 : 0); });
+    return out;
+  }
+
+  // hardened fetch with ONE retry on empty/failure
+  function fetchPrices(sym){
+    return new Promise(function(resolve, reject){
+      function attempt(triesLeft){
+        fetch('/api/fmp?type=prices&symbol=' + encodeURIComponent(sym))
+          .then(function(r){ return r.json(); })
+          .then(function(j){
+            var rows = parseRows(j);
+            if(!rows.length){
+              if(triesLeft>0){ setTimeout(function(){ attempt(triesLeft-1); }, 500); return; }
+              reject(new Error('No price data returned for ' + sym + '.')); return;
+            }
+            resolve(rows);
+          })
+          .catch(function(){
+            if(triesLeft>0){ setTimeout(function(){ attempt(triesLeft-1); }, 500); return; }
+            reject(new Error('Network error while loading ' + sym + '.'));
+          });
+      }
+      attempt(1);
+    });
+  }
+
+  // ---- deterministic prng + normal sampler --------------------------------
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeNormal(rng){
+    // Box-Muller, drawing uniforms from the seeded prng
+    return function(){
+      var u=0, v=0;
+      while(u===0){ u=rng(); }
+      while(v===0){ v=rng(); }
+      return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+    };
+  }
+
+  // ---- math helpers --------------------------------------------------------
+  function mean(a){ var s=0,i; for(i=0;i<a.length;i++){ s+=a[i]; } return a.length ? s/a.length : 0; }
+  function stdev(a,m){ var s=0,i,n=a.length; if(n<2) return 0; for(i=0;i<n;i++){ var d=a[i]-m; s+=d*d; } return Math.sqrt(s/(n-1)); }
+  function pctile(sorted,q){
+    var n=sorted.length; if(n===0) return NaN; if(n===1) return sorted[0];
+    var idx=q*(n-1), lo=Math.floor(idx), hi=Math.ceil(idx), f=idx-lo;
+    return sorted[lo] + (sorted[hi]-sorted[lo])*f;
+  }
+  function numAsc(a,b){ return a-b; }
+
+  // ---- formatting ----------------------------------------------------------
+  function px(x){ return '$'+Number(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function axPx(x){
+    var a=Math.abs(x);
+    if(a>=1000) return '$'+Math.round(x).toLocaleString('en-US');
+    if(a>=100)  return '$'+x.toFixed(0);
+    return '$'+x.toFixed(2);
+  }
+  function signPct(x){ return (x>=0?'+':'')+(x*100).toFixed(1)+'%'; }
+  function pct1(x){ return (x*100).toFixed(1)+'%'; }
+
+  // ---- nice y-axis ticks ---------------------------------------------------
+  function niceTicks(min,max,count){
+    var span=max-min; if(span<=0){ span=Math.abs(max)||1; }
+    var step0=span/Math.max(1,count);
+    var mag=Math.pow(10,Math.floor(Math.log(step0)/Math.LN10));
+    var norm=step0/mag;
+    var step=(norm<1.5?1:norm<3?2:norm<7?5:10)*mag;
+    var start=Math.ceil(min/step)*step, out=[], v;
+    for(v=start; v<=max+step*0.001; v+=step){ out.push(v); }
+    return out;
+  }
+
+  // ---- fan chart (inline svg) ---------------------------------------------
+  function fanChart(cols, days, b, S0){
+    var W=920,H=380,PADL=64,PADR=22,PADT=20,PADB=42;
+    var plotW=W-PADL-PADR, plotH=H-PADT-PADB, i;
+    var yMin=S0, yMax=S0;
+    for(i=0;i<cols.length;i++){ if(b.p5[i]<yMin)yMin=b.p5[i]; if(b.p95[i]>yMax)yMax=b.p95[i]; }
+    var padY=(yMax-yMin)*0.06 || (S0*0.02);
+    yMin-=padY; yMax+=padY; if(yMin<0)yMin=0;
+    function xAt(t){ return PADL + (days<=0?0:(t/days))*plotW; }
+    function yAt(p){ return PADT + (yMax<=yMin?0:(1-(p-yMin)/(yMax-yMin)))*plotH; }
+
+    function bandPoly(up,lo,fill){
+      var pts='',k;
+      for(k=0;k<cols.length;k++){ pts+=xAt(cols[k]).toFixed(1)+','+yAt(up[k]).toFixed(1)+' '; }
+      for(k=cols.length-1;k>=0;k--){ pts+=xAt(cols[k]).toFixed(1)+','+yAt(lo[k]).toFixed(1)+' '; }
+      return '<polygon points="'+pts+'" fill="'+fill+'" stroke="none"/>';
+    }
+    function polyline(vals,stroke,wid){
+      var pts='',k;
+      for(k=0;k<cols.length;k++){ pts+=xAt(cols[k]).toFixed(1)+','+yAt(vals[k]).toFixed(1)+' '; }
+      return '<polyline points="'+pts+'" fill="none" stroke="'+stroke+'" stroke-width="'+wid+'" stroke-linejoin="round"/>';
+    }
+
+    var s='<svg class="ln" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Monte Carlo fan chart of simulated prices for the chosen stock">';
+    // y gridlines + price labels
+    var ticks=niceTicks(yMin,yMax,5),tk,yy;
+    for(i=0;i<ticks.length;i++){ tk=ticks[i]; if(tk<yMin||tk>yMax) continue; yy=yAt(tk);
+      s+='<line x1="'+PADL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PADR)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(17,24,39,.07)"/>';
+      s+='<text x="'+(PADL-8)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="#9aa1ad">'+axPx(tk)+'</text>';
+    }
+    // percentile bands: 5-95 light, 25-75 darker
+    s+=bandPoly(b.p95,b.p5,'rgba(47,107,255,.12)');
+    s+=bandPoly(b.p75,b.p25,'rgba(47,107,255,.24)');
+    // S0 reference line
+    var y0=yAt(S0);
+    s+='<line x1="'+PADL+'" y1="'+y0.toFixed(1)+'" x2="'+(W-PADR)+'" y2="'+y0.toFixed(1)+'" stroke="#8a91ad" stroke-width="1" stroke-dasharray="5 4"/>';
+    s+='<text x="'+(W-PADR)+'" y="'+(y0-6).toFixed(1)+'" text-anchor="end" font-size="11" fill="#8a91ad">S0 '+axPx(S0)+'</text>';
+    // median path
+    s+=polyline(b.p50,'#2f6bff',2.4);
+    // start dot at S0
+    s+='<circle cx="'+xAt(0).toFixed(1)+'" cy="'+y0.toFixed(1)+'" r="3.5" fill="#2f6bff"/>';
+    // x-axis ticks (trading days)
+    var xf=[0,0.25,0.5,0.75,1],td,xx;
+    for(i=0;i<xf.length;i++){ td=Math.round(xf[i]*days); xx=xAt(td);
+      s+='<line x1="'+xx.toFixed(1)+'" y1="'+(H-PADB)+'" x2="'+xx.toFixed(1)+'" y2="'+(H-PADB+5)+'" stroke="rgba(17,24,39,.2)"/>';
+      s+='<text x="'+xx.toFixed(1)+'" y="'+(H-PADB+20)+'" text-anchor="middle" font-size="11" fill="#9aa1ad">'+td+'</text>';
+    }
+    s+='<text x="'+(PADL+plotW/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle" font-size="11" fill="#8a91ad">trading days from today</text>';
+    s+='</svg>';
+    return s;
+  }
+
+  // ---- ui states -----------------------------------------------------------
+  function setLoading(sym){ $('out').innerHTML=''; $('status').innerHTML='<div class="card load"><span class="spin"></span>Loading '+esc(sym)+' price history and running '+NPATHS+' simulations&hellip;</div>'; }
+  function showError(msg){ $('status').innerHTML=''; $('out').innerHTML='<div class="card err">'+msg+'</div>'; }
+  function stat(k,v,sub,hi){ return '<div class="stat'+(hi?' hi':'')+'"><div class="k">'+k+'</div><div class="v tnum">'+v+'</div>'+(sub?'<div class="s">'+sub+'</div>':'')+'</div>'; }
+
+  // ---- main ----------------------------------------------------------------
+  function simulate(){
+    var sym = (($('sym').value)||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    $('sym').value = sym;
+    var days = parseInt($('days').value,10);
+    if(!isFinite(days) || days<DAYS_MIN){ days=252; }
+    if(days>DAYS_MAX){ days=DAYS_MAX; }
+    $('days').value = days;
+    var tRaw = ($('target').value||'').replace(/[^0-9.]/g,'');
+    var target = (tRaw==='') ? null : parseFloat(tRaw);
+    if(target!=null && (!isFinite(target) || target<=0)){ target=null; }
+    if(!sym){ showError('Please enter a ticker symbol.'); return; }
+    setLoading(sym);
+    fetchPrices(sym).then(function(rows){
+      try{ render(sym, days, target, rows); }
+      catch(err){ showError('Could not run the simulation: ' + (err&&err.message?err.message:'unknown error') + '.'); }
+    }).catch(function(e){
+      showError(e&&e.message ? e.message : 'Could not load market data. Please try again.');
+    });
+  }
+
+  function render(sym, days, target, rows){
+    if(rows.length < 80){ showError('Not enough price history for ' + esc(sym) + ' to estimate drift and volatility.'); return; }
+    var i,t,j;
+
+    // daily log returns, keep the last ~3 years
+    var lr=[];
+    for(i=1;i<rows.length;i++){ var ratio=rows[i].price/rows[i-1].price; if(ratio>0){ lr.push(Math.log(ratio)); } }
+    if(lr.length < 60){ showError('Not enough return history for ' + esc(sym) + '.'); return; }
+    var use = lr.slice(Math.max(0, lr.length-LOOKBACK));
+    var mu = mean(use);
+    var sigma = stdev(use, mu);
+    if(!(sigma>0)){ showError('Volatility for ' + esc(sym) + ' is zero over this window; cannot simulate.'); return; }
+
+    var S0 = rows[rows.length-1].price;
+    var asof = rows[rows.length-1].date;
+    var usedYears = use.length/252;
+
+    // ---- monte carlo of GBM paths ----
+    var drift = mu - 0.5*sigma*sigma;
+    var rng = mulberry32(SEED);
+    var normal = makeNormal(rng);
+    var paths = new Array(NPATHS);
+    for(i=0;i<NPATHS;i++){
+      var arr = new Float64Array(days+1);
+      arr[0]=S0; var s=S0;
+      for(t=1;t<=days;t++){ s = s*Math.exp(drift + sigma*normal()); arr[t]=s; }
+      paths[i]=arr;
+    }
+
+    // ---- sampled columns for the fan (percentiles over time) ----
+    var NC = Math.min(days, 120);
+    var cols=[], seen={};
+    for(i=0;i<=NC;i++){ var ci=Math.round(i/NC*days); if(!seen[ci]){ seen[ci]=1; cols.push(ci); } }
+    if(cols[cols.length-1]!==days){ cols.push(days); }
+
+    var b={p5:[],p25:[],p50:[],p75:[],p95:[]};
+    for(i=0;i<cols.length;i++){
+      t=cols[i];
+      var col=new Float64Array(NPATHS);
+      for(j=0;j<NPATHS;j++){ col[j]=paths[j][t]; }
+      col.sort(numAsc);
+      b.p5.push(pctile(col,0.05)); b.p25.push(pctile(col,0.25)); b.p50.push(pctile(col,0.50));
+      b.p75.push(pctile(col,0.75)); b.p95.push(pctile(col,0.95));
+    }
+
+    // ---- ending-price distribution (last column == day `days`) ----
+    var endVals=new Float64Array(NPATHS);
+    for(i=0;i<NPATHS;i++){ endVals[i]=paths[i][days]; }
+    var endSorted=endVals.slice(); endSorted.sort(numAsc);
+    var e5=pctile(endSorted,0.05), e25=pctile(endSorted,0.25), e50=pctile(endSorted,0.50),
+        e75=pctile(endSorted,0.75), e95=pctile(endSorted,0.95);
+
+    var aboveS0=0, aboveTgt=0;
+    for(i=0;i<NPATHS;i++){ if(endVals[i]>S0){ aboveS0++; } if(target!=null && endVals[i]>target){ aboveTgt++; } }
+    var pS0=aboveS0/NPATHS, pTgt=(target!=null)?aboveTgt/NPATHS:null;
+
+    var medRet=e50/S0-1;
+    var muAnn=mu*252, sigAnn=sigma*SQ252;
+
+    // ---- build html ----
+    var html='';
+
+    // headline card
+    html+='<div class="card">';
+    html+='<div class="kicker">Median projection &middot; '+days+' trading days</div>';
+    html+='<div class="bighead tnum">'+px(e50)+' <span class="'+(medRet>=0?'pos':'neg')+'" style="font-size:16px;font-weight:700">'+signPct(medRet)+'</span></div>';
+    html+='<div class="sub">Across '+NPATHS+' simulated paths for <b>'+esc(sym)+'</b>, half of the outcomes land above <b>'+px(e50)+'</b> and half below, starting from <b>'+px(S0)+'</b> today. The ~90% cone runs '+px(e5)+' to '+px(e95)+'.</div>';
+    html+='<div class="mut win">Drift &amp; volatility estimated from '+use.length+' daily log returns (~'+usedYears.toFixed(1)+' yrs) through '+esc(asof)+'.</div>';
+    html+='</div>';
+
+    // fan chart card
+    html+='<div class="card">';
+    html+='<div class="cardttl">Simulated price fan &middot; '+esc(sym)+' over '+days+' trading days</div>';
+    html+=fanChart(cols, days, b, S0);
+    html+='<div class="legend">';
+    html+='<span><i style="background:rgba(47,107,255,.12)"></i>5th&ndash;95th percentile</span>';
+    html+='<span><i style="background:rgba(47,107,255,.24)"></i>25th&ndash;75th percentile</span>';
+    html+='<span><i style="background:#2f6bff"></i>Median path</span>';
+    html+='<span><i style="background:#8a91ad"></i>Today (S0)</span>';
+    html+='</div>';
+    html+='</div>';
+
+    // stat cards
+    html+='<div class="grid">';
+    html+=stat('Current price (S0)', px(S0), esc(sym)+' &middot; '+esc(asof), false);
+    html+=stat('Median projected', px(e50), signPct(medRet)+' vs S0', true);
+    html+=stat('5th percentile', px(e5), signPct(e5/S0-1)+' &middot; cone low', false);
+    html+=stat('95th percentile', px(e95), signPct(e95/S0-1)+' &middot; cone high', false);
+    html+=stat('Annualized drift', signPct(muAnn), 'mu &times; 252', false);
+    html+=stat('Annualized vol', pct1(sigAnn), 'sigma &times; &radic;252', false);
+    html+=stat('P(finish &gt; S0)', pct1(pS0), 'above '+px(S0), false);
+    if(pTgt!=null){ html+=stat('P(finish &gt; target)', pct1(pTgt), 'above '+px(target), true); }
+    html+='</div>';
+
+    // ending percentile table
+    html+='<div class="card">';
+    html+='<div class="cardttl">Projected ending-price distribution &middot; day '+days+'</div>';
+    html+='<table class="ptable"><thead><tr><th>Percentile</th><th class="r">Projected price</th><th class="r">Change vs S0</th></tr></thead><tbody>';
+    var pr=[['5th',e5],['25th',e25],['50th (median)',e50],['75th',e75],['95th',e95]];
+    for(i=0;i<pr.length;i++){ var pv=pr[i][1], ch=pv/S0-1;
+      html+='<tr><td class="lab">'+pr[i][0]+'</td><td class="r tnum">'+px(pv)+'</td><td class="r tnum '+(ch>=0?'pos':'neg')+'">'+signPct(ch)+'</td></tr>';
+    }
+    html+='</tbody></table>';
+    html+='<div class="mut" style="margin-top:10px">The model gives a <b>'+pct1(pS0)+'</b> chance '+esc(sym)+' finishes above its current '+px(S0)+' after '+days+' trading days'+(pTgt!=null?(', and a <b>'+pct1(pTgt)+'</b> chance it finishes above your '+px(target)+' target'):'')+'. These odds come entirely from the Geometric Brownian Motion model and its estimated drift, so they inherit all of its assumptions.</div>';
+    html+='</div>';
+
+    $('status').innerHTML='';
+    $('out').innerHTML=html;
+  }
+
+  // ---- init + auto-run from URL -------------------------------------------
+  function init(){
+    var qs = location.search || '';
+    var mS = qs.match(/[?&]symbol=([^&]+)/i);
+    var mD = qs.match(/[?&]days=([^&]+)/i);
+    var mT = qs.match(/[?&]target=([^&]+)/i);
+    if(mS){ try{ $('sym').value = decodeURIComponent(mS[1]).toUpperCase().replace(/[^A-Z0-9.\-]/g,''); }catch(e){} }
+    if(mD){ try{ var dv=parseInt(decodeURIComponent(mD[1]).replace(/[^0-9]/g,''),10); if(isFinite(dv)&&dv>0){ $('days').value=dv; } }catch(e2){} }
+    if(mT){ try{ var tv=parseFloat(decodeURIComponent(mT[1]).replace(/[^0-9.]/g,'')); if(isFinite(tv)&&tv>0){ $('target').value=tv; } }catch(e3){} }
+
+    $('go').addEventListener('click', simulate);
+    $('sym').addEventListener('input', function(){ this.value = this.value.toUpperCase(); });
+    $('sym').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); simulate(); } });
+    $('days').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); simulate(); } });
+    $('target').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); simulate(); } });
+    var chips=document.querySelectorAll('.chip');
+    for(var i=0;i<chips.length;i++){
+      chips[i].addEventListener('click', function(){ $('sym').value = this.getAttribute('data-sym'); simulate(); });
+    }
+    if(mS && $('sym').value){ simulate(); }
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body>
+</html>

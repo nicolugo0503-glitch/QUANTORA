@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Position Size &amp; R-Multiple Calculator | Quantora</title>
+<meta name="description" content="Free position size and R-multiple calculator: enter account size, risk per trade, entry and stop to get an exact share count, dollar risk, position size and percent of account, plus 1R/2R/3R price targets for any long or short trade.">
+<link rel="canonical" href="https://www.usequantora.com/stop-loss.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 10px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 24px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  .field label .opt{font-weight:400;text-transform:none;letter-spacing:0;color:#b3b8c6}
+  input{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none}
+  input:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  #sym{width:118px;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+  #acct{width:124px}
+  #risk{width:96px}
+  #entry,#stop,#target{width:108px}
+  #go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px}
+  #go:hover{background:#2560ea}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;align-items:center}
+  .chips .lbl{font-size:12px;color:#9aa1ad;font-weight:600;margin-right:2px}
+  .chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:#4a4f58;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .card.load{color:#4a4f58;font-size:14px;display:flex;align-items:center}
+  .card.err{color:#c0392b;border-color:rgba(192,57,43,.28)}
+  .tnum{font-variant-numeric:tabular-nums}
+  .pos{color:#1663d6}
+  .neg{color:#c0392b}
+  .mut{color:#9aa1ad}
+  .head .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:#8a91ad}
+  .bighead{font-size:clamp(21px,3vw,30px);font-weight:700;letter-spacing:-.02em;margin:8px 0 8px;color:#14161c}
+  .sub{font-size:15px;color:#4a4f58;line-height:1.55}
+  .win{font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:14px 16px}
+  .stat .k{font-size:12px;color:#9aa1ad;font-weight:600;margin-bottom:7px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .stat.hi{border-color:rgba(47,107,255,.4);background:linear-gradient(180deg,#ffffff,#f4f8ff)}
+  .stat.hi .k{color:#2f6bff}
+  .stat.hi .v{color:#2f6bff}
+  .cardttl{font-size:13px;font-weight:600;color:#4a4f58;margin-bottom:10px}
+  table.lvl{width:100%;border-collapse:collapse;font-size:14px}
+  table.lvl th{text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8a91ad;font-weight:600;padding:6px 10px;border-bottom:1px solid rgba(17,24,39,.12)}
+  table.lvl th:first-child{text-align:left}
+  table.lvl td{text-align:right;padding:9px 10px;border-bottom:1px solid rgba(17,24,39,.06);font-variant-numeric:tabular-nums}
+  table.lvl td:first-child{text-align:left;font-weight:600}
+  table.lvl tr:last-child td{border-bottom:0}
+  table.lvl tr.hl td{background:#f4f8ff}
+  .note{font-size:12.5px;color:#9aa1ad;line-height:1.55;margin-top:14px;border-top:1px solid rgba(17,24,39,.08);padding-top:12px}
+  .note b{color:#4a4f58;font-weight:600}
+  .foot{color:#9aa1ad;font-size:12px;line-height:1.6;margin-top:8px;max-width:78ch}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:sp .7s linear infinite;margin-right:9px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; POSITION SIZER</div>
+  <h1>Position Size &amp; R-Multiple Calculator</h1>
+  <p class="lead">Enter your account size, the percent you're willing to risk on this trade, and your entry and stop prices. This tool turns a fixed-fraction risk budget into an exact share count, then maps out where price sits at 1R, 2R and 3R &mdash; so every trade risks the same slice of your account, whatever the share price or however wide the stop.</p>
+  <div class="controls">
+    <div class="field"><label for="acct">Account size ($)</label><input id="acct" type="number" value="25000" min="0" step="500"></div>
+    <div class="field"><label for="risk">Risk / trade (%)</label><input id="risk" type="number" value="1.0" min="0" step="0.1"></div>
+    <div class="field"><label for="sym">Ticker <span class="opt">opt</span></label><input id="sym" type="text" placeholder="AAPL" autocomplete="off" spellcheck="false" maxlength="12"></div>
+    <div class="field"><label for="entry">Entry price</label><input id="entry" type="number" placeholder="190" min="0" step="0.01"></div>
+    <div class="field"><label for="stop">Stop price</label><input id="stop" type="number" placeholder="182" min="0" step="0.01"></div>
+    <div class="field"><label for="target">Target <span class="opt">opt</span></label><input id="target" type="number" placeholder="214" min="0" step="0.01"></div>
+    <button id="go">Calculate</button>
+  </div>
+  <div class="chips">
+    <span class="lbl">Try:</span>
+    <span class="chip" data-sym="AAPL" data-entry="190" data-stop="182" data-target="214">AAPL long</span>
+    <span class="chip" data-sym="TSLA" data-entry="250" data-stop="265" data-target="205">TSLA short</span>
+    <span class="chip" data-sym="NVDA" data-entry="120" data-stop="112" data-target="144">NVDA long</span>
+  </div>
+  <div id="status"></div>
+  <div id="out"></div>
+  <p class="foot">An R-multiple states profit and loss in units of your initial risk: 1R is the dollar amount you lose if price reaches your stop, so a 3R target is three times that distance from entry. Sizing by a fixed fraction of your account &mdash; shares = (account &times; risk%) &divide; |entry &minus; stop| &mdash; keeps every loss roughly equal regardless of the stock's price or how wide the stop is, which is what lets a strategy stay profitable while winning well under half its trades. Shares are rounded down to whole units, so realized risk sits slightly below the budget. This tool sizes risk from the numbers you type; it does not judge the trade, predict direction, or account for slippage, gaps, commissions, overnight risk, or a stop that fails to fill at your price. It sizes risk &mdash; it is not a recommendation to take the trade. Educational only - not investment advice.</p>
+</div>
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function cleanSym(s){ return String(s||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,12); }
+
+  // ---- formatting ----------------------------------------------------------
+  function money(x){ var neg=x<0; var v=Math.round(Math.abs(x)); var s='$'+v.toLocaleString('en-US'); return neg?'-'+s:s; }
+  function px(x){ var a=Math.abs(x); var dp = a>=1?2:4; return '$'+Number(x).toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+  function num(x){ return Number(x).toFixed(2); }
+  function pct1(x){ return x.toFixed(1)+'%'; }
+
+  // ---- ui states -----------------------------------------------------------
+  function setLoading(sym){ $('out').innerHTML=''; $('status').innerHTML='<div class="card load"><span class="spin"></span>Fetching '+esc(sym)+' live price&hellip;</div>'; }
+  function clearStatus(){ $('status').innerHTML=''; }
+  function showError(msg){ $('status').innerHTML=''; $('out').innerHTML='<div class="card err">'+esc(msg)+'</div>'; }
+  function stat(k,v,hi){ return '<div class="stat'+(hi?' hi':'')+'"><div class="k">'+k+'</div><div class="v tnum">'+v+'</div></div>'; }
+
+  function lvlRow(label, extra, price, pnl, acct, hl){
+    var cls = pnl>0?'pos':(pnl<0?'neg':'mut');
+    var pnlStr = (pnl>0?'+':'')+money(pnl);
+    var pctStr = (pnl>0?'+':'')+(pnl/acct*100).toFixed(1)+'%';
+    return '<tr'+(hl?' class="hl"':'')+'>'
+      +'<td>'+label+(extra?' <span class="mut" style="font-weight:400">'+extra+'</span>':'')+'</td>'
+      +'<td class="tnum">'+px(price)+'</td>'
+      +'<td class="tnum '+cls+'">'+pnlStr+'</td>'
+      +'<td class="tnum '+cls+'">'+pctStr+'</td>'
+      +'</tr>';
+  }
+
+  // ---- optional live price (prefill entry) ---------------------------------
+  function fetchPrice(sym){
+    return new Promise(function(resolve, reject){
+      fetch('/api/fmp?type=prices&symbol=' + encodeURIComponent(sym))
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          var arr = Array.isArray(j) ? j : ((j && (j.data || j.historical)) || []);
+          var row = (arr && arr.length) ? arr[0] : null;   // API is newest-first
+          if(!row){ reject(new Error('no data')); return; }
+          var p = (row.price!=null) ? row.price : ((row.close!=null) ? row.close : row.adjClose);
+          p = +p;
+          if(!isFinite(p) || p<=0){ reject(new Error('bad price')); return; }
+          resolve(p);
+        })
+        .catch(function(){ reject(new Error('network')); });
+    });
+  }
+
+  // ---- core compute (fully offline, no network) ----------------------------
+  function calc(liveSym){
+    clearStatus();
+    var acct  = parseFloat($('acct').value);
+    var risk  = parseFloat($('risk').value);
+    var entry = parseFloat($('entry').value);
+    var stop  = parseFloat($('stop').value);
+    var tRaw  = ($('target').value||'').trim();
+    var target = tRaw==='' ? NaN : parseFloat(tRaw);
+    var sym   = cleanSym($('sym').value);
+
+    if(!isFinite(acct) || acct<=0){ acct=25000; $('acct').value=25000; }
+    if(!isFinite(risk) || risk<=0){ risk=1.0; $('risk').value='1.0'; }
+    if(!isFinite(entry) || entry<=0){ showError('Enter a positive entry price (or a ticker to pull a live price).'); return; }
+    if(!isFinite(stop) || stop<=0){ showError('Enter a positive stop price.'); return; }
+    if(entry===stop){ showError('Stop price must differ from entry price.'); return; }
+
+    var isLong   = stop < entry;
+    var dir      = isLong ? 1 : -1;
+    var perShare = Math.abs(entry - stop);
+    var budget   = acct * risk / 100;
+    var shares   = Math.floor(budget / perShare);
+
+    if(shares < 1){
+      showError('A risk budget of ' + money(budget) + ' covers less than one share at a ' + px(perShare) + ' per-share stop distance. Increase account size or risk %, or use a tighter stop.');
+      return;
+    }
+
+    var posSize    = shares * entry;
+    var posPct     = posSize / acct * 100;
+    var lossAtStop = shares * perShare;                 // real risk after whole-share rounding
+    var verb       = isLong ? 'Buy' : 'Short';
+
+    var hasTarget = isFinite(target) && target>0;
+    var rewardPerShare = 0, rMult = 0, potProfit = 0, signedProfit = 0, targetRightSide = true;
+    if(hasTarget){
+      rewardPerShare = Math.abs(target - entry);
+      rMult          = rewardPerShare / perShare;
+      potProfit      = shares * rewardPerShare;
+      signedProfit   = shares * (target - entry) * dir;   // negative if target is on the wrong side
+      targetRightSide = signedProfit >= 0;
+    }
+
+    var html = '';
+
+    // headline card ----------------------------------------------------------
+    html += '<div class="card head">';
+    html += '<div class="kicker">Position size</div>';
+    html += '<div class="bighead tnum">' + verb + ' ' + shares.toLocaleString('en-US') + ' share' + (shares===1?'':'s') + '</div>';
+    html += '<div class="sub">&asymp; <b class="tnum">' + money(posSize) + '</b> (' + pct1(posPct) + ' of account) &middot; risking <b class="tnum">' + money(lossAtStop) + '</b> to the stop at ' + px(stop) + '.</div>';
+    html += '<div class="mut win tnum">' + (isLong?'LONG':'SHORT') + (sym?' '+esc(sym):'') + ' &middot; entry ' + px(entry) + ' &middot; stop ' + px(stop) + ' &middot; ' + px(perShare) + ' risk/share'
+          + (hasTarget?' &middot; target ' + px(target) + ' = ' + num(rMult) + 'R':'')
+          + (liveSym?' &middot; entry from ' + esc(liveSym) + ' live price':'') + '.</div>';
+    html += '</div>';
+
+    // stats grid -------------------------------------------------------------
+    html += '<div class="grid">';
+    html += stat('Dollar risk', money(budget), true);
+    html += stat('Per-share risk', px(perShare), false);
+    html += stat('Position size', money(posSize), false);
+    html += stat('Position % of acct', pct1(posPct), false);
+    if(hasTarget){
+      html += stat('R-multiple', num(rMult) + 'R', true);
+      html += stat('Potential profit', (signedProfit>=0?'+':'') + money(signedProfit), false);
+    }
+    html += '</div>';
+
+    // price-level table ------------------------------------------------------
+    html += '<div class="card">';
+    html += '<div class="cardttl">Price levels &amp; R-multiples ' + (isLong?'(long &mdash; profit above entry)':'(short &mdash; profit below entry)') + '</div>';
+    html += '<table class="lvl"><thead><tr><th>Level</th><th>Price</th><th>P&amp;L ($)</th><th>% of acct</th></tr></thead><tbody>';
+    html += lvlRow('Stop', '&minus;1R', stop, -lossAtStop, acct, false);
+    html += lvlRow('Entry', 'break-even', entry, 0, acct, false);
+    html += lvlRow('1R', 'first target', entry + dir*1*perShare, shares*1*perShare, acct, !hasTarget);
+    html += lvlRow('2R', '', entry + dir*2*perShare, shares*2*perShare, acct, false);
+    html += lvlRow('3R', '', entry + dir*3*perShare, shares*3*perShare, acct, false);
+    if(hasTarget){ html += lvlRow('Your target', num(rMult) + 'R', target, signedProfit, acct, true); }
+    html += '</tbody></table>';
+
+    // contextual notes -------------------------------------------------------
+    var notes = [];
+    if(Math.abs(budget - lossAtStop) >= 1){
+      notes.push('Rounded to ' + shares.toLocaleString('en-US') + ' whole shares, realized risk is <b>' + money(lossAtStop) + '</b> versus a <b>' + money(budget) + '</b> budget.');
+    }
+    if(posPct > 100){
+      notes.push('This position is <b>' + pct1(posPct) + '</b> of your account &mdash; larger than the account itself, so it would require margin or leverage.');
+    }
+    if(risk >= 5){
+      notes.push('Risking <b>' + num(risk) + '%</b> per trade is aggressive; most systematic traders risk 0.5&ndash;2% per position.');
+    }
+    if(hasTarget && !targetRightSide){
+      notes.push('Your target of <b>' + px(target) + '</b> sits on the losing side of a ' + (isLong?'long':'short') + ' entry, so the modeled P&amp;L there is negative &mdash; double-check the target.');
+    }
+    notes.push('An R-multiple is P&amp;L measured in units of the ' + money(lossAtStop) + ' you risk to the stop: a 2R move earns twice that, a &minus;1R move is a full stop-out. This sizes risk from your inputs &mdash; it is not a recommendation to take the trade.');
+    html += '<div class="note">' + notes.join('<br>') + '</div>';
+    html += '</div>';
+
+    $('status').innerHTML = '';
+    $('out').innerHTML = html;
+  }
+
+  // ---- run handler: optional live-price prefill, then compute --------------
+  function run(){
+    var sym = cleanSym($('sym').value);
+    $('sym').value = sym;
+    var entry = parseFloat($('entry').value);
+    var needFetch = sym && !(isFinite(entry) && entry>0);
+    if(needFetch){
+      setLoading(sym);
+      fetchPrice(sym).then(function(p){
+        $('entry').value = p.toFixed(2);
+        clearStatus();
+        calc(sym);
+      }).catch(function(){
+        clearStatus();
+        showError('Could not fetch a live price for ' + sym + '. Type an entry price manually to continue.');
+      });
+      return;
+    }
+    calc();
+  }
+
+  // ---- init + auto-run from URL -------------------------------------------
+  function qp(name){
+    var m = (location.search||'').match(new RegExp('[?&]' + name + '=([^&]+)', 'i'));
+    if(!m) return null;
+    try{ return decodeURIComponent(m[1].replace(/\+/g,' ')); }catch(e){ return m[1]; }
+  }
+  function setNum(id, raw){ if(raw==null) return; var v=parseFloat(raw); if(isFinite(v) && v>0){ $(id).value = v; } }
+
+  function init(){
+    setNum('acct', qp('acct'));
+    setNum('risk', qp('risk'));
+    setNum('entry', qp('entry'));
+    setNum('stop', qp('stop'));
+    setNum('target', qp('target'));
+    var qSym = qp('sym'); if(qSym!=null){ $('sym').value = cleanSym(qSym); }
+
+    $('go').addEventListener('click', run);
+    $('sym').addEventListener('input', function(){ this.value = this.value.toUpperCase(); });
+    var ids = ['acct','risk','sym','entry','stop','target'];
+    for(var j=0;j<ids.length;j++){
+      $(ids[j]).addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+    }
+    var chips = document.querySelectorAll('.chip');
+    for(var i=0;i<chips.length;i++){
+      chips[i].addEventListener('click', function(){
+        $('sym').value    = this.getAttribute('data-sym')    || '';
+        $('entry').value  = this.getAttribute('data-entry')  || '';
+        $('stop').value   = this.getAttribute('data-stop')   || '';
+        $('target').value = this.getAttribute('data-target') || '';
+        calc();
+      });
+    }
+
+    // auto-run only when entry AND stop are both present
+    var ev = parseFloat($('entry').value), sv = parseFloat($('stop').value);
+    if(isFinite(ev) && ev>0 && isFinite(sv) && sv>0){ calc(); }
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rolling Correlation - two tickers over time | Quantora</title>
+<meta name="description" content="See how the correlation between any two stocks or ETFs shifts over time. Quantora computes a 63-day rolling Pearson correlation over ~5 years of daily returns - with the current reading, the average, the min and max, and the full-sample correlation for reference. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/rolling-correlation.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 18px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  .controls input{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none;width:140px;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+  .controls input:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  .vs{font-size:13px;font-weight:600;color:#9aa1ad;padding-bottom:12px}
+  .go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 22px;font-weight:600;font-size:14px;cursor:pointer}
+  .go:hover{background:#2560ea}
+  .go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:6px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .res{margin-top:26px;display:none}.res.on{display:block}
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+  .hero{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:18px 20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .hcell{min-width:130px}
+  .hcell.rt{text-align:right}
+  .hlab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .hbig{font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px}
+  .hsub{font-size:12.5px;color:#8a91ad;margin-top:3px}
+  .terp{font-size:15px;line-height:1.6;color:#14161c;margin:16px 2px 2px}
+  .terp b.pos{color:#1663d6}.terp b.neg{color:#c0392b}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:13px 15px}
+  .clab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8a91ad;font-weight:600}
+  .cval{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .csub{font-size:11.5px;color:#8a91ad;margin-top:2px}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px}
+  .ln{width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:12px;font-size:12px;color:#4a4f58}
+  .lgd{display:inline-flex;align-items:center;gap:7px}
+  .swatch{width:16px;height:3px;border-radius:2px;display:inline-block}
+  .wnote{margin-left:auto;color:#9aa1ad;font-size:11.5px}
+  .summary{background:#0b1220;color:#e9edf5;border-radius:14px;padding:18px 20px;font-size:14.5px;line-height:1.7;margin-top:20px}
+  .summary b{color:#fff}
+  .pos{color:#1663d6}.neg{color:#c0392b}
+  .spin{color:#6b7280;font-size:14px;padding:14px 2px}
+  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
+  .muted{color:#9aa1ad;font-size:12px;margin-top:20px;line-height:1.6;max-width:80ch}
+</style>
+</head><body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyb">QUANTORA &middot; ROLLING CORRELATION</div>
+  <h1>Rolling correlation</h1>
+  <p class="lead">Two stocks can look like they move together for years, then quietly decouple. Quantora rolls a 63-trading-day (~3-month) Pearson correlation across roughly five years of daily returns, so you can watch how the relationship between any two tickers drifts through time - tightening in stress, loosening in calm. No login, free.</p>
+  <div class="controls">
+    <div class="field"><label for="a">Ticker A</label><input id="a" type="text" placeholder="NVDA" value="NVDA" spellcheck="false" autocomplete="off" maxlength="12"></div>
+    <div class="vs">vs</div>
+    <div class="field"><label for="b">Ticker B</label><input id="b" type="text" placeholder="SPY" value="SPY" spellcheck="false" autocomplete="off" maxlength="12"></div>
+    <button class="go" id="go" type="button">Analyze</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <div class="res" id="res"></div>
+  <div class="muted">The rolling correlation is the Pearson correlation of the two tickers' daily returns over a trailing 63-trading-day (~3-month) window, aligned on their common trading days. +1 means they move in lockstep, 0 means unrelated, -1 means they move exactly opposite. Correlations are not stable - they drift with the market regime and tend to spike toward +1 in a crash, when almost everything sells off together - so read this as a changing relationship, not a signal. Past performance does not guarantee future results. Educational only - not investment advice.</div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var W=63, MAXR=1300;
+  var PAIRS=[['NVDA','SMH'],['TLT','SPY'],['AAPL','MSFT'],['GLD','SPY']];
+  var aEl=document.getElementById('a'),bEl=document.getElementById('b'),goEl=document.getElementById('go'),resEl=document.getElementById('res'),exEl=document.getElementById('ex');
+  var busy=false;
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  PAIRS.forEach(function(p){
+    var c=document.createElement('div');c.className='chip';c.textContent=p[0]+' vs '+p[1];
+    c.addEventListener('click',function(){aEl.value=p[0];bEl.value=p[1];run();});
+    exEl.appendChild(c);
+  });
+
+  function qp(k){var m=location.search.match(new RegExp('[?&]'+k+'=([^&]+)'));return m?decodeURIComponent(m[1].replace(/\+/g,' ')):null;}
+  function clean(s){return (s||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,12);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fc(x){return (x<0?'-':'')+Math.abs(x).toFixed(2);}
+  function cls(x){return x==null?'':x>0.02?'pos':x<-0.02?'neg':'';}
+  function monY(d){var p=(''+d).split('-');return (MON[(+p[1]-1)]||'')+' '+p[0];}
+
+  /* ---- hardened fetch: one retry on empty ---- */
+  function fetchOnce(sym){
+    return fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var arr=Array.isArray(j)?j:((j&&(j.data||j.historical))||[]);var out=[];
+      for(var i=0;i<arr.length;i++){var row=arr[i];if(!row)continue;var d=row.date||row.datetime;var p=(row.price!=null?row.price:(row.close!=null?row.close:row.adjClose));p=+p;if(d&&isFinite(p)&&p>0)out.push({d:(''+d).slice(0,10),v:p});}
+      out.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});return out;
+    }).catch(function(){return [];});
+  }
+  function getPrices(sym){
+    return fetchOnce(sym).then(function(o){
+      if(o&&o.length)return o;
+      return new Promise(function(res){setTimeout(res,500);}).then(function(){return fetchOnce(sym);});
+    });
+  }
+
+  /* ---- align two ASC price series on common dates via a {date:price} map ---- */
+  function align(pa,pb){
+    var mb={},i;
+    for(i=0;i<pb.length;i++)mb[pb[i].d]=pb[i].v;
+    var dates=[],a=[],b=[];
+    for(i=0;i<pa.length;i++){var d=pa[i].d;if(mb[d]!=null){dates.push(d);a.push(pa[i].v);b.push(mb[d]);}}
+    return {dates:dates,pa:a,pb:b};
+  }
+
+  /* ---- full-sample Pearson ---- */
+  function pearson(x,y){
+    var n=Math.min(x.length,y.length),i,mx=0,my=0;
+    if(n<3)return NaN;
+    for(i=0;i<n;i++){mx+=x[i];my+=y[i];}mx/=n;my/=n;
+    var sxy=0,sxx=0,syy=0,dx,dy;
+    for(i=0;i<n;i++){dx=x[i]-mx;dy=y[i]-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;}
+    var den=Math.sqrt(sxx*syy);
+    if(!(den>0))return NaN;
+    var c=sxy/den;return c>1?1:c<-1?-1:c;
+  }
+
+  /* ---- rolling Pearson over a trailing window of W returns (running sums) ---- */
+  function rollingCorr(ra,rb,rd){
+    var m=ra.length,i;
+    if(m<W)return [];
+    var sa=0,sb=0,saa=0,sbb=0,sab=0;
+    for(i=0;i<W;i++){sa+=ra[i];sb+=rb[i];saa+=ra[i]*ra[i];sbb+=rb[i]*rb[i];sab+=ra[i]*rb[i];}
+    var out=[];
+    for(i=W-1;i<m;i++){
+      if(i>=W){var j=i-W;sa-=ra[j];sb-=rb[j];saa-=ra[j]*ra[j];sbb-=rb[j]*rb[j];sab-=ra[j]*rb[j];
+               sa+=ra[i];sb+=rb[i];saa+=ra[i]*ra[i];sbb+=rb[i]*rb[i];sab+=ra[i]*rb[i];}
+      var num=W*sab-sa*sb;
+      var da=W*saa-sa*sa,db=W*sbb-sb*sb;
+      if(da<0)da=0;if(db<0)db=0;
+      var den=Math.sqrt(da*db);
+      var c=den>1e-12?num/den:0;
+      if(c>1)c=1;if(c<-1)c=-1;
+      out.push({d:rd[i],c:c});
+    }
+    return out;
+  }
+
+  function corrWord(c){
+    return c>=0.7?'move closely together'
+      :c>=0.4?'tend to move together'
+      :c>=0.15?'are loosely linked'
+      :c>-0.15?'are largely uncorrelated'
+      :c>-0.4?'tend to move opposite'
+      :'move strongly opposite';
+  }
+
+  /* ---- inline SVG line chart, y fixed to [-1,+1] ---- */
+  function chart(series){
+    var L=series.length,i;
+    var Wd=920,H=300,padL=44,padR=16,padT=16,padB=30;
+    var iw=Wd-padL-padR,ih=H-padT-padB,lo=-1,hi=1;
+    function xf(k){return padL+(L>1?k/(L-1):0)*iw;}
+    function yf(v){return padT+(hi-v)/(hi-lo)*ih;}
+    var y0=yf(0);
+
+    var years='';
+    for(i=1;i<L;i++){
+      var ya=series[i].d.slice(0,4),yb=series[i-1].d.slice(0,4);
+      if(ya!==yb){var xx=xf(i);years+='<line x1="'+xx.toFixed(1)+'" y1="'+padT+'" x2="'+xx.toFixed(1)+'" y2="'+(H-padB)+'" stroke="rgba(17,24,39,.05)"/><text x="'+xx.toFixed(1)+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="10.5" fill="#b3b9c6">'+ya+'</text>';}
+    }
+
+    var grid='';
+    [1,0.5,0,-0.5,-1].forEach(function(lv){
+      var y=yf(lv),strong=(lv===0);
+      grid+='<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(Wd-padR)+'" y2="'+y.toFixed(1)+'" stroke="'+(strong?'rgba(17,24,39,.24)':'rgba(17,24,39,.08)')+'"'+(strong?'':' stroke-dasharray="4 4"')+'/>';
+      grid+='<text x="'+(padL-7)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="10.5" fill="#9aa1ad" font-variant-numeric="tabular-nums">'+(lv>0?'+':'')+lv.toFixed(1)+'</text>';
+    });
+
+    var fills='',strokeB='',strokeR='';
+    function pushSeg(x1,s1,x2,s2){
+      var yy1=yf(s1),yy2=yf(s2),up=(s1+s2)>=0,col=up?'#1663d6':'#c0392b';
+      fills+='<path d="M '+x1.toFixed(1)+' '+y0.toFixed(1)+' L '+x1.toFixed(1)+' '+yy1.toFixed(1)+' L '+x2.toFixed(1)+' '+yy2.toFixed(1)+' L '+x2.toFixed(1)+' '+y0.toFixed(1)+' Z" fill="'+col+'" opacity="0.09"/>';
+      var seg='<line x1="'+x1.toFixed(1)+'" y1="'+yy1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+yy2.toFixed(1)+'" stroke="'+col+'" stroke-width="1.6" stroke-linecap="round"/>';
+      if(up)strokeB+=seg;else strokeR+=seg;
+    }
+    for(i=0;i<L-1;i++){
+      var xa=xf(i),xb=xf(i+1),sa=series[i].c,sb=series[i+1].c;
+      if((sa>=0)===(sb>=0)){pushSeg(xa,sa,xb,sb);}
+      else{var t=sa/(sa-sb),xc=xa+(xb-xa)*t;pushSeg(xa,sa,xc,0);pushSeg(xc,0,xb,sb);}
+    }
+    var lastC=series[L-1].c;
+    return '<svg class="ln" viewBox="0 0 '+Wd+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
+      +years+grid+fills+strokeR+strokeB
+      +'<circle cx="'+xf(L-1).toFixed(1)+'" cy="'+yf(lastC).toFixed(1)+'" r="3.6" fill="'+(lastC>=0?'#1663d6':'#c0392b')+'" stroke="#fff" stroke-width="1.5"/>'
+      +'</svg>';
+  }
+
+  function show(h){resEl.className='res on';resEl.innerHTML=h;}
+
+  function run(){
+    var A=clean(aEl.value),B=clean(bEl.value);
+    aEl.value=A;bEl.value=B;
+    if(!A||!B){show('<div class="err">Enter two ticker symbols to compare (for example NVDA and SPY).</div>');return;}
+    if(A===B){show('<div class="err">Enter two different tickers - a return series always correlates 1.00 with itself.</div>');return;}
+    if(busy)return;
+    busy=true;goEl.disabled=true;resEl.className='res on';
+    resEl.innerHTML='<div class="spin">Rolling a 63-day correlation for '+esc(A)+' vs '+esc(B)+'&hellip;</div>';
+    Promise.all([getPrices(A),getPrices(B)]).then(function(r){
+      try{analyze(A,B,r[0],r[1]);}
+      catch(e){resEl.innerHTML='<div class="err">'+esc(e&&e.message||'Could not compute the rolling correlation.')+'</div>';}
+      busy=false;goEl.disabled=false;
+    }).catch(function(){
+      busy=false;goEl.disabled=false;
+      resEl.innerHTML='<div class="err">Could not load enough price history for '+esc(A)+' and '+esc(B)+'. Check the tickers, or the free data feed may be at its daily limit - try again shortly.</div>';
+    });
+  }
+
+  function analyze(A,B,pa,pb){
+    if(!pa||pa.length<W+2)throw new Error('Not enough price history for '+A+' to build a rolling correlation.');
+    if(!pb||pb.length<W+2)throw new Error('Not enough price history for '+B+' to build a rolling correlation.');
+    var al=align(pa,pb);
+    var n=al.dates.length;
+    if(n<W+3)throw new Error('Not enough overlapping trading history between '+A+' and '+B+' to build a rolling correlation.');
+    var ra=[],rb=[],rd=[],i;
+    for(i=1;i<n;i++){ra.push(al.pa[i]/al.pa[i-1]-1);rb.push(al.pb[i]/al.pb[i-1]-1);rd.push(al.dates[i]);}
+    if(ra.length>MAXR){ra=ra.slice(ra.length-MAXR);rb=rb.slice(rb.length-MAXR);rd=rd.slice(rd.length-MAXR);}
+    var series=rollingCorr(ra,rb,rd);
+    if(series.length<15)throw new Error('Not enough overlapping history between '+A+' and '+B+' to build a 63-day rolling correlation.');
+    var full=pearson(ra,rb);
+
+    var L=series.length,sum=0,minV=Infinity,maxV=-Infinity,minD='',maxD='';
+    for(i=0;i<L;i++){var c=series[i].c;sum+=c;if(c<minV){minV=c;minD=series[i].d;}if(c>maxV){maxV=c;maxD=series[i].d;}}
+    var cur=series[L-1].c,asof=series[L-1].d,avg=sum/L;
+    var yrs=(ra.length/252).toFixed(1);
+    var curCol=cur>0.02?'#1663d6':cur<-0.02?'#c0392b':'#14161c';
+    var fullCol=full>0.02?'#1663d6':full<-0.02?'#c0392b':'#14161c';
+
+    var h='';
+    h+='<div class="hero">';
+    h+='<div class="hcell"><div class="hlab">Current rolling correlation</div><div class="hbig" style="color:'+curCol+'">'+fc(cur)+'</div><div class="hsub">'+esc(A)+' vs '+esc(B)+' &middot; 63-day window &middot; as of '+asof+'</div></div>';
+    h+='<div class="hcell rt"><div class="hlab">Full-sample correlation</div><div class="hbig" style="color:'+fullCol+'">'+fc(full)+'</div><div class="hsub">over the full ~'+yrs+'-year daily series</div></div>';
+    h+='</div>';
+
+    h+='<div class="terp">'+esc(A)+' and '+esc(B)+' currently <b class="'+cls(cur)+'">'+corrWord(cur)+'</b> (corr '+fc(cur)+'); over the period their rolling correlation fell as low as <b class="'+cls(minV)+'">'+fc(minV)+'</b> in '+monY(minD)+' and peaked at <b class="'+cls(maxV)+'">'+fc(maxV)+'</b> in '+monY(maxD)+'.</div>';
+
+    h+='<div class="sect">Rolling correlation over time</div><div class="panel">'+chart(series);
+    h+='<div class="legend"><span class="lgd"><span class="swatch" style="background:#1663d6"></span>Positive - move together</span><span class="lgd"><span class="swatch" style="background:#c0392b"></span>Negative - move opposite</span><span class="wnote">63-day window (~3 mo) &middot; daily returns</span></div></div>';
+
+    h+='<div class="sect">Key readings</div><div class="cards">';
+    h+='<div class="card"><div class="clab">Current</div><div class="cval '+cls(cur)+'">'+fc(cur)+'</div><div class="csub">latest 63-day window</div></div>';
+    h+='<div class="card"><div class="clab">Average</div><div class="cval '+cls(avg)+'">'+fc(avg)+'</div><div class="csub">mean over period shown</div></div>';
+    h+='<div class="card"><div class="clab">Minimum</div><div class="cval '+cls(minV)+'">'+fc(minV)+'</div><div class="csub">'+monY(minD)+'</div></div>';
+    h+='<div class="card"><div class="clab">Maximum</div><div class="cval '+cls(maxV)+'">'+fc(maxV)+'</div><div class="csub">'+monY(maxD)+'</div></div>';
+    h+='<div class="card"><div class="clab">Full sample</div><div class="cval '+cls(full)+'">'+fc(full)+'</div><div class="csub">whole period, for reference</div></div>';
+    h+='</div>';
+
+    h+='<div class="summary"><b>'+esc(A)+'</b> and <b>'+esc(B)+'</b> '+corrWord(cur)+' right now, with a 63-day rolling correlation of <b>'+fc(cur)+'</b> as of '+asof+'. Across the past ~'+yrs+' years that rolling reading averaged <b>'+fc(avg)+'</b> and swung between <b>'+fc(minV)+'</b> ('+monY(minD)+') and <b>'+fc(maxV)+'</b> ('+monY(maxD)+'), versus a full-sample correlation of <b>'+fc(full)+'</b>. Because the window is short, the line moves sharply with the market regime and tends to spike toward +1 when everything sells off together - treat it as a shifting relationship, not a signal.</div>';
+
+    resEl.innerHTML=h;
+  }
+
+  goEl.addEventListener('click',run);
+  aEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+  bEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();run();}});
+
+  /* ---- auto-run from ?a=&b= ---- */
+  var pa=clean(qp('a')||''),pb=clean(qp('b')||'');
+  if(pa)aEl.value=pa;
+  if(pb)bEl.value=pb;
+  if(pa&&pb)run();
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body></html>
