@@ -218,10 +218,11 @@
   // ---- count-up helper ----
   function countUp(el){
     var target=parseFloat(el.dataset.count), dec=+(el.dataset.dec||0), pre=el.dataset.prefix||'', suf=el.dataset.suffix||'';
-    if(RM){ el.textContent=pre+target.toFixed(dec)+suf; return; }
+    var fin=function(){ el.textContent=pre+target.toFixed(dec)+suf; };
+    fin(); if(RM) return;
     var t0=null, dur=1300;
-    function step(t){ if(!t0)t0=t; var p=Math.min(1,(t-t0)/dur); var e=1-Math.pow(1-p,3);
-      el.textContent=pre+(target*e).toFixed(dec)+suf; if(p<1)requestAnimationFrame(step); }
+    function step(t){ if(!t0){t0=t;} var p=Math.min(1,(t-t0)/dur); var e=1-Math.pow(1-p,3);
+      el.textContent=pre+(target*e).toFixed(dec)+suf; if(p<1){requestAnimationFrame(step);} else {fin();} }
     requestAnimationFrame(step);
   }
 
@@ -235,11 +236,12 @@
       line.style.transition='stroke-dashoffset 1.9s cubic-bezier(.16,1,.3,1)'; line.style.strokeDashoffset=0;
       setTimeout(function(){ area.style.transition='opacity 1s ease'; area.style.opacity=1; head.style.opacity=1; document.getElementById('art').classList.add('drawn'); }, 1200);
     }
-    // hero number roll
+    // hero number roll — set final first (never NaN), then animate as enhancement
     var big=document.getElementById('big'), al=document.getElementById('alpha');
-    if(RM){ big.textContent='+'+total.toFixed(1)+'%'; al.textContent='+'+alpha.toFixed(1)+'%'; }
-    else{ var t0=null; (function roll(t){ if(!t0)t0=t; var p=Math.min(1,(t-t0)/1600), e=1-Math.pow(1-p,3);
-      big.textContent='+'+(total*e).toFixed(1)+'%'; al.textContent='+'+(alpha*e).toFixed(1)+'%'; if(p<1)requestAnimationFrame(roll); })(); }
+    var setFinal=function(){ big.textContent='+'+total.toFixed(1)+'%'; al.textContent='+'+alpha.toFixed(1)+'%'; };
+    setFinal();
+    if(!RM){ var t0=null; requestAnimationFrame(function roll(t){ if(!t0){t0=t;} var p=Math.min(1,(t-t0)/1600), e=1-Math.pow(1-p,3);
+      big.textContent='+'+(total*e).toFixed(1)+'%'; al.textContent='+'+(alpha*e).toFixed(1)+'%'; if(p<1){requestAnimationFrame(roll);} else {setFinal();} }); }
   }
 
   // ---- sparklines ----
