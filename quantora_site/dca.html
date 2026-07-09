@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCA Backtester &mdash; dollar-cost averaging vs lump sum | Quantora</title>
+<meta name="description" content="Free dollar-cost averaging (DCA) backtester: pick a stock, a monthly contribution and a horizon to see shares accumulated, final value, total and annualized money-weighted return, average cost basis, and how DCA compares to investing a lump sum up front.">
+<link rel="canonical" href="https://www.usequantora.com/dca.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 10px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 24px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  input{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none}
+  input:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  #sym{width:130px;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+  #amt{width:150px}
+  #years{width:110px}
+  #go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px}
+  #go:hover{background:#2560ea}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:#4a4f58;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .card.load{color:#4a4f58;font-size:14px;display:flex;align-items:center}
+  .card.err{color:#c0392b;border-color:rgba(192,57,43,.28)}
+  .tnum{font-variant-numeric:tabular-nums}
+  .pos{color:#1663d6}
+  .neg{color:#c0392b}
+  .mut{color:#9aa1ad}
+  .head .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:#8a91ad}
+  .bighead{font-size:clamp(21px,3vw,30px);font-weight:700;letter-spacing:-.02em;margin:8px 0 8px;color:#14161c}
+  .sub{font-size:15px;color:#4a4f58;line-height:1.55}
+  .win{font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:14px 16px}
+  .stat .k{font-size:12px;color:#9aa1ad;font-weight:600;margin-bottom:7px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .stat.hi{border-color:rgba(47,107,255,.4);background:linear-gradient(180deg,#ffffff,#f4f8ff)}
+  .stat.hi .k{color:#2f6bff}
+  .stat.hi .v{color:#2f6bff}
+  .cardttl{font-size:13px;font-weight:600;color:#4a4f58;margin-bottom:6px}
+  .leg{display:flex;flex-wrap:wrap;gap:18px;font-size:12px;color:#4a4f58;margin-top:10px}
+  .leg i{display:inline-block;width:13px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .reduce{font-size:14.5px;color:#14161c;line-height:1.55;margin-top:14px;border-top:1px solid rgba(17,24,39,.08);padding-top:14px}
+  .foot{color:#9aa1ad;font-size:12px;line-height:1.6;margin-top:8px;max-width:78ch}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:sp .7s linear infinite;margin-right:9px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; DCA BACKTESTER</div>
+  <h1>Dollar-Cost Averaging Backtester</h1>
+  <p class="lead">Instead of timing the market, you drip a fixed amount in every month. This tool replays that plan: on the first trading day of each month over your chosen window it buys $X of a stock, accumulating fractional shares, and tracks what the position is worth over time. It also shows what would have happened if you had invested the whole sum as a lump sum on day one &mdash; so you can see the real trade-off between smoothing your entry and putting money to work sooner.</p>
+  <div class="controls">
+    <div class="field"><label for="sym">Ticker</label><input id="sym" type="text" placeholder="SPY" autocomplete="off" spellcheck="false" maxlength="12"></div>
+    <div class="field"><label for="amt">Monthly $</label><input id="amt" type="number" value="500" min="0" step="50"></div>
+    <div class="field"><label for="years">Years</label><input id="years" type="number" value="5" min="1" max="30" step="1"></div>
+    <button id="go">Analyze</button>
+  </div>
+  <div class="chips">
+    <span class="chip" data-sym="SPY">SPY</span>
+    <span class="chip" data-sym="AAPL">AAPL</span>
+    <span class="chip" data-sym="MSFT">MSFT</span>
+    <span class="chip" data-sym="QQQ">QQQ</span>
+    <span class="chip" data-sym="VOO">VOO</span>
+  </div>
+  <div id="status"></div>
+  <div id="out"></div>
+  <p class="foot">Method: on the first available trading day of each month we buy $amt of the ticker at that day's price, accumulating fractional shares; portfolio value is shares held &times; the latest price, and average cost basis is total invested &divide; shares. The annualized figure is a money-weighted return (internal rate of return) that accounts for when each contribution was made, not a simple CAGR. Lump sum invests the same total on the very first day. Prices are price-only &mdash; dividends and reinvestment are excluded, so real total returns would be higher. Past performance is not indicative of future results; dollar-cost averaging reduces timing risk but in steadily rising markets a lump sum invested earlier usually wins. Educational only - not investment advice.</p>
+</div>
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  // ---- data parsing --------------------------------------------------------
+  function parseRows(j){
+    var arr = Array.isArray(j) ? j : ((j && (j.data || j.historical)) || []);
+    var out = [];
+    for(var i=0;i<arr.length;i++){
+      var row = arr[i]; if(!row) continue;
+      var d = (row.date!=null) ? row.date : row.datetime;
+      var p = (row.price!=null) ? row.price : ((row.close!=null) ? row.close : row.adjClose);
+      if(d==null || p==null) continue;
+      p = +p; if(!isFinite(p) || p<=0) continue;
+      out.push({date:String(d).slice(0,10), price:p});
+    }
+    // API is newest-first; build a strictly date-ASCENDING series
+    out.sort(function(a,b){ return a.date<b.date ? -1 : (a.date>b.date ? 1 : 0); });
+    // de-dupe by date, keep last
+    var dd=[], seen={};
+    for(var k=out.length-1;k>=0;k--){ if(!seen[out[k].date]){ seen[out[k].date]=1; dd.push(out[k]); } }
+    dd.sort(function(a,b){ return a.date<b.date ? -1 : (a.date>b.date ? 1 : 0); });
+    return dd;
+  }
+
+  // hardened fetch with ONE retry on empty/failure
+  function fetchPrices(sym){
+    return new Promise(function(resolve, reject){
+      function attempt(triesLeft){
+        fetch('/api/fmp?type=prices&symbol=' + encodeURIComponent(sym))
+          .then(function(r){ return r.json(); })
+          .then(function(j){
+            var rows = parseRows(j);
+            if(!rows.length){
+              if(triesLeft>0){ setTimeout(function(){ attempt(triesLeft-1); }, 500); return; }
+              reject(new Error('No price data returned for ' + sym + '. The free data feed may be at its daily limit &mdash; try again later or a major ticker.')); return;
+            }
+            resolve(rows);
+          })
+          .catch(function(){
+            if(triesLeft>0){ setTimeout(function(){ attempt(triesLeft-1); }, 500); return; }
+            reject(new Error('Network error while loading ' + sym + '.'));
+          });
+      }
+      attempt(1);
+    });
+  }
+
+  // ---- helpers -------------------------------------------------------------
+  var YR = 365.25*864e5;
+  function ms(d){ return Date.parse(d+'T00:00:00Z'); }
+  function money(x){ var neg=x<0; var v=Math.round(Math.abs(x)); var s='$'+v.toLocaleString('en-US'); return neg?'-'+s:s; }
+  function moneyK(x){ if(x>=1000){ var v=x/1000; return '$'+(v>=10?Math.round(v):v.toFixed(1))+'k'; } return '$'+Math.round(x); }
+  function px(x){ return '$'+Number(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function sharesFmt(x){ var a=Math.abs(x); var d=a>=1000?0:(a>=10?2:4); return Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function pctSigned(x){ return (x>=0?'+':'')+(x*100).toFixed(1)+'%'; }
+  function retSpan(x){ return '<span class="'+(x>=0?'pos':'neg')+'">'+pctSigned(x)+'</span>'; }
+
+  // ---- money-weighted return (IRR) approximation ---------------------------
+  // solve annual R: sum_k amt*(1+R)^dt_k = finalValue, dt_k = years from contribution to end
+  function moneyWeighted(amt, dts, finalValue){
+    if(!(finalValue>0) || !dts.length) return null;
+    function f(R){ var s=0; for(var i=0;i<dts.length;i++){ s += amt*Math.pow(1+R, dts[i]); } return s - finalValue; }
+    var lo=-0.9999, hi=100.0;
+    if(f(hi) < 0) return hi;
+    if(f(lo) > 0) return lo;
+    for(var it=0; it<200; it++){ var mid=(lo+hi)/2; if(f(mid) > 0){ hi=mid; } else { lo=mid; } }
+    return (lo+hi)/2;
+  }
+
+  // ---- two-line inline SVG (value vs invested) -----------------------------
+  function lineChart(dates, val, inv){
+    var W=900,H=340,padL=58,padR=18,padT=16,padB=34,n=val.length,i;
+    var maxV=0; for(i=0;i<n;i++){ if(val[i]>maxV)maxV=val[i]; if(inv[i]>maxV)maxV=inv[i]; }
+    var hi=maxV>0?maxV*1.06:1, lo=0;
+    function X(k){ return padL + (n<=1?0:k/(n-1))*(W-padL-padR); }
+    function Y(v){ return H-padB - (v-lo)/(hi-lo)*(H-padT-padB); }
+    function path(a){ var d=''; for(var j=0;j<a.length;j++){ d+=(j?'L':'M')+X(j).toFixed(1)+','+Y(a[j]).toFixed(1); } return d; }
+    var s='';
+    s+='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Portfolio value versus total invested over time" style="display:block;height:auto">';
+    var ticks=4;
+    for(i=0;i<=ticks;i++){
+      var gv=hi*i/ticks, gy=Y(gv);
+      s+='<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" stroke="rgba(17,24,39,.07)"/>';
+      s+='<text x="'+(padL-8)+'" y="'+(gy+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="#9aa1ad">'+moneyK(gv)+'</text>';
+    }
+    // value area fill
+    var area=path(val)+'L'+X(n-1).toFixed(1)+','+Y(0).toFixed(1)+'L'+X(0).toFixed(1)+','+Y(0).toFixed(1)+'Z';
+    s+='<path d="'+area+'" fill="rgba(47,107,255,.08)" stroke="none"/>';
+    // invested (grey, steps up monthly)
+    s+='<path d="'+path(inv)+'" fill="none" stroke="#9aa1ad" stroke-width="1.8" vector-effect="non-scaling-stroke"/>';
+    // portfolio value (blue)
+    s+='<path d="'+path(val)+'" fill="none" stroke="#2f6bff" stroke-width="2.2" vector-effect="non-scaling-stroke"/>';
+    function dl(idx){ return esc(String(dates[idx]).slice(0,7)); }
+    s+='<text x="'+X(0).toFixed(1)+'" y="'+(H-11)+'" text-anchor="start" font-size="11" fill="#9aa1ad">'+dl(0)+'</text>';
+    s+='<text x="'+X((n-1)>>1).toFixed(1)+'" y="'+(H-11)+'" text-anchor="middle" font-size="11" fill="#9aa1ad">'+dl((n-1)>>1)+'</text>';
+    s+='<text x="'+X(n-1).toFixed(1)+'" y="'+(H-11)+'" text-anchor="end" font-size="11" fill="#9aa1ad">'+dl(n-1)+'</text>';
+    s+='</svg>';
+    return s;
+  }
+
+  // ---- ui states -----------------------------------------------------------
+  function setLoading(sym){ $('out').innerHTML=''; $('status').innerHTML='<div class="card load"><span class="spin"></span>Loading '+esc(sym)+' price history and running the backtest&hellip;</div>'; }
+  function showError(msg){ $('status').innerHTML=''; $('out').innerHTML='<div class="card err">'+msg+'</div>'; }
+  function stat(k,v,hi){ return '<div class="stat'+(hi?' hi':'')+'"><div class="k">'+k+'</div><div class="v tnum">'+v+'</div></div>'; }
+
+  // ---- main ----------------------------------------------------------------
+  function analyze(){
+    var sym = (($('sym').value)||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+    $('sym').value = sym;
+    var amt = parseFloat($('amt').value);
+    var years = parseFloat($('years').value);
+    if(!sym){ showError('Please enter a ticker symbol.'); return; }
+    if(!isFinite(amt) || amt<=0){ amt = 500; $('amt').value = 500; }
+    if(!isFinite(years) || years<=0){ years = 5; $('years').value = 5; }
+    if(years>30){ years = 30; $('years').value = 30; }
+    setLoading(sym);
+    fetchPrices(sym).then(function(rows){
+      try{ render(sym, amt, years, rows); }
+      catch(err){ showError('Could not run the backtest: ' + (err&&err.message?err.message:'unknown error') + '.'); }
+    }).catch(function(e){
+      showError(e&&e.message ? e.message : 'Could not load market data. Please try again.');
+    });
+  }
+
+  function render(sym, amt, reqYears, arr){
+    if(arr.length < 40){ showError('Not enough price history for ' + esc(sym) + ' to backtest.'); return; }
+
+    var firstMs = ms(arr[0].date), lastMs = ms(arr[arr.length-1].date);
+    var spanYears = (lastMs - firstMs) / YR;
+    var capped = false, effYears = reqYears;
+    if(reqYears > spanYears){ effYears = spanYears; capped = true; }
+    var cutStr = new Date(lastMs - effYears*YR).toISOString().slice(0,10);
+
+    var wbars = [];
+    for(var i=0;i<arr.length;i++){ if(arr[i].date >= cutStr) wbars.push(arr[i]); }
+    if(wbars.length < 25){ showError('Not enough history in the selected window for ' + esc(sym) + '.'); return; }
+
+    // simulate: buy on the first trading day of each month
+    var sharesHeld=0, invested=0, contribs=0;
+    var dts=[];                              // years from each contribution to end (for IRR)
+    var valSeries=[], invSeries=[], dateSeries=[];
+    var lastMonth=null, startPrice=null;
+    for(i=0;i<wbars.length;i++){
+      var b = wbars[i];
+      var mkey = b.date.slice(0,7);
+      if(mkey !== lastMonth){
+        lastMonth = mkey;
+        sharesHeld += amt / b.price;
+        invested   += amt;
+        contribs++;
+        dts.push((lastMs - ms(b.date)) / YR);
+        if(startPrice==null) startPrice = b.price;   // price on the very first contribution
+      }
+      valSeries.push(sharesHeld * b.price);
+      invSeries.push(invested);
+      dateSeries.push(b.date);
+    }
+    if(contribs < 2){ showError('The selected window is too short to make at least two monthly contributions.'); return; }
+
+    var latestPrice = wbars[wbars.length-1].price;
+    var finalValue  = sharesHeld * latestPrice;
+    var totalReturn = (finalValue - invested) / invested;
+    var avgCost     = invested / sharesHeld;
+    var mwr         = moneyWeighted(amt, dts, finalValue);
+    var coveredYrs  = (lastMs - ms(wbars[0].date)) / YR;
+
+    // lump sum: invest the SAME total on day one
+    var lumpShares  = invested / startPrice;
+    var lumpFinal   = lumpShares * latestPrice;
+    var lumpReturn  = (lumpFinal - invested) / invested;
+    var diff        = lumpFinal - finalValue;
+    var lumpWon     = diff > 0;
+    var winner      = lumpWon ? 'Lump sum' : 'Dollar-cost averaging';
+    var ppGap       = Math.abs(lumpReturn - totalReturn) * 100;
+
+    var startDate = wbars[0].date, endDate = wbars[wbars.length-1].date;
+
+    var html='';
+    // headline
+    html+='<div class="card head">';
+    html+='<div class="kicker">DCA result &middot; '+esc(sym)+'</div>';
+    html+='<div class="bighead tnum">'+money(finalValue)+' <span class="'+(totalReturn>=0?'pos':'neg')+'" style="font-size:.62em">('+pctSigned(totalReturn)+')</span></div>';
+    html+='<div class="sub">Investing <b>'+money(amt)+'/mo</b> in <b>'+esc(sym)+'</b> for <b>'+coveredYrs.toFixed(1)+' years</b> &mdash; <b class="tnum">'+contribs+'</b> contributions totalling <b class="tnum">'+money(invested)+'</b>, now worth <b class="tnum">'+money(finalValue)+'</b>.</div>';
+    html+='<div class="mut win">First trading day of each month, '+esc(startDate)+' &rarr; '+esc(endDate)+'.'+(capped?' Requested '+reqYears+'y capped to all available history.':'')+'</div>';
+    html+='</div>';
+
+    // stats grid
+    html+='<div class="grid">';
+    html+=stat('Total invested', money(invested), false);
+    html+=stat('Final value', money(finalValue), true);
+    html+=stat('Total return', retSpan(totalReturn), false);
+    html+=stat('Annualized (money-wtd)', (mwr==null?'&mdash;':retSpan(mwr)), false);
+    html+=stat('Shares accumulated', sharesFmt(sharesHeld), false);
+    html+=stat('Avg cost basis', px(avgCost), false);
+    html+=stat('Current price', px(latestPrice), false);
+    html+='</div>';
+
+    // chart card
+    html+='<div class="card">';
+    html+='<div class="cardttl">Portfolio value vs. total invested</div>';
+    html+=lineChart(dateSeries, valSeries, invSeries);
+    html+='<div class="leg"><span><i style="background:#2f6bff"></i>Portfolio value</span><span><i style="background:#9aa1ad"></i>Total invested</span><span class="mut">'+esc(sym)+' &middot; '+coveredYrs.toFixed(1)+'y &middot; '+contribs+' buys</span></div>';
+    html+='<div class="mut" style="margin-top:8px">Blue marks your accumulated shares at each day\'s price; grey steps up by '+money(amt)+' on the first trading day of every month. The gap between the two lines is your gain (or loss). Current price '+px(latestPrice)+' vs your '+px(avgCost)+' average cost &mdash; you are '+(latestPrice>=avgCost?'<span class="pos">above</span>':'<span class="neg">below</span>')+' cost basis.</div>';
+    html+='</div>';
+
+    // lump-sum comparison card
+    html+='<div class="card">';
+    html+='<div class="cardttl">DCA vs. lump sum</div>';
+    html+='<div class="sub">Had you instead invested the whole <b class="tnum">'+money(invested)+'</b> on <b>'+esc(startDate)+'</b> at <b class="tnum">'+px(startPrice)+'</b> &mdash; buying <b class="tnum">'+sharesFmt(lumpShares)+'</b> shares at once &mdash; it would now be worth <b class="tnum">'+money(lumpFinal)+'</b> ('+retSpan(lumpReturn)+').</div>';
+    html+='<div class="reduce"><b>'+winner+' won this window</b> by <b class="tnum">'+money(Math.abs(diff))+'</b> ('+ppGap.toFixed(1)+' pp of return). DCA final '+money(finalValue)+' ('+pctSigned(totalReturn)+') vs lump sum '+money(lumpFinal)+' ('+pctSigned(lumpReturn)+').</div>';
+    html+='<div class="mut" style="margin-top:8px">In steadily rising markets, investing everything early (lump sum) usually wins because the money is exposed to growth for longer. DCA\'s advantage is a smoother average entry price and less timing risk when markets are choppy or falling &mdash; and it matches how most people actually save.</div>';
+    html+='</div>';
+
+    $('status').innerHTML='';
+    $('out').innerHTML=html;
+  }
+
+  // ---- init + auto-run from URL -------------------------------------------
+  function init(){
+    var qs = location.search || '';
+    var mS = qs.match(/[?&]symbol=([^&]+)/i);
+    var mA = qs.match(/[?&]amt=([^&]+)/i);
+    var mY = qs.match(/[?&]years=([^&]+)/i);
+    if(mS){ try{ $('sym').value = decodeURIComponent(mS[1]).toUpperCase().replace(/[^A-Z0-9.\-]/g,''); }catch(e){} }
+    if(mA){ try{ var av = parseFloat(decodeURIComponent(mA[1]).replace(/[^0-9.]/g,'')); if(isFinite(av)&&av>0){ $('amt').value = av; } }catch(e2){} }
+    if(mY){ try{ var yv = parseFloat(decodeURIComponent(mY[1]).replace(/[^0-9.]/g,'')); if(isFinite(yv)&&yv>0){ $('years').value = yv; } }catch(e3){} }
+
+    $('go').addEventListener('click', analyze);
+    $('sym').addEventListener('input', function(){ this.value = this.value.toUpperCase(); });
+    $('sym').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+    $('amt').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+    $('years').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+    var chips = document.querySelectorAll('.chip');
+    for(var i=0;i<chips.length;i++){
+      chips[i].addEventListener('click', function(){ $('sym').value = this.getAttribute('data-sym'); analyze(); });
+    }
+    if(mS && $('sym').value){ analyze(); }
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body>
+</html>

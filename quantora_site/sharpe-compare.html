@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Risk-Adjusted Return Comparator - Sharpe &amp; Sortino for up to 4 tickers | Quantora</title>
+<meta name="description" content="Compare up to four stocks or ETFs on Sharpe ratio, Sortino ratio, annualized return, volatility and max drawdown from ~3 years of daily returns. Free, no login, verified math.">
+<link rel="canonical" href="https://www.usequantora.com/sharpe-compare.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:9px 0 9px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 22px}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:240px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  #syms{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none;text-transform:uppercase;width:100%;letter-spacing:.02em}
+  #syms:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  #go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:12px 22px;font:600 15px Geist,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+  #go:hover{background:#2560ea}
+  #go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;color:#4a4f58;cursor:pointer;font-variant-numeric:tabular-nums}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  #out{margin-top:16px}
+  .state{background:#fffaf0;border:1px solid #f0d9a8;color:#7a5a14;border-radius:12px;padding:13px 15px;font-size:14px;line-height:1.55}
+  .state.err{background:#fdf2f2;border-color:#f2c8c8;color:#8a2b2b}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:qspin .7s linear infinite;vertical-align:-2px;margin-right:9px}
+  @keyframes qspin{to{transform:rotate(360deg)}}
+  .terp{font-size:15px;line-height:1.6;color:#14161c;margin:2px 0 14px}
+  .terp b{color:#14161c}.terp b.pos{color:#1663d6}.terp b.neg{color:#c0392b}
+  .terp.mut{color:#9aa1ad}
+  .tbl-scroll{overflow-x:auto}
+  table.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .cmp th,.cmp td{padding:11px 14px;border-bottom:1px solid rgba(17,24,39,.08);text-align:right;white-space:nowrap}
+  .cmp thead th{font-size:14px;font-weight:700;color:#14161c;border-bottom:1px solid rgba(17,24,39,.16);vertical-align:bottom}
+  .cmp th.metric,.cmp td.metric{text-align:left}
+  .cmp td.metric .ml{display:block;font-size:13.5px;color:#14161c;font-weight:600}
+  .cmp td.metric .ms{display:block;font-size:11px;color:#9aa1ad;margin-top:2px}
+  .cmp tbody td{font-size:14.5px;color:#14161c}
+  .cmp td.best{color:#1663d6;font-weight:700}
+  .cmp th.best{color:#2f6bff}
+  .cmp td.colhi,.cmp th.colhi{background:#f4f8ff}
+  .cmp .badge{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#2f6bff;font-weight:700;margin-top:3px}
+  .cmp .nodata{display:block;font-size:10.5px;color:#9aa1ad;font-weight:600;margin-top:3px}
+  .cmp tr.krow td{border-top:1.4px solid rgba(47,107,255,.22)}
+  .cmp tr.drow td{font-size:12.5px;color:#9aa1ad;font-weight:500;border-bottom:0}
+  .cmp tr.drow td.metric .ml{color:#9aa1ad;font-weight:600}
+  .mut{color:#9aa1ad}
+  .cap{font-size:11.5px;color:#9aa1ad;margin-top:12px;line-height:1.55}
+  .body{color:#4a4f58;font-size:14px;line-height:1.7;max-width:74ch;margin-top:24px}.body b{color:#14161c}
+  .foot{margin-top:14px;font-size:12px;color:#9aa1ad;line-height:1.6;max-width:80ch}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; RISK-ADJUSTED COMPARATOR</div>
+  <h1>Risk-Adjusted Return Comparator</h1>
+  <p class="lead">Line up as many as four stocks or ETFs and see which one actually pays you for the risk you take. Quantora pulls roughly three years of daily returns for each and computes annualized return, volatility, Sharpe, Sortino and max drawdown side by side &mdash; then flags the best risk-adjusted performer.</p>
+  <div class="card">
+    <div class="controls">
+      <div class="field"><label for="syms">Tickers (up to 4, comma-separated)</label><input id="syms" type="text" value="NVDA, AAPL, MSFT, SPY" placeholder="NVDA, AAPL, MSFT, SPY" autocomplete="off" spellcheck="false"></div>
+      <button id="go">Analyze</button>
+    </div>
+    <div class="chips">
+      <span class="chip" data-list="NVDA, AAPL, MSFT, GOOGL">NVDA, AAPL, MSFT, GOOGL</span>
+      <span class="chip" data-list="SPY, QQQ, TLT, GLD">SPY, QQQ, TLT, GLD</span>
+      <span class="chip" data-list="TSLA, NVDA, AMD, SMH">TSLA, NVDA, AMD, SMH</span>
+    </div>
+    <div id="out"></div>
+  </div>
+  <div class="body">Every figure is built from <b>daily returns</b> over the trailing window (up to ~756 trading sessions, roughly three years). <b>Annualized return</b> is the arithmetic mean daily return times 252; <b>CAGR</b> is the geometric first-to-last growth rate. <b>Annualized volatility</b> is the daily standard deviation times &radic;252. The <b>Sharpe ratio</b> divides return in excess of an assumed <b>4.0% risk-free rate</b> by that volatility, so it rewards return per unit of total risk. The <b>Sortino ratio</b> swaps volatility for downside deviation &mdash; it squares only the negative daily returns &mdash; so it penalizes only bad surprises. <b>Max drawdown</b> is the worst peak-to-trough decline over the window. Higher Sharpe and Sortino are better; a shallower (less negative) drawdown and lower volatility are better. All of these are backward-looking and unstable &mdash; a high past Sharpe does not guarantee a high future one.</div>
+  <p class="foot">Prices from Financial Modeling Prep history (may be delayed); the trailing window is capped near 756 trading sessions (~3 years) and shifts over time. Each ticker uses its own available history up to that cap, so windows can differ. Sharpe and Sortino assume a constant 4.0% annual risk-free rate &mdash; changing that assumption changes the ranking. Returns are annualized with 252 trading days and volatilities with the square root of 252. Past performance does not predict future results. Educational only - not investment advice.</p>
+</div>
+<script src="/nav.js" defer></script>
+<script>
+(function(){
+  'use strict';
+  var WIN=756;        /* ~3 years of daily returns */
+  var RF=0.04;        /* assumed annual risk-free rate */
+  var SQ=Math.sqrt(252);
+  var MIN_RETS=30;    /* minimum daily returns to compute stats */
+  var MAXTK=4;
+
+  function $(id){return document.getElementById(id);}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+  /* ---- concurrency limiter (cap 4) ---- */
+  function pMap(items,fn,limit){return new Promise(function(res){var r=new Array(items.length),i=0,a=0,d=0;function nx(){while(a<limit&&i<items.length){(function(k){a++;fn(items[k]).then(function(x){r[k]=x;},function(){r[k]=null;}).then(function(){a--;d++;if(d===items.length)res(r);else nx();});})(i++);}}if(!items.length)res([]);else nx();});}
+
+  /* ---- hardened fetch: ONE retry ---- */
+  function getJSON(url){return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});}
+  function fetchRetry(url){return getJSON(url).catch(function(){return new Promise(function(res){setTimeout(res,600);}).then(function(){return getJSON(url);});});}
+
+  function parseRows(j){
+    var arr=Array.isArray(j)?j:((j&&(j.data||j.historical))||[]);
+    var out=[],i;
+    for(i=0;i<arr.length;i++){
+      var row=arr[i]; if(!row) continue;
+      var d=(row.date!=null)?row.date:row.datetime;
+      var p=(row.price!=null)?row.price:((row.close!=null)?row.close:row.adjClose);
+      if(d==null||p==null) continue;
+      p=+p; if(!isFinite(p)||p<=0) continue;
+      out.push({date:String(d).slice(0,10),price:p});
+    }
+    /* API is newest-first; build a strictly date-ASCENDING series for return math */
+    out.sort(function(a,b){return a.date<b.date?-1:(a.date>b.date?1:0);});
+    return out;
+  }
+  function loadSym(sym){
+    return fetchRetry('/api/fmp?type=prices&symbol='+encodeURIComponent(sym))
+      .then(function(j){var rows=parseRows(j);return rows.length?rows:null;})
+      .catch(function(){return null;});
+  }
+
+  /* ---- math ---- */
+  function retsOf(p){var r=[],i;for(i=1;i<p.length;i++){r.push(p[i]/p[i-1]-1);}return r;}
+  function mean(a){var s=0,i;for(i=0;i<a.length;i++)s+=a[i];return a.length?s/a.length:0;}
+
+  function computeStats(rows){
+    if(!rows||rows.length<MIN_RETS+1) return null;
+    var N=Math.min(WIN,rows.length-1);          /* number of daily returns */
+    var win=rows.slice(rows.length-(N+1));       /* N+1 prices -> N returns */
+    var prices=[],i;
+    for(i=0;i<win.length;i++) prices.push(win[i].price);
+    var rets=retsOf(prices);
+    var n=rets.length;
+    if(n<MIN_RETS) return null;
+    var m=mean(rets);
+    var vs=0,ds=0,e,r;
+    for(i=0;i<n;i++){ r=rets[i]; e=r-m; vs+=e*e; if(r<0) ds+=r*r; }
+    var variance=n>1?vs/(n-1):0;                 /* sample variance */
+    var sd=Math.sqrt(variance);
+    var annRet=m*252;                            /* arithmetic, annualized */
+    var annVol=sd*SQ;
+    var cagr=Math.pow(prices[n]/prices[0],252/n)-1;
+    var dd=Math.sqrt(ds/n)*SQ;                    /* annualized downside deviation, target 0 */
+    var sharpe=annVol>0?(annRet-RF)/annVol:NaN;
+    var sortino=dd>0?(annRet-RF)/dd:NaN;
+    /* max drawdown on the price window (peak-to-trough) */
+    var peak=prices[0],mdd=0,dv;
+    for(i=1;i<prices.length;i++){ if(prices[i]>peak)peak=prices[i]; dv=prices[i]/peak-1; if(dv<mdd)mdd=dv; }
+    return {n:n,first:win[0].date,last:win[win.length-1].date,annRet:annRet,cagr:cagr,annVol:annVol,sharpe:sharpe,sortino:sortino,mdd:mdd};
+  }
+
+  /* ---- formatting (null => n/a) ---- */
+  function sPct(v){ if(v==null||!isFinite(v))return null; return (v>0?'+':'')+(v*100).toFixed(1)+'%'; }
+  function pct(v){ if(v==null||!isFinite(v))return null; return (v*100).toFixed(1)+'%'; }
+  function num2(v){ if(v==null||!isFinite(v))return null; return v.toFixed(2); }
+
+  var METRICS=[
+    {k:'annRet',label:'Annualized return',sub:'arithmetic mean &times; 252',fmt:sPct,dir:1},
+    {k:'cagr',label:'Return (CAGR)',sub:'geometric, first &rarr; last',fmt:sPct,dir:1},
+    {k:'annVol',label:'Annualized volatility',sub:'daily &sigma; &times; &radic;252',fmt:pct,dir:-1},
+    {k:'sharpe',label:'Sharpe ratio',sub:'(return &minus; 4% RF) / vol',fmt:num2,dir:1,key:true},
+    {k:'sortino',label:'Sortino ratio',sub:'(return &minus; 4% RF) / downside &sigma;',fmt:num2,dir:1},
+    {k:'mdd',label:'Max drawdown',sub:'worst peak-to-trough',fmt:sPct,dir:1}
+  ];
+
+  function bestIndex(results,key,dir){
+    var bi=-1,bv=null,i,v,st;
+    for(i=0;i<results.length;i++){
+      st=results[i].stats; if(!st) continue;
+      v=st[key]; if(v==null||!isFinite(v)) continue;
+      if(bv===null||(dir>0?v>bv:v<bv)){ bv=v; bi=i; }
+    }
+    return bi;
+  }
+
+  function renderResults(results){
+    var i,mi,html='';
+    var bestSharpeIdx=bestIndex(results,'sharpe',1);
+    var missing=[];
+    for(i=0;i<results.length;i++) if(!results[i].stats) missing.push(results[i].sym);
+
+    /* takeaway */
+    if(bestSharpeIdx>=0){
+      var b=results[bestSharpeIdx].stats, bs=results[bestSharpeIdx].sym;
+      var sortTxt=(b.sortino!=null&&isFinite(b.sortino))?(', Sortino <b>'+b.sortino.toFixed(2)+'</b>'):'';
+      html+='<div class="terp">Best risk-adjusted performer: <b class="pos">'+esc(bs)+'</b> &mdash; Sharpe <b>'+b.sharpe.toFixed(2)+'</b>'+sortTxt+' over '+b.n+' trading days (through '+esc(b.last)+').</div>';
+    }else{
+      html+='<div class="terp mut">No ticker had enough history to rank by Sharpe ratio.</div>';
+    }
+
+    /* table */
+    html+='<div class="tbl-scroll"><table class="cmp"><thead><tr><th class="metric">Metric</th>';
+    for(i=0;i<results.length;i++){
+      var top=(i===bestSharpeIdx);
+      var cls=[]; if(top)cls.push('best'); if(top)cls.push('colhi');
+      html+='<th'+(cls.length?' class="'+cls.join(' ')+'"':'')+'>'+esc(results[i].sym)
+           +(top?'<span class="badge">Top Sharpe</span>':'')
+           +(results[i].stats?'':'<span class="nodata">no data</span>')+'</th>';
+    }
+    html+='</tr></thead><tbody>';
+
+    for(mi=0;mi<METRICS.length;mi++){
+      var m=METRICS[mi];
+      var rbi=bestIndex(results,m.k,m.dir);
+      html+='<tr'+(m.key?' class="krow"':'')+'><td class="metric"><span class="ml">'+m.label+'</span><span class="ms">'+m.sub+'</span></td>';
+      for(i=0;i<results.length;i++){
+        var st=results[i].stats;
+        var cc=[]; if(i===bestSharpeIdx)cc.push('colhi');
+        var disp;
+        if(!st){ disp='<span class="mut">n/a</span>'; }
+        else{
+          var f=m.fmt(st[m.k]);
+          if(f===null){ disp='<span class="mut">n/a</span>'; }
+          else{ disp=f; if(i===rbi)cc.push('best'); }
+        }
+        html+='<td'+(cc.length?' class="'+cc.join(' ')+'"':'')+'>'+disp+'</td>';
+      }
+      html+='</tr>';
+    }
+
+    /* data window row */
+    html+='<tr class="drow"><td class="metric"><span class="ml">Data window</span><span class="ms">trading days used</span></td>';
+    for(i=0;i<results.length;i++){
+      var s2=results[i].stats;
+      var cc2=(i===bestSharpeIdx)?' class="colhi"':'';
+      html+='<td'+cc2+'>'+(s2?(s2.n+' d'):'&mdash;')+'</td>';
+    }
+    html+='</tr>';
+
+    html+='</tbody></table></div>';
+
+    var missNote=missing.length?(' Not computed (no or insufficient data): '+esc(missing.join(', '))+'.'):'';
+    html+='<div class="cap">Metrics use up to '+WIN+' trailing daily returns (~3 years) per ticker; each uses all history available up to that cap, so windows can differ (see &ldquo;Data window&rdquo;). Sharpe and Sortino assume a '+(RF*100).toFixed(1)+'% annual risk-free rate. The best value in each row is highlighted in blue; the top-Sharpe ticker&rsquo;s column is shaded.'+missNote+'</div>';
+
+    $('out').innerHTML=html;
+  }
+
+  /* ---- ui states ---- */
+  function setLoading(list){ $('out').innerHTML='<div class="state"><span class="spin"></span>Loading '+esc(list.join(', '))+' price history&hellip;</div>'; }
+  function showError(msg){ $('out').innerHTML='<div class="state err">'+msg+'</div>'; }
+
+  /* ---- input parsing: sanitize, dedupe, cap 4 ---- */
+  function parseSyms(raw){
+    var parts=String(raw||'').toUpperCase().split(/[^A-Z0-9.\-]+/);
+    var seen={},list=[],i,t;
+    for(i=0;i<parts.length;i++){
+      t=parts[i]; if(!t) continue;
+      t=t.replace(/^[.\-]+|[.\-]+$/g,'');
+      if(!t||t.length>12) continue;
+      if(seen[t]) continue;
+      seen[t]=1; list.push(t);
+      if(list.length>=MAXTK) break;
+    }
+    return list;
+  }
+
+  var busy=false;
+  function run(){
+    if(busy) return;
+    var list=parseSyms($('syms').value);
+    $('syms').value=list.join(', ');
+    if(!list.length){ showError('Enter 1&ndash;4 ticker symbols, comma-separated (e.g. NVDA, AAPL, MSFT, SPY).'); return; }
+    busy=true; $('go').disabled=true;
+    setLoading(list);
+    pMap(list,loadSym,4).then(function(all){
+      var results=[],i,anyOk=false;
+      for(i=0;i<list.length;i++){
+        var st=computeStats(all[i]);
+        if(st)anyOk=true;
+        results.push({sym:list[i],stats:st});
+      }
+      if(!anyOk){
+        showError('Could not load enough price history for any of: <b>'+esc(list.join(', '))+'</b>. Check the symbols, or the free data feed may be at its daily limit &mdash; try again shortly.');
+        done(); return;
+      }
+      renderResults(results);
+      done();
+    }).catch(function(e){
+      showError('Something went wrong: '+esc(String(e&&e.message||e)));
+      done();
+    });
+  }
+  function done(){ busy=false; $('go').disabled=false; }
+
+  /* ---- init + auto-run from ?syms= ---- */
+  function init(){
+    var m=/[?&]syms=([^&]+)/i.exec(location.search||'');
+    if(m&&m[1]){
+      try{ $('syms').value=decodeURIComponent(m[1].replace(/\+/g,' ')); }
+      catch(e){ $('syms').value=m[1]; }
+    }
+    $('go').addEventListener('click',run);
+    $('syms').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+    var chips=document.querySelectorAll('.chip'),c;
+    for(c=0;c<chips.length;c++){
+      chips[c].addEventListener('click',function(){ $('syms').value=this.getAttribute('data-list'); run(); });
+    }
+    if(m&&m[1]&&parseSyms($('syms').value).length){ run(); }
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',init); } else { init(); }
+})();
+</script>
+</body>
+</html>

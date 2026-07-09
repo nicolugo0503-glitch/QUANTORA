@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio Beta Calculator | Quantora</title>
+<meta name="description" content="Free portfolio beta calculator: enter up to five holdings with weights to get each position's beta vs SPY, the weighted portfolio beta, per-position beta contributions, and the SPY short needed to neutralize market risk.">
+<link rel="canonical" href="https://www.usequantora.com/portfolio-beta.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 10px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 24px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.grow{flex:1;min-width:260px}
+  .field label{font-size:11px;font-weight:600;color:#8a91ad;text-transform:uppercase;letter-spacing:.06em}
+  input{font:inherit;border:1px solid rgba(17,24,39,.15);border-radius:9px;padding:11px 13px;background:#fff;color:#14161c;outline:none}
+  input:focus{border-color:#2f6bff;box-shadow:0 0 0 3px rgba(47,107,255,.14)}
+  #holdings{width:100%;font-weight:600;letter-spacing:.01em}
+  #pv{width:150px}
+  #go{background:#2f6bff;color:#fff;border:0;border-radius:9px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px}
+  #go:hover{background:#2560ea}
+  #go:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .chip{border:1px solid rgba(17,24,39,.14);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:#4a4f58;cursor:pointer}
+  .chip:hover{border-color:#2f6bff;color:#2f6bff}
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .card.load{color:#4a4f58;font-size:14px;display:flex;align-items:center}
+  .card.err{color:#c0392b;border-color:rgba(192,57,43,.28)}
+  .tnum{font-variant-numeric:tabular-nums}
+  .pos{color:#1663d6}
+  .neg{color:#c0392b}
+  .mut{color:#9aa1ad}
+  .head .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:#8a91ad}
+  .bighead{font-size:clamp(30px,5vw,46px);font-weight:700;letter-spacing:-.02em;margin:8px 0 8px;color:#14161c}
+  .card.head.hedge .bighead{font-size:clamp(21px,3vw,30px)}
+  .sub{font-size:15px;color:#4a4f58;line-height:1.55}
+  .win{font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:14px 16px}
+  .stat .k{font-size:12px;color:#9aa1ad;font-weight:600;margin-bottom:7px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .stat.hi{border-color:rgba(47,107,255,.4);background:linear-gradient(180deg,#ffffff,#f4f8ff)}
+  .stat.hi .k{color:#2f6bff}
+  .stat.hi .v{color:#2f6bff}
+  .cardttl{font-size:13px;font-weight:600;color:#4a4f58;margin-bottom:12px}
+  .tblwrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#8a91ad;font-weight:600;padding:0 12px 9px;border-bottom:1px solid rgba(17,24,39,.12)}
+  td{padding:11px 12px;border-bottom:1px solid rgba(17,24,39,.06)}
+  th.r,td.r{text-align:right}
+  tbody tr:last-child td{border-bottom:0}
+  tr.tot td{font-weight:700;border-top:2px solid rgba(17,24,39,.14);border-bottom:0;padding-top:12px}
+  .foot{color:#9aa1ad;font-size:12px;line-height:1.6;margin-top:8px;max-width:78ch}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:sp .7s linear infinite;margin-right:9px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; PORTFOLIO BETA</div>
+  <h1>Portfolio Beta</h1>
+  <p class="lead">Enter up to five holdings and their weights. Quantora regresses each position's daily returns on SPY over the last ~2 years to estimate its beta, then blends them by weight into a single portfolio beta &mdash; your book's sensitivity to the broad market &mdash; and shows the SPY short that would neutralize it.</p>
+  <div class="controls">
+    <div class="field grow"><label for="holdings">Holdings (TICKER:WEIGHT, up to 5)</label><input id="holdings" type="text" value="NVDA:40, AAPL:30, JPM:30" placeholder="NVDA:40, AAPL:30, JPM:30" autocomplete="off" spellcheck="false"></div>
+    <div class="field"><label for="pv">Portfolio value ($)</label><input id="pv" type="number" value="100000" min="0" step="1000"></div>
+    <button id="go">Analyze</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div id="status"></div>
+  <div id="out"></div>
+  <p class="foot">Method: each holding's beta is the slope of its daily returns regressed on SPY (covariance / variance) over the trailing ~2 years (~504 sessions), and the portfolio beta is the weight-weighted average of those betas. Weights you enter &mdash; percentages or dollar amounts &mdash; are normalized to sum to 100%. To neutralize market risk, short beta &times; portfolio value in SPY. Beta is estimated from historical data and is unstable: it drifts over time and can jump in a crisis, so re-estimate and rebalance regularly. A beta hedge strips out broad-market (systematic) risk but leaves each position's stock-specific, idiosyncratic risk fully intact. Educational only - not investment advice.</p>
+</div>
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  var WIN = 504;      // ~2 years of trading days
+  var MINOVL = 40;    // minimum overlapping daily returns to trust a beta
+  var MAXPOS = 5;     // cap on holdings
+
+  var CHIPS = [
+    { label:'Big Tech', v:'NVDA:40, AAPL:30, MSFT:30' },
+    { label:'Balanced', v:'SPY:40, JPM:30, JNJ:30' },
+    { label:'High beta', v:'TSLA:45, NVDA:35, COIN:20' },
+    { label:'Defensive', v:'KO:34, PG:33, JNJ:33' }
+  ];
+
+  // ---- concurrency limiter (cap 4) ----------------------------------------
+  function pMap(items,fn,limit){return new Promise(function(res){var r=new Array(items.length),i=0,a=0,d=0;function nx(){while(a<limit&&i<items.length){(function(k){a++;fn(items[k]).then(function(x){r[k]=x;},function(){r[k]=null;}).then(function(){a--;d++;if(d===items.length)res(r);else nx();});})(i++);}}if(!items.length)res([]);else nx();});}
+
+  // ---- hardened fetch: one retry on failure -------------------------------
+  function getJSON(url){ return fetch(url).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }); }
+  function fetchRetry(url){ return getJSON(url).catch(function(){ return new Promise(function(res){ setTimeout(res,650); }).then(function(){ return getJSON(url); }); }); }
+
+  function toArr(j){
+    if(Array.isArray(j)) return j;
+    if(j && Array.isArray(j.data)) return j.data;
+    if(j && Array.isArray(j.historical)) return j.historical;
+    if(j && j.data && Array.isArray(j.data.historical)) return j.data.historical;
+    return [];
+  }
+
+  // load one symbol -> strictly date-ASCENDING array of {date, price}, or null
+  function loadSym(s){
+    return fetchRetry('/api/fmp?type=prices&symbol=' + encodeURIComponent(s)).then(function(j){
+      var arr = toArr(j), out = [], k;
+      for(k=0;k<arr.length;k++){
+        var row = arr[k] || {};
+        var d = (row.date!=null) ? row.date : row.datetime;
+        var p = (row.price!=null) ? row.price : ((row.close!=null) ? row.close : row.adjClose);
+        p = +p;
+        if(d!=null && isFinite(p) && p>0) out.push({ date:String(d).slice(0,10), price:p });
+      }
+      // API is newest-first; sort ascending for return math
+      out.sort(function(a,b){ return a.date<b.date ? -1 : (a.date>b.date ? 1 : 0); });
+      return out;
+    }).catch(function(){ return null; });
+  }
+
+  // ---- math ----------------------------------------------------------------
+  // align a holding's price array against the SPY date->price map, then build
+  // date-ascending daily returns capped at the last WIN observations.
+  function alignRet(stockArr, spyMap){
+    var sp=[], mp=[], i;
+    for(i=0;i<stockArr.length;i++){
+      var d = stockArr[i].date;
+      if(spyMap[d]!=null){ sp.push(stockArr[i].price); mp.push(spyMap[d]); }
+    }
+    var rs=[], rm=[];
+    for(i=1;i<sp.length;i++){ rs.push(sp[i]/sp[i-1]-1); rm.push(mp[i]/mp[i-1]-1); }
+    var N = Math.min(WIN, rs.length);
+    rs = rs.slice(rs.length-N); rm = rm.slice(rm.length-N);
+    return { rs:rs, rm:rm, n:N };
+  }
+  function computeBeta(rs, rm){
+    var N = Math.min(rs.length, rm.length), i;
+    if(N < 2) return null;
+    var ms=0, mm=0;
+    for(i=0;i<N;i++){ ms+=rs[i]; mm+=rm[i]; }
+    ms/=N; mm/=N;
+    var cov=0, vm=0;
+    for(i=0;i<N;i++){ var a=rs[i]-ms, b=rm[i]-mm; cov+=a*b; vm+=b*b; }
+    if(vm<=0) return null;
+    return cov/vm;   // cov(r_i, r_spy) / var(r_spy)
+  }
+
+  // ---- formatting ----------------------------------------------------------
+  function money(x){ var neg=x<0; var v=Math.round(Math.abs(x)); var s='$'+v.toLocaleString('en-US'); return neg?'-'+s:s; }
+  function px(x){ return '$'+Number(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function shares(x){ var a=Math.abs(x); var v = a>=100 ? Math.round(x) : Math.round(x*10)/10; return v.toLocaleString('en-US'); }
+  function pct(x){ return (x*100).toFixed(1)+'%'; }
+  function pct0(x){ return Math.round(x*100)+'%'; }
+  function num(x){ return x.toFixed(2); }
+
+  // ---- holdings parsing ----------------------------------------------------
+  function parseHoldings(raw){
+    var parts = String(raw||'').split(','), out=[], i;
+    for(i=0;i<parts.length && out.length<MAXPOS;i++){
+      var seg = parts[i].trim();
+      if(!seg) continue;
+      var kv = seg.split(':');
+      var sym = (kv[0]||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+      if(!sym) continue;
+      var w = parseFloat(String(kv[1]!=null?kv[1]:'').replace(/[^0-9.\-]/g,''));
+      if(!isFinite(w) || w<=0) w = NaN;   // unset -> fill with equal weight below
+      out.push({ sym:sym, w:w });
+    }
+    // any missing/invalid weights default to 1 (equal share)
+    for(i=0;i<out.length;i++){ if(!isFinite(out[i].w) || out[i].w<=0) out[i].w = 1; }
+    // dedupe, keep first occurrence
+    var seen={}, dedup=[];
+    for(i=0;i<out.length;i++){ var s=out[i].sym; if(seen[s]) continue; seen[s]=1; dedup.push(out[i]); }
+    return dedup;
+  }
+
+  // ---- ui states -----------------------------------------------------------
+  function setLoading(parsed){
+    var names=[]; for(var i=0;i<parsed.length;i++) names.push(esc(parsed[i].sym));
+    $('out').innerHTML='';
+    $('status').innerHTML='<div class="card load"><span class="spin"></span>Loading '+names.join(', ')+' and SPY price history&hellip;</div>';
+  }
+  function showError(msg){ $('status').innerHTML=''; $('out').innerHTML='<div class="card err">'+msg+'</div>'; }
+  function stat(k,v,hi){ return '<div class="stat'+(hi?' hi':'')+'"><div class="k">'+k+'</div><div class="v tnum">'+v+'</div></div>'; }
+
+  function betaRead(b){
+    if(b<0) return 'This portfolio is <b class="neg">inversely</b> exposed to the market (beta '+num(b)+'). It has historically tended to move opposite SPY.';
+    if(b>1.03) return 'This portfolio is <b>'+pct0(b-1)+' more volatile</b> than the market. A 1% move in SPY has historically lined up with about a <b>'+num(b)+'%</b> move in the portfolio.';
+    if(b<0.97) return 'This portfolio is <b>'+pct0(1-b)+' less volatile</b> than the market (beta below 1). It has historically moved less than SPY, damping broad swings.';
+    return 'This portfolio moves <b>roughly in line</b> with the market (beta near 1).';
+  }
+
+  // ---- main ----------------------------------------------------------------
+  var busy=false;
+  function analyze(){
+    if(busy) return;
+    var raw = ($('holdings').value||'').trim();
+    var pv = parseFloat($('pv').value);
+    if(!isFinite(pv) || pv<=0){ pv=100000; $('pv').value=100000; }
+    var parsed = parseHoldings(raw);
+    if(!parsed.length){ showError('Enter at least one holding as TICKER:WEIGHT, e.g. NVDA:40, AAPL:30, JPM:30.'); return; }
+
+    busy=true; $('go').disabled=true;
+    setLoading(parsed);
+
+    var syms=['SPY'], seen={SPY:1}, i;
+    for(i=0;i<parsed.length;i++){ if(!seen[parsed[i].sym]){ seen[parsed[i].sym]=1; syms.push(parsed[i].sym); } }
+
+    pMap(syms, loadSym, 4).then(function(res){
+      var dict={}; for(var k=0;k<syms.length;k++) dict[syms[k]]=res[k];
+      try{ render(parsed, pv, dict); }
+      catch(err){ showError('Could not compute portfolio beta: ' + (err&&err.message?err.message:'unknown error') + '.'); }
+      done();
+    }).catch(function(e){
+      showError(e&&e.message ? e.message : 'Could not load market data. Please try again.');
+      done();
+    });
+  }
+  function done(){ busy=false; $('go').disabled=false; }
+
+  function render(parsed, pv, dict){
+    var spyArr = dict['SPY'];
+    if(!spyArr || spyArr.length < MINOVL+1){ showError('Could not load SPY price history to benchmark against. The free data feed may be at its daily limit &mdash; try again shortly.'); return; }
+    var spyMap={}, i;
+    for(i=0;i<spyArr.length;i++) spyMap[spyArr[i].date]=spyArr[i].price;
+    var spyPrice = spyArr[spyArr.length-1].price;
+    var latest = spyArr[spyArr.length-1].date;
+
+    var rows=[], dropped=[], maxN=0;
+    for(i=0;i<parsed.length;i++){
+      var h = parsed[i];
+      var arr = dict[h.sym];
+      if(!arr || arr.length < MINOVL+1){ dropped.push({ sym:h.sym, why:'no usable data' }); continue; }
+      var al = alignRet(arr, spyMap);
+      if(al.n < MINOVL){ dropped.push({ sym:h.sym, why:'too little overlap with SPY' }); continue; }
+      var beta = computeBeta(al.rs, al.rm);
+      if(beta==null){ dropped.push({ sym:h.sym, why:'zero SPY variance' }); continue; }
+      if(al.n > maxN) maxN = al.n;
+      rows.push({ sym:h.sym, w:h.w, beta:beta, n:al.n });
+    }
+    if(!rows.length){ showError('None of the holdings had enough overlapping history with SPY to estimate beta. Try major, liquid tickers.'); return; }
+
+    // renormalize weights over the surviving holdings so they sum to 1.0
+    var sw=0; for(i=0;i<rows.length;i++) sw+=rows[i].w;
+    for(i=0;i<rows.length;i++){
+      rows[i].nw = sw>0 ? rows[i].w/sw : 1/rows.length;
+      rows[i].contrib = rows[i].nw * rows[i].beta;
+    }
+    var pBeta=0; for(i=0;i<rows.length;i++) pBeta += rows[i].contrib;
+
+    var hedgeNotional = pBeta * pv;           // SHORT this much SPY to neutralize
+    var spyShares = hedgeNotional / spyPrice;
+    var verb = hedgeNotional>=0 ? 'Short' : 'Buy';
+
+    var tbody='';
+    for(i=0;i<rows.length;i++){
+      var rr=rows[i];
+      tbody += '<tr><td><b>'+esc(rr.sym)+'</b></td>'
+             + '<td class="r tnum">'+pct(rr.nw)+'</td>'
+             + '<td class="r tnum">'+num(rr.beta)+'</td>'
+             + '<td class="r tnum">'+num(rr.contrib)+'</td></tr>';
+    }
+    tbody += '<tr class="tot"><td>Portfolio</td><td class="r tnum">100.0%</td><td class="r mut">&mdash;</td><td class="r tnum">'+num(pBeta)+'</td></tr>';
+
+    var html='';
+    // headline: big portfolio beta
+    html+='<div class="card head">';
+    html+='<div class="kicker">Weighted portfolio beta vs SPY</div>';
+    html+='<div class="bighead tnum">'+num(pBeta)+'</div>';
+    html+='<div class="sub">'+betaRead(pBeta)+'</div>';
+    html+='<div class="mut win">Blended from '+rows.length+' position'+(rows.length>1?'s':'')+' and up to '+maxN+' daily returns through '+esc(latest)+'.</div>';
+    html+='</div>';
+    // context grid
+    html+='<div class="grid">';
+    html+=stat('Portfolio beta', num(pBeta), true);
+    html+=stat('Positions', String(rows.length), false);
+    html+=stat('SPY last', px(spyPrice), false);
+    html+=stat('Returns used', String(maxN), false);
+    html+='</div>';
+    // per-position table
+    html+='<div class="card">';
+    html+='<div class="cardttl">Position breakdown</div>';
+    html+='<div class="tblwrap"><table><thead><tr><th>Ticker</th><th class="r">Weight</th><th class="r">Beta vs SPY</th><th class="r">Beta contribution</th></tr></thead><tbody>'+tbody+'</tbody></table></div>';
+    if(dropped.length){
+      var dn=[]; for(i=0;i<dropped.length;i++) dn.push(esc(dropped[i].sym)+' ('+esc(dropped[i].why)+')');
+      html+='<div class="mut" style="margin-top:12px">Skipped, and weights renormalized over the rest: '+dn.join(', ')+'.</div>';
+    }
+    html+='<div class="mut" style="margin-top:8px">Beta contribution = normalized weight &times; beta; the contributions sum to the portfolio beta.</div>';
+    html+='</div>';
+    // implied market hedge
+    html+='<div class="card head hedge">';
+    html+='<div class="kicker">Implied market hedge</div>';
+    html+='<div class="bighead tnum">'+verb+' '+money(Math.abs(hedgeNotional))+' of SPY</div>';
+    html+='<div class="sub">&asymp; <span class="tnum">'+shares(Math.abs(spyShares))+' SPY shares</span> (SPY @ '+px(spyPrice)+') to neutralize the market (beta) exposure of your <b>'+money(pv)+'</b> portfolio.</div>';
+    html+='<div class="mut win">Hedge notional = portfolio beta &times; portfolio value = '+num(pBeta)+' &times; '+money(pv)+'. This offsets systematic risk only &mdash; each holding\'s stock-specific risk remains.</div>';
+    html+='</div>';
+
+    $('status').innerHTML='';
+    $('out').innerHTML=html;
+  }
+
+  // ---- init + auto-run from URL -------------------------------------------
+  function init(){
+    // quick example chips
+    var box=$('chips');
+    for(var c=0;c<CHIPS.length;c++){
+      (function(item){
+        var b=document.createElement('span');
+        b.className='chip'; b.textContent=item.label;
+        b.addEventListener('click', function(){ $('holdings').value=item.v; analyze(); });
+        box.appendChild(b);
+      })(CHIPS[c]);
+    }
+
+    var qs = location.search || '';
+    var mH = qs.match(/[?&]holdings=([^&]+)/i);
+    var mV = qs.match(/[?&]pv=([^&]+)/i);
+    if(mH){ try{ $('holdings').value = decodeURIComponent(mH[1]); }catch(e){ $('holdings').value = mH[1]; } }
+    if(mV){ try{ var v=parseFloat(decodeURIComponent(mV[1]).replace(/[^0-9.]/g,'')); if(isFinite(v)&&v>0) $('pv').value=v; }catch(e2){} }
+
+    $('go').addEventListener('click', analyze);
+    $('holdings').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+    $('pv').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); analyze(); } });
+
+    if(mH && $('holdings').value.trim()) analyze();
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body>
+</html>

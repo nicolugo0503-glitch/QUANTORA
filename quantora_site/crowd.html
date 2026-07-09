@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crowd Consensus - most-called tickers &amp; community sentiment | Quantora</title>
+<meta name="description" content="A live read on where Quantora's community stands: the most-called tickers, crowd bull/bear sentiment on each, what's trending over the last 30 days, and the most active handles - aggregated from public, timestamped market calls. Free, no login.">
+<link rel="canonical" href="https://www.usequantora.com/crowd.html">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  *{box-sizing:border-box}
+  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 24px 90px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
+  h1{font-size:clamp(24px,3.2vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 10px}
+  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:74ch;margin:0 0 22px}
+
+  .tnum{font-variant-numeric:tabular-nums}
+  .bull{color:#1663d6}
+  .bear{color:#c0392b}
+  .mut{color:#9aa1ad}
+  .h{font-weight:700}
+  a.hl{color:inherit;text-decoration:none}
+  a.hl:hover{text-decoration:underline}
+
+  /* headline stats */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+  .stat{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:14px 16px}
+  .stat .k{font-size:12px;color:#9aa1ad;font-weight:600;margin-bottom:7px}
+  .stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .stat.hi{border-color:rgba(47,107,255,.4);background:linear-gradient(180deg,#ffffff,#f4f8ff)}
+  .stat.hi .k{color:#2f6bff}
+
+  /* cards / panels */
+  .card{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .card.load{color:#4a4f58;font-size:14px;display:flex;align-items:center}
+  .card.err{color:#c0392b;border-color:rgba(192,57,43,.28)}
+  .card.empty{color:#4a4f58;font-size:14.5px;line-height:1.6}
+  .card.empty a{font-weight:600}
+  .obcard{margin-bottom:22px}
+  .obhead{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
+  .panel{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:6px 16px 12px;margin-bottom:6px}
+
+  .sect{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:#8a91ad;font-weight:600;margin:26px 0 10px}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:right;padding:9px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:#8a91ad;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(17,24,39,.1)}
+  td:first-child,th:first-child{text-align:left}
+  tr td{border-bottom:1px solid rgba(17,24,39,.05)}
+  .l{text-align:left}
+  .rank{color:#9aa1ad;width:26px}
+  .tkr{font-weight:700}
+
+  /* split consensus bars */
+  .cbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:#eceef2;width:100%;min-width:120px}
+  .cbar .b{background:#1663d6}
+  .cbar .d{background:#c0392b}
+  .cbar.mini{height:7px;min-width:84px}
+  .barcol{width:38%}
+  .obar{display:flex;height:22px;border-radius:8px;overflow:hidden;background:#eceef2;margin-top:10px}
+  .obar .b{background:#1663d6}
+  .obar .d{background:#c0392b}
+
+  /* trending chips */
+  .tchips{display:flex;flex-wrap:wrap;gap:9px;padding:8px 0 4px}
+  .tchip{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:999px;padding:7px 13px;font-size:13px;text-decoration:none;color:#14161c}
+  .tchip:hover{border-color:#2f6bff}
+  .tchip .tk{font-weight:700}
+  .tchip .c{color:#9aa1ad;font-variant-numeric:tabular-nums}
+  .tchip .bull,.tchip .bear,.tchip .mut{font-weight:700;font-variant-numeric:tabular-nums}
+
+  .empty{color:#9aa1ad;font-size:13.5px;padding:14px 6px;line-height:1.6}
+  .foot{color:#9aa1ad;font-size:12px;line-height:1.6;margin-top:22px;max-width:80ch}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(47,107,255,.25);border-top-color:#2f6bff;border-radius:50%;animation:sp .7s linear infinite;margin-right:9px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  @media(max-width:560px){
+    .barcol{width:auto}
+    .cbar{min-width:90px}
+  }
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<div class="wrap">
+  <div class="eyebrow">QUANTORA &middot; CROWD CONSENSUS</div>
+  <h1>Crowd Consensus</h1>
+  <p class="lead">A live read on where the community stands. Every public call on Quantora is timestamped and pseudonymous &mdash; this view aggregates the latest calls into the most-called tickers, the crowd's bull/bear sentiment on each, what's trending this month, and who's most active. It's crowd opinion, not a signal.</p>
+
+  <div id="status"></div>
+  <div id="app"></div>
+
+  <p class="foot">This view aggregates pseudonymous, public calls from Quantora's track record &mdash; it is a snapshot of crowd opinion, not a signal or recommendation. Net sentiment is simply (bullish calls minus bearish calls) divided by total calls on a ticker, ranging from -100% (fully bearish) to +100% (fully bullish). A small number of calls is noisy and can swing hard on a single new post, so weight thinly-covered names and handles accordingly. Prices, timing and realized outcomes are locked and scored on the track page, not here. Educational only - not investment advice.</p>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function cleanH(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,30); }
+  function nfmt(n){ return Number(n).toLocaleString('en-US'); }
+  function pctRound(x){ return Math.round(x*100); }
+  function netPct(v){ return (v>0?'+':'')+Math.round(v*100)+'%'; }
+  function netCls(v){ return v>0.0001 ? 'bull' : (v<-0.0001 ? 'bear' : 'mut'); }
+  function wpct(x){ return (Math.max(0,Math.min(1,x))*100).toFixed(2)+'%'; }
+
+  // ---- ui states -----------------------------------------------------------
+  function setLoading(){
+    $('status').innerHTML='<div class="card load"><span class="spin"></span>Loading community calls&hellip;</div>';
+    $('app').innerHTML='';
+  }
+  function showError(msg){
+    $('status').innerHTML='';
+    $('app').innerHTML='<div class="card err">'+esc(msg)+'</div>';
+  }
+  function showEmpty(){
+    $('status').innerHTML='';
+    $('app').innerHTML='<div class="card empty">No calls yet &mdash; be the first to make one. '
+      +'<a class="hl" style="color:#2f6bff" href="/track.html">Publish a call on the track record &rarr;</a></div>';
+  }
+
+  // ---- load ----------------------------------------------------------------
+  function load(){
+    setLoading();
+    fetch('/api/fmp?type=calls&limit=500')
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var raw = (j && j.data) || [];
+        var norm = [];
+        for(var i=0;i<raw.length;i++){
+          var c = raw[i]; if(!c) continue;
+          var t = String(c.ticker||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'');
+          if(!t) continue;
+          var h = cleanH(c.handle);
+          var dir = (c.dir==='bear') ? 'bear' : 'bull';
+          var ts = Date.parse(c.created_at);
+          norm.push({ ticker:t, handle:h, dir:dir, ts:isFinite(ts)?ts:null });
+        }
+        if(!norm.length){ showEmpty(); return; }
+        try{ render(norm); }
+        catch(err){ showError('Could not aggregate the calls: ' + (err&&err.message?err.message:'unknown error') + '.'); }
+      })
+      .catch(function(){ showError('Could not load community calls right now. Please try again in a moment.'); });
+  }
+
+  // ---- aggregate + render --------------------------------------------------
+  function render(calls){
+    var i, c;
+    var byT = {}, byH = {}, bullN = 0, bearN = 0;
+    for(i=0;i<calls.length;i++){
+      c = calls[i];
+      if(c.dir==='bull') bullN++; else bearN++;
+      var a = byT[c.ticker] || (byT[c.ticker] = {ticker:c.ticker, total:0, bull:0, bear:0});
+      a.total++; a[c.dir]++;
+      if(c.handle){
+        var b = byH[c.handle] || (byH[c.handle] = {handle:c.handle, total:0, bull:0, bear:0});
+        b.total++; b[c.dir]++;
+      }
+    }
+    var total = calls.length;
+    var tickers = Object.keys(byT);
+    var handles = Object.keys(byH);
+
+    // trending: calls in the last 30 days
+    var cut = Date.now() - 30*864e5;
+    var trend = {};
+    for(i=0;i<calls.length;i++){
+      c = calls[i];
+      if(c.ts!=null && c.ts >= cut){
+        var tt = trend[c.ticker] || (trend[c.ticker] = {ticker:c.ticker, total:0, bull:0, bear:0});
+        tt.total++; tt[c.dir]++;
+      }
+    }
+
+    var html = '';
+
+    // ---- headline stat row ----
+    var bp = total ? bullN/total : 0;
+    var brp = total ? bearN/total : 0;
+    var bvb = '<span class="bull">'+pctRound(bp)+'%</span> '
+            + '<span class="mut" style="font-weight:600">/</span> '
+            + '<span class="bear">'+pctRound(brp)+'%</span>';
+    html += '<div class="grid">'
+      + stat('Total calls', nfmt(total), false)
+      + stat('Unique tickers', nfmt(tickers.length), false)
+      + stat('Active handles', nfmt(handles.length), false)
+      + stat('Bull vs bear', bvb, true)
+      + '</div>';
+
+    // ---- overall consensus bar ----
+    html += '<div class="card obcard">'
+      + '<div class="obhead"><span class="bull">&#9650; Bull '+pctRound(bp)+'%</span>'
+      + '<span class="bear">Bear '+pctRound(brp)+'% &#9660;</span></div>'
+      + '<div class="obar"><div class="b" style="width:'+wpct(bp)+'"></div><div class="d" style="width:'+wpct(brp)+'"></div></div>'
+      + '<div class="mut" style="margin-top:8px;font-size:12px">Overall sentiment across all '+nfmt(total)+' call'+(total>1?'s':'')+' in the sample.</div>'
+      + '</div>';
+
+    // ---- most-called tickers ----
+    var top = tickers.map(function(k){ return byT[k]; })
+      .sort(function(x,y){ return (y.total-x.total) || (x.ticker<y.ticker?-1:(x.ticker>y.ticker?1:0)); })
+      .slice(0,15);
+    var trows = '';
+    top.forEach(function(a, idx){
+      var net = (a.bull-a.bear)/a.total;
+      trows += '<tr>'
+        + '<td class="rank">'+(idx+1)+'</td>'
+        + '<td class="l"><a class="hl tkr" href="/stock/'+esc(a.ticker)+'">'+esc(a.ticker)+'</a></td>'
+        + '<td class="l barcol"><div class="cbar" title="'+a.bull+' bull / '+a.bear+' bear">'
+          + '<div class="b" style="width:'+wpct(a.bull/a.total)+'"></div>'
+          + '<div class="d" style="width:'+wpct(a.bear/a.total)+'"></div></div></td>'
+        + '<td class="bull">'+a.bull+'</td>'
+        + '<td class="bear">'+a.bear+'</td>'
+        + '<td class="h">'+a.total+'</td>'
+        + '<td class="h '+netCls(net)+'">'+netPct(net)+'</td>'
+        + '</tr>';
+    });
+    html += '<div class="sect">Most-called tickers</div>'
+      + '<div class="panel"><table>'
+      + '<thead><tr><th class="rank"></th><th class="l">Ticker</th><th class="l">Bull / bear consensus</th>'
+      + '<th>Bull</th><th>Bear</th><th>Total</th><th>Net</th></tr></thead>'
+      + '<tbody>'+trows+'</tbody></table></div>';
+
+    // ---- trending (last 30 days) ----
+    var trList = Object.keys(trend).map(function(k){ return trend[k]; })
+      .sort(function(x,y){ return (y.total-x.total) || (x.ticker<y.ticker?-1:(x.ticker>y.ticker?1:0)); })
+      .slice(0,8);
+    html += '<div class="sect">Trending &middot; last 30 days</div>';
+    if(!trList.length){
+      html += '<div class="panel"><div class="empty">No calls in the last 30 days.</div></div>';
+    } else {
+      var chips = '';
+      trList.forEach(function(a){
+        var net = (a.bull-a.bear)/a.total;
+        chips += '<a class="tchip" href="/stock/'+esc(a.ticker)+'">'
+          + '<span class="tk">'+esc(a.ticker)+'</span>'
+          + '<span class="c">'+a.total+' call'+(a.total>1?'s':'')+'</span>'
+          + '<span class="'+netCls(net)+'">'+netPct(net)+'</span></a>';
+      });
+      html += '<div class="panel"><div class="tchips">'+chips+'</div></div>';
+    }
+
+    // ---- most active handles ----
+    var hTop = handles.map(function(k){ return byH[k]; })
+      .sort(function(x,y){ return (y.total-x.total) || (x.handle<y.handle?-1:(x.handle>y.handle?1:0)); })
+      .slice(0,10);
+    html += '<div class="sect">Most active handles</div>';
+    if(!hTop.length){
+      html += '<div class="panel"><div class="empty">No handles yet.</div></div>';
+    } else {
+      var hrows = '';
+      hTop.forEach(function(a, idx){
+        hrows += '<tr>'
+          + '<td class="rank">'+(idx+1)+'</td>'
+          + '<td class="l"><a class="hl" style="color:#2f6bff" href="/u/'+esc(a.handle)+'">@'+esc(a.handle)+'</a></td>'
+          + '<td class="h">'+a.total+'</td>'
+          + '<td class="bull">'+a.bull+'</td>'
+          + '<td class="bear">'+a.bear+'</td>'
+          + '<td class="l barcol"><div class="cbar mini" title="'+a.bull+' bull / '+a.bear+' bear">'
+            + '<div class="b" style="width:'+wpct(a.bull/a.total)+'"></div>'
+            + '<div class="d" style="width:'+wpct(a.bear/a.total)+'"></div></div></td>'
+          + '</tr>';
+      });
+      html += '<div class="panel"><table>'
+        + '<thead><tr><th class="rank"></th><th class="l">Handle</th><th>Calls</th>'
+        + '<th>Bull</th><th>Bear</th><th class="l">Mix</th></tr></thead>'
+        + '<tbody>'+hrows+'</tbody></table></div>';
+    }
+
+    $('status').innerHTML = '';
+    $('app').innerHTML = html;
+  }
+
+  function stat(k, v, hi){
+    return '<div class="stat'+(hi?' hi':'')+'"><div class="k">'+k+'</div><div class="v tnum">'+v+'</div></div>';
+  }
+
+  // ---- init ----------------------------------------------------------------
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', load); } else { load(); }
+})();
+</script>
+<script src="/nav.js" defer></script>
+</body>
+</html>
