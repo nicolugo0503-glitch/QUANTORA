@@ -340,6 +340,11 @@
 
   <url><loc>https://www.usequantora.com/compare.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/track.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.usequantora.com/crowd.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/dca.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/sharpe-compare.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/rolling-sharpe.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.usequantora.com/portfolio-beta.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/hedge.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/kelly.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://www.usequantora.com/range.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
