@@ -4,15 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quantora · Today — everything moving, right now</title>
-<meta name="description" content="Your daily market command center. Live markets, an AI brief, movers, news, video, the economic calendar and crypto — everything, the moment you arrive.">
+<meta name="description" content="Your daily market command center. Live markets, an AI brief, indices, megacaps, crypto, and market video — everything, the moment you arrive.">
 <link rel="stylesheet" href="/theme.css">
 <style>
-  :root{ --gap:14px; }
   body{margin:0;background:var(--page,#fcfcfd);color:var(--ink,#0a0a0b);font-family:'Inter',system-ui,sans-serif}
   .rc{max-width:1240px;margin:0 auto;padding:20px 22px 90px}
-  /* ticker ribbon */
   .rib{position:relative;overflow:hidden;border:1px solid var(--line,#ececee);background:#fff;border-radius:12px;box-shadow:var(--shadow);margin:6px 0 20px;height:44px}
-  .rib .track{display:flex;gap:0;align-items:center;height:44px;white-space:nowrap;animation:ribscroll 60s linear infinite}
+  .rib .track{display:flex;align-items:center;height:44px;white-space:nowrap;animation:ribscroll 55s linear infinite}
   .rib:hover .track{animation-play-state:paused}
   @keyframes ribscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   .rib .it{display:inline-flex;align-items:baseline;gap:8px;padding:0 20px;border-right:1px solid var(--line2,#f3f3f5);font-size:13.5px}
@@ -20,7 +18,6 @@
   .rib .it .p{font-family:'JetBrains Mono',monospace;color:var(--ink2,#3c4150)}
   .rib .it .c{font-family:'JetBrains Mono',monospace;font-size:12.5px}
   @media(prefers-reduced-motion:reduce){.rib .track{animation:none}}
-  /* header */
   .hd{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
   .hd .eyb{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut,#6b7280)}
   .hd h1{font-size:clamp(30px,4.6vw,50px);font-weight:600;letter-spacing:-.03em;line-height:1.03;margin:8px 0 0}
@@ -29,49 +26,37 @@
   .hd .clock .st{font-size:12px;color:var(--mut);margin-top:3px;display:inline-flex;align-items:center;gap:6px}
   .mkt-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
   .mkt-open{background:var(--up,#067a55)} .mkt-closed{background:#c4362a}
-  /* grid */
-  .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gap)}
-  .p{background:#fff;border:1px solid var(--line,#ececee);border-radius:14px;box-shadow:var(--shadow);padding:18px 18px 16px;min-width:0}
-  .p h3{margin:0 0 12px;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+  .p{background:#fff;border:1px solid var(--line,#ececee);border-radius:14px;box-shadow:var(--shadow);padding:18px 18px 14px;min-width:0}
+  .p h3{margin:0 0 10px;font-size:12.5px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;justify-content:space-between;gap:8px}
   .p h3 .tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint,#99a0ac);font-weight:500}
-  .span12{grid-column:span 12} .span8{grid-column:span 8} .span7{grid-column:span 7} .span6{grid-column:span 6} .span5{grid-column:span 5} .span4{grid-column:span 4}
-  @media(max-width:900px){ .span8,.span7,.span6,.span5,.span4{grid-column:span 12} }
-  /* brief */
+  .span12{grid-column:span 12} .span8{grid-column:span 8} .span4{grid-column:span 4}
+  @media(max-width:900px){.span8,.span4{grid-column:span 12}}
+  @media(min-width:901px) and (max-width:1100px){.span4{grid-column:span 6}}
   .brief{grid-column:span 12;background:linear-gradient(180deg,#fff,#fbfbfd);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px 24px}
   .brief .bh{display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,#2563eb);font-weight:500;margin-bottom:12px}
   .brief .bh .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:qpulse 2.4s infinite}
-  .brief .bt{font-size:clamp(17px,2.1vw,21px);line-height:1.55;color:var(--ink);letter-spacing:-.01em;max-width:74ch}
+  .brief .bt{font-size:clamp(17px,2.1vw,21px);line-height:1.55;letter-spacing:-.01em;max-width:76ch}
   .brief .bt b{font-weight:600}
   .brief .meta{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
-  /* movers list */
   .mv{display:flex;flex-direction:column}
-  .mv a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 6px;border-radius:8px;text-decoration:none;color:inherit;border-bottom:1px solid var(--line2,#f3f3f5)}
-  .mv a:last-child{border-bottom:0} .mv a:hover{background:var(--soft,#f6f7f9)}
+  .mv a,.mv .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 6px;border-radius:8px;text-decoration:none;color:inherit;border-bottom:1px solid var(--line2,#f3f3f5)}
+  .mv a:last-child,.mv .r:last-child{border-bottom:0} .mv a:hover{background:var(--soft,#f6f7f9)}
   .mv .sy{font-weight:600;font-size:14px;letter-spacing:-.01em}
-  .mv .nm{font-size:11.5px;color:var(--mut);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+  .mv .nm{font-size:11.5px;color:var(--mut);margin-top:1px}
   .mv .px{text-align:right;font-family:'JetBrains Mono',monospace}
   .mv .px .v{font-size:13.5px;color:var(--ink2)} .mv .px .ch{font-size:12px;font-weight:500}
-  /* news */
-  .news{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:640px){.news{grid-template-columns:1fr}}
-  .na{display:flex;gap:12px;text-decoration:none;color:inherit;border-radius:10px;padding:8px;transition:background .18s}
-  .na:hover{background:var(--soft)}
-  .na .th{flex:none;width:96px;height:66px;border-radius:8px;object-fit:cover;background:var(--soft);border:1px solid var(--line2)}
-  .na .nt{font-size:13.5px;font-weight:500;line-height:1.35;letter-spacing:-.01em;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-  .na .ns{margin-top:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em}
-  /* video */
   .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:11px;overflow:hidden;background:#0a0a0b;border:1px solid var(--line)}
   .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  /* cal / list rows */
-  .lr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line2);font-size:13.5px}
-  .lr:last-child{border-bottom:0}
-  .lr .l{color:var(--ink2)} .lr .r{font-family:'JetBrains Mono',monospace;color:var(--mut);font-size:12.5px}
   .up{color:var(--up,#067a55)} .down{color:var(--down,#c4362a)}
-  .mono{font-family:'JetBrains Mono',monospace}
-  .loading{color:var(--faint);font-size:13px;padding:14px 4px;display:flex;align-items:center;gap:8px}
+  .loading{color:var(--faint);font-size:13px;padding:16px 4px;display:flex;align-items:center;gap:8px}
   .sk{display:inline-block;height:11px;border-radius:4px;background:linear-gradient(90deg,#f0f0f2,#f7f7f9,#f0f0f2);background-size:200% 100%;animation:shim 1.3s infinite}
   @keyframes shim{to{background-position:-200% 0}}
-  .cta{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 15px;border-radius:999px;background:var(--ink);color:#fff;font-size:13.5px;font-weight:500;text-decoration:none}
+  .jump{display:flex;flex-direction:column;gap:9px}
+  .jump .cta{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;border-radius:11px;background:var(--ink);color:#fff;font-size:14px;font-weight:500;text-decoration:none}
+  .jump a.lnk{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:9px;background:var(--soft,#f6f7f9);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:500}
+  .jump a.lnk:hover{background:#eceef1}
+  .jump a.lnk .ar{color:var(--faint)}
 </style>
 </head>
 <body>
@@ -79,10 +64,8 @@
 <script src="/nav.js"></script>
 <div class="rc">
 
-  <!-- live ribbon -->
-  <div class="rib"><div class="track" id="ribbon"><span class="it"><span class="s sk" style="width:120px">&nbsp;</span></span></div></div>
+  <div class="rib"><div class="track" id="ribbon"><span class="it"><span class="s sk" style="width:140px">&nbsp;</span></span></div></div>
 
-  <!-- header -->
   <div class="hd">
     <div>
       <div class="eyb" id="eyb">Quantora · Command Center</div>
@@ -93,41 +76,34 @@
 
   <div class="bento">
 
-    <!-- AI brief -->
     <div class="brief">
       <div class="bh"><span class="dot"></span>The Brief · AI market read</div>
-      <div class="bt" id="brief"><span class="sk" style="width:92%;display:block;height:16px;margin-bottom:8px"></span><span class="sk" style="width:80%;display:block;height:16px;margin-bottom:8px"></span><span class="sk" style="width:60%;display:block;height:16px"></span></div>
+      <div class="bt" id="brief"><span class="sk" style="width:92%;display:block;height:16px;margin-bottom:8px"></span><span class="sk" style="width:80%;display:block;height:16px;margin-bottom:8px"></span><span class="sk" style="width:58%;display:block;height:16px"></span></div>
       <div class="meta" id="briefmeta">Reading the tape…</div>
     </div>
 
-    <!-- movers -->
-    <div class="p span4"><h3>Top Gainers <span class="tag">Live</span></h3><div class="mv" id="gainers"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
-    <div class="p span4"><h3>Top Losers <span class="tag">Live</span></h3><div class="mv" id="losers"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
-    <div class="p span4"><h3>Most Active <span class="tag">Live</span></h3><div class="mv" id="actives"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
+    <div class="p span4"><h3>Indices &amp; ETFs <span class="tag">Live</span></h3><div class="mv" id="indices"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
+    <div class="p span4"><h3>Megacaps <span class="tag">Live</span></h3><div class="mv" id="megacaps"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
+    <div class="p span4"><h3>Crypto <span class="tag">24/7 · live</span></h3><div class="mv" id="crypto"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
 
-    <!-- news + video -->
-    <div class="p span8"><h3>Market Headlines <span class="tag">Newswire</span></h3><div class="news" id="news"><div class="loading">Loading the wire…</div></div></div>
-    <div class="p span4"><h3>Market News · Live <span class="tag">Video</span></h3>
-      <div class="vid"><iframe id="videoframe" src="https://www.youtube.com/embed/live_stream?channel=UCEAZeUIeJs0IjQiqTCdVSIg" title="Yahoo Finance live market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);margin-top:9px">Yahoo Finance · live 24/7 · source configurable</div>
+    <div class="p span8"><h3>Market News · Live <span class="tag">Video</span></h3>
+      <div class="vid"><iframe src="https://www.youtube.com/embed/live_stream?channel=UCEAZeUIeJs0IjQiqTCdVSIg" title="Yahoo Finance live market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);margin-top:9px">Yahoo Finance · live 24/7</div>
     </div>
 
-    <!-- calendar + crypto -->
-    <div class="p span5"><h3>On the Calendar <span class="tag">Today</span></h3><div id="cal"><div class="loading">Loading events…</div></div></div>
-    <div class="p span4"><h3>Crypto <span class="tag">24/7</span></h3><div class="mv" id="crypto"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
-    <div class="p span3"><h3>Jump in <span class="tag">⌘K</span></h3>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:2px">
-        <a class="cta" href="/terminal.html" style="justify-content:center">Open the terminal →</a>
-        <a class="lr" href="/track.html" style="text-decoration:none"><span class="l">Track record</span><span class="r">→</span></a>
-        <a class="lr" href="/cone.html" style="text-decoration:none"><span class="l">Probability cone</span><span class="r">→</span></a>
-        <a class="lr" href="/screener.html" style="text-decoration:none"><span class="l">Screener</span><span class="r">→</span></a>
-        <a class="lr" href="/markets.html" style="text-decoration:none;border-bottom:0"><span class="l">Full markets</span><span class="r">→</span></a>
+    <div class="p span4"><h3>Jump in <span class="tag">⌘K</span></h3>
+      <div class="jump">
+        <a class="cta" href="/terminal.html">Open the terminal →</a>
+        <a class="lnk" href="/track.html"><span>Track record</span><span class="ar">→</span></a>
+        <a class="lnk" href="/cone.html"><span>Probability cone</span><span class="ar">→</span></a>
+        <a class="lnk" href="/screener.html"><span>Screener</span><span class="ar">→</span></a>
+        <a class="lnk" href="/markets.html"><span>Full markets</span><span class="ar">→</span></a>
       </div>
     </div>
 
   </div>
 
-  <p style="font-size:12px;color:var(--faint);margin-top:26px;max-width:70ch;line-height:1.5">Live market data via FMP &amp; FRED and may be delayed. The brief is AI-generated and may be wrong. Video is a third-party stream. Educational only — nothing here is investment advice.</p>
+  <p style="font-size:12px;color:var(--faint);margin-top:26px;max-width:74ch;line-height:1.5">Live prices via the Quantora data proxy &amp; CoinGecko; may be delayed. The brief is AI-generated and may be wrong. Video is a third-party stream. Market-wide movers &amp; news return when the daily data quota resets. Educational only — nothing here is investment advice.</p>
 </div>
 
 <script>
@@ -135,7 +111,6 @@
   "use strict";
   var RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  /* clock + greeting + market status (US Eastern approximation) */
   function tick(){
     var now=new Date();
     try{
@@ -147,106 +122,93 @@
       document.getElementById('mstat').textContent=openMkt?'US markets open':'US markets closed';
       var g=h<12?'Good morning':(h<18?'Good afternoon':'Good evening');
       document.getElementById('greet').textContent=g+'. Here’s your world.';
-      var d=et.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-      document.getElementById('eyb').textContent='Quantora · Command Center · '+d;
+      document.getElementById('eyb').textContent='Quantora · Command Center · '+et.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
     }catch(e){}
   }
-  tick(); setInterval(tick, 20000);
+  tick(); setInterval(tick,20000);
 
-  /* resilient JSON fetch — returns array or null */
-  function jarr(url){
-    return fetch(url).then(function(r){return r.json();}).then(function(j){
-      var a = Array.isArray(j) ? j : (j && j.data);
-      if(Array.isArray(a)) return a;
-      return null;              // error / limit / empty
-    }).catch(function(){ return null; });
-  }
   function num(x){ x=+x; return isFinite(x)?x:null; }
-  function pct(x){ var n=num(x); return n==null?'':((n>=0?'+':'')+n.toFixed(2)+'%'); }
   function money(x){ var n=num(x); return n==null?'—':('$'+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})); }
+  function pct(x){ var n=num(x); return n==null?'':((n>=0?'+':'')+n.toFixed(2)+'%'); }
   function cls(x){ var n=num(x); return n>0?'up':(n<0?'down':''); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
-  function row(it){
-    var chg = it.changesPercentage!=null?it.changesPercentage:it.changePercentage;
-    return '<a href="/chart.html?symbol='+encodeURIComponent(it.symbol)+'">'
-      +'<span><span class="sy">'+esc(it.symbol)+'</span><div class="nm">'+esc(it.name||'')+'</div></span>'
-      +'<span class="px"><div class="v">'+money(it.price)+'</div><div class="ch '+cls(chg)+'">'+pct(chg)+'</div></span></a>';
+  /* memoized last-price + %change via the WORKING prices path (FMP→TwelveData fallback) */
+  var cache={};
+  function getSeries(sym){
+    if(cache[sym]) return cache[sym];
+    cache[sym]=fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var a=Array.isArray(j)?j:(j&&j.data); if(!Array.isArray(a)||a.length<2) return null;
+      var last=a[0].price!=null?a[0].price:a[0].close, prev=a[1].price!=null?a[1].price:a[1].close;
+      last=+last; prev=+prev; if(!isFinite(last)||!isFinite(prev)||prev===0) return null;
+      return {sym:sym, price:last, chg:(last/prev-1)*100};
+    }).catch(function(){ return null; });
+    return cache[sym];
   }
-  function fillMovers(id, arr){
+  function rowHTML(label, sym, price, chg, href){
+    return '<a href="'+esc(href||('/chart.html?symbol='+encodeURIComponent(sym)))+'">'
+      +'<span><span class="sy">'+esc(sym)+'</span><div class="nm">'+esc(label)+'</div></span>'
+      +'<span class="px"><div class="v">'+money(price)+'</div><div class="ch '+cls(chg)+'">'+pct(chg)+'</div></span></a>';
+  }
+  function fillEquities(id, items){
     var el=document.getElementById(id);
-    if(!arr||!arr.length){ el.innerHTML='<div class="loading">Live feed updating — data quota catching up.</div>'; return; }
-    el.innerHTML = arr.slice(0,6).map(row).join('');
+    Promise.all(items.map(function(it){ return getSeries(it[0]).then(function(s){ return s?{lbl:it[1],s:s}:null; }); }))
+    .then(function(rows){ rows=rows.filter(Boolean);
+      if(!rows.length){ el.innerHTML='<div class="loading">Live feed updating — retrying shortly.</div>'; return; }
+      el.innerHTML=rows.map(function(r){ return rowHTML(r.lbl, r.s.sym, r.s.price, r.s.chg); }).join('');
+    });
   }
 
-  /* movers */
-  jarr('/api/fmp?type=gainers').then(function(a){ fillMovers('gainers', a); });
-  jarr('/api/fmp?type=losers').then(function(a){ fillMovers('losers', a); });
-  jarr('/api/fmp?type=actives').then(function(a){ fillMovers('actives', a); });
+  var INDICES=[['SPY','S&P 500'],['QQQ','Nasdaq 100'],['DIA','Dow Jones'],['IWM','Russell 2000']];
+  var MEGA=[['AAPL','Apple'],['NVDA','NVIDIA'],['MSFT','Microsoft'],['TSLA','Tesla']];
+  fillEquities('indices', INDICES);
+  fillEquities('megacaps', MEGA);
 
-  /* news with images */
-  jarr('/api/fmp?type=news').then(function(a){
-    var el=document.getElementById('news');
-    if(!a||!a.length){ el.innerHTML='<div class="loading">Newswire updating — data quota catching up.</div>'; return; }
-    el.innerHTML = a.slice(0,8).map(function(n){
-      var img = n.image ? ('<img class="th" src="'+esc(n.image)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">') : '<span class="th"></span>';
-      var when = n.publishedDate ? (n.publishedDate.slice(5,16).replace('-','/')) : '';
-      return '<a class="na" href="'+esc(n.url||'#')+'" target="_blank" rel="noopener">'+img
-        +'<span><span class="nt">'+esc(n.title||'')+'</span><span class="ns">'+esc(n.site||n.symbol||'')+(when?' · '+esc(when):'')+'</span></span></a>';
-    }).join('');
-  });
-
-  /* crypto — a few majors via quote (cached) */
-  (function(){
-    var syms=['BTCUSD','ETHUSD','SOLUSD'];
-    Promise.all(syms.map(function(s){ return jarr('/api/fmp?type=quote&symbol='+s).then(function(a){ return a&&a[0]?a[0]:null; }); }))
-    .then(function(rows){ rows=rows.filter(Boolean);
-      var el=document.getElementById('crypto');
+  /* crypto — CoinGecko (free, no key, live 24h change) */
+  var cryptoData=null;
+  fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true')
+    .then(function(r){return r.json();}).then(function(j){
+      cryptoData=j;
+      var map=[['bitcoin','BTC','Bitcoin'],['ethereum','ETH','Ethereum'],['solana','SOL','Solana']];
+      var el=document.getElementById('crypto'), rows=map.map(function(c){ var d=j[c[0]]; return d? {sym:c[1],lbl:c[2],price:d.usd,chg:d.usd_24h_change}:null; }).filter(Boolean);
       if(!rows.length){ el.innerHTML='<div class="loading">Crypto feed updating.</div>'; return; }
-      el.innerHTML = rows.map(function(q){ return row({symbol:q.symbol,name:q.name,price:q.price,changePercentage:(q.changePercentage!=null?q.changePercentage:q.changesPercentage)}); }).join('');
-    });
-  })();
+      el.innerHTML=rows.map(function(r){ return rowHTML(r.lbl, r.sym, r.price, r.chg, '/coins.html'); }).join('');
+    }).catch(function(){ document.getElementById('crypto').innerHTML='<div class="loading">Crypto feed updating.</div>'; });
 
-  /* ribbon — key indices + crypto (cached quotes) */
-  (function(){
-    var syms=[['SPY','S&P 500'],['QQQ','Nasdaq 100'],['DIA','Dow'],['BTCUSD','Bitcoin'],['ETHUSD','Ether'],['GLD','Gold']];
-    Promise.all(syms.map(function(s){ return jarr('/api/fmp?type=quote&symbol='+s[0]).then(function(a){ return a&&a[0]?{q:a[0],lbl:s[1]}:null; }); }))
-    .then(function(rows){ rows=rows.filter(Boolean);
+  /* AI brief — grounded in the live numbers we just fetched */
+  function runBrief(){
+    var syms=['SPY','QQQ','DIA','AAPL','NVDA'];
+    Promise.all(syms.map(getSeries)).then(function(rr){
+      var facts=[];
+      rr.forEach(function(s){ if(s) facts.push(s.sym+' '+(s.chg>=0?'+':'')+s.chg.toFixed(2)+'%'); });
+      if(cryptoData&&cryptoData.bitcoin) facts.push('BTC $'+Math.round(cryptoData.bitcoin.usd)+' '+(cryptoData.bitcoin.usd_24h_change>=0?'+':'')+cryptoData.bitcoin.usd_24h_change.toFixed(1)+'%');
+      var ctx='Live figures right now: '+(facts.join(', ')||'(markets)')+'.';
+      var payload={ q:'Using these live figures, write a tight 3-sentence market brief for right now: overall equity tone, the standout name, and crypto. Confident, specific, no hype. Educational only.', context:ctx };
+      return fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}).then(function(r){return r.json();});
+    }).then(function(j){
+      var el=document.getElementById('brief'), meta=document.getElementById('briefmeta');
+      if(j&&j.answer){ el.innerHTML=esc(j.answer).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); meta.textContent='Written by Quantora AI on the live tape · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · not investment advice'; }
+      else if(j&&j.error==='ai_key_needed'){ el.innerHTML='The AI brief activates once an AI key is set in Vercel.'; meta.textContent='AI not activated'; }
+      else { el.innerHTML='The market brief is updating. The indices, megacaps and crypto below are your fastest read on the day.'; meta.textContent='Brief updating'; }
+    }).catch(function(){ document.getElementById('brief').innerHTML='The market brief is updating. The indices, megacaps and crypto below are your fastest read on the day.'; document.getElementById('briefmeta').textContent='Brief updating'; });
+  }
+  runBrief();
+
+  /* ribbon — indices (reused from cache) + crypto */
+  function buildRibbon(){
+    Promise.all(INDICES.map(function(it){ return getSeries(it[0]).then(function(s){ return s?{lbl:it[1],s:s}:null; }); })).then(function(rows){
+      rows=rows.filter(Boolean);
+      var extra=[];
+      if(cryptoData){ if(cryptoData.bitcoin)extra.push({lbl:'Bitcoin',s:{price:cryptoData.bitcoin.usd,chg:cryptoData.bitcoin.usd_24h_change}}); if(cryptoData.ethereum)extra.push({lbl:'Ethereum',s:{price:cryptoData.ethereum.usd,chg:cryptoData.ethereum.usd_24h_change}}); }
+      var all=rows.concat(extra);
       var track=document.getElementById('ribbon');
-      if(!rows.length){ track.innerHTML='<span class="it"><span class="s">Live market data updating — quota catching up.</span></span>'; track.style.animation='none'; return; }
-      var html=rows.map(function(r){ var chg=r.q.changePercentage!=null?r.q.changePercentage:r.q.changesPercentage;
-        return '<span class="it"><span class="s">'+esc(r.lbl)+'</span><span class="p">'+money(r.q.price)+'</span><span class="c '+cls(chg)+'">'+pct(chg)+'</span></span>';
-      }).join('');
-      track.innerHTML = html + html;   // duplicate for seamless loop
+      if(!all.length){ track.innerHTML='<span class="it"><span class="s">Live market data updating — retrying shortly.</span></span>'; track.style.animation='none'; return; }
+      var html=all.map(function(r){ return '<span class="it"><span class="s">'+esc(r.lbl)+'</span><span class="p">'+money(r.s.price)+'</span><span class="c '+cls(r.s.chg)+'">'+pct(r.s.chg)+'</span></span>'; }).join('');
+      track.innerHTML=html+html;
       if(RM) track.style.animation='none';
     });
-  })();
-
-  /* economic / earnings today */
-  jarr('/api/fmp?type=earncal').then(function(a){
-    var el=document.getElementById('cal');
-    if(!a||!a.length){ el.innerHTML='<div class="loading">Calendar updating — data quota catching up.</div>'; return; }
-    var today=new Date().toISOString().slice(0,10);
-    var todays=a.filter(function(x){return (x.date||'').slice(0,10)===today;});
-    var use=(todays.length?todays:a).slice(0,7);
-    el.innerHTML=use.map(function(x){
-      return '<div class="lr"><span class="l"><b>'+esc(x.symbol||'')+'</b> earnings</span><span class="r">'+esc((x.date||'').slice(5,10))+(x.epsEstimated!=null?(' · est '+esc(x.epsEstimated)):'')+'</span></div>';
-    }).join('');
-  });
-
-  /* AI brief (separate key from FMP) */
-  (function(){
-    var payload={ q:'Write a tight 3-4 sentence market brief for right now: equities tone, one standout mover, crypto, and rates/macro. Confident, specific, no hype. Educational only.', context:'Daily command-center brief for Quantora users.' };
-    fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)})
-    .then(function(r){return r.json();})
-    .then(function(j){
-      var el=document.getElementById('brief'), meta=document.getElementById('briefmeta');
-      if(j && j.answer){ el.innerHTML=esc(j.answer).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); meta.textContent='Written by Quantora AI on the live tape · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · not investment advice'; }
-      else if(j && j.error==='ai_key_needed'){ el.innerHTML='The AI brief activates once an AI key is set in Vercel. Everything else on this page is live.'; meta.textContent='AI not activated'; }
-      else { el.innerHTML='The market brief is updating. Meanwhile, the movers, headlines and calendar below are your fastest read on the day.'; meta.textContent='Brief updating'; }
-    })
-    .catch(function(){ var el=document.getElementById('brief'); el.innerHTML='The market brief is updating. The movers, headlines and calendar below are your fastest read on the day.'; document.getElementById('briefmeta').textContent='Brief updating'; });
-  })();
+  }
+  setTimeout(buildRibbon, 1200); // let crypto + indices resolve first
 })();
 </script>
 </body>
