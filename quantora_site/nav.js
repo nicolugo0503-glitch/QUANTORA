@@ -21,7 +21,7 @@
   '.qnav .qdot{width:7px;height:7px;border-radius:50%;background:#0a7d33;display:inline-block}' +
   '@media(max-width:820px){.qnav .qright{display:none}}';
   var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
-  var lk = document.createElement('link'); lk.rel='stylesheet'; lk.href='/theme.css?v=2'; (document.head || document.documentElement).appendChild(lk);
+  var lk = document.createElement('link'); lk.rel='stylesheet'; lk.href='/theme.css?v=4'; (document.head || document.documentElement).appendChild(lk);
   var hj=document.createElement('script'); hj.src='/hero.js?v=2'; hj.async=false; (document.head || document.documentElement).appendChild(hj);
   var cj=document.createElement('script'); cj.src='/compliance.js?v=1'; cj.async=true; (document.head || document.documentElement).appendChild(cj);
 var sj=document.createElement('script'); sj.src='/share.js?v=1'; sj.async=true; (document.head || document.documentElement).appendChild(sj);

@@ -1,214 +1,155 @@
 /* ============================================================
-   QUANTORA · TRILLION-DOLLAR DESIGN SYSTEM
-   Refined-minimal, white, OpenAI/Linear/Stripe-grade.
-   Re-skins every page through shared tokens + classes.
-   Loaded AFTER each page's inline <style>, so it wins.
+   QUANTORA · DESIGN SYSTEM v4 — OpenAI-grade confident white
+   One shared identity across all ~132 pages. Loaded site-wide
+   via nav.js AFTER each page's inline <style>, so it wins.
+   Refines tokens/type/depth/nav toward the v3 language without
+   changing any page's structure. Every legacy hook preserved.
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root{
-  --bg:#ffffff;
-  --bg2:#fbfbfc;
-  --ink:#0b0d12;
-  --ink2:#3a4150;
-  --mut:#697586;
-  --line:#e9eaee;
-  --line2:#f1f2f4;
-  --soft:#f7f8fa;
-  --card:#ffffff;
-  --paper:#ffffff; --paper2:#fbfbfc;
-  --up:#0a7d33; --green:#0a7d33; --upbg:#eafaf0;
-  --down:#c0341d; --red:#c0341d; --redbg:#fdeeeb;
-  --amber:#b86e00;
-  --accent:#3358ff; --blue:#3358ff;
-  --accent-soft:#eef1ff;
-  --r:14px;
-  --shadow:0 1px 2px rgba(16,24,40,.04), 0 12px 28px -14px rgba(16,24,40,.12);
-  --shadow-lg:0 2px 4px rgba(16,24,40,.05), 0 28px 56px -22px rgba(16,24,40,.20);
-  --sans:'Geist','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  /* surfaces — near-white page, pure-white surfaces lift off it */
+  --page:#fcfcfd; --bg:#ffffff; --bg2:#fbfbfc; --card:#ffffff;
+  --paper:#ffffff; --paper2:#fbfbfc; --soft:#f6f7f9;
+  /* ink — near-black, two greys (OpenAI restraint) */
+  --ink:#0a0a0b; --ink2:#3c4150; --mut:#6b7280; --faint:#99a0ac;
+  /* hairlines */
+  --line:#ececee; --line2:#f3f3f5; --hair:rgba(17,24,39,.07); --hair2:rgba(17,24,39,.12);
+  /* semantic finance color */
+  --up:#067a55; --green:#067a55; --upbg:#e7f5ee;
+  --down:#c4362a; --red:#c4362a; --redbg:#fbece9; --amber:#b86e00;
+  /* one accent (data + interaction), accessible on white */
+  --accent:#2563eb; --blue:#2563eb; --accent-ink:#1d4ed8; --accent-soft:#eef2ff;
+  /* geometry */
+  --r:14px; --r-sm:11px;
+  /* elevation — OpenAI-soft, layered, low-opacity */
+  --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.10);
+  --shadow-lg:0 2px 6px rgba(16,24,40,.05), 0 24px 50px -20px rgba(16,24,40,.16);
+  /* type */
+  --sans:'Inter','Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   --mono:'Geist Mono','JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
 }
 
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
   font-family:var(--sans)!important;
-  background:var(--bg);
+  background:var(--page)!important;
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   letter-spacing:-.011em;
-  font-feature-settings:'cv05' 1,'ss01' 1,'cv11' 1;
 }
-::selection{background:rgba(51,88,255,.16);color:var(--ink)}
+::selection{background:rgba(37,99,235,.15)}
 
-/* ---- typography rhythm ---- */
-h1,h2,h3,h4{letter-spacing:-.022em;font-weight:650;color:var(--ink)}
-h1{letter-spacing:-.032em}
-.eyebrow,.kicker{
-  text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:650;
-  color:var(--mut)!important;
-}
-.secttl{letter-spacing:-.02em;font-weight:650}
-.sub,.muted,.foot{color:var(--mut)}
+/* ---- typography: size + space over weight (OpenAI restraint) ---- */
+h1,h2,h3,h4{color:var(--ink);font-weight:600;letter-spacing:-.022em;line-height:1.12}
+h1{letter-spacing:-.03em}
+.eyebrow,.kicker{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:500;color:var(--mut)!important}
+.secttl{letter-spacing:-.02em;font-weight:600}
+.sub,.muted,.foot,.lead{color:var(--mut)}
 
-/* ---- numerics: tabular mono for that terminal-grade precision ---- */
-.num,.v,.k,.price,.val,.vl{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;letter-spacing:-.01em}
-.mono{font-family:var(--mono)}
+/* ---- numerals: tabular for terminal-grade precision ---- */
+.num,.v,.k,.price,.val,.vl,.mn{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;letter-spacing:-.01em}
+.mono,pre,code,.code{font-family:var(--mono)}
 
-/* ---- panels & cards: layered soft depth ---- */
-.panel{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:18px;
-  box-shadow:var(--shadow);
-  transition:box-shadow .35s cubic-bezier(.2,.7,.2,1),border-color .35s;
-}
-.panel:hover{box-shadow:var(--shadow-lg);border-color:#e2e3e9}
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  box-shadow:var(--shadow);
-  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,border-color .3s;
-}
-.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#e2e3e9}
+/* ---- surfaces stay pure white so they lift off the page ---- */
+.card,.panel,.tile,.box,table.card,.kpi,.mini,.flag,.statbox{background:var(--card)!important}
+.panel{border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);transition:box-shadow .3s var(--ease),border-color .3s}
+.panel:hover{box-shadow:var(--shadow-lg);border-color:#e4e5ea}
+.card{border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);transition:transform .25s var(--ease),box-shadow .25s var(--ease),border-color .25s}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#e4e5ea}
 
-/* ---- pills / buttons ---- */
-.pill{
-  font-weight:550;letter-spacing:-.01em;border-radius:999px;
-  transition:transform .2s ease,box-shadow .25s ease,background .25s ease;
-}
-.pill:hover{transform:translateY(-1px)}
-a.pill,.pill.solid,.pill.primary{
-  background:var(--ink)!important;color:#fff!important;border:0!important;
-  box-shadow:0 1px 2px rgba(16,24,40,.16),0 8px 20px -8px rgba(11,13,18,.4);
-}
-a.pill:hover{box-shadow:0 2px 6px rgba(16,24,40,.2),0 14px 30px -10px rgba(11,13,18,.5)}
+/* ---- pills / buttons: black primary (OpenAI) ---- */
+.pill{font-weight:500;letter-spacing:-.01em;border-radius:999px;transition:transform .12s var(--ease),box-shadow .2s ease,opacity .2s ease}
+.pill:active{transform:scale(.97)}
+a.pill,.pill.solid,.pill.primary{background:var(--ink)!important;color:#fff!important;border:0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 1px 2px rgba(16,24,40,.2)}
+a.pill:hover,.pill.solid:hover,.pill.primary:hover{opacity:.9;transform:translateY(-1px)}
 
-/* ---- tabs / status / dots ---- */
-.tab{transition:color .2s,background .2s,border-color .2s;border-radius:10px}
-.tab.active,.active{color:var(--ink)}
-.dot{box-shadow:0 0 0 0 rgba(10,125,51,.4)}
-.status .dot,.dot.live{animation:qpulse 2s infinite}
-@keyframes qpulse{0%{box-shadow:0 0 0 0 rgba(10,125,51,.4)}70%{box-shadow:0 0 0 7px rgba(10,125,51,0)}100%{box-shadow:0 0 0 0 rgba(10,125,51,0)}}
+/* ---- tabs / status ---- */
+.tab{transition:background .2s,color .2s,border-color .2s;border-radius:10px}
+.tab.active,.tab[aria-selected="true"]{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important}
+.dot{box-shadow:0 0 0 0 rgba(6,122,85,.4)}
+.status .dot,.dot.live,.qdot{animation:qpulse 2.4s var(--ease) infinite}
+@keyframes qpulse{0%{box-shadow:0 0 0 0 rgba(6,122,85,.4)}70%{box-shadow:0 0 0 7px rgba(6,122,85,0)}100%{box-shadow:0 0 0 0 rgba(6,122,85,0)}}
 
 /* ---- links ---- */
 a{transition:color .2s ease}
 
-/* ---- refined scrollbars ---- */
-*{scrollbar-width:thin;scrollbar-color:#d4d7de transparent}
-*::-webkit-scrollbar{width:10px;height:10px}
-*::-webkit-scrollbar-thumb{background:#d4d7de;border-radius:99px;border:3px solid #fff;background-clip:padding-box}
-*::-webkit-scrollbar-thumb:hover{background:#b9bdc8;background-clip:padding-box}
-*::-webkit-scrollbar-track{background:transparent}
-
-/* ---- entrance: subtle, premium ---- */
-@keyframes qrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-
-/* ============================================================
-   Shared nav (qnav from nav.js) — premium refinements
-   ============================================================ */
-.qnav{
-  background:rgba(255,255,255,.78)!important;
-  backdrop-filter:saturate(180%) blur(14px)!important;
-  -webkit-backdrop-filter:saturate(180%) blur(14px)!important;
-  border-bottom:1px solid var(--line)!important;
-  box-shadow:0 1px 0 rgba(16,24,40,.02),0 8px 24px -20px rgba(16,24,40,.3);
-  padding:10px 26px!important;
-}
-.qnav .qbrand{font-weight:700!important;letter-spacing:-.02em}
-.qnav .qbrand .qq{
-  background:linear-gradient(135deg,#15171d,#0b0d12)!important;
-  box-shadow:0 2px 8px -2px rgba(11,13,18,.5);
-}
-.qnav a.qtop,.qnav .qtop{font-weight:500!important;letter-spacing:-.01em;transition:background .2s,color .2s}
-.qnav .qtop.active{color:var(--accent)!important;font-weight:600!important}
-.qnav .qitem.open .qtop,.qnav a.qtop:hover,.qnav .qtop:hover{background:#f2f3f7!important;color:var(--ink)!important}
-.qnav .qmenu{
-  border:1px solid var(--line)!important;border-radius:14px!important;
-  box-shadow:var(--shadow-lg)!important;padding:7px!important;
-  animation:qrise .16s ease;
-}
-.qnav .qmenu a{border-radius:9px!important;font-weight:480}
-.qnav .qmenu a:hover{background:var(--accent-soft)!important;color:var(--accent)!important}
-.qnav .qmenu a.active{background:var(--accent-soft)!important;color:var(--accent)!important}
-.qnav .qright .qdot{box-shadow:0 0 0 3px rgba(10,125,51,.12)}
-
-/* ============================================================
-   MODULE-WIDE POLISH v2 — terminal-grade refinement,
-   applied to every module page via nav.js injection.
-   ============================================================ */
-/* tables → terminal precision */
-table{border-collapse:collapse}
-thead th{font-family:var(--mono);font-size:10.5px!important;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)!important;font-weight:600}
-tbody tr{transition:background .14s ease}
-tbody tr:hover{background:var(--soft)}
-td,th{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
-
-/* inputs / selects / textareas → premium focus */
+/* ---- inputs: premium focus (accent ring) ---- */
 input,select,textarea{transition:border-color .2s ease,box-shadow .2s ease}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-soft)!important}
+input:focus,select:focus,textarea:focus{outline:none!important;border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(37,99,235,.15)!important}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:none;box-shadow:0 0 0 2px var(--page),0 0 0 4px var(--accent);border-radius:8px}
 
-/* stat / metric boxes → soft depth on hover */
-.head,.stat,.metric,.mcell,.kpi,.statbox{transition:box-shadow .3s ease,border-color .3s ease,transform .3s ease}
-.head:hover,.stat:hover,.metric:hover,.kpi:hover,.statbox:hover{box-shadow:var(--shadow)}
+/* ---- tables: hairline only, hover not zebra ---- */
+table{border-collapse:collapse!important}
+td,th{border-left:0!important;border-right:0!important;border-bottom:1px solid var(--hair)!important;font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
+thead th{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px!important;font-weight:500!important;color:var(--faint)!important;border-bottom:1px solid var(--hair2)!important}
+tbody tr{transition:background .14s ease}
+tbody tr:hover td{background:var(--soft)!important}
+tbody tr:last-child td{border-bottom:0!important}
 
-/* a11y focus ring */
-a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
-
-/* subtle premium entrance for panels & cards */
-.panel,.card{animation:qrise .42s cubic-bezier(.2,.7,.2,1) both}
-
-/* code / mono blocks */
-pre,code,.code,.mono{font-family:var(--mono)}
-
-/* badges / chips → crisp */
-.badge,.chip,.tag,.pill.ghost{letter-spacing:-.01em}
-
-/* up / down semantic color unification */
+/* ---- semantic color unification ---- */
 .up,.pos,.green{color:var(--up)}
 .down,.neg,.red{color:var(--down)}
 
-/* hr / dividers softer */
+/* ---- soft depth on metric boxes ---- */
+.head,.stat,.metric,.mcell,.kpi,.statbox{transition:box-shadow .3s var(--ease),border-color .3s,transform .3s var(--ease)}
+.head:hover,.stat:hover,.metric:hover,.kpi:hover,.statbox:hover{box-shadow:var(--shadow)}
+
+/* ---- refined scrollbars ---- */
+*{scrollbar-width:thin;scrollbar-color:#d4d7de transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:#d4d7de;border-radius:99px;border:3px solid var(--page);background-clip:padding-box}
+*::-webkit-scrollbar-thumb:hover{background:#b9bdc8;background-clip:padding-box}
+*::-webkit-scrollbar-track{background:transparent}
+
+/* ---- dividers ---- */
 hr{border:none;border-top:1px solid var(--line)}
 
-/* ---- small-screen hardening (phones) ---- */
+/* ---- charts crisp ---- */
+svg polyline,svg path{stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+
+/* ---- motion ---- */
+@keyframes qrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel,.card{animation:qrise .4s var(--ease) both}
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+
+/* ============================================================
+   Shared nav (qnav from nav.js) — OpenAI-clean
+   ============================================================ */
+.qnav{
+  background:rgba(255,255,255,.8)!important;
+  backdrop-filter:saturate(180%) blur(16px)!important;
+  -webkit-backdrop-filter:saturate(180%) blur(16px)!important;
+  border-bottom:1px solid var(--line)!important;
+  box-shadow:none!important;
+  padding:11px 24px!important;
+}
+.qnav .qbrand{font-weight:600!important;letter-spacing:-.02em}
+.qnav .qbrand .qq{background:var(--ink)!important;border-radius:7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.qnav a.qtop,.qnav .qtop{font-weight:500!important;letter-spacing:-.01em;color:var(--ink2)!important;font-size:13.5px!important;padding:7px 11px!important;transition:background .2s,color .2s}
+.qnav .qtop.active{color:var(--ink)!important;font-weight:600!important}
+.qnav .qitem.open .qtop,.qnav a.qtop:hover,.qnav .qtop:hover{background:var(--soft)!important;color:var(--ink)!important}
+.qnav .qcaret{color:var(--faint)!important}
+.qnav .qmenu{
+  border:1px solid var(--line)!important;border-radius:14px!important;
+  box-shadow:var(--shadow-lg)!important;padding:6px!important;
+  animation:qrise .16s var(--ease);
+}
+.qnav .qmenu a{border-radius:9px!important;font-weight:500;font-size:13.5px}
+.qnav .qmenu a:hover{background:var(--soft)!important;color:var(--ink)!important}
+.qnav .qmenu a.active{background:var(--accent-soft)!important;color:var(--accent)!important}
+.qnav .qright{color:var(--mut)!important}
+.qnav .qright .qdot{background:var(--up)!important;box-shadow:0 0 0 3px rgba(6,122,85,.12)}
+
+/* ---- small-screen hardening ---- */
 @media(max-width:560px){
   img,svg,canvas,video{max-width:100%}
   .qnav{padding:9px 13px!important}
   .ehero{padding:46px 16px 30px!important}
   .ehero h1{font-size:30px!important;letter-spacing:-1px!important}
-  .ehero .lead{font-size:14.5px!important}
-  .ehero .estat{padding:2px 11px!important}
-  .ehero .estat .n{font-size:18px!important}
   table{font-size:12px}
 }
-
-
-/* ---- global craft (research-grounded) ---- */
-svg polyline,svg path{stroke-linejoin:round;stroke-linecap:round}
-td,th,.num,.v,.k,.price,.val,.vl,.mn{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
-
-/* ============================================================
-   QUANTORA DS · TRILLION-DOLLAR SYNTHESIS (site-wide final)
-   8-agent research: off-white page + white surfaces lift,
-   de-grid tables, accent-as-punctuation, premium depth/motion.
-   ============================================================ */
-@view-transition{navigation:auto}
-::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
-:root{--page:#f7f8fa;--hair:rgba(17,24,39,.08);--hair2:rgba(17,24,39,.14);--faint:#9aa1ad}
-body{background:var(--page)!important}
-/* surfaces stay pure white so they lift off the off-white page */
-.card,.panel,.tile,.box,table.card,.flag{background:#fff!important}
-/* tables: horizontal hairlines only — no verticals, hover not zebra */
-table{border-collapse:collapse!important}
-td,th{border-left:0!important;border-right:0!important;border-bottom:1px solid var(--hair)!important}
-thead th{text-transform:uppercase;letter-spacing:.07em;font-size:10.5px!important;font-weight:500!important;color:var(--faint)!important;border-bottom:1px solid var(--hair2)!important}
-tbody tr:hover td{background:var(--soft)!important}
-tbody tr:last-child td{border-bottom:0!important}
-/* premium focus ring (accent as punctuation) */
-input:focus,select:focus,textarea:focus{outline:none!important;border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(51,88,255,.16)!important}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-/* charts retina-crisp */
-svg polyline,svg path{vector-effect:non-scaling-stroke}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
