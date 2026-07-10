@@ -1,153 +1,279 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Screener - describe what you want, AI finds the names | Quantora</title>
-<meta name="description" content="Quantora's AI screener: describe what you are looking for in plain English - 'profitable small caps with insider buying and rising estimates' - and get a list of matching tickers with the reasoning. Free, no login.">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fafafa">
+<title>Quantora · Screener — live movers, filtered your way</title>
+<meta name="description" content="A real, live stock screener: biggest gainers and losers, a megacap core, and crypto — filter by price and exchange, sort any column, and click through to full detail.">
 <link rel="canonical" href="https://www.usequantora.com/screener.html">
 <link rel="stylesheet" href="/theme.css">
 <style>
-  body{background:#F7F8Fa;color:#14161c;font-family:Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
-  .sw{max-width:880px;margin:0 auto;padding:28px 24px 90px}
-  .eyb{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:#8a91ad;font-weight:600}
-  h1{font-size:clamp(26px,3.4vw,38px);font-weight:600;letter-spacing:-.02em;margin:8px 0 6px}
-  .lead{color:#4a4f58;font-size:15.5px;line-height:1.6;max-width:64ch;margin:0 0 20px}
-  .box{background:#fff;border:1px solid rgba(17,24,39,.12);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(17,24,39,.04)}
-  textarea{width:100%;box-sizing:border-box;border:0;outline:0;resize:vertical;min-height:66px;font:400 16px/1.5 inherit;color:#14161c;background:transparent}
-  textarea::placeholder{color:#9aa1ad}
-  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
-  .hint{color:#9aa1ad;font-size:12px}
-  .go{background:#2f6bff;color:#fff;border:0;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14px;cursor:pointer}
-  .go:disabled{opacity:.5;cursor:default}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
-  .chip{background:#fff;border:1px solid rgba(17,24,39,.14);border-radius:999px;padding:7px 13px;font-size:12.5px;color:#3a3f48;cursor:pointer;transition:border-color .15s,background .15s}
-  .chip:hover{border-color:#2f6bff;color:#2f6bff}
-  .exlabel{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#9aa1ad;margin:22px 0 2px}
-  .res{margin-top:26px;display:none}
-  .res.on{display:block}
-  .tk{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px}
-  .tk a{display:inline-flex;align-items:baseline;gap:7px;text-decoration:none;background:#0b1220;color:#fff;border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px;transition:transform .12s}
-  .tk a:hover{transform:translateY(-1px)}
-  .tk a span{font-weight:400;font-size:11px;color:#8ea2c9}
-  .why{background:#fff;border:1px solid rgba(17,24,39,.1);border-radius:14px;padding:16px 18px;color:#2c313a;font-size:14px;line-height:1.7}
-  .why h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8a91ad;margin:0 0 8px;font-weight:600}
-  .spin{color:#6b7280;font-size:14px;padding:10px 2px}
-  .muted{color:#9aa1ad;font-size:12px;margin-top:14px;line-height:1.6}
-  .err{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;color:#9a5b1c;font-size:13.5px;line-height:1.6}
-  code{background:#eef0f4;border-radius:5px;padding:1px 6px;font-size:12.5px}
-</style>
-</head><body>
-<div id="qnav"></div>
-<div class="sw">
-  <div class="eyb">QUANTORA &middot; AI SCREENER</div>
-  <h1>Describe what you want. AI finds the names.</h1>
-  <p class="lead">No filter menus, no jargon. Say what you are looking for in plain English and Quantora's AI returns a starting list of tickers - each one opens a full AI-powered research page.</p>
+  :root{
+    --canvas:#FAFAFA; --surface:#FFFFFF; --well:#F4F4F5; --hover:#F0F0F1;
+    --ink:#0A0A0A; --ink2:#52525B; --muted:#8E8E93; --faint:#C7C7CC;
+    --line:rgba(17,17,17,.06); --line2:rgba(17,17,17,.10);
+    --ring:0 0 0 1px rgba(17,17,17,.05);
+    --card:0 0 0 1px rgba(17,17,17,.045), 0 1px 2px rgba(17,17,17,.04), 0 4px 8px -2px rgba(17,17,17,.05), 0 16px 32px -14px rgba(24,24,40,.08), inset 0 1px 0 rgba(255,255,255,.7);
+    --pop:0 0 0 1px rgba(17,17,17,.06), 0 8px 16px -6px rgba(24,24,40,.12), 0 24px 48px -16px rgba(24,24,40,.18);
+    --accent:#2563EB; --accent-weak:rgba(37,99,235,.10);
+    --up:#12805C; --down:#E5484D; --flat:#8E8E93;
+    --up-bg:rgba(18,128,92,.09); --down-bg:rgba(229,72,77,.08);
+    --ez:cubic-bezier(.16,1,.3,1); --mono:'JetBrains Mono','Geist Mono',ui-monospace,monospace; --sans:'Inter','Geist',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    background-image:radial-gradient(110% 70% at 50% -8%, rgba(37,99,235,.045), transparent 58%);}
+  ::selection{background:var(--accent-weak)}
+  .rc{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:14px 24px 100px}
+  .num{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1;letter-spacing:-.006em}
+  .mono{font-family:var(--mono)} a{color:inherit;text-decoration:none}
+  :focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(37,99,235,.5);border-radius:8px}
+  .up{color:var(--up)} .down{color:var(--down)}
 
-  <div class="box">
-    <textarea id="q" placeholder="e.g. profitable small-cap industrials with insider buying and improving free cash flow"></textarea>
-    <div class="row">
-      <div class="hint">Press <code>Enter</code> to run &middot; <code>Shift+Enter</code> for a new line</div>
-      <button class="go" id="go" type="button">Find names</button>
-    </div>
+  .rail{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:8px 2px 12px;font-size:12px;color:var(--muted)}
+  .rail .l,.rail .r{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.rail .mono{font-size:11.5px;color:var(--ink2)}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--surface);box-shadow:var(--ring);font-size:11.5px;font-weight:500}
+  .dot{width:7px;height:7px;border-radius:50%;position:relative;display:inline-block}.dot.on{background:var(--up)}.dot.off{background:var(--down)}
+  .dot.on::after{content:"";position:absolute;inset:0;border-radius:50%;animation:ping 2.4s var(--ez) infinite}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(18,128,92,.5)}70%,100%{box-shadow:0 0 0 7px transparent}}
+
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:6px 2px 14px}
+  .head h1{margin:0;font-size:26px;font-weight:600;letter-spacing:-.025em}
+  .head .sub{font-size:13px;color:var(--muted);margin-top:3px}
+
+  .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .segs{display:inline-flex;background:var(--well);border-radius:11px;padding:3px;gap:2px}
+  .seg{border:0;background:transparent;color:var(--ink2);border-radius:8px;padding:7px 13px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .16s,color .16s}
+  .seg.on{background:var(--surface);color:var(--ink);box-shadow:var(--ring)}
+  .spacer{flex:1}
+  .srch{display:flex;align-items:center;gap:7px;height:38px;padding:0 12px;background:var(--surface);border-radius:10px;box-shadow:var(--ring);min-width:150px}
+  .srch input{border:0;outline:0;background:transparent;font-size:13px;font-family:inherit;color:var(--ink);width:120px}
+  .chipbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .fchip{padding:6px 12px;border-radius:999px;background:var(--surface);box-shadow:var(--ring);color:var(--ink2);border:0;cursor:pointer;font-size:12px;font-weight:500;font-family:inherit;transition:background .14s,color .14s}
+  .fchip.on{background:var(--ink);color:#fff}
+
+  .card{background:var(--surface);border-radius:14px;box-shadow:var(--card);padding:6px 6px 4px;min-width:0}
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl thead th{position:sticky;top:0;background:var(--surface);z-index:1;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:right;padding:11px 12px 10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+  .tbl thead th.l{text-align:left}.tbl thead th:hover{color:var(--ink)}
+  .tbl thead th .ar{opacity:0;font-size:8px;margin-left:3px}.tbl thead th.sort .ar{opacity:1}
+  .tbl tbody td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+  .tbl tbody tr{cursor:pointer;transition:background .12s}.tbl tbody tr:hover td{background:var(--well)}
+  .tbl tbody tr:last-child td{border-bottom:0}
+  .tbl .sy{text-align:left;font-weight:600}.tbl .nm{color:var(--muted);font-size:10.5px;font-weight:400;margin-top:1px;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tbl .rk{color:var(--faint);font-family:var(--mono);font-size:11px;width:26px;text-align:right}
+  .tbl .exch{font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .tbl .spk{width:64px;height:22px}
+  .movebar{position:relative;width:120px;height:8px;background:var(--well);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
+  .movebar .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line2)}
+  .movebar i{position:absolute;top:0;bottom:0;border-radius:3px}
+  .count{font-family:var(--mono);font-size:10px;color:var(--faint);padding:8px 12px 4px}
+  .loading{color:var(--faint);font-size:13px;padding:34px 12px;text-align:center}
+  .skb{display:inline-block;height:11px;border-radius:5px;background:linear-gradient(90deg,#eee,#f6f6f7,#eee);background-size:200% 100%;animation:shim 1.3s infinite}
+  @keyframes shim{to{background-position:-200% 0}}
+  .foot{margin-top:22px;font-size:11px;color:var(--faint);line-height:1.5;max-width:88ch}
+
+  .scrim{position:fixed;inset:0;z-index:998;background:rgba(15,17,21,.28);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+  .scrim.on{opacity:1;visibility:visible;transition:opacity .2s}
+  .drawer{position:fixed;top:0;right:0;height:100dvh;width:480px;max-width:94vw;z-index:999;background:var(--surface);box-shadow:var(--pop);transform:translateX(100%);transition:transform .3s var(--ez);display:flex;flex-direction:column;overflow-y:auto}
+  .drawer.on{transform:none}
+  .dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 12px}
+  .dhead .dsy{font-size:22px;font-weight:600;letter-spacing:-.02em}.dhead .dnm{font-size:12px;color:var(--muted);margin-top:2px}
+  .dhead .dpx{text-align:right}.dhead .dpx .v{font-size:24px;font-weight:600;letter-spacing:-.02em}.dhead .dpx .c{font-family:var(--mono);font-size:13px;font-weight:500;margin-top:2px}
+  .dx{border:0;background:var(--well);border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--ink2);font-size:17px;flex:none}
+  .tfs{display:flex;gap:4px;padding:0 22px}
+  .tf{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}.tf.on{background:var(--ink);color:#fff}
+  .dchart{position:relative;width:100%;height:200px;margin:10px 0}.dchart canvas{position:absolute;inset:0;width:100%;height:100%}
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:10px;overflow:hidden;margin:8px 22px}
+  .dgrid .g{background:var(--surface);padding:11px 13px}.dgrid .g .k{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}.dgrid .g .v{font-size:15px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .dsec{padding:14px 22px 0}.dsec h4{margin:0 0 8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .dai{font-size:13.5px;line-height:1.55;color:var(--ink2)}.dai.sk{color:var(--faint)}
+  .add{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;color:var(--accent);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--pop);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s var(--ez);z-index:1000}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(max-width:760px){.tbl .exch,.tbl thead th.hcol,.tbl td.hcol{display:none}.movebar{width:70px}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="qnav"></div>
+<script src="/nav.js"></script>
+<div class="rc">
+  <div class="rail">
+    <div class="l"><span class="mono" id="date">—</span><span class="pill"><span class="dot off" id="mdot"></span><span id="mstat">—</span></span></div>
+    <div class="r"><span class="mono" id="clock">—:—:—</span><span class="mono" style="color:var(--faint)">delayed · EOD</span></div>
   </div>
 
-  <div class="exlabel">Try one of these</div>
-  <div class="chips" id="ex"></div>
+  <div class="head">
+    <div><h1>Screener</h1><div class="sub">Live movers, a megacap core, and crypto — filtered your way. Click any row for full detail.</div></div>
+  </div>
 
-  <div class="res" id="res"></div>
+  <div class="bar">
+    <div class="segs" id="tabs">
+      <button class="seg on" data-t="gainers">▲ Top gainers</button>
+      <button class="seg" data-t="losers">▼ Top losers</button>
+      <button class="seg" data-t="core">Megacap core</button>
+      <button class="seg" data-t="crypto">Crypto</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="srch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--faint)"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg><input id="q" placeholder="Filter…" aria-label="Filter rows"></div>
+  </div>
 
-  <div class="muted">Results are AI-generated starting points from the model's general knowledge, not a live fundamental screen, and can be wrong or out of date. Not investment advice - always verify on each company's page before acting.</div>
+  <div class="chipbar" id="filters">
+    <button class="fchip on" data-p="0">Any price</button>
+    <button class="fchip" data-p="1">≥ $1</button>
+    <button class="fchip" data-p="5">≥ $5</button>
+    <button class="fchip" data-p="10">≥ $10</button>
+    <span style="width:1px;height:20px;background:var(--line2);margin:0 4px"></span>
+    <button class="fchip on" data-x="ALL">All exchanges</button>
+    <button class="fchip" data-x="NASDAQ">NASDAQ</button>
+    <button class="fchip" data-x="NYSE">NYSE</button>
+  </div>
+
+  <div class="card">
+    <div id="tblwrap"><div class="loading"><span class="skb" style="width:60%"></span></div></div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <p class="foot" id="foot">Movers are the day's biggest gainers/losers across US exchanges (edge-cached, delayed/EOD, via the Quantora proxy &amp; FMP). Megacap core &amp; crypto load live prices with sparklines. Small, low-priced names dominate the movers list — use the price filter to focus on liquid stocks. Educational only — not investment advice.</p>
 </div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dhead"><div><div class="dsy" id="dr-sy">—</div><div class="dnm" id="dr-nm"></div></div><div style="display:flex;gap:10px;align-items:flex-start"><div class="dpx"><div class="v num" id="dr-px">—</div><div class="c num" id="dr-chg"></div></div><button class="dx" id="dr-x">×</button></div></div>
+  <div class="tfs" id="dr-tfs"></div>
+  <div class="dchart" style="margin:10px 22px 0"><canvas id="dr-chart"></canvas></div>
+  <div class="dgrid" id="dr-grid"></div>
+  <div class="dsec" style="padding-bottom:26px"><h4>Read</h4><div class="dai sk" id="dr-ai">Reading…</div></div>
+</aside>
+<div class="toast" id="toast"></div>
 
 <script>
 (function(){
-  var EX = [
-    'Profitable small caps with recent insider buying',
-    'Dividend growers under a P/E of 15',
-    'AI infrastructure plays with rising analyst estimates',
-    'Beaten-down quality: high ROIC trading near 52-week lows',
-    'Cash-rich companies with low debt and strong free cash flow',
-    'Recent congressional buys in energy and defense'
-  ];
-  var qEl = document.getElementById('q');
-  var goEl = document.getElementById('go');
-  var resEl = document.getElementById('res');
-  var exEl = document.getElementById('ex');
-  var busy = false;
+  "use strict";
+  var RM=matchMedia('(prefers-reduced-motion:reduce)').matches,HID=function(){return document.hidden;};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function num(x){x=+x;return isFinite(x)?x:null;}
+  function money(x){var n=num(x);if(n==null)return '—';var a=Math.abs(n);return (n<0?'-$':'$')+a.toLocaleString(undefined,{minimumFractionDigits:a<1?4:2,maximumFractionDigits:a<1?4:2});}
+  function pct(x){var n=num(x);return n==null?'':((n>=0?'+':'')+n.toFixed(2)+'%');}
+  function arr(x){return num(x)>=0?'▲':'▼';}
+  function cls(x){return num(x)>=0?'up':'down';}
+  function time(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  var CRYPTO={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',BNB:'binancecoin',XRP:'ripple',DOGE:'dogecoin',ADA:'cardano',AVAX:'avalanche-2',LINK:'chainlink'};
+  var CNAME={};
+  var NAMES={SPY:'S&P 500',QQQ:'Nasdaq 100',DIA:'Dow Jones',IWM:'Russell 2000',AAPL:'Apple',NVDA:'NVIDIA',MSFT:'Microsoft',TSLA:'Tesla',GOOGL:'Alphabet',AMZN:'Amazon',META:'Meta',AVGO:'Broadcom',AMD:'AMD',NFLX:'Netflix',JPM:'JPMorgan',V:'Visa',MA:'Mastercard',XLE:'Energy',XLK:'Technology',XLF:'Financials',XLV:'Health Care',BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana'};
+  var CORE=['AAPL','NVDA','MSFT','GOOGL','AMZN','META','AVGO','TSLA','AMD','NFLX','JPM','V','SPY','QQQ','XLE','XLK'];
 
-  EX.forEach(function(t){
-    var c = document.createElement('div'); c.className='chip'; c.textContent=t;
-    c.addEventListener('click', function(){ qEl.value=t; qEl.focus(); run(); });
-    exEl.appendChild(c);
-  });
+  function tick(){try{var et=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));var h=et.getHours(),m=et.getMinutes(),s=et.getSeconds(),day=et.getDay();
+    document.getElementById('clock').textContent=[h,m,s].map(function(x){return String(x).padStart(2,'0');}).join(':')+' ET';
+    document.getElementById('date').textContent=et.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+    var mins=h*60+m,open=(day>=1&&day<=5&&mins>=570&&mins<960);document.getElementById('mdot').className='dot '+(open?'on':'off');document.getElementById('mstat').textContent=open?'US markets open':'US markets closed';}catch(e){}}
+  tick();setInterval(tick,1000);
 
-  var STOP = {A:1,I:1,AI:1,AN:1,AS:1,AT:1,BE:1,BY:1,DO:1,GO:1,IF:1,IN:1,IS:1,IT:1,ME:1,MY:1,NO:1,OF:1,ON:1,OR:1,SO:1,TO:1,UP:1,US:1,WE:1,THE:1,AND:1,FOR:1,ARE:1,BUT:1,NOT:1,YOU:1,ALL:1,ANY:1,CAN:1,HAS:1,HAD:1,HER:1,WAS:1,ONE:1,OUR:1,OUT:1,DAY:1,GET:1,NEW:1,NOW:1,OLD:1,SEE:1,TWO:1,WHO:1,BOY:1,DID:1,ETF:1,CEO:1,CFO:1,IPO:1,GDP:1,EPS:1,ROE:1,ROI:1,FCF:1,YOY:1,USA:1,PE:1,PB:1,PS:1,USD:1,SEC:1,EPA:1,FDA:1,Q1:1,Q2:1,Q3:1,Q4:1,TICKER:1,TICKERS:1,LIST:1,HIGH:1,LOW:1,BUY:1,SELL:1,HOLD:1,RISK:1,CASH:1,DEBT:1,NOTE:1};
+  var cache={},cgData={},cgLoaded={};
+  function getStock(sym){if(cache[sym]&&cache[sym].p)return cache[sym].p;var lk='qz:d:'+sym;
+    var pr=fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
+      var a=Array.isArray(j)?j:(j&&j.data);if(!Array.isArray(a)||a.length<3)throw 0;var closes=a.map(function(r){return +(r.price!=null?r.price:r.close);}).filter(isFinite).reverse();if(closes.length<3)throw 0;
+      var price=closes[closes.length-1],prev=closes[closes.length-2],o={sym:sym,price:price,chg:(price/prev-1)*100,closes:closes,src:'FMP · EOD'};try{localStorage.setItem(lk,JSON.stringify({p:price,c:o.chg,cl:closes.slice(-260)}));}catch(e){}return o;
+    }).catch(function(){try{var s=JSON.parse(localStorage.getItem(lk)||'null');if(s&&isFinite(s.p))return{sym:sym,price:s.p,chg:s.c,closes:s.cl||[s.p],src:'cache'};}catch(e){}return null;});
+    cache[sym]={p:pr};return pr;}
+  function loadCrypto(ids){ids=ids.filter(function(i){return !cgLoaded[i];});if(!ids.length)return Promise.resolve();
+    return fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){
+      if(Array.isArray(a))a.forEach(function(c){cgLoaded[c.id]=1;var sp=(c.sparkline_in_7d&&c.sparkline_in_7d.price)||[c.current_price];for(var k in CRYPTO)if(CRYPTO[k]===c.id)cgData[k]={sym:k,price:c.current_price,chg:c.price_change_percentage_24h,closes:sp,src:'CoinGecko · live'};});}).catch(function(){});}
+  function getAny(sym){sym=sym.toUpperCase();if(CRYPTO[sym])return loadCrypto([CRYPTO[sym]]).then(function(){return cgData[sym]||null;});return getStock(sym);}
 
-  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function spark(vals,w,h,color){if(!vals||vals.length<2)return '';var p=2,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1;
+    var X=function(i){return p+i*(w-2*p)/(vals.length-1);},Y=function(v){return h-p-((v-mn)/rg)*(h-2*p);};
+    var d=vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' ');var up=vals[vals.length-1]>=vals[0],c=color||(up?'#12805C':'#E5484D');
+    return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:100%"><path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';}
+  function areaChart(cv,vals,color){try{var ctx=cv.getContext('2d'),r=cv.getBoundingClientRect(),W=r.width,H=r.height,dpr=Math.min(devicePixelRatio||1,2);cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+    if(!vals||vals.length<2)return;var p=6,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1,X=function(i){return p+i*(W-2*p)/(vals.length-1);},Y=function(v){return H-p-((v-mn)/rg)*(H-2*p);};
+    var up=vals[vals.length-1]>=vals[0],c=color||(up?'#12805C':'#E5484D');
+    ctx.beginPath();for(var i=0;i<vals.length;i++){var x=X(i),y=Y(vals[i]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.lineTo(X(vals.length-1),H-p);ctx.lineTo(X(0),H-p);ctx.closePath();var gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,c+'26');gr.addColorStop(1,c+'00');ctx.fillStyle=gr;ctx.fill();
+    ctx.beginPath();for(i=0;i<vals.length;i++){var x2=X(i),y2=Y(vals[i]);i===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);}ctx.lineWidth=2;ctx.strokeStyle=c;ctx.lineJoin='round';ctx.stroke();}catch(e){}}
 
-  function parse(ans){
-    var tickers = [];
-    var seen = {};
-    var lines = ans.split(/\n/);
-    var pool = ans;
-    for(var i=0;i<lines.length;i++){
-      if(/TICKERS?\s*:/i.test(lines[i])){ pool = lines[i].split(':').slice(1).join(':'); break; }
-    }
-    var toks = pool.match(/\$?[A-Z]{1,5}(?:\.[A-Z])?\b/g) || [];
-    for(var k=0;k<toks.length;k++){
-      var t = toks[k].replace(/^\$/,'');
-      var base = t.split('.')[0];
-      if(STOP[base]) continue;
-      if(seen[t]) continue;
-      seen[t]=1; tickers.push(t);
-      if(tickers.length>=14) break;
-    }
-    // rationale = the answer minus a leading TICKERS: line
-    var why = ans.replace(/^[\s\S]*?TICKERS?\s*:[^\n]*\n?/i,'').trim();
-    if(!why) why = ans.trim();
-    return { tickers: tickers, why: why };
-  }
+  var STATE={tab:'gainers',q:'',minP:0,exch:'ALL',sort:'chg',dir:-1},rows=[],loaded={},coreData={};
+  function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on');},1800);}
 
-  function render(ans){
-    var p = parse(ans);
-    var h = '';
-    if(p.tickers.length){
-      h += '<div class="tk">';
-      p.tickers.forEach(function(t){
-        h += '<a href="/stock/'+encodeURIComponent(t)+'">'+esc(t)+' <span>open &rarr;</span></a>';
-      });
-      h += '</div>';
-    }
-    if(p.why){
-      h += '<div class="why"><h3>Why these</h3>'+esc(p.why).replace(/\n/g,'<br>')+'</div>';
-    }
-    if(!p.tickers.length && !p.why){ h = '<div class="err">No names came back - try rephrasing your request.</div>'; }
-    resEl.innerHTML = h;
-    resEl.classList.add('on');
-  }
+  function fetchMovers(kind){if(loaded[kind])return Promise.resolve(loaded[kind]);
+    return fetch('/api/fmp?type='+kind).then(function(r){return r.json();}).then(function(j){var a=Array.isArray(j)?j:(j&&j.data)||[];
+      var out=a.map(function(d){return {sym:d.symbol,name:d.name||'',price:+d.price,chg:+d.changesPercentage,exch:d.exchange||'',closes:null};}).filter(function(d){return d.sym&&isFinite(d.price);});
+      loaded[kind]=out;return out;}).catch(function(){return [];});}
+  function fetchCore(){CORE.forEach(function(s,i){if(loaded['core:'+s])return;loaded['core:'+s]=1;setTimeout(function(){getStock(s).then(function(d){if(d){coreData[s]=d;if(STATE.tab==='core')render();}});},i*260);});
+    return CORE.map(function(s){var d=coreData[s];return d?{sym:s,name:NAMES[s]||'',price:d.price,chg:d.chg,exch:'',closes:d.closes}:{sym:s,name:NAMES[s]||'',price:null,chg:null,exch:'',closes:null,pending:true};});}
+  function fetchCryptoUniverse(){return fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=28&page=1&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){
+    if(!Array.isArray(a))return [];return a.map(function(c){var sy=(c.symbol||'').toUpperCase();CNAME[sy]=c.name;return {sym:sy,name:c.name,price:c.current_price,chg:c.price_change_percentage_24h,exch:'CRYPTO',closes:(c.sparkline_in_7d&&c.sparkline_in_7d.price)||null,cg:c.id};});}).catch(function(){return [];});}
 
-  function run(){
-    var q = (qEl.value||'').trim();
-    if(!q || busy) return;
-    busy = true; goEl.disabled = true;
-    resEl.className = 'res on';
-    resEl.innerHTML = '<div class="spin">Screening the market with AI&hellip;</div>';
-    var prompt = 'Act as an equity screener over US-listed stocks. From the request below, return a starting watchlist of 8 to 12 real, currently-listed US ticker symbols that best fit. '
-      + 'Output format: the FIRST line must be exactly "TICKERS: X, Y, Z" (uppercase ticker symbols only, comma separated). '
-      + 'Then 2 to 4 sentences explaining what the group has in common and any caveats. Educational only, not investment advice. Request: ' + q;
-    fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:prompt,context:'AI screener'})})
-      .then(function(r){ return r.json(); })
-      .then(function(j){
-        busy=false; goEl.disabled=false;
-        if(j && j.error==='ai_key_needed'){ resEl.innerHTML='<div class="err">The AI screener needs a model key. Add <code>ANTHROPIC_API_KEY</code> (or the configured provider key) in Vercel and redeploy to switch it on.</div>'; return; }
-        if(j && typeof j.answer==='string'){ render(j.answer); }
-        else { resEl.innerHTML='<div class="err">Something went wrong reaching the AI. Please try again.</div>'; }
-      })
-      .catch(function(){ busy=false; goEl.disabled=false; resEl.innerHTML='<div class="err">Network error - please try again.</div>'; });
-  }
+  function loadTab(t){document.getElementById('tblwrap').innerHTML='<div class="loading"><span class="skb" style="width:60%"></span></div>';
+    var pr;if(t==='gainers')pr=fetchMovers('gainers');else if(t==='losers')pr=fetchMovers('losers');else if(t==='crypto'){if(loaded._crypto)pr=Promise.resolve(loaded._crypto);else pr=fetchCryptoUniverse().then(function(x){loaded._crypto=x;return x;});}
+    else{rows=fetchCore();render();return;}
+    pr.then(function(x){if(STATE.tab!==t)return;rows=x;render();});}
 
-  goEl.addEventListener('click', run);
-  var _qp=location.search.match(/[?&]q=([^&]+)/); if(_qp){ var _qq=decodeURIComponent(_qp[1].replace(/\+/g,' ')); if(_qq){ qEl.value=_qq; run(); } }
-  qEl.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); run(); } });
+  function passFilters(d){if(STATE.minP&&(!(d.price>=STATE.minP)))return false;
+    if(STATE.exch!=='ALL'&&STATE.tab==='gainers'||STATE.exch!=='ALL'&&STATE.tab==='losers'){if((d.exch||'').toUpperCase().indexOf(STATE.exch)<0)return false;}
+    if(STATE.q){var q=STATE.q.toLowerCase();if((d.sym||'').toLowerCase().indexOf(q)<0&&(d.name||'').toLowerCase().indexOf(q)<0)return false;}
+    return true;}
+
+  function render(){var wrap=document.getElementById('tblwrap');
+    var view=rows.filter(passFilters);
+    var sf=STATE.sort,dir=STATE.dir;
+    view.sort(function(a,b){var av,bv;if(sf==='sym'){av=a.sym||'';bv=b.sym||'';return (av<bv?-1:av>bv?1:0)*dir;}av=a[sf];bv=b[sf];if(av==null)return 1;if(bv==null)return -1;return (av-bv)*dir;});
+    var maxAbs=1;view.forEach(function(d){if(d.chg!=null)maxAbs=Math.max(maxAbs,Math.abs(d.chg));});
+    var showSpk=(STATE.tab==='core'||STATE.tab==='crypto');
+    var th=function(key,label,l){return '<th class="'+(l?'l ':'')+(STATE.sort===key?'sort':'')+'" data-s="'+key+'">'+label+'<span class="ar">'+(STATE.dir<0?'▼':'▲')+'</span></th>';};
+    var head='<thead><tr><th class="l rk"> </th>'+th('sym','Symbol',1)+(showSpk?'<th class="hcol">Trend</th>':'')+th('price','Price')+th('chg','Change')+'<th class="hcol l">Move</th>'+(showSpk?'':'<th class="exch hcol">Exch</th>')+'</tr></thead>';
+    if(!view.length){wrap.innerHTML='<table class="tbl">'+head+'</table><div class="loading">No rows match your filters.</div>';wireHead();document.getElementById('count').textContent='';return;}
+    var body=view.map(function(d,i){
+      var barW=Math.min(50,Math.abs(d.chg||0)/maxAbs*50);
+      var mb='<div class="movebar"><div class="mid"></div><i style="'+(d.chg>=0?'left:50%;background:var(--up)':'right:50%;background:var(--down)')+';width:'+barW.toFixed(1)+'%"></i></div>';
+      return '<tr data-sym="'+esc(d.sym)+'"'+(d.cg?' data-cg="'+esc(d.cg)+'"':'')+'>'+
+        '<td class="l rk">'+(i+1)+'</td>'+
+        '<td class="sy">'+esc(d.sym)+'<div class="nm">'+esc(d.name||CNAME[d.sym]||'')+'</div></td>'+
+        (showSpk?'<td class="hcol"><span class="spk">'+(d.closes?spark(d.closes.slice(-30),64,22):(d.pending?'<span class="skb" style="width:50px;height:8px"></span>':''))+'</span></td>':'')+
+        '<td class="num">'+(d.price!=null?money(d.price):'<span class="skb" style="width:44px;height:9px"></span>')+'</td>'+
+        '<td class="num '+(d.chg!=null?cls(d.chg):'')+'">'+(d.chg!=null?(arr(d.chg)+' '+pct(d.chg)):'')+'</td>'+
+        '<td class="hcol l">'+mb+'</td>'+
+        (showSpk?'':'<td class="exch hcol">'+esc(d.exch||'')+'</td>')+
+        '</tr>';}).join('');
+    wrap.innerHTML='<table class="tbl">'+head+'<tbody>'+body+'</tbody></table>';
+    wireHead();
+    Array.prototype.forEach.call(wrap.querySelectorAll('tbody tr'),function(tr){tr.addEventListener('click',function(){openDrawer(tr.dataset.sym);});});
+    document.getElementById('count').textContent=view.length+' of '+rows.length+' · '+STATE.tab+' · as of '+time();}
+  function wireHead(){Array.prototype.forEach.call(document.querySelectorAll('.tbl thead th[data-s]'),function(th){th.addEventListener('click',function(){var s=th.dataset.s;if(STATE.sort===s)STATE.dir*=-1;else{STATE.sort=s;STATE.dir=(s==='sym')?1:-1;}render();});});}
+
+  var scrim=document.getElementById('scrim'),drawer=document.getElementById('drawer'),curData=null;
+  var TFS=[['1M',21],['3M',63],['6M',126],['1Y',252],['ALL',9999]];
+  function openDrawer(sym){sym=String(sym).toUpperCase();scrim.classList.add('on');drawer.classList.add('on');drawer.setAttribute('aria-hidden','false');
+    var row=null;rows.forEach(function(d){if(d.sym===sym)row=d;});
+    document.getElementById('dr-sy').textContent=sym;document.getElementById('dr-nm').textContent=(row&&row.name)||NAMES[sym]||CNAME[sym]||'';document.getElementById('dr-px').textContent='—';document.getElementById('dr-chg').textContent='';document.getElementById('dr-grid').innerHTML='';document.getElementById('dr-ai').className='dai sk';document.getElementById('dr-ai').textContent='Reading '+sym+'…';
+    var tfs=document.getElementById('dr-tfs');tfs.innerHTML=TFS.map(function(t,i){return '<button class="tf'+(i===2?' on':'')+'" data-n="'+t[1]+'">'+t[0]+'</button>';}).join('');
+    var isC=(row&&row.exch==='CRYPTO')||CRYPTO[sym];
+    var pr=isC?getAny(sym):getStock(sym);
+    pr.then(function(d){
+      if(!d&&row){d={sym:sym,price:row.price,chg:row.chg,closes:row.closes||[row.price],src:'movers'};}
+      if(!d){document.getElementById('dr-px').textContent='no data';return;}curData=d;var up=(d.chg||0)>=0;
+      document.getElementById('dr-px').textContent=money(d.price);document.getElementById('dr-chg').innerHTML='<span class="'+(up?'up':'down')+'">'+arr(d.chg)+' '+pct(d.chg)+'</span>';
+      drawTF(126);Array.prototype.forEach.call(tfs.querySelectorAll('.tf'),function(b){b.addEventListener('click',function(){Array.prototype.forEach.call(tfs.querySelectorAll('.tf'),function(x){x.classList.remove('on');});b.classList.add('on');drawTF(+b.dataset.n);});});
+      var c=d.closes||[],hi=c.length?Math.max.apply(null,c.slice(-252)):d.price,lo=c.length?Math.min.apply(null,c.slice(-252)):d.price;
+      document.getElementById('dr-grid').innerHTML=[['Last',money(d.price)],['Day',pct(d.chg)],['52w high',money(hi)],['52w low',money(lo)]].map(function(g){return '<div class="g"><div class="k">'+g[0]+'</div><div class="v">'+g[1]+'</div></div>';}).join('');
+      var el=document.getElementById('dr-ai');el.className='dai';el.innerHTML=esc(sym)+' — '+esc((row&&row.name)||NAMES[sym]||CNAME[sym]||'')+'. Last '+money(d.price)+', '+pct(d.chg)+' on the day. <button class="add" id="dr-add">Add to watchlist →</button>';
+      var ab=document.getElementById('dr-add');if(ab)ab.addEventListener('click',function(){addWL(sym);});
+    });}
+  function drawTF(n){if(!curData)return;var c=curData.closes||[];if(c.length<2){areaChart(document.getElementById('dr-chart'),[curData.price,curData.price]);return;}var vals=n>=9999?c:c.slice(-n);areaChart(document.getElementById('dr-chart'),vals);}
+  function closeDrawer(){scrim.classList.remove('on');drawer.classList.remove('on');drawer.setAttribute('aria-hidden','true');}
+  function addWL(sym){try{var w=JSON.parse(localStorage.getItem('qz:wl')||'null');if(!Array.isArray(w))w=[];if(w.indexOf(sym)<0){w.unshift(sym);localStorage.setItem('qz:wl',JSON.stringify(w.slice(0,12)));}toast(sym+' added to watchlist');}catch(e){}}
+  scrim.addEventListener('click',closeDrawer);document.getElementById('dr-x').addEventListener('click',closeDrawer);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&drawer.classList.contains('on'))closeDrawer();});
+
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs .seg'),function(b){b.addEventListener('click',function(){Array.prototype.forEach.call(document.querySelectorAll('#tabs .seg'),function(x){x.classList.remove('on');});b.classList.add('on');STATE.tab=b.dataset.t;STATE.sort='chg';STATE.dir=(STATE.tab==='losers')?1:-1;loadTab(STATE.tab);});});
+  Array.prototype.forEach.call(document.querySelectorAll('#filters .fchip'),function(b){b.addEventListener('click',function(){
+    if(b.dataset.p!=null){Array.prototype.forEach.call(document.querySelectorAll('#filters .fchip[data-p]'),function(x){x.classList.remove('on');});b.classList.add('on');STATE.minP=+b.dataset.p;}
+    else{Array.prototype.forEach.call(document.querySelectorAll('#filters .fchip[data-x]'),function(x){x.classList.remove('on');});b.classList.add('on');STATE.exch=b.dataset.x;}
+    render();});});
+  document.getElementById('q').addEventListener('input',function(){STATE.q=this.value.trim();render();});
+  loadTab('gainers');
 })();
 </script>
-<script src="/nav.js" defer></script>
-</body></html>
+</body>
+</html>
