@@ -363,17 +363,21 @@ h1{font-size:clamp(40px,6.6vw,68px); font-weight:500; letter-spacing:-.028em; ma
     // reveal wavefront clip
     var wf = PADL + (cw-PADL-PADR)*p + PADR*p;
     ctx.save(); ctx.beginPath(); ctx.rect(0,0,Math.max(wf,PADL+1),ch); ctx.clip();
-    // cloud (multiply, low alpha => density = probability)
-    ctx.globalCompositeOperation='multiply'; ctx.lineWidth=1; ctx.strokeStyle='rgba(51,88,212,0.022)';
-    for(var i=0;i<M.paths.length;i++){ ctx.beginPath(); for(var t=0;t<=H;t++){ var xx=X(realN-1+t),yy2=Y(M.paths[i][t]); if(t===0)ctx.moveTo(xx,yy2); else ctx.lineTo(xx,yy2);} ctx.stroke(); }
-    ctx.globalCompositeOperation='source-over';
+    // 5-95 outer band (soft fill) — draw first, widest
+    ctx.beginPath();
+    for(t=0;t<=H;t++){ var xo=X(realN-1+t); if(t===0)ctx.moveTo(xo,Y(M.band.p95[t])); else ctx.lineTo(xo,Y(M.band.p95[t])); }
+    for(t=H;t>=0;t--){ ctx.lineTo(X(realN-1+t),Y(M.band.p05[t])); }
+    ctx.closePath(); ctx.fillStyle='rgba(51,88,212,0.07)'; ctx.fill();
+    // cloud (source-over, density = probability)
+    ctx.lineWidth=1; ctx.strokeStyle='rgba(51,88,212,0.045)';
+    for(var i=0;i<M.paths.length;i++){ ctx.beginPath(); for(var t2=0;t2<=H;t2++){ var xx=X(realN-1+t2),yy2=Y(M.paths[i][t2]); if(t2===0)ctx.moveTo(xx,yy2); else ctx.lineTo(xx,yy2);} ctx.stroke(); }
     // 25-75 band
     ctx.beginPath();
     for(t=0;t<=H;t++){ var xa=X(realN-1+t); if(t===0)ctx.moveTo(xa,Y(M.band.p75[t])); else ctx.lineTo(xa,Y(M.band.p75[t])); }
     for(t=H;t>=0;t--){ ctx.lineTo(X(realN-1+t),Y(M.band.p25[t])); }
-    ctx.closePath(); ctx.fillStyle='rgba(51,88,212,0.10)'; ctx.fill();
+    ctx.closePath(); ctx.fillStyle='rgba(51,88,212,0.16)'; ctx.fill();
     // 5/95 dashed edges
-    ctx.setLineDash([2,4]); ctx.lineWidth=1; ctx.strokeStyle='rgba(51,88,212,0.34)';
+    ctx.setLineDash([2,4]); ctx.lineWidth=1; ctx.strokeStyle='rgba(51,88,212,0.45)';
     [M.band.p05,M.band.p95].forEach(function(b){ ctx.beginPath(); for(t=0;t<=H;t++){ var xb=X(realN-1+t); if(t===0)ctx.moveTo(xb,Y(b[t])); else ctx.lineTo(xb,Y(b[t]));} ctx.stroke(); });
     ctx.setLineDash([]);
     // median
