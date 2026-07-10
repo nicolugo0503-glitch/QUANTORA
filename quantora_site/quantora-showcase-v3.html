@@ -330,8 +330,8 @@ h1{font-size:clamp(40px,6.6vw,68px); font-weight:500; letter-spacing:-.028em; ma
     // sample paths (seeded per ticker) for cloud texture
     var rng=mulberry32(hash(sym||'x')^0x9e3779b9), g=makeGauss(rng), paths=[];
     for(i=0;i<N;i++){ var s=S0, arr=[s]; for(t=1;t<=H;t++){ s=s*Math.exp((m-0.5*sig*sig)+sig*g()); arr.push(s);} paths.push(arr); }
-    // realized tail (~46 pts)
-    var real=c.slice(Math.max(0,c.length-46));
+    // realized tail (~46 pts) — keep {d,c} objects so draw()/dom() can read .c
+    var real=closes.slice(Math.max(0,closes.length-46));
     // stats
     var driftH=(m-0.5*sig*sig)*H, sdH=sig*Math.sqrt(H);
     var medRet=(band.p50[H]/S0-1)*100, loRet=(band.p05[H]/S0-1)*100, hiRet=(band.p95[H]/S0-1)*100;
