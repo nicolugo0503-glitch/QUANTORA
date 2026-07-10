@@ -397,5 +397,10 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
+<script>
+/* Guarantee the hero-region cards render at full opacity. The site-wide hero.js/nav.js reveal "hold" (polls for any [class*="hero"] element) otherwise leaves this page's custom hero + brief frozen mid-fade. hero.js makes no .animate() calls and is not scroll-linked, so forcing opacity here sticks permanently. */
+(function(){function uf(){var els=document.querySelectorAll('.mkthero,.brief');for(var i=0;i<els.length;i++){var el=els[i];try{if(el.getAnimations)el.getAnimations().forEach(function(a){try{a.cancel();}catch(e){}});}catch(e){}el.style.setProperty('opacity','1','important');el.style.setProperty('transform','none','important');}}
+[60,200,500,1000,1800,2800].forEach(function(t){setTimeout(uf,t);});var n=0;function loop(){uf();if(++n<60&&window.requestAnimationFrame)requestAnimationFrame(loop);}if(window.requestAnimationFrame)requestAnimationFrame(loop);})();
+</script>
 </body>
 </html>
