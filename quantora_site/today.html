@@ -48,6 +48,7 @@
   .mv .px .v{font-size:13.5px;color:var(--ink2)} .mv .px .ch{font-size:12px;font-weight:500}
   .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:11px;overflow:hidden;background:#0a0a0b;border:1px solid var(--line)}
   .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .vcover{position:absolute;inset:0;z-index:3;cursor:default}
   .up{color:var(--up,#067a55)} .down{color:var(--down,#c4362a)}
   .loading{color:var(--faint);font-size:13px;padding:16px 4px;display:flex;align-items:center;gap:8px}
   .sk{display:inline-block;height:11px;border-radius:4px;background:linear-gradient(90deg,#f0f0f2,#f7f7f9,#f0f0f2);background-size:200% 100%;animation:shim 1.3s infinite}
@@ -87,7 +88,7 @@
     <div class="p span4"><h3>Crypto <span class="tag">24/7 · live</span></h3><div class="mv" id="crypto"><div class="loading"><span class="sk" style="width:100%"></span></div></div></div>
 
     <div class="p span8"><h3>Market News · Live <span class="tag">Video</span></h3>
-      <div class="vid"><iframe src="https://www.youtube.com/embed/videoseries?list=UUEAZeUIeJs0IjQiqTCdVSIg&autoplay=1&mute=1&playsinline=1&rel=0" title="Yahoo Finance market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <div class="vid"><iframe src="https://www.youtube.com/embed/videoseries?list=UUEAZeUIeJs0IjQiqTCdVSIg&autoplay=1&mute=1&playsinline=1&rel=0&controls=0&modestbranding=1&disablekb=1&iv_load_policy=3" title="Market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="vcover" aria-hidden="true"></div></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);margin-top:9px">Yahoo Finance · latest market coverage</div>
     </div>
 
