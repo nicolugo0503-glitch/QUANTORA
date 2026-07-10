@@ -138,12 +138,18 @@
   var cache={};
   function getSeries(sym){
     if(cache[sym]) return cache[sym];
+    var lk='qz:px:'+sym;
     cache[sym]=fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
-      var a=Array.isArray(j)?j:(j&&j.data); if(!Array.isArray(a)||a.length<2) return null;
+      var a=Array.isArray(j)?j:(j&&j.data); if(!Array.isArray(a)||a.length<2) throw 0;
       var last=a[0].price!=null?a[0].price:a[0].close, prev=a[1].price!=null?a[1].price:a[1].close;
-      last=+last; prev=+prev; if(!isFinite(last)||!isFinite(prev)||prev===0) return null;
-      return {sym:sym, price:last, chg:(last/prev-1)*100};
-    }).catch(function(){ return null; });
+      last=+last; prev=+prev; if(!isFinite(last)||!isFinite(prev)||prev===0) throw 0;
+      var v={sym:sym, price:last, chg:(last/prev-1)*100};
+      try{ localStorage.setItem(lk, JSON.stringify({p:last,c:v.chg,t:Date.now()})); }catch(e){}
+      return v;
+    }).catch(function(){
+      try{ var s=JSON.parse(localStorage.getItem(lk)||'null'); if(s&&isFinite(s.p)) return {sym:sym,price:s.p,chg:s.c,stale:true}; }catch(e){}
+      return null;
+    });
     return cache[sym];
   }
   function rowHTML(label, sym, price, chg, href){
@@ -151,19 +157,20 @@
       +'<span><span class="sy">'+esc(sym)+'</span><div class="nm">'+esc(label)+'</div></span>'
       +'<span class="px"><div class="v">'+money(price)+'</div><div class="ch '+cls(chg)+'">'+pct(chg)+'</div></span></a>';
   }
-  function fillEquities(id, items){
-    var el=document.getElementById(id);
+  function fillEquities(id, items, tries){
+    tries=tries||0; var el=document.getElementById(id);
     Promise.all(items.map(function(it){ return getSeries(it[0]).then(function(s){ return s?{lbl:it[1],s:s}:null; }); }))
     .then(function(rows){ rows=rows.filter(Boolean);
-      if(!rows.length){ el.innerHTML='<div class="loading">Live feed updating — retrying shortly.</div>'; return; }
-      el.innerHTML=rows.map(function(r){ return rowHTML(r.lbl, r.s.sym, r.s.price, r.s.chg); }).join('');
+      if(rows.length){ el.innerHTML=rows.map(function(r){ return rowHTML(r.lbl, r.s.sym, r.s.price, r.s.chg); }).join(''); return; }
+      if(tries<5){ items.forEach(function(it){ delete cache[it[0]]; }); setTimeout(function(){ fillEquities(id, items, tries+1); }, 8000); return; }
+      el.innerHTML='<div class="loading">Live feed catching up — the free data quota is refreshing.</div>';
     });
   }
 
   var INDICES=[['SPY','S&P 500'],['QQQ','Nasdaq 100'],['DIA','Dow Jones'],['IWM','Russell 2000']];
   var MEGA=[['AAPL','Apple'],['NVDA','NVIDIA'],['MSFT','Microsoft'],['TSLA','Tesla']];
   fillEquities('indices', INDICES);
-  fillEquities('megacaps', MEGA);
+  setTimeout(function(){ fillEquities('megacaps', MEGA); }, 2600); // stagger to stay under the free per-minute cap
 
   /* crypto — CoinGecko (free, no key, live 24h change) */
   var cryptoData=null;
