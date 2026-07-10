@@ -114,7 +114,10 @@ svg polyline,svg path{stroke-linejoin:round;stroke-linecap:round;vector-effect:n
 @keyframes qrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .panel,.card{animation:qrise .4s var(--ease) both}
 @view-transition{navigation:auto}
+/* the shared nav holds still and morphs across page loads — app-shell continuity */
+.qnav{view-transition-name:qchrome}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+::view-transition-group(qchrome){animation-duration:.2s}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
 
 /* ============================================================
