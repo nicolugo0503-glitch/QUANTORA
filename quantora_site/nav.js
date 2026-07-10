@@ -25,7 +25,7 @@
   var hj=document.createElement('script'); hj.src='/hero.js?v=2'; hj.async=false; (document.head || document.documentElement).appendChild(hj);
   var cj=document.createElement('script'); cj.src='/compliance.js?v=1'; cj.async=true; (document.head || document.documentElement).appendChild(cj);
 var sj=document.createElement('script'); sj.src='/share.js?v=1'; sj.async=true; (document.head || document.documentElement).appendChild(sj);
-  var qkj=document.createElement('script'); qkj.src='/qk.js?v=1'; qkj.async=true; (document.head || document.documentElement).appendChild(qkj);
+  var qkj=document.createElement('script'); qkj.src='/qk.js?v=2'; qkj.async=true; (document.head || document.documentElement).appendChild(qkj);
   try{var qsr=document.createElement('script'); qsr.type='speculationrules'; qsr.textContent=JSON.stringify({prefetch:[{source:'document',where:{href_matches:'/*'},eagerness:'moderate'}]}); document.head.appendChild(qsr);}catch(e){}
 
   var NAV = [
