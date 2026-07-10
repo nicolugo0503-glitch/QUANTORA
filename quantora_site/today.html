@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f6f7f9">
-<title>Quantora · Today — the market, at a glance, and on command</title>
-<meta name="description" content="Your daily markets command center. A live pulse, an AI brief, sparklines on everything, a heatmap, fear &amp; greed, a probability cone — and ask the market anything to watch it build the answer.">
+<title>Quantora · Today — the living market, at a glance and on command</title>
+<meta name="description" content="A living markets command center. The market rendered as a breathing organism, an AI brief, sparklines on everything, a heatmap, a cone — and ask anything to watch the terminal compose the answer.">
 <link rel="stylesheet" href="/theme.css">
 <style>
   :root{
@@ -18,8 +18,7 @@
     --sh-hero:0 2px 4px rgba(15,23,42,.04), 0 32px 64px -28px rgba(15,23,42,.16);
     --ez:cubic-bezier(.16,1,.3,1); --mono:'JetBrains Mono','Geist Mono',ui-monospace,monospace; --sans:'Inter','Geist',system-ui,sans-serif;
   }
-  body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);
-    background-image:radial-gradient(120% 80% at 50% -10%, rgba(47,107,255,.05), transparent 60%);}
+  body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);background-image:radial-gradient(120% 80% at 50% -10%, rgba(47,107,255,.05), transparent 60%);}
   .grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.02;mix-blend-mode:multiply}
   .rc{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:16px 22px 90px}
   .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:-.01em}
@@ -38,10 +37,8 @@
   .rib .it{display:inline-flex;align-items:center;gap:9px;padding:0 18px;border-right:1px solid var(--hair);font-size:13px}
   .rib .it b{font-weight:600;letter-spacing:-.01em}.rib .it .p{font-family:var(--mono);color:var(--ink2);font-size:12.5px}.rib .it .c{font-family:var(--mono);font-size:12px;font-weight:500}
 
-  /* ASK BAR (generative) */
   .askwrap{margin:2px 0 18px}
-  .ask{display:flex;align-items:center;gap:10px;height:58px;padding:0 8px 0 18px;background:#fff;border-radius:16px;
-    box-shadow:0 3px 6px rgba(0,0,0,.04),0 6px 50px 4px rgba(47,107,255,.06),0 0 0 1px rgba(15,23,42,.07);transition:box-shadow .25s var(--ez)}
+  .ask{display:flex;align-items:center;gap:10px;height:58px;padding:0 8px 0 18px;background:#fff;border-radius:16px;box-shadow:0 3px 6px rgba(0,0,0,.04),0 6px 50px 4px rgba(47,107,255,.06),0 0 0 1px rgba(15,23,42,.07);transition:box-shadow .25s var(--ez)}
   .ask:focus-within{box-shadow:0 3px 6px rgba(0,0,0,.04),0 6px 50px 4px rgba(47,107,255,.12),0 0 0 1px rgba(47,107,255,.35),0 0 0 4px rgba(47,107,255,.12)}
   .ask svg.mg{color:var(--faint);flex:none}
   .ask input{flex:1;border:0;outline:0;background:transparent;font-size:16.5px;font-weight:500;color:var(--ink);min-width:0;letter-spacing:-.01em}
@@ -72,13 +69,18 @@
   .asof{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.02em}
   .prov{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:10px;letter-spacing:.02em}
 
-  .hero{grid-column:span 8;background:linear-gradient(180deg,#fff,var(--surface2));border-radius:18px;box-shadow:var(--ring),var(--spec),var(--sh-hero);padding:22px 24px 8px;position:relative;overflow:hidden}
+  /* LIVING MARKET hero */
+  .hero{grid-column:span 8;min-height:300px;background:linear-gradient(180deg,#fff,var(--surface2));border-radius:18px;box-shadow:var(--ring),var(--spec),var(--sh-hero);position:relative;overflow:hidden}
   @media(max-width:1080px){.hero{grid-column:span 12}}
+  .field{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .heroinner{position:relative;z-index:2;padding:22px 24px}
+  .heroinner::before{content:"";position:absolute;left:-24px;top:-22px;width:66%;height:calc(100% + 44px);background:radial-gradient(75% 90% at 0% 34%, rgba(255,255,255,.94), rgba(255,255,255,.45) 55%, transparent 82%);z-index:-1;pointer-events:none}
   .hero .eyb{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
   .hero .big{font-size:clamp(40px,6vw,60px);font-weight:600;letter-spacing:-.03em;line-height:1;margin:8px 0 2px}
   .hero .chg{font-family:var(--mono);font-size:16px;font-weight:500;display:inline-flex;align-items:center;gap:8px}.hero .chg .sub{color:var(--muted);font-size:13px}
-  .heroC{position:relative;width:100%;height:190px;margin-top:6px}.heroC svg{position:absolute;inset:0;width:100%;height:100%}
-  .edge{animation:breathe 3.6s ease-in-out infinite}@keyframes breathe{0%,100%{opacity:.5}50%{opacity:1}}
+  .fieldnote{font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--muted);margin-top:120px;max-width:44ch;line-height:1.5}
+  @media(max-width:680px){.fieldnote{margin-top:56px}}
+
   .brief{grid-column:span 4;background:linear-gradient(180deg,#fff,#fbfbfe);border-radius:18px;box-shadow:var(--ring),var(--spec),var(--sh);padding:20px 21px}
   @media(max-width:1080px){.brief{grid-column:span 12}}
   .brief .bh{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:12px}
@@ -112,7 +114,6 @@
   .jump{display:flex;flex-direction:column;gap:8px}.jump .cta{display:flex;align-items:center;justify-content:center;gap:7px;height:42px;border-radius:11px;background:var(--ink);color:#fff;font-size:14px;font-weight:500}
   .jump a.lk{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:9px;background:var(--canvas);font-size:13px;font-weight:500}.jump a.lk:hover{background:#eef0f3}.jump a.lk .ar{color:var(--faint)}
 
-  /* compose widget extras */
   .statbig{font-size:32px;font-weight:600;letter-spacing:-.02em;line-height:1}.statchg{font-family:var(--mono);font-size:14px;font-weight:500;margin-top:4px}.statspk{width:100%;height:52px;margin-top:10px}
   .cmpsvg{width:100%;height:190px}.leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px}.leg .li{display:flex;align-items:center;gap:6px;color:var(--ink2)}.leg .sw{width:12px;height:3px;border-radius:2px}
   .err{color:var(--muted);font-size:13px;padding:8px 0}
@@ -136,11 +137,10 @@
 
   <div class="rib"><div class="tk" id="ribbon"><span class="it"><span class="skb" style="width:150px">&nbsp;</span></span></div></div>
 
-  <!-- ASK (generative): ask anything → the dashboard composes the answer -->
   <div class="askwrap">
     <form class="ask" id="askform" autocomplete="off">
       <svg class="mg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-      <input id="q" placeholder="Ask the market anything — “Nvidia vs the S&amp;P”, “what could Tesla do in 21 days?”" aria-label="Ask the market">
+      <input id="q" placeholder="Ask the market anything — “how is tech doing?”, “Nvidia vs the S&amp;P”, “what could Tesla do in 21 days?”" aria-label="Ask the market">
       <button class="go" id="go" type="submit">Compose ↵</button>
     </form>
     <div class="chips" id="chips"></div>
@@ -152,13 +152,16 @@
     </div>
   </div>
 
-  <div class="secttl">Today, at a glance</div>
+  <div class="secttl">The living market · today</div>
   <div class="bento">
     <div class="hero reveal">
-      <div class="eyb" id="hero-eyb">S&P 500 · SPY</div>
-      <div class="big num" id="hero-px">—</div>
-      <div class="chg num" id="hero-chg"><span class="sub">today</span></div>
-      <div class="heroC"><svg id="hero-svg" viewBox="0 0 900 190" preserveAspectRatio="none"></svg></div>
+      <canvas class="field" id="field" aria-hidden="true"></canvas>
+      <div class="heroinner">
+        <div class="eyb">The market · live</div>
+        <div class="big num" id="hero-px">—</div>
+        <div class="chg num" id="hero-chg"><span class="sub">today</span></div>
+        <div class="fieldnote" id="fieldnote">A living field of the market — green wisps are advancing names, red are declining; the turbulence is today's volatility. It breathes with the tape.</div>
+      </div>
     </div>
     <div class="brief reveal">
       <div class="bh"><span class="dot"></span>The Brief · AI market read</div>
@@ -175,7 +178,7 @@
     <div class="card reveal"><div class="ch"><h3>Jump in</h3><span class="tag">⌘K</span></div><div class="jump"><a class="cta" href="/terminal.html">Open the terminal →</a><a class="lk" href="/track.html"><span>Track record</span><span class="ar">→</span></a><a class="lk" href="/cone.html"><span>Probability cone</span><span class="ar">→</span></a><a class="lk" href="/screener.html"><span>Screener</span><span class="ar">→</span></a></div></div>
   </div>
 
-  <p class="foot">Ask-panels are composed by AI; every figure is pulled live from real market data (Quantora proxy &amp; CoinGecko) and may be delayed/EOD. The brief is AI-generated and may be wrong. Cones are illustrative Monte-Carlo simulations, not forecasts. Video is a third-party stream. Educational only — nothing here is investment advice.</p>
+  <p class="foot">The living-market field encodes real data: color mass = advancing vs declining names, turbulence = realized volatility. Ask-panels are composed by AI; every figure is pulled live from real market data (Quantora proxy &amp; CoinGecko) and may be delayed/EOD. The brief is AI-generated and may be wrong. Cones are illustrative Monte-Carlo simulations, not forecasts. Educational only — not investment advice.</p>
 </div>
 
 <script>
@@ -200,68 +203,69 @@
   }catch(e){}}
   tick();setInterval(tick,1000);
 
-  /* ---- data (shared): stocks via proxy, crypto via CoinGecko ---- */
   var cache={},cgData={},cgLoaded={};
-  function getStock(sym){
-    if(cache[sym])return cache[sym];var lk='qz:c:'+sym;
+  function getStock(sym){if(cache[sym])return cache[sym];var lk='qz:c:'+sym;
     cache[sym]=fetch('/api/fmp?type=prices&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){
-      var a=Array.isArray(j)?j:(j&&j.data);if(!Array.isArray(a)||a.length<3)throw 0;
-      var closes=a.map(function(r){return +(r.price!=null?r.price:r.close);}).filter(isFinite).reverse();if(closes.length<3)throw 0;
-      var price=closes[closes.length-1],prev=closes[closes.length-2],o={sym:sym,price:price,chg:(price/prev-1)*100,closes:closes,src:'FMP · EOD'};
-      try{localStorage.setItem(lk,JSON.stringify({p:price,c:o.chg,cl:closes.slice(-90)}));}catch(e){}return o;
+      var a=Array.isArray(j)?j:(j&&j.data);if(!Array.isArray(a)||a.length<3)throw 0;var closes=a.map(function(r){return +(r.price!=null?r.price:r.close);}).filter(isFinite).reverse();if(closes.length<3)throw 0;
+      var price=closes[closes.length-1],prev=closes[closes.length-2],o={sym:sym,price:price,chg:(price/prev-1)*100,closes:closes,src:'FMP · EOD'};try{localStorage.setItem(lk,JSON.stringify({p:price,c:o.chg,cl:closes.slice(-90)}));}catch(e){}return o;
     }).catch(function(){try{var s=JSON.parse(localStorage.getItem(lk)||'null');if(s&&isFinite(s.p))return{sym:sym,price:s.p,chg:s.c,closes:s.cl||[s.p],src:'cache'};}catch(e){}return null;});
-    return cache[sym];
-  }
+    return cache[sym];}
   function loadCrypto(ids){ids=ids.filter(function(i){return !cgLoaded[i];});if(!ids.length)return Promise.resolve();
     return fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){
-      if(Array.isArray(a))a.forEach(function(c){cgLoaded[c.id]=1;var sp=(c.sparkline_in_7d&&c.sparkline_in_7d.price)||[c.current_price];
-        for(var k in CRYPTO)if(CRYPTO[k]===c.id)cgData[k]={sym:k,price:c.current_price,chg:c.price_change_percentage_24h,closes:sp,src:'CoinGecko · live'};});
-    }).catch(function(){});
-  }
-  function fetchAll(tickers){
-    tickers=tickers.map(function(t){return String(t).toUpperCase().replace(/[^A-Z0-9.\-]/g,'');}).filter(Boolean);
+      if(Array.isArray(a))a.forEach(function(c){cgLoaded[c.id]=1;var sp=(c.sparkline_in_7d&&c.sparkline_in_7d.price)||[c.current_price];for(var k in CRYPTO)if(CRYPTO[k]===c.id)cgData[k]={sym:k,price:c.current_price,chg:c.price_change_percentage_24h,closes:sp,src:'CoinGecko · live'};});
+    }).catch(function(){});}
+  function fetchAll(tickers){tickers=tickers.map(function(t){return String(t).toUpperCase().replace(/[^A-Z0-9.\-]/g,'');}).filter(Boolean);
     var ids=[];tickers.forEach(function(t){if(CRYPTO[t]&&ids.indexOf(CRYPTO[t])<0)ids.push(CRYPTO[t]);});
-    return loadCrypto(ids).then(function(){return Promise.all(tickers.map(function(t){return CRYPTO[t]?Promise.resolve(cgData[t]||null):getStock(t);}));})
-      .then(function(rows){var map={};rows.forEach(function(r){if(r)map[r.sym]=r;});return map;});
-  }
+    return loadCrypto(ids).then(function(){return Promise.all(tickers.map(function(t){return CRYPTO[t]?Promise.resolve(cgData[t]||null):getStock(t);}));}).then(function(rows){var map={};rows.forEach(function(r){if(r)map[r.sym]=r;});return map;});}
 
-  function spark(vals,w,h,area,color){
-    if(!vals||vals.length<2)return '';var p=2,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1;
+  function spark(vals,w,h,area,color){if(!vals||vals.length<2)return '';var p=2,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1;
     var X=function(i){return p+i*(w-2*p)/(vals.length-1);},Y=function(v){return h-p-((v-mn)/rg)*(h-2*p);};
-    var d=vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' ');
-    var up=vals[vals.length-1]>=vals[0],c=color||(up?'#12B76A':'#F04438'),id='s'+Math.random().toString(36).slice(2,7);
+    var d=vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' ');var up=vals[vals.length-1]>=vals[0],c=color||(up?'#12B76A':'#F04438'),id='s'+Math.random().toString(36).slice(2,7);
     var o='<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:100%">';
     if(area)o+='<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c+'" stop-opacity="0.16"/><stop offset="1" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L'+X(vals.length-1).toFixed(1)+' '+(h-p)+' L'+X(0).toFixed(1)+' '+(h-p)+' Z" fill="url(#'+id+')"/>';
-    o+='<path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+X(vals.length-1).toFixed(1)+'" cy="'+Y(vals[vals.length-1]).toFixed(1)+'" r="2" fill="'+c+'" stroke="#fff" stroke-width="1"/></svg>';
-    return o;
-  }
-  function rowHTML(label,sym,price,chg,closes,href){
-    return '<a class="row" href="'+esc(href||('/chart.html?symbol='+encodeURIComponent(sym)))+'"><span><span class="sy">'+esc(sym)+'</span><div class="nm">'+esc(label)+'</div></span><span class="spk">'+spark((closes||[]).slice(-30),74,26,true)+'</span><span class="px"><div class="v">'+money(price)+'</div><div class="c '+(num(chg)>=0?'up':'down')+'">'+arr(chg)+' '+pct(chg)+'</div></span></a>';
+    o+='<path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+X(vals.length-1).toFixed(1)+'" cy="'+Y(vals[vals.length-1]).toFixed(1)+'" r="2" fill="'+c+'" stroke="#fff" stroke-width="1"/></svg>';return o;}
+  function rowHTML(label,sym,price,chg,closes,href){return '<a class="row" href="'+esc(href||('/chart.html?symbol='+encodeURIComponent(sym)))+'"><span><span class="sy">'+esc(sym)+'</span><div class="nm">'+esc(label)+'</div></span><span class="spk">'+spark((closes||[]).slice(-30),74,26,true)+'</span><span class="px"><div class="v">'+money(price)+'</div><div class="c '+(num(chg)>=0?'up':'down')+'">'+arr(chg)+' '+pct(chg)+'</div></span></a>';}
+
+  /* ---- MARKET STATE + LIVING FIELD ---- */
+  var MS={breadth:0.5,breadthT:0.5,vol:0.32,volT:0.32};
+  function updateBreadth(){var order=['SPY','QQQ','DIA','IWM','AAPL','NVDA','MSFT','TSLA','BTC','ETH','SOL'],up=0,n=0;order.forEach(function(s){if(heatData[s]){n++;if(heatData[s].chg>=0)up++;}});if(n)MS.breadthT=up/n;}
+  function startField(){
+    var cv=document.getElementById('field');if(!cv||cv.dataset.on)return;cv.dataset.on='1';
+    var ctx=cv.getContext('2d'),W=0,H=0,dpr=Math.min(devicePixelRatio||1,2),parts=[],N=520,t=0,raf,vis=true;
+    function size(){var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+    size();for(var i=0;i<N;i++){var x=Math.random()*W,y=Math.random()*H;parts.push({x:x,y:y,px:x,py:y,up:Math.random()<MS.breadth});}
+    function step(){MS.breadth+=(MS.breadthT-MS.breadth)*0.02;MS.vol+=(MS.volT-MS.vol)*0.02;t+=0.0016*(0.5+MS.vol);
+      ctx.fillStyle='rgba(255,255,255,0.06)';ctx.fillRect(0,0,W,H);var speed=0.55+MS.vol*1.9,buoy=(0.4+MS.vol)*0.3;
+      for(var i=0;i<parts.length;i++){var p=parts[i];var a=Math.sin(p.x*0.005+t)*1.4+Math.cos(p.y*0.006-t*0.6)*1.4+Math.sin((p.x+p.y)*0.003+t*0.4);
+        p.x+=Math.cos(a)*speed;p.y+=Math.sin(a)*speed-(p.up?buoy:-buoy);
+        if(p.x<-4||p.x>W+4||p.y<-4||p.y>H+4){p.x=Math.random()*W;p.y=Math.random()*H;p.px=p.x;p.py=p.y;p.up=Math.random()<MS.breadth;continue;}
+        ctx.strokeStyle=p.up?'rgba(18,183,106,0.055)':'rgba(240,68,56,0.05)';ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(p.x,p.y);ctx.stroke();p.px=p.x;p.py=p.y;}
+    }
+    function frame(){if(vis&&!HID())step();raf=requestAnimationFrame(frame);}
+    if(RM){for(var k=0;k<160;k++)step();}else frame();
+    var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(size,220);},{passive:true});
+    if('IntersectionObserver' in window){new IntersectionObserver(function(es){vis=es[0].isIntersecting;}).observe(cv);}
   }
 
-  /* ---------------- DASHBOARD ---------------- */
+  /* ---- DASHBOARD ---- */
   function fillEquities(id,items,tries){tries=tries||0;var el=document.getElementById(id);
     Promise.all(items.map(function(it){return getStock(it[0]).then(function(s){return s?{l:it[1],s:s}:null;});})).then(function(rows){rows=rows.filter(Boolean);
-      if(rows.length){el.innerHTML=rows.map(function(r){return rowHTML(r.l,r.s.sym,r.s.price,r.s.chg,r.s.closes);}).join('');rows.forEach(function(r){heatData[r.s.sym]={chg:r.s.chg};});renderHeat();return;}
+      if(rows.length){el.innerHTML=rows.map(function(r){return rowHTML(r.l,r.s.sym,r.s.price,r.s.chg,r.s.closes);}).join('');rows.forEach(function(r){heatData[r.s.sym]={chg:r.s.chg};});renderHeat();updateBreadth();return;}
       if(tries<5){items.forEach(function(it){delete cache[it[0]];});setTimeout(function(){fillEquities(id,items,tries+1);},8000);return;}
-      el.innerHTML='<div class="loading">Live feed catching up — the free data quota is refreshing.</div>';});
-  }
+      el.innerHTML='<div class="loading">Live feed catching up — the free data quota is refreshing.</div>';});}
   var INDICES=[['SPY','S&P 500'],['QQQ','Nasdaq 100'],['DIA','Dow Jones'],['IWM','Russell 2000']],MEGA=[['AAPL','Apple'],['NVDA','NVIDIA'],['MSFT','Microsoft'],['TSLA','Tesla']];
   var heatData={};
   function heatColor(chg){var t=Math.max(-1,Math.min(1,chg/3));if(Math.abs(t)<0.04)return{bg:'rgba(152,162,179,.14)',fg:'#475467'};var hue=t>=0?152:4,L=94-42*Math.abs(t);return{bg:'hsl('+hue+',62%,'+L+'%)',fg:(L<64?'#fff':(t>=0?'#0E7C50':'#B42318'))};}
   function renderHeat(){var order=['SPY','QQQ','DIA','IWM','AAPL','NVDA','MSFT','TSLA','BTC','ETH','SOL'],el=document.getElementById('heat'),have=order.filter(function(s){return heatData[s];});if(!have.length)return;
     el.innerHTML=have.map(function(s){var c=heatColor(heatData[s].chg);return '<a class="cell" style="background:'+c.bg+'" href="/chart.html?symbol='+encodeURIComponent(s)+'"><span class="cs" style="color:'+c.fg+'">'+esc(s)+'</span><span class="cc" style="color:'+c.fg+'">'+arr(heatData[s].chg)+' '+pct(heatData[s].chg)+'</span></a>';}).join('');}
   function countUp(el,target,dur,pre,suf,dec){if(!el)return;var f=function(){el.textContent=pre+target.toFixed(dec)+suf;};if(RM||HID()){f();return;}var t0=null;requestAnimationFrame(function s(t){if(t0===null)t0=t;var p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=pre+(target*e).toFixed(dec)+suf;if(p<1)requestAnimationFrame(s);else f();});}
-  function buildHero(){getStock('SPY').then(function(s){if(!s){document.getElementById('hero-px').textContent='updating…';return;}
+  function buildHero(){getStock('SPY').then(function(s){if(!s){document.getElementById('hero-px').textContent='updating…';startField();return;}
     countUp(document.getElementById('hero-px'),s.price,1100,'$','',2);var up=s.chg>=0;
-    document.getElementById('hero-chg').innerHTML='<span style="color:'+(up?'var(--upfg)':'var(--downfg)')+'">'+arr(s.chg)+' '+pct(s.chg)+'</span><span class="sub">today · EOD</span>';
-    var vals=s.closes.slice(-70),W=900,H=190,p=8,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1,X=function(i){return p+i*(W-2*p)/(vals.length-1);},Y=function(v){return H-p-((v-mn)/rg)*(H-2*p);};
-    var d=vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' '),col=up?'#12B76A':'#F04438',svg=document.getElementById('hero-svg');
-    svg.innerHTML='<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity="0.15"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L'+X(vals.length-1)+' '+(H-p)+' L'+X(0)+' '+(H-p)+' Z" fill="url(#hg)"/><path id="hpath" d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle class="edge" cx="'+X(vals.length-1).toFixed(1)+'" cy="'+Y(vals[vals.length-1]).toFixed(1)+'" r="4" fill="'+col+'"/><circle cx="'+X(vals.length-1).toFixed(1)+'" cy="'+Y(vals[vals.length-1]).toFixed(1)+'" r="2.4" fill="#fff"/>';
-    try{var pth=document.getElementById('hpath'),L=pth.getTotalLength();pth.style.strokeDasharray=L;pth.style.strokeDashoffset=RM?0:L;if(!RM)requestAnimationFrame(function(){pth.style.transition='stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1)';pth.style.strokeDashoffset='0';});}catch(e){}
+    document.getElementById('hero-chg').innerHTML='<span style="color:'+(up?'var(--upfg)':'var(--downfg)')+'">'+arr(s.chg)+' '+pct(s.chg)+'</span><span class="sub">S&P 500 · today · EOD</span>';
+    try{var c=s.closes,rr=[];for(var i=Math.max(1,c.length-21);i<c.length;i++)rr.push(Math.log(c[i]/c[i-1]));var mm=0;rr.forEach(function(x){mm+=x;});mm/=rr.length;var vv=0;rr.forEach(function(x){vv+=(x-mm)*(x-mm);});vv/=Math.max(1,rr.length-1);var av=Math.sqrt(vv)*Math.sqrt(252);MS.volT=Math.max(0.08,Math.min(1,av/0.45));}catch(e){}
+    startField();
     drawConeInto(document.getElementById('conecv'),document.getElementById('cmed'),document.getElementById('cci'),s);
-    document.getElementById('asof').textContent='as of '+time()+' · delayed · EOD';});
-  }
+    document.getElementById('asof').textContent='as of '+time()+' · delayed · EOD';});}
   function drawConeInto(cv,medEl,ciEl,d){try{var c=d.closes;if(c.length<20)return;var rets=[];for(var i=Math.max(1,c.length-120);i<c.length;i++)rets.push(Math.log(c[i]/c[i-1]));
     var m=0;for(i=0;i<rets.length;i++)m+=rets[i];m/=rets.length;var v=0;for(i=0;i<rets.length;i++)v+=(rets[i]-m)*(rets[i]-m);v/=Math.max(1,rets.length-1);var sig=Math.sqrt(v);
     var S0=c[c.length-1],H=21,z={p05:-1.645,p25:-.674,p50:0,p75:.674,p95:1.645},b={p05:[],p25:[],p50:[],p75:[],p95:[]};
@@ -278,12 +282,12 @@
     var med=(b.p50[H]/S0-1)*100,lo=(b.p05[H]/S0-1)*100,hi=(b.p95[H]/S0-1)*100;
     if(medEl)countUp(medEl,med,1000,(med>=0?'+':''),'%',1);if(ciEl)ciEl.textContent=(lo>=0?'+':'')+lo.toFixed(0)+'% … '+(hi>=0?'+':'')+hi.toFixed(0)+'%';
   }catch(e){}}
-  function buildCrypto(){loadCrypto(['bitcoin','ethereum','solana']).then(function(){var el=document.getElementById('crypto');var rows=['BTC','ETH','SOL'].map(function(k){return cgData[k];}).filter(Boolean);
+  function buildCrypto(){loadCrypto(['bitcoin','ethereum','solana']).then(function(){var el=document.getElementById('crypto'),rows=['BTC','ETH','SOL'].map(function(k){return cgData[k];}).filter(Boolean);
     if(!rows.length){el.innerHTML='<div class="loading">Crypto feed updating.</div>';return;}
-    el.innerHTML=rows.map(function(d){heatData[d.sym]={chg:d.chg};return rowHTML(d.sym==='BTC'?'Bitcoin':d.sym==='ETH'?'Ethereum':'Solana',d.sym,d.price,d.chg,d.closes.filter(function(_,i){return i%4===0;}),'/coins.html');}).join('');renderHeat();});}
+    el.innerHTML=rows.map(function(d){heatData[d.sym]={chg:d.chg};return rowHTML(d.sym==='BTC'?'Bitcoin':d.sym==='ETH'?'Ethereum':'Solana',d.sym,d.price,d.chg,d.closes.filter(function(_,i){return i%4===0;}),'/coins.html');}).join('');renderHeat();updateBreadth();});}
   function buildGauge(){fetch('https://api.alternative.me/fng/?limit=1').then(function(r){return r.json();}).then(function(j){var d=j&&j.data&&j.data[0],val=d?+d.value:null,lbl=d?d.value_classification:'',svg=document.getElementById('gauge'),cx=120,cy=132,R=100;
-    function P(a){var r=a*Math.PI/180;return[cx+R*Math.cos(r),cy-R*Math.sin(r)];}function arc(a0,a1){var p0=P(a0),p1=P(a1),lg=(a0-a1)>180?1:0;return 'M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+R+' '+R+' 0 '+lg+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1);}
-    var out='<defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F04438"/><stop offset="0.5" stop-color="#F5A623"/><stop offset="1" stop-color="#12B76A"/></linearGradient></defs><path d="'+arc(180,0)+'" fill="none" stroke="#EAECF0" stroke-width="16" stroke-linecap="round"/><path d="'+arc(180,0)+'" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" opacity="0.9"/>';svg.innerHTML=out;
+    function P(a){var r=a*Math.PI/180;return[cx+R*Math.cos(r),cy-R*Math.sin(r)];}function ar(a0,a1){var p0=P(a0),p1=P(a1),lg=(a0-a1)>180?1:0;return 'M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+R+' '+R+' 0 '+lg+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1);}
+    svg.innerHTML='<defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F04438"/><stop offset="0.5" stop-color="#F5A623"/><stop offset="1" stop-color="#12B76A"/></linearGradient></defs><path d="'+ar(180,0)+'" fill="none" stroke="#EAECF0" stroke-width="16" stroke-linecap="round"/><path d="'+ar(180,0)+'" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" opacity="0.9"/>';
     if(val!=null){var ang=180-val*1.8,np=P(ang),needle=document.createElementNS(NS,'line');needle.setAttribute('x1',cx);needle.setAttribute('y1',cy);needle.setAttribute('stroke','#0B0F19');needle.setAttribute('stroke-width','3');needle.setAttribute('stroke-linecap','round');var st=P(180);needle.setAttribute('x2',(RM?np:st)[0].toFixed(1));needle.setAttribute('y2',(RM?np:st)[1].toFixed(1));svg.appendChild(needle);var hub=document.createElementNS(NS,'circle');hub.setAttribute('cx',cx);hub.setAttribute('cy',cy);hub.setAttribute('r','6');hub.setAttribute('fill','#0B0F19');svg.appendChild(hub);if(!RM)requestAnimationFrame(function(){needle.style.transition='all 1s cubic-bezier(.16,1,.3,1)';needle.setAttribute('x2',np[0].toFixed(1));needle.setAttribute('y2',np[1].toFixed(1));});countUp(document.getElementById('gv'),val,1000,'','',0);document.getElementById('gl').textContent=lbl||'';}
     else{document.getElementById('gv').textContent='—';document.getElementById('gl').textContent='unavailable';}
   }).catch(function(){document.getElementById('gv').textContent='—';document.getElementById('gl').textContent='unavailable';});}
@@ -296,15 +300,14 @@
   }).then(function(j){var el=document.getElementById('brief'),meta=document.getElementById('briefmeta');el.classList.remove('sk');
     if(j&&j.answer){el.innerHTML=esc(j.answer).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');meta.textContent='AI-generated from the figures above · '+time()+' · may be wrong · not advice';}
     else if(j&&j.error==='ai_key_needed'){el.textContent='The AI brief activates once an AI key is set in Vercel.';meta.textContent='AI not activated';}
-    else{el.textContent='The market brief is updating. The pulse, map and cone below are your fastest read on the day.';meta.textContent='Brief updating';}
+    else{el.textContent='The market brief is updating. The living field, map and cone are your fastest read on the day.';meta.textContent='Brief updating';}
   }).catch(function(){var el=document.getElementById('brief');el.classList.remove('sk');el.textContent='The market brief is updating.';document.getElementById('briefmeta').textContent='Brief updating';});}
   function lazyVideo(){var box=document.getElementById('vidbox');if(!box)return;var mount=function(){if(box.dataset.on)return;box.dataset.on='1';box.innerHTML='<iframe src="https://www.youtube.com/embed/videoseries?list=UUEAZeUIeJs0IjQiqTCdVSIg&autoplay=1&mute=1&playsinline=1&rel=0&controls=0&modestbranding=1&disablekb=1&iv_load_policy=3" title="Market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="vc"></div>';};
     if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mount();io.disconnect();}});},{rootMargin:'250px'});io.observe(box);}else mount();}
   function reveals(){var els=document.querySelectorAll('.reveal');if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.08,rootMargin:'0px 0px -6% 0px'});els.forEach(function(e,i){e.style.transitionDelay=(Math.min(i,6)*45)+'ms';io.observe(e);});}
 
-  /* ---------------- COMPOSE (ask → build the answer) ---------------- */
-  function card(cls,title,tag,inner,prov){var el=document.createElement('div');el.className='card '+(cls||'half');el.style.gridColumn='';el.classList.add(cls||'half');
-    el.innerHTML='<div class="ch"><h3>'+esc(title)+'</h3>'+(tag?'<span class="tag">'+esc(tag)+'</span>':'')+'</div>'+inner+(prov?'<div class="prov">'+esc(prov)+'</div>':'');return el;}
+  /* ---- COMPOSE ---- */
+  function card(cls,title,tag,inner,prov){var el=document.createElement('div');el.className='card '+(cls||'half');el.innerHTML='<div class="ch"><h3>'+esc(title)+'</h3>'+(tag?'<span class="tag">'+esc(tag)+'</span>':'')+'</div>'+inner+(prov?'<div class="prov">'+esc(prov)+'</div>':'');return el;}
   function wStat(it,dm){var t=(it.tickers||[])[0],d=dm[t];if(!d)return card(it.span,it.title||t||'Stat','Live','<div class="err">No data for '+esc(t||'?')+'.</div>');var up=d.chg>=0;
     return card(it.span||'third',it.title||t,'Live','<div class="statbig num">'+money(d.price)+'</div><div class="statchg '+(up?'up':'down')+'">'+arr(d.chg)+' '+pct(d.chg)+'</div><div class="statspk">'+spark(d.closes.slice(-40),200,52,true)+'</div>',(d.src||'')+' · as of '+time());}
   function wSpark(it,dm){var ts=(it.tickers||[]).filter(function(t){return dm[t];});if(!ts.length)return card(it.span,it.title||'Trends','Live','<div class="err">No data.</div>');
@@ -326,18 +329,19 @@
   function wNote(it){return card(it.span||'full',it.title||'Note','','<div style="font-size:15px;line-height:1.55;color:var(--ink2)">'+esc(it.text||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')+'</div>');}
   var WIDGETS={stat:wStat,spark:wSpark,compare:wCompare,cone:wCone,heatmap:wHeat,note:wNote};
 
-  var SYS='You are Quantora Compose. Given the user question, reply with ONLY a JSON object (no markdown): {"intent":string,"narration":string,"layout":[{"widget":"stat"|"compare"|"cone"|"heatmap"|"spark"|"note","span":"full"|"half"|"third","title":string,"tickers":[UPPERCASE symbols],"text":string}]}. Choose 1-4 widgets that best answer it. "compare" needs 2-4 tickers; "cone" exactly 1; "heatmap" 4-12; "stat" 1; "spark" 2-6; "note" uses text only. Use real US stock/ETF symbols (SPY QQQ DIA IWM AAPL NVDA MSFT TSLA AMZN GOOGL META AMD XLE XLK XLF GLD TLT) and crypto (BTC ETH SOL). In narration (1-2 sentences) answer plainly, refer to tickers by symbol, and DO NOT invent numbers. JSON only.';
+  var SYS='You are Quantora Compose, a generative market terminal. Reply with ONLY a JSON object (no markdown): {"intent":string,"narration":string,"layout":[{"widget":"stat"|"compare"|"cone"|"heatmap"|"spark"|"note","span":"full"|"half"|"third","title":string,"tickers":[UPPERCASE symbols],"text":string}]}. Choose 2 to 4 DIFFERENT widget types that TOGETHER form a rich multi-panel answer — for example a heatmap AND a cone AND a comparison, or a compare AND two cones, or a heatmap AND a spark AND a note. Do NOT return a single panel unless the question is purely one number. Almost always include a short "note" that adds context. Rules: "compare" needs 2-4 tickers; "cone" exactly 1; "heatmap" 4-12; "stat" 1; "spark" 2-6; "note" uses text only. Use real US stock/ETF symbols (SPY QQQ DIA IWM AAPL NVDA MSFT TSLA AMZN GOOGL META AMD NFLX AVGO XLE XLK XLF XLV XLY GLD TLT) and crypto (BTC ETH SOL). In narration (1-2 sentences) answer plainly, refer to tickers by symbol, and DO NOT invent numbers. JSON only.';
   function parseSpec(a){if(!a)return null;try{return JSON.parse(a);}catch(e){}var m=a.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0]);}catch(e){}}return null;}
   function tickersIn(spec){var s={};(spec.layout||[]).forEach(function(w){(w.tickers||[]).forEach(function(t){s[String(t).toUpperCase()]=1;});});return Object.keys(s);}
   var thinkEl=document.getElementById('think'),ansEl=document.getElementById('ans'),stageEl=document.getElementById('stage'),goBtn=document.getElementById('go');
-  function compose(q){q=(q||'').trim();if(!q)return;goBtn.disabled=true;thinkEl.classList.add('on');document.getElementById('thinkmsg').textContent='Composing the answer…';
+  function compose(q){q=(q||'').trim();if(!q)return;goBtn.disabled=true;thinkEl.classList.add('on');document.getElementById('thinkmsg').textContent='Composing a rich answer…';
     fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:q,context:SYS})}).then(function(r){return r.json();}).then(function(j){
       var spec=parseSpec(j&&j.answer);if(!spec||!spec.layout||!spec.layout.length)return fallback(q,j&&j.answer);
-      document.getElementById('thinkmsg').textContent='Pulling live data…';return fetchAll(tickersIn(spec)).then(function(dm){render(spec,dm);});
+      document.getElementById('thinkmsg').textContent='Pulling live data for '+tickersIn(spec).length+' tickers…';return fetchAll(tickersIn(spec)).then(function(dm){render(spec,dm);});
     }).catch(function(){fallback(q,null);}).then(function(){goBtn.disabled=false;});}
-  function fallback(q,answer){var syms=(q.toUpperCase().match(/\b[A-Z]{1,5}\b/g)||[]).slice(0,3),spec={intent:q,narration:answer||'Here is what I could pull for that.',layout:[]};
-    if(syms.length){spec.layout.push({widget:'cone',span:'half',title:syms[0]+' · outlook',tickers:[syms[0]]});spec.layout.push(syms.length>1?{widget:'compare',span:'half',title:'Comparison',tickers:syms}:{widget:'stat',span:'half',title:syms[0],tickers:[syms[0]]});}
-    else{spec.layout.push({widget:'stat',span:'third',title:'S&P 500',tickers:['SPY']});spec.layout.push({widget:'note',span:'full',title:'Answer',text:answer||'Try naming a ticker or a comparison.'});}
+  function fallback(q,answer){var syms=(q.toUpperCase().match(/\b[A-Z]{1,5}\b/g)||[]).slice(0,4),spec={intent:q,narration:answer||'Here is what I could pull for that.',layout:[]};
+    if(syms.length>=2){spec.layout.push({widget:'compare',span:'full',title:'Comparison',tickers:syms});spec.layout.push({widget:'cone',span:'half',title:syms[0]+' · outlook',tickers:[syms[0]]});spec.layout.push({widget:'cone',span:'half',title:syms[1]+' · outlook',tickers:[syms[1]]});}
+    else if(syms.length===1){spec.layout.push({widget:'stat',span:'third',title:syms[0],tickers:[syms[0]]});spec.layout.push({widget:'cone',span:'half',title:syms[0]+' · outlook',tickers:[syms[0]]});}
+    else{spec.layout.push({widget:'heatmap',span:'half',title:'Market Map',tickers:['SPY','QQQ','DIA','AAPL','NVDA','MSFT','TSLA','XLE']});spec.layout.push({widget:'note',span:'half',title:'Answer',text:answer||'Try naming a ticker or a comparison.'});}
     fetchAll(tickersIn(spec)).then(function(dm){render(spec,dm);});}
   function render(spec,dm){var draw=function(){stageEl.innerHTML='';(spec.layout||[]).forEach(function(w){var fn=WIDGETS[w.widget];if(!fn)return;try{stageEl.appendChild(fn(w,dm));}catch(e){}});
       document.getElementById('banner').textContent='AI composed '+stageEl.children.length+' panel'+(stageEl.children.length===1?'':'s')+' · '+(spec.intent||'');
@@ -346,7 +350,7 @@
     if(document.startViewTransition&&!RM){try{stageEl.style.viewTransitionName='cstage';document.startViewTransition(draw);}catch(e){draw();}}else draw();
     try{ansEl.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'});}catch(e){}}
 
-  var EX=['Nvidia vs the S&P this year','How is tech doing today?','BTC, ETH & SOL','What could Tesla do in 21 days?','Apple vs Microsoft vs Google'];
+  var EX=['How is tech doing today?','Nvidia vs the S&P this year','BTC, ETH & SOL','What could Tesla do in 21 days?','Energy vs tech'];
   var chipsEl=document.getElementById('chips');EX.forEach(function(e){var b=document.createElement('button');b.className='chip';b.type='button';b.textContent=e;b.addEventListener('click',function(){document.getElementById('q').value=e;compose(e);});chipsEl.appendChild(b);});
   document.getElementById('askform').addEventListener('submit',function(e){e.preventDefault();compose(document.getElementById('q').value);});
 
