@@ -200,8 +200,9 @@
     return fetch('/api/fmp?type='+kind).then(function(r){return r.json();}).then(function(j){var a=Array.isArray(j)?j:(j&&j.data)||[];
       var out=a.map(function(d){return {sym:d.symbol,name:d.name||'',price:+d.price,chg:+d.changesPercentage,exch:d.exchange||'',closes:null};}).filter(function(d){return d.sym&&isFinite(d.price);});
       loaded[kind]=out;return out;}).catch(function(){return [];});}
-  function fetchCore(){CORE.forEach(function(s,i){if(loaded['core:'+s])return;loaded['core:'+s]=1;setTimeout(function(){getStock(s).then(function(d){if(d){coreData[s]=d;if(STATE.tab==='core')render();}});},i*260);});
-    return CORE.map(function(s){var d=coreData[s];return d?{sym:s,name:NAMES[s]||'',price:d.price,chg:d.chg,exch:'',closes:d.closes}:{sym:s,name:NAMES[s]||'',price:null,chg:null,exch:'',closes:null,pending:true};});}
+  function coreRows(){return CORE.map(function(s){var d=coreData[s];return d?{sym:s,name:NAMES[s]||'',price:d.price,chg:d.chg,exch:'',closes:d.closes}:{sym:s,name:NAMES[s]||'',price:null,chg:null,exch:'',closes:null,pending:true};});}
+  function fetchCore(){CORE.forEach(function(s,i){if(loaded['core:'+s])return;loaded['core:'+s]=1;setTimeout(function(){getStock(s).then(function(d){if(d)coreData[s]=d;if(STATE.tab==='core'){rows=coreRows();render();}});},i*260);});
+    return coreRows();}
   function fetchCryptoUniverse(){return fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=28&page=1&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){
     if(!Array.isArray(a))return [];return a.map(function(c){var sy=(c.symbol||'').toUpperCase();CNAME[sy]=c.name;return {sym:sy,name:c.name,price:c.current_price,chg:c.price_change_percentage_24h,exch:'CRYPTO',closes:(c.sparkline_in_7d&&c.sparkline_in_7d.price)||null,cg:c.id};});}).catch(function(){return [];});}
 
