@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05070d">
+<title>Quantora — the entire market, alive</title>
+<meta name="description" content="Quantora is a living markets terminal: equities, rates, crypto, macro and on-chain in one real-time view. Free. No login, no paywall.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#05070d; --ink:#eef2fb; --ink2:#aab4cc; --muted:#6f7a95;
+    --cyan:#38e1d6; --blue:#4f8bff; --green:#22c58a; --red:#ff5a67; --violet:#8b7bff;
+    --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+    --ez:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  a{color:inherit;text-decoration:none}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .up{color:var(--green)} .down{color:var(--red)}
+
+  /* ===== 3D stage ===== */
+  .stage{position:fixed;inset:0;z-index:0}
+  #globe{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+  #globe:active{cursor:grabbing}
+  .stage::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(60% 55% at 68% 46%, rgba(79,139,255,.12), transparent 60%),
+    radial-gradient(48% 44% at 30% 62%, rgba(56,225,214,.08), transparent 62%),
+    linear-gradient(180deg, rgba(5,7,13,.2), rgba(5,7,13,.0) 22%, rgba(5,7,13,.0) 62%, rgba(5,7,13,.85) 100%);
+    pointer-events:none}
+  .stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(90deg, rgba(5,7,13,.86) 0%, rgba(5,7,13,.5) 34%, rgba(5,7,13,0) 60%)}
+
+  /* ===== chrome ===== */
+  .wrap{position:relative;z-index:2}
+  nav{display:flex;align-items:center;gap:26px;padding:20px 40px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.02em}
+  .brand .q{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#fff,#cfe0ff);color:#05070d;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;box-shadow:0 0 22px rgba(79,139,255,.45)}
+  .links{display:flex;gap:4px;margin-left:8px}
+  .links a{padding:8px 13px;border-radius:9px;font-size:14px;font-weight:500;color:var(--ink2);transition:background .2s,color .2s}
+  .links a:hover{background:rgba(255,255,255,.06);color:#fff}
+  .navr{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .live{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+  .live i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,138,.7);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,138,.6)}70%,100%{box-shadow:0 0 0 9px rgba(34,197,138,0)}}
+  .enter{padding:9px 16px;border-radius:11px;background:#fff;color:#05070d;font-weight:600;font-size:14px;transition:transform .12s var(--ez),box-shadow .3s}
+  .enter:hover{transform:translateY(-1px);box-shadow:0 10px 30px -8px rgba(255,255,255,.35)}
+
+  /* ===== hero ===== */
+  .hero{padding:66px 40px 0;max-width:820px}
+  .eyb{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:500;padding:7px 13px;border:1px solid rgba(56,225,214,.24);border-radius:999px;background:rgba(56,225,214,.05)}
+  .eyb i{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+  h1{font-size:clamp(40px,6.4vw,78px);font-weight:800;letter-spacing:-.04em;line-height:.98;margin:26px 0 0;
+    background:linear-gradient(180deg,#fff 30%,#b7c6e6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  h1 .g{background:linear-gradient(120deg,var(--cyan),var(--blue) 60%,var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .sub{font-size:clamp(15px,1.7vw,19px);line-height:1.55;color:var(--ink2);margin:22px 0 0;max-width:600px;font-weight:400}
+  .sub b{color:var(--ink);font-weight:600}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin:32px 0 0}
+  .btn{display:inline-flex;align-items:center;gap:9px;height:50px;padding:0 22px;border-radius:13px;font-size:15px;font-weight:600;transition:transform .14s var(--ez),box-shadow .3s,background .2s}
+  .btn.p{background:linear-gradient(120deg,#4f8bff,#38e1d6);color:#05070d;box-shadow:0 12px 40px -12px rgba(79,139,255,.7)}
+  .btn.p:hover{transform:translateY(-2px);box-shadow:0 18px 50px -12px rgba(79,139,255,.85)}
+  .btn.g{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14)}
+  .btn.g:hover{background:rgba(255,255,255,.1)}
+  .stats{display:flex;gap:26px;margin:38px 0 0;flex-wrap:wrap}
+  .stats .st .v{font-size:23px;font-weight:700;letter-spacing:-.02em}
+  .stats .st .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+  .stats .sep{width:1px;background:rgba(255,255,255,.1)}
+
+  /* ===== ticker tape ===== */
+  .tape{position:fixed;left:0;right:0;bottom:0;z-index:3;height:46px;display:flex;align-items:center;overflow:hidden;
+    background:rgba(8,11,20,.72);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08)}
+  .tape .track{display:flex;white-space:nowrap;animation:marq 42s linear infinite;will-change:transform}
+  .tape:hover .track{animation-play-state:paused}
+  @keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .tk{display:inline-flex;align-items:center;gap:9px;padding:0 22px;border-right:1px solid rgba(255,255,255,.07);font-size:13px}
+  .tk b{font-weight:600;letter-spacing:-.01em}.tk .p{font-family:var(--mono);color:var(--ink2);font-size:12.5px}.tk .c{font-family:var(--mono);font-size:12px;font-weight:600}
+
+  .scrollcue{position:fixed;left:50%;bottom:62px;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;animation:float 2.6s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
+
+  /* ===== section 2: feature panels ===== */
+  .below{position:relative;z-index:2;margin-top:100vh;background:linear-gradient(180deg, rgba(5,7,13,0), #05070d 8%, #070a12 100%);padding:40px 40px 120px}
+  .kick{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);text-align:center}
+  .below h2{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-.03em;text-align:center;margin:14px 0 8px;
+    background:linear-gradient(180deg,#fff,#a9b8da);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .below .lead{text-align:center;color:var(--ink2);max-width:640px;margin:0 auto 46px;font-size:16px;line-height:1.55}
+  .feats{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;max-width:1200px;margin:0 auto}
+  .fc{grid-column:span 4;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px 20px;position:relative;overflow:hidden;transition:transform .3s var(--ez),border-color .3s,box-shadow .3s}
+  .fc:hover{transform:translateY(-4px);border-color:rgba(79,139,255,.4);box-shadow:0 24px 60px -24px rgba(79,139,255,.5)}
+  .fc.big{grid-column:span 8}
+  .fc .ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:15px;background:rgba(79,139,255,.14);border:1px solid rgba(79,139,255,.3)}
+  .fc h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .fc p{color:var(--ink2);font-size:13.5px;line-height:1.55;margin-top:8px}
+  .glowline{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(79,139,255,.7),transparent);opacity:0;transition:opacity .3s}
+  .fc:hover .glowline{opacity:1}
+  .newsrow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+  .ncard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;overflow:hidden}
+  .ncard .thumb{height:96px;background:linear-gradient(135deg,#12203f,#0b1526);position:relative;display:flex;align-items:center;justify-content:center}
+  .ncard .thumb .badge{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(56,225,214,.3);border-radius:6px;padding:3px 7px}
+  .ncard .nb{padding:11px 12px}.ncard .src{font-family:var(--mono);font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .ncard .hl{font-size:12.5px;font-weight:600;line-height:1.35;margin-top:5px;color:var(--ink)}
+
+  .foot{position:relative;z-index:2;background:#05070d;padding:0 40px 90px;text-align:center;color:var(--muted);font-size:12.5px}
+  .foot .big{font-size:clamp(30px,4.4vw,50px);font-weight:800;letter-spacing:-.03em;color:#fff;margin-bottom:22px}
+  .foot .cta2{display:inline-flex;align-items:center;gap:9px;height:52px;padding:0 26px;border-radius:14px;background:linear-gradient(120deg,#4f8bff,#38e1d6);color:#05070d;font-weight:700;font-size:16px}
+
+  @media(max-width:820px){nav{padding:16px 20px;gap:14px}.links{display:none}.hero{padding:40px 22px 0}.below,.foot{padding-left:20px;padding-right:20px}.fc,.fc.big{grid-column:span 12}.newsrow{grid-template-columns:1fr}.stage::after{background:linear-gradient(180deg,rgba(5,7,13,.3),rgba(5,7,13,.75))}}
+  @media(prefers-reduced-motion:reduce){.tape .track{animation:none}.scrollcue{animation:none}.live i{animation:none}}
+</style>
+</head>
+<body>
+<div class="stage"><canvas id="globe"></canvas></div>
+
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="q">Q</span>Quantora</div>
+    <div class="links"><a href="/today.html">Today</a><a href="/markets.html">Markets</a><a href="/screener.html">Screener</a><a href="/portfolio.html">Portfolio</a><a href="#">On-Chain</a><a href="#">Research</a></div>
+    <div class="navr"><span class="live"><i></i>Live</span><a class="enter" href="/today.html">Enter terminal →</a></div>
+  </nav>
+
+  <header class="hero">
+    <span class="eyb"><i></i>Quantora · the living market</span>
+    <h1>The entire market.<br><span class="g">Alive, and free.</span></h1>
+    <p class="sub">Equities, rates, crypto, macro and on-chain — the whole world's markets in <b>one living terminal</b>. Real figures, AI on tap, a map of everything. <b>No login. No paywall.</b></p>
+    <div class="cta">
+      <a class="btn p" href="/today.html">Enter the terminal <span>→</span></a>
+      <a class="btn g" href="/today.html">▶ Watch the tape</a>
+    </div>
+    <div class="stats">
+      <div class="st"><div class="v num">142</div><div class="k">Global markets</div></div>
+      <div class="sep"></div>
+      <div class="st"><div class="v num">24/7</div><div class="k">Live coverage</div></div>
+      <div class="sep"></div>
+      <div class="st"><div class="v">$0</div><div class="k">Forever free</div></div>
+    </div>
+  </header>
+</div>
+
+<div class="scrollcue">Scroll<div>↓</div></div>
+
+<div class="tape"><div class="track" id="tape"></div></div>
+
+<!-- ===== below the fold ===== -->
+<section class="below">
+  <div class="kick">Built for the whole picture</div>
+  <h2>Everything, at a glance and on command</h2>
+  <p class="lead">A cap-weighted map of the market, live probability cones, an AI that composes an answer from real figures, and a research drawer on every ticker — one calm surface, zero clutter.</p>
+
+  <div class="feats">
+    <div class="fc big"><div class="glowline"></div>
+      <div class="ico">🗺️</div>
+      <h3>The market map — the whole market, weighted</h3>
+      <p>A living, cap-weighted treemap of every megacap and all 11 sectors, colored by today's move. Click any tile and a research drawer opens — profile, market cap, analyst price target with upside, peers, and a 21-day probability cone.</p>
+      <div class="newsrow" style="margin-top:18px">
+        <div class="ncard"><div class="thumb"><span class="badge">Markets</span></div><div class="nb"><div class="src">Reuters · 2h</div><div class="hl">Chips lead breadth as the tape prints a fresh high</div></div></div>
+        <div class="ncard"><div class="thumb"><span class="badge">Rates</span></div><div class="nb"><div class="src">Bloomberg · 3h</div><div class="hl">10-year eases as traders price a softer path</div></div></div>
+        <div class="ncard"><div class="thumb"><span class="badge">Crypto</span></div><div class="nb"><div class="src">CoinDesk · 1h</div><div class="hl">Bitcoin firms; ETH quietly outperforms</div></div></div>
+      </div>
+    </div>
+    <div class="fc"><div class="glowline"></div>
+      <div class="ico">✨</div>
+      <h3>Ask → it composes</h3>
+      <p>Type “Nvidia vs the S&amp;P” or “what could rates do to housing?” and Quantora builds a live, multi-panel answer from real data — never invented numbers.</p>
+    </div>
+    <div class="fc"><div class="glowline"></div>
+      <div class="ico">🌐</div>
+      <h3>Live news, on video &amp; in print</h3>
+      <p>A rolling market-news video plus real headlines with imagery, so you never miss the story behind the move.</p>
+    </div>
+    <div class="fc"><div class="glowline"></div>
+      <div class="ico">📈</div>
+      <h3>Rates, vol, oil &amp; the dollar</h3>
+      <p>The actual market — not just stocks. 10Y/2Y yields, VIX, WTI and the dollar, each with a sparkline and today's move.</p>
+    </div>
+    <div class="fc"><div class="glowline"></div>
+      <div class="ico">💼</div>
+      <h3>Your portfolio, live P&amp;L</h3>
+      <p>Add holdings and watch market value, day change, unrealized P&amp;L and allocation update in real time — private, in your browser.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="big">The world's markets. Free.</div>
+  <a class="cta2" href="/today.html">Enter Quantora <span>→</span></a>
+  <div style="margin-top:34px">Quantora · equities · rates · crypto · macro · on-chain — delayed &amp; illustrative, educational only, not investment advice.</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var cv = document.getElementById('globe');
+  if(!window.THREE){ return; }
+  var scene = new THREE.Scene();
+  var W = innerWidth, H = innerHeight;
+  var cam = new THREE.PerspectiveCamera(42, W/H, 1, 4000);
+  cam.position.set(0, 20, 360);
+  var rnd = new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:true});
+  rnd.setPixelRatio(Math.min(devicePixelRatio||1, 2));
+  rnd.setSize(W, H);
+
+  var R = 118;
+  var root = new THREE.Group();
+  root.rotation.z = -0.34;
+  scene.add(root);
+  var globe = new THREE.Group();
+  root.add(globe);
+
+  // ---- glow sprite texture ----
+  function glowTex(){
+    var c = document.createElement('canvas'); c.width=c.height=64;
+    var g = c.getContext('2d');
+    var grd = g.createRadialGradient(32,32,0,32,32,32);
+    grd.addColorStop(0,'rgba(255,255,255,1)');
+    grd.addColorStop(0.25,'rgba(255,255,255,.7)');
+    grd.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=grd; g.fillRect(0,0,64,64);
+    return new THREE.CanvasTexture(c);
+  }
+  var GT = glowTex();
+
+  function ll2v(lat, lon, r){
+    var phi = (90-lat)*Math.PI/180, th = (lon+180)*Math.PI/180;
+    return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(th));
+  }
+
+  // ---- dotted globe (lat/long grid points) ----
+  (function(){
+    var pos=[];
+    for(var lat=-78; lat<=78; lat+=4){
+      var circ = Math.cos(lat*Math.PI/180);
+      var n = Math.max(6, Math.round(96*circ));
+      for(var i=0;i<n;i++){
+        var lon = -180 + i*(360/n);
+        var v = ll2v(lat, lon, R);
+        pos.push(v.x,v.y,v.z);
+      }
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+    var mat = new THREE.PointsMaterial({color:0x7f96c8, size:1.7, transparent:true, opacity:0.55, sizeAttenuation:true});
+    globe.add(new THREE.Points(geo, mat));
+  })();
+
+  // ---- inner sphere (soft fill so back dots read faintly) ----
+  globe.add(new THREE.Mesh(new THREE.SphereGeometry(R*0.985, 48, 48),
+    new THREE.MeshBasicMaterial({color:0x0a1226, transparent:true, opacity:0.55})));
+  // ---- atmosphere rim ----
+  var atm = new THREE.Mesh(new THREE.SphereGeometry(R*1.14, 48, 48),
+    new THREE.MeshBasicMaterial({color:0x4f8bff, transparent:true, opacity:0.06, side:THREE.BackSide}));
+  globe.add(atm);
+
+  // ---- financial capitals ----
+  var CITIES=[['NYC',40.7,-74],['London',51.5,-0.1],['Frankfurt',50.1,8.7],['Zurich',47.4,8.5],['Dubai',25.2,55.3],['Mumbai',19,72.8],['Singapore',1.35,103.8],['HongKong',22.3,114.2],['Shanghai',31.2,121.5],['Tokyo',35.7,139.7],['Sydney',-33.9,151.2],['SaoPaulo',-23.5,-46.6],['Toronto',43.7,-79.4]];
+  var nodeGroup = new THREE.Group(); globe.add(nodeGroup);
+  CITIES.forEach(function(c,i){
+    var v = ll2v(c[1], c[2], R*1.005);
+    var col = (i%3===0)?0x38e1d6:(i%3===1)?0x4f8bff:0x22c58a;
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({map:GT, color:col, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false}));
+    sp.position.copy(v); sp.scale.set(11,11,1); sp._base=11; sp._ph=Math.random()*6.28;
+    nodeGroup.add(sp);
+    var core = new THREE.Mesh(new THREE.SphereGeometry(1.1,10,10), new THREE.MeshBasicMaterial({color:0xffffff}));
+    core.position.copy(v); nodeGroup.add(core);
+  });
+
+  // ---- arcs between capitals ----
+  var PAIRS=[[0,1],[1,2],[1,4],[0,9],[9,7],[7,6],[6,5],[4,5],[0,11],[9,10],[2,8],[0,12],[3,4],[7,8]];
+  var arcs=[];
+  PAIRS.forEach(function(p){
+    var a=ll2v(CITIES[p[0]][1],CITIES[p[0]][2],R), b=ll2v(CITIES[p[1]][1],CITIES[p[1]][2],R);
+    var dist=a.distanceTo(b);
+    var mid=a.clone().add(b).multiplyScalar(0.5).normalize().multiplyScalar(R + dist*0.42 + 12);
+    var curve=new THREE.QuadraticBezierCurve3(a,mid,b);
+    var pts=curve.getPoints(46);
+    var g=new THREE.BufferGeometry().setFromPoints(pts);
+    var col=(Math.random()<0.5)?0x38e1d6:0x4f8bff;
+    var line=new THREE.Line(g, new THREE.LineBasicMaterial({color:col, transparent:true, opacity:0.34, blending:THREE.AdditiveBlending}));
+    globe.add(line);
+    var pulse=new THREE.Sprite(new THREE.SpriteMaterial({map:GT, color:col, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false}));
+    pulse.scale.set(7,7,1); globe.add(pulse);
+    arcs.push({curve:curve, pulse:pulse, t:Math.random(), spd:0.0016+Math.random()*0.0022});
+  });
+
+  // ---- starfield ----
+  (function(){
+    var pos=[]; for(var i=0;i<520;i++){
+      var r=520+Math.random()*900, th=Math.random()*6.28, ph=Math.acos(2*Math.random()-1);
+      pos.push(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th)-40, r*Math.cos(ph));
+    }
+    var g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({color:0x9fb0d6, size:1.4, transparent:true, opacity:0.5})));
+  })();
+
+  // ---- interaction ----
+  var velY=0.0016, tgtVelY=0.0016, dragging=false, lastX=0, lastY=0, tiltT=0, tilt=0;
+  cv.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;lastY=e.clientY;tgtVelY=0;});
+  addEventListener('pointerup',function(){dragging=false;tgtVelY=0.0016;});
+  addEventListener('pointermove',function(e){ if(!dragging)return; var dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY; root.rotation.y+=dx*0.005; tiltT=Math.max(-0.5,Math.min(0.5,tiltT+dy*0.003)); });
+
+  addEventListener('resize',function(){ W=innerWidth;H=innerHeight;cam.aspect=W/H;cam.updateProjectionMatrix();rnd.setSize(W,H); });
+
+  var clock = new THREE.Clock();
+  function frame(){
+    var t = clock.getElapsedTime();
+    velY += (tgtVelY-velY)*0.04;
+    root.rotation.y += velY;
+    tilt += (tiltT-tilt)*0.06;
+    root.rotation.x = -0.12 + tilt;
+    globe.position.y = Math.sin(t*0.5)*3;
+    atm.material.opacity = 0.05 + Math.sin(t*0.8)*0.015;
+    nodeGroup.children.forEach(function(o){ if(o.isSprite){ var s=o._base*(1+0.16*Math.sin(t*2+o._ph)); o.scale.set(s,s,1); } });
+    arcs.forEach(function(a){ a.t+=a.spd; if(a.t>1)a.t-=1; var p=a.curve.getPointAt(a.t); a.pulse.position.copy(p); });
+    rnd.render(scene, cam);
+    if(!RM) requestAnimationFrame(frame);
+  }
+  frame();
+  if(RM){ for(var k=0;k<40;k++){ root.rotation.y+=0.02; } rnd.render(scene,cam); }
+
+  // ---- ticker tape (live crypto via CoinGecko + representative macro) ----
+  var TAPE=[['S&P 500','5,842.17','+1.24%',1],['NASDAQ','20,914','+1.05%',1],['DOW','43,120','+0.62%',1],['FTSE','8,410','+0.31%',1],['DAX','19,240','+0.44%',1],['NIKKEI','39,880','-0.22%',0],['10Y','4.54%','-0.02',0],['VIX','15.84','-1.06',0],['WTI','$69.60','+0.44',1],['GOLD','$2,684','+0.5%',1],['BTC','$98,420','+1.94%',1],['ETH','$3,540','+2.9%',1]];
+  function renderTape(){
+    var html=TAPE.map(function(x){var up=x[3]===1;return '<span class="tk"><b>'+x[0]+'</b><span class="p">'+x[1]+'</span><span class="c '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+x[2]+'</span></span>';}).join('');
+    document.getElementById('tape').innerHTML = html+html;
+  }
+  renderTape();
+  fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){
+    if(!Array.isArray(a))return; a.forEach(function(c){
+      var sym=c.symbol.toUpperCase(), pc=c.price_change_percentage_24h;
+      TAPE.forEach(function(row){ if(row[0]===sym){ row[1]='$'+Math.round(c.current_price).toLocaleString(); row[2]=(pc>=0?'+':'')+pc.toFixed(2)+'%'; row[3]=pc>=0?1:0; } });
+    });
+    renderTape();
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>
