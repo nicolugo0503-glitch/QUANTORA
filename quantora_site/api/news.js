@@ -1,38 +1,44 @@
 // Quantora backend - News.
-//   GET  /api/news?category=general  -> latest market news WITH images (Finnhub; separate quota from FMP)
-//   POST /api/news {heads}           -> AI "market pulse" summary of the supplied headlines (Groq)
+//   GET  /api/news   -> latest market news WITH real photos (Finnhub general + company-news, logos stripped)
+//   POST /api/news {heads} -> AI "market pulse" summary of the supplied headlines (Groq)
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
   if (req.method === 'OPTIONS') { res.statusCode = 200; res.end(); return; }
 
-  // ---- GET: fetch real market news (with images) from Finnhub ----
+  // ---- GET: fetch real market news (prefer real article photos over source logos) ----
   if (req.method === 'GET') {
     const FH = process.env.FINNHUB_KEY;
     if (!FH) { res.status(200).json({ error: 'no_key' }); return; }
     res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1800');
+    function isLogo(u) { u = (u || '') + ''; return !/^https?:\/\//.test(u) || /finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)/i.test(u); }
+    function fmt(d) { return d.toISOString().slice(0, 10); }
     try {
-      const cat = (req.query.category || 'general').toString().replace(/[^a-z]/g, '') || 'general';
-      const r = await fetch('https://finnhub.io/api/v1/news?category=' + cat + '&token=' + FH);
-      const j = await r.json();
-      if (!Array.isArray(j)) { res.status(200).json({ error: 'feed' }); return; }
-      const seen = {};
-      const out = [];
-      for (let i = 0; i < j.length && out.length < 18; i++) {
-        const a = j[i];
-        if (!a || !a.headline || seen[a.headline]) continue;
-        seen[a.headline] = 1;
-        out.push({
+      const to = new Date(), from = new Date(Date.now() - 3 * 864e5);
+      const syms = ['AAPL', 'NVDA', 'TSLA', 'MSFT', 'AMZN', 'META', 'GOOGL', 'AMD'];
+      const urls = ['https://finnhub.io/api/v1/news?category=general&token=' + FH]
+        .concat(syms.map(function (s) { return 'https://finnhub.io/api/v1/company-news?symbol=' + s + '&from=' + fmt(from) + '&to=' + fmt(to) + '&token=' + FH; }));
+      const results = await Promise.all(urls.map(function (u) { return fetch(u).then(function (r) { return r.json(); }).catch(function () { return []; }); }));
+      let all = [];
+      results.forEach(function (arr) { if (Array.isArray(arr)) all = all.concat(arr); });
+      const seen = {}, withImg = [], noImg = [];
+      all.forEach(function (a) {
+        if (!a || !a.headline || seen[a.headline]) return; seen[a.headline] = 1;
+        const item = {
           headline: a.headline,
           summary: (a.summary || '').toString().slice(0, 260),
           image: (a.image || '').toString(),
           source: (a.source || '').toString(),
           url: (a.url || '').toString(),
           datetime: +a.datetime || 0
-        });
-      }
-      res.status(200).json({ articles: out });
+        };
+        if (isLogo(item.image)) { item.image = ''; noImg.push(item); } else { withImg.push(item); }
+      });
+      withImg.sort(function (x, y) { return y.datetime - x.datetime; });
+      noImg.sort(function (x, y) { return y.datetime - x.datetime; });
+      const out = withImg.concat(noImg).slice(0, 24);
+      res.status(200).json({ articles: out, photos: withImg.length });
     } catch (e) { res.status(200).json({ error: 'feed' }); }
     return;
   }
