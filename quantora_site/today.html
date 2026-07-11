@@ -125,7 +125,7 @@
 
   .vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#0a0a0b;box-shadow:var(--ring)}
   .vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0;display:block}
-  .vid .vc{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(120% 120% at 50% 46%,transparent 52%,rgba(10,10,15,.24))}
+  .vid .vc{position:absolute;inset:0;z-index:6;cursor:default;background:linear-gradient(180deg,rgba(10,10,15,.62) 0,rgba(10,10,15,.16) 34px,transparent 60px)}
   .vid .vlbl{position:absolute;top:11px;left:12px;z-index:7;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(10,10,15,.4);backdrop-filter:blur(4px);padding:4px 9px;border-radius:999px}
   .vid .vlbl i{width:6px;height:6px;border-radius:50%;background:#ff4d4f;box-shadow:0 0 0 0 rgba(255,77,79,.6);animation:ping 2s var(--ez) infinite}
 
@@ -216,6 +216,8 @@
   .ncard.lead{grid-column:span 2;grid-row:span 2}
   .ncard.lead .hd{font-size:16px;-webkit-line-clamp:3;font-weight:650;line-height:1.2}
   .ncard.lead .sr{font-size:9px;margin-top:6px}
+  .ncard.noimg::after{content:"";position:absolute;inset:0;background:radial-gradient(130% 90% at 86% 10%,rgba(255,255,255,.06),transparent 56%);pointer-events:none}
+  .ncard.noimg .grad{background:linear-gradient(180deg,rgba(10,10,15,0) 44%,rgba(10,10,15,.42))}
 </style>
 </head>
 <body>
@@ -252,7 +254,7 @@
     <div class="card reveal"><div class="ch"><h3>Crypto</h3><span class="tag">24/7 · live</span></div><div id="crypto"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
 
     <div class="card s3 reveal"><div class="ch"><h3>SPY · 21-day cone</h3><span class="tag">Monte Carlo</span></div><div class="cone"><canvas id="conecv"></canvas></div><div class="cstats"><div><div class="k">Median</div><div class="v num" id="cmed" style="color:var(--accent)">—</div></div><div><div class="k">90% range</div><div class="v num" id="cci" style="font-size:12px">—</div></div></div></div>
-    <div class="card s6 reveal"><div class="ch"><h3>Markets in motion</h3><span class="tag">Live loop</span></div><div class="vid" id="vidbox"></div></div>
+    <div class="card s6 reveal"><div class="ch"><h3>Market News · Live</h3><span class="tag">Video</span></div><div class="vid" id="vidbox"></div></div>
     <div class="card s3 reveal"><div class="ch"><h3>Jump in</h3><span class="tag">⌘K</span></div><div class="jump"><a class="cta" href="/terminal.html">Open the terminal →</a><a class="lk" href="/track.html"><span>Track record</span><span class="ar">→</span></a><a class="lk" href="/cone.html"><span>Probability cone</span><span class="ar">→</span></a><a class="lk" href="/screener.html"><span>Screener</span><span class="ar">→</span></a></div></div>
   </div>
 
@@ -402,7 +404,7 @@
   function buildBrief(){Promise.all(['SPY','QQQ','DIA','AAPL','NVDA'].map(getStock)).then(function(rr){var facts=[];rr.forEach(function(s){if(s)facts.push(s.sym+' '+(s.chg>=0?'+':'')+s.chg.toFixed(2)+'%');});if(cgData.BTC)facts.push('BTC '+(cgData.BTC.chg>=0?'+':'')+cgData.BTC.chg.toFixed(1)+'%');
     return fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:'Write a tight 3-sentence market brief using ONLY the provided figures: equity tone, the standout name, and crypto. Confident, specific, no hype, no invented numbers.',context:'Live figures (EOD): '+(facts.join(', ')||'markets')+'. Use ONLY these figures.'})}).then(function(r){return r.json();});
   }).then(function(j){var el=document.getElementById('brief'),meta=document.getElementById('briefmeta');el.classList.remove('sk');if(j&&j.answer){el.innerHTML=esc(j.answer).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');meta.textContent='AI · '+time()+' · may be wrong · not advice';}else if(j&&j.error==='ai_key_needed'){el.textContent='The AI brief activates once an AI key is set in Vercel.';meta.textContent='AI not activated';}else{el.textContent='The market brief is updating.';meta.textContent='Brief updating';}}).catch(function(){document.getElementById('brief').classList.remove('sk');document.getElementById('brief').textContent='The market brief is updating.';});}
-  function lazyVideo(){var box=document.getElementById('vidbox');if(!box)return;var mount=function(){if(box.dataset.on)return;box.dataset.on='1';box.innerHTML='<video autoplay muted loop playsinline preload="metadata" poster="https://assets.mixkit.co/videos/9607/9607-thumb-360-0.jpg"><source src="https://assets.mixkit.co/videos/9607/9607-720.mp4" type="video/mp4"><source src="https://assets.mixkit.co/videos/9607/9607-360.mp4" type="video/mp4"></video><div class="vc"></div><div class="vlbl"><i></i>Live</div>';var v=box.querySelector('video');if(v){v.muted=true;var p=v.play();if(p&&p.catch)p.catch(function(){});}};if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mount();io.disconnect();}});},{rootMargin:'250px'});io.observe(box);}else mount();}
+  function lazyVideo(){var box=document.getElementById('vidbox');if(!box)return;var mount=function(){if(box.dataset.on)return;box.dataset.on='1';box.innerHTML='<iframe src="https://www.youtube.com/embed/videoseries?list=UUEAZeUIeJs0IjQiqTCdVSIg&autoplay=1&mute=1&playsinline=1&rel=0&controls=0&modestbranding=1&disablekb=1&iv_load_policy=3" title="Market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="vc"></div>';};if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mount();io.disconnect();}});},{rootMargin:'250px'});io.observe(box);}else mount();}
   function reveals(){var els=document.querySelectorAll('.reveal');if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.06,rootMargin:'0px 0px -5% 0px'});els.forEach(function(e,i){e.style.transitionDelay=(Math.min(i,6)*40)+'ms';io.observe(e);});}
 
   /* WATCHLIST */
@@ -501,12 +503,18 @@
     Array.prototype.forEach.call(el.querySelectorAll('.seccell'),function(c){c.addEventListener('click',function(){openDrawer(c.dataset.sym);});});}
   function buildSectors(){if(!document.getElementById('sectors'))return;SECTORS.forEach(function(s,i){setTimeout(function(){getStock(s[0]).then(function(d){if(d){secData[s[0]]=d;renderSectors();}});},i*280);});renderSectors();}
   function timeAgo(ts){if(!ts)return '';var s=Math.floor(Date.now()/1000)-ts;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+  function goodImg(u){u=(u||'')+'';return /^https?:\/\//.test(u)&&!/finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)/i.test(u);}
+  var NGRAD=['linear-gradient(135deg,#213a53,#0d1c2b)','linear-gradient(135deg,#2a2030,#140d1c)','linear-gradient(135deg,#123524,#06160f)','linear-gradient(135deg,#3a2a12,#1a1205)','linear-gradient(135deg,#0f2b3a,#05141d)','linear-gradient(135deg,#301a1a,#150909)','linear-gradient(135deg,#1e293b,#0b1220)'];
   function buildNews(){var wrap=document.getElementById('news-list'),pulse=document.getElementById('news-pulse'),meta=document.getElementById('news-meta');if(!wrap)return;
     fetch('/api/news').then(function(r){return r.json();}).then(function(j){var arts=((j&&j.articles)||[]).filter(function(a){return a.headline&&a.url;});
       if(!arts.length){wrap.innerHTML='<div class="loading">News feed updating — check back shortly.</div>';if(pulse){pulse.classList.remove('sk');pulse.textContent='The news wire is updating.';}if(meta)meta.textContent='';return;}
+      arts.forEach(function(a){a._img=goodImg(a.image);});
+      arts.sort(function(a,b){return (b._img?1:0)-(a._img?1:0);});
       var top=arts.slice(0,9);
-      wrap.innerHTML='<div class="newswrap">'+top.map(function(a,i){var img=a.image?('<img src="'+esc(a.image)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">'):'';var when=timeAgo(a.datetime);
-        return '<a class="ncard'+(i===0?' lead':'')+'" href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer">'+img+'<div class="grad"></div><div class="m"><div class="hd">'+esc(a.headline)+'</div><div class="sr">'+esc(a.source||'')+(when?' · '+when:'')+'</div></div></a>';}).join('')+'</div>';
+      wrap.innerHTML='<div class="newswrap">'+top.map(function(a,i){var when=timeAgo(a.datetime);
+        var inner='<div class="grad"></div><div class="m"><div class="hd">'+esc(a.headline)+'</div><div class="sr">'+esc(a.source||'')+(when?' · '+when:'')+'</div></div>';
+        if(a._img)return '<a class="ncard'+(i===0?' lead':'')+'" href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(a.image)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\')">'+inner+'</a>';
+        return '<a class="ncard noimg'+(i===0?' lead':'')+'" href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer" style="background:'+NGRAD[i%NGRAD.length]+'">'+inner+'</a>';}).join('')+'</div>';
       var heads=top.slice(0,10).map(function(a){return '- '+a.headline+(a.source?' ['+a.source+']':'');}).join('\n');
       fetch('/api/news',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({heads:heads})}).then(function(r){return r.json();}).then(function(p){if(!pulse)return;pulse.classList.remove('sk');if(p&&p.summary){pulse.textContent=p.summary;if(meta)meta.textContent='AI · Groq · '+time()+' · may be wrong · not advice';}else{pulse.textContent='Headlines are loaded above — the AI pulse is updating.';if(meta)meta.textContent='pulse updating';}}).catch(function(){if(pulse){pulse.classList.remove('sk');pulse.textContent='Headlines loaded; AI pulse updating.';}});
     }).catch(function(){wrap.innerHTML='<div class="loading">News feed updating.</div>';if(pulse){pulse.classList.remove('sk');pulse.textContent='The news wire is updating.';}});}
