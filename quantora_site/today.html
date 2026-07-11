@@ -426,7 +426,7 @@
     el.innerHTML=html||'<div class="loading">Macro feed updating.</div>';});}
   function buildMovers(){var el=document.getElementById('movers');if(!el)return;
     Promise.all([fetch('/api/fmp?type=gainers').then(function(r){return r.json();}),fetch('/api/fmp?type=losers').then(function(r){return r.json();})]).then(function(res){
-      function rows(a){return (Array.isArray(a)?a:[]).filter(function(d){return +d.price>=2;}).slice(0,5).map(function(d){var c=+d.changesPercentage;return '<div class="mvrow" data-sym="'+esc(d.symbol)+'"><span class="s">'+esc(d.symbol)+'</span><span class="p '+(c>=0?'up':'down')+'">'+(c>=0?'+':'')+c.toFixed(1)+'%</span></div>';}).join('');}
+      function rows(a){var arr=Array.isArray(a)?a:(a&&a.data)||[];return arr.filter(function(d){return +d.price>=2;}).slice(0,5).map(function(d){var c=+d.changesPercentage;return '<div class="mvrow" data-sym="'+esc(d.symbol)+'"><span class="s">'+esc(d.symbol)+'</span><span class="p '+(c>=0?'up':'down')+'">'+(c>=0?'+':'')+c.toFixed(1)+'%</span></div>';}).join('');}
       var g=rows(res[0]),l=rows(res[1]);if(!g&&!l){el.innerHTML='<div class="loading">Movers updating.</div>';return;}
       el.innerHTML='<div class="mvcol"><div><div class="mvh">▲ Gainers</div>'+g+'</div><div><div class="mvh">▼ Losers</div>'+l+'</div></div>';
       Array.prototype.forEach.call(el.querySelectorAll('.mvrow'),function(r){r.addEventListener('click',function(){openDrawer(r.dataset.sym);});});}).catch(function(){el.innerHTML='<div class="loading">Movers updating.</div>';});}
