@@ -178,6 +178,19 @@
   .seccell{border-radius:7px;padding:8px 9px;cursor:pointer;min-height:46px;display:flex;flex-direction:column;justify-content:space-between;transition:filter .15s}
   .seccell:hover{filter:brightness(1.05)}
   .seccell .sn{font-weight:600;font-size:11px;letter-spacing:-.01em}.seccell .sp{font-family:var(--mono);font-size:11px;font-weight:600;margin-top:3px}
+  /* research drawer */
+  .drate{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+  .drate .badge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex:none}
+  .drate .rt2{font-weight:600;font-size:13px;color:var(--ink)}.drate .rl{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+  .tgt{margin-top:4px}
+  .tgt .top{display:flex;justify-content:space-between;align-items:baseline}
+  .tgtbar{position:relative;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--down-bg),var(--well) 50%,var(--up-bg));margin:16px 0 7px}
+  .tgtbar .cur{position:absolute;top:-5px;width:2px;height:16px;background:var(--ink);border-radius:1px;transform:translateX(-1px)}
+  .tgtbar .con{position:absolute;top:-6px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid #fff;transform:translateX(-50%);box-shadow:0 1px 3px rgba(37,99,235,.4)}
+  .tgtlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .peers{display:flex;flex-wrap:wrap;gap:6px}
+  .peer{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:8px;background:var(--well);cursor:pointer;font-size:12px;font-weight:600;transition:background .14s}.peer:hover{background:var(--hover)}
+  .desc{font-size:12px;line-height:1.5;color:var(--ink2);margin-top:8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 </style>
 </head>
 <body>
@@ -234,6 +247,9 @@
   <div class="tfs" id="d-tfs"></div>
   <div class="dchart" style="margin:10px 22px 0"><canvas id="d-chart"></canvas></div>
   <div class="dgrid" id="d-grid"></div>
+  <div class="dsec" id="d-fund" style="display:none"><h4>Fundamentals</h4><div class="dgrid" id="d-fundgrid" style="margin:0"></div><div class="desc" id="d-desc"></div></div>
+  <div class="dsec" id="d-analyst" style="display:none"><h4>Analyst view</h4><div id="d-analystbody"></div></div>
+  <div class="dsec" id="d-peerssec" style="display:none"><h4>Peers · tap to open</h4><div class="peers" id="d-peers"></div></div>
   <div class="dsec"><h4>21-day probability cone</h4><div class="dcone"><canvas id="d-cone"></canvas></div><div class="cstats"><div><div class="k">Median</div><div class="v num" id="d-cmed" style="color:var(--accent)">—</div></div><div><div class="k">90% range</div><div class="v num" id="d-cci" style="font-size:12px">—</div></div></div></div>
   <div class="dsec" style="padding-bottom:26px"><h4>AI take</h4><div class="dai sk" id="d-ai">Reading…</div></div>
 </aside>
@@ -370,7 +386,25 @@
   /* DETAIL DRAWER */
   var scrim=document.getElementById('scrim'),drawer=document.getElementById('drawer'),curSym=null,curData=null;
   var TFS=[['1M',21],['3M',63],['6M',126],['1Y',252],['ALL',9999]];
-  function openDrawer(sym){sym=String(sym).toUpperCase();curSym=sym;scrim.classList.add('on');drawer.classList.add('on');drawer.setAttribute('aria-hidden','false');
+  function fmpOne(t,sym){return fetch('/api/fmp?type='+t+'&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){var a=Array.isArray(j)?j:(j&&j.data)||j;return Array.isArray(a)?a[0]:a;}).catch(function(){return null;});}
+  function fmpList(t,sym){return fetch('/api/fmp?type='+t+'&symbol='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){return Array.isArray(j)?j:(j&&j.data)||[];}).catch(function(){return [];});}
+  function capFmt(mc){mc=+mc;if(!isFinite(mc)||mc<=0)return '—';return mc>=1e12?('$'+(mc/1e12).toFixed(2)+'T'):mc>=1e9?('$'+(mc/1e9).toFixed(1)+'B'):('$'+(mc/1e6).toFixed(0)+'M');}
+  function loadFundamentals(sym){var fund=document.getElementById('d-fund'),an=document.getElementById('d-analyst'),pe=document.getElementById('d-peerssec');
+    fund.style.display=an.style.display=pe.style.display='none';if(CRYPTO[sym])return;
+    fmpOne('profile',sym).then(function(p){if(!p||curSym!==sym)return;if(p.companyName)document.getElementById('d-nm').textContent=p.companyName+(p.industry?' · '+p.industry:'');
+      document.getElementById('d-fundgrid').innerHTML=[['Market cap',capFmt(p.marketCap)],['Beta',p.beta!=null?(+p.beta).toFixed(2):'—'],['Volume',p.volume?(p.volume/1e6).toFixed(1)+'M':'—'],['Avg volume',p.averageVolume?(p.averageVolume/1e6).toFixed(1)+'M':'—']].map(function(g){return '<div class="g"><div class="k">'+g[0]+'</div><div class="v">'+g[1]+'</div></div>';}).join('');
+      document.getElementById('d-desc').textContent=p.description||'';fund.style.display='';});
+    Promise.all([fmpOne('ratings',sym),fmpOne('targets',sym)]).then(function(res){if(curSym!==sym)return;var ra=res[0],t=res[1],html='';
+      if(ra&&ra.rating){var sc=+ra.overallScore||3,col=sc>=4?'var(--up)':sc>=3?'var(--accent)':sc>=2?'#B86E00':'var(--down)';
+        html+='<div class="drate"><div class="badge" style="background:'+col+'">'+esc(ra.rating)+'</div><div><div class="rt2">Quant rating '+esc(ra.rating)+'</div><div class="rl">Overall '+sc+'/5 · ROE '+(ra.returnOnEquityScore||'–')+' · Val '+(ra.priceToEarningsScore||'–')+' · Debt '+(ra.debtToEquityScore||'–')+'</div></div></div>';}
+      if(t&&isFinite(+t.targetConsensus)){var cur=curData?curData.price:0,con=+t.targetConsensus,hi=+t.targetHigh,lo=+t.targetLow,up=cur?((con/cur-1)*100):0,span=(hi-lo)||1;
+        var cf=Math.max(0,Math.min(1,(cur-lo)/span)),nf=Math.max(0,Math.min(1,(con-lo)/span));
+        html+='<div class="tgt"><div class="top"><span style="font-size:13px;font-weight:600">Price target '+money(con)+'</span>'+(cur?'<span class="'+(up>=0?'up':'down')+'" style="font-family:var(--mono);font-size:12px;font-weight:600">'+(up>=0?'+':'')+up.toFixed(1)+'% vs last</span>':'')+'</div><div class="tgtbar"><div class="cur" style="left:'+(cf*100).toFixed(1)+'%"></div><div class="con" style="left:'+(nf*100).toFixed(1)+'%"></div></div><div class="tgtlab"><span>low '+money(lo)+'</span><span>high '+money(hi)+'</span></div></div>';}
+      if(html){document.getElementById('d-analystbody').innerHTML=html;an.style.display='';}});
+    fmpList('peers',sym).then(function(ps){if(curSym!==sym)return;var good=(ps||[]).filter(function(x){return x&&x.symbol&&x.symbol!==sym&&+x.mktCap>2e9;}).slice(0,6);
+      if(!good.length)return;document.getElementById('d-peers').innerHTML=good.map(function(x){return '<span class="peer" data-sym="'+esc(x.symbol)+'">'+esc(x.symbol)+'</span>';}).join('');
+      Array.prototype.forEach.call(document.getElementById('d-peers').querySelectorAll('.peer'),function(el){el.addEventListener('click',function(){openDrawer(el.dataset.sym);});});pe.style.display='';});}
+  function openDrawer(sym){sym=String(sym).toUpperCase();curSym=sym;loadFundamentals(sym);scrim.classList.add('on');drawer.classList.add('on');drawer.setAttribute('aria-hidden','false');
     document.getElementById('d-sy').textContent=sym;document.getElementById('d-nm').textContent=NAMES[sym]||'';document.getElementById('d-px').textContent='—';document.getElementById('d-chg').textContent='';document.getElementById('d-grid').innerHTML='';document.getElementById('d-ai').className='dai sk';document.getElementById('d-ai').textContent='Reading '+sym+'…';
     var tfs=document.getElementById('d-tfs');tfs.innerHTML=TFS.map(function(t,i){return '<button class="tf'+(i===2?' on':'')+'" data-n="'+t[1]+'">'+t[0]+'</button>';}).join('');
     getAny(sym).then(function(d){if(!d){document.getElementById('d-px').textContent='no data';return;}curData=d;var up=d.chg>=0;
