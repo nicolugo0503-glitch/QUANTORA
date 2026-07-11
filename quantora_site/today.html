@@ -162,6 +162,22 @@
   .foot{margin-top:24px;font-size:11px;color:var(--faint);line-height:1.5;max-width:84ch}
   @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}.reveal{opacity:1!important;transform:none!important}}
   ::view-transition-old(cstage),::view-transition-new(cstage){animation-duration:.28s}
+  /* rates / movers / sectors */
+  .mrow{display:grid;grid-template-columns:1fr 56px auto;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--line)}
+  .mrow:last-child{border-bottom:0}
+  .mrow .ml{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .mrow .msp{width:56px;height:20px}
+  .mrow .rt{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+  .mrow .mv{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--ink)}
+  .mrow .mc{font-family:var(--mono);font-size:10px;font-weight:500}
+  .mvcol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .mvh{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+  .mvrow{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 5px;border-radius:6px;cursor:pointer}
+  .mvrow:hover{background:var(--well)}.mvrow .s{font-weight:600;font-size:12px}.mvrow .p{font-family:var(--mono);font-size:11px;font-weight:600}
+  .secgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+  .seccell{border-radius:7px;padding:8px 9px;cursor:pointer;min-height:46px;display:flex;flex-direction:column;justify-content:space-between;transition:filter .15s}
+  .seccell:hover{filter:brightness(1.05)}
+  .seccell .sn{font-weight:600;font-size:11px;letter-spacing:-.01em}.seccell .sp{font-family:var(--mono);font-size:11px;font-weight:600;margin-top:3px}
 </style>
 </head>
 <body>
@@ -201,6 +217,14 @@
     <div class="card s6 reveal"><div class="ch"><h3>Market News · Live</h3><span class="tag">Video</span></div><div class="vid" id="vidbox"></div></div>
     <div class="card s3 reveal"><div class="ch"><h3>Jump in</h3><span class="tag">⌘K</span></div><div class="jump"><a class="cta" href="/terminal.html">Open the terminal →</a><a class="lk" href="/track.html"><span>Track record</span><span class="ar">→</span></a><a class="lk" href="/cone.html"><span>Probability cone</span><span class="ar">→</span></a><a class="lk" href="/screener.html"><span>Screener</span><span class="ar">→</span></a></div></div>
   </div>
+
+  <div class="secttl">Across the market · rates, movers &amp; sectors</div>
+  <div class="bento">
+    <div class="card s4 reveal"><div class="ch"><h3>Rates &amp; macro</h3><span class="tag">FRED · daily</span></div><div id="macro"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
+    <div class="card s4 reveal"><div class="ch"><h3>Top movers</h3><span class="tag">US · today</span></div><div id="movers"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
+    <div class="card s4 reveal"><div class="ch"><h3>Sectors</h3><span class="tag">SPDR · % today</span></div><div id="sectors"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
+  </div>
+
   <p class="foot">Click any ticker for the full detail view. The map is market-cap weighted, colored by today's move; the living field encodes real breadth and volatility. Ask-panels &amp; the brief are AI-composed from real figures and may be wrong. Prices via Quantora proxy &amp; CoinGecko, delayed/EOD. Cones are illustrative Monte-Carlo, not forecasts. Educational only — not investment advice.</p>
 </div>
 
@@ -227,7 +251,7 @@
   function time(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
   var PAL=['#2563EB','#12805C','#F5A623','#7A5AF8','#E5484D'];
   var CRYPTO={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',BNB:'binancecoin',XRP:'ripple',DOGE:'dogecoin',ADA:'cardano',AVAX:'avalanche-2',LINK:'chainlink'};
-  var NAMES={SPY:'S&P 500',QQQ:'Nasdaq 100',DIA:'Dow Jones',IWM:'Russell 2000',AAPL:'Apple',NVDA:'NVIDIA',MSFT:'Microsoft',TSLA:'Tesla',GOOGL:'Alphabet',AMZN:'Amazon',META:'Meta',AVGO:'Broadcom',BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XLE:'Energy',XLK:'Technology',GLD:'Gold',TLT:'20Y Treasuries'};
+  var NAMES={SPY:'S&P 500',QQQ:'Nasdaq 100',DIA:'Dow Jones',IWM:'Russell 2000',AAPL:'Apple',NVDA:'NVIDIA',MSFT:'Microsoft',TSLA:'Tesla',GOOGL:'Alphabet',AMZN:'Amazon',META:'Meta',AVGO:'Broadcom',BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XLE:'Energy',XLK:'Technology',XLF:'Financials',XLV:'Health Care',XLY:'Consumer Disc.',XLC:'Communications',XLI:'Industrials',XLP:'Consumer Staples',XLU:'Utilities',XLRE:'Real Estate',XLB:'Materials',GLD:'Gold',TLT:'20Y Treasuries'};
   var CAPS={AAPL:3400,NVDA:3300,MSFT:3200,GOOGL:2300,AMZN:2300,META:1500,AVGO:1100,TSLA:1300};
 
   function tick(){try{var et=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));var h=et.getHours(),m=et.getMinutes(),s=et.getSeconds(),day=et.getDay();
@@ -393,7 +417,25 @@
   document.getElementById('wl-go').addEventListener('click',function(){addWatch(document.getElementById('wl-in').value);});
   document.getElementById('wl-in').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addWatch(this.value);}this.value=this.value.toUpperCase();});
 
-  function boot(){reveals();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);}
+  /* rates & macro (FRED), top movers, sectors */
+  function fredSeries(s){return fetch('/api/fmp?type=fred&series='+s).then(function(r){return r.json();}).then(function(j){var obs=(j&&j.data&&j.data.observations)||[];var v=[];for(var i=obs.length-1;i>=0;i--){var x=parseFloat(obs[i].value);if(isFinite(x))v.push(x);}return v;}).catch(function(){return [];});}
+  var MACRO=[['DGS10','10Y Treasury','%',2],['DGS2','2Y Treasury','%',2],['VIXCLS','VIX','',2],['DCOILWTICO','WTI crude','$',2],['DTWEXBGS','US dollar','',2]];
+  function buildMacro(){var el=document.getElementById('macro');if(!el)return;Promise.all(MACRO.map(function(m){return fredSeries(m[0]);})).then(function(all){
+    var html=MACRO.map(function(m,i){var v=all[i];if(!v||!v.length)return '';var last=v[v.length-1],prev=v.length>1?v[v.length-2]:last,ch=last-prev,val=(m[2]==='$'?'$':'')+last.toFixed(m[3])+(m[2]==='%'?'%':'');
+      return '<div class="mrow"><span class="ml">'+m[1]+'</span><span class="msp">'+spark(v.slice(-40),56,20)+'</span><span class="rt"><span class="mv">'+val+'</span><span class="mc '+(ch>=0?'up':'down')+'">'+(ch>=0?'▲':'▼')+' '+(ch>=0?'+':'')+ch.toFixed(2)+'</span></span></div>';}).join('');
+    el.innerHTML=html||'<div class="loading">Macro feed updating.</div>';});}
+  function buildMovers(){var el=document.getElementById('movers');if(!el)return;
+    Promise.all([fetch('/api/fmp?type=gainers').then(function(r){return r.json();}),fetch('/api/fmp?type=losers').then(function(r){return r.json();})]).then(function(res){
+      function rows(a){return (Array.isArray(a)?a:[]).filter(function(d){return +d.price>=2;}).slice(0,5).map(function(d){var c=+d.changesPercentage;return '<div class="mvrow" data-sym="'+esc(d.symbol)+'"><span class="s">'+esc(d.symbol)+'</span><span class="p '+(c>=0?'up':'down')+'">'+(c>=0?'+':'')+c.toFixed(1)+'%</span></div>';}).join('');}
+      var g=rows(res[0]),l=rows(res[1]);if(!g&&!l){el.innerHTML='<div class="loading">Movers updating.</div>';return;}
+      el.innerHTML='<div class="mvcol"><div><div class="mvh">▲ Gainers</div>'+g+'</div><div><div class="mvh">▼ Losers</div>'+l+'</div></div>';
+      Array.prototype.forEach.call(el.querySelectorAll('.mvrow'),function(r){r.addEventListener('click',function(){openDrawer(r.dataset.sym);});});}).catch(function(){el.innerHTML='<div class="loading">Movers updating.</div>';});}
+  var SECTORS=[['XLK','Tech'],['XLF','Financials'],['XLV','Health'],['XLY','Discretionary'],['XLC','Comm'],['XLI','Industrials'],['XLP','Staples'],['XLE','Energy'],['XLU','Utilities'],['XLRE','Real Est.'],['XLB','Materials']],secData={};
+  function renderSectors(){var el=document.getElementById('sectors');if(!el)return;
+    el.innerHTML='<div class="secgrid">'+SECTORS.map(function(s){var d=secData[s[0]],c=d?tmColor(d.chg):{bg:'var(--well)',fg:'var(--faint)'};return '<div class="seccell" data-sym="'+s[0]+'" style="background:'+c.bg+';color:'+c.fg+'"><span class="sn">'+s[1]+'</span><span class="sp">'+(d?((d.chg>=0?'+':'')+d.chg.toFixed(2)+'%'):'…')+'</span></div>';}).join('')+'</div>';
+    Array.prototype.forEach.call(el.querySelectorAll('.seccell'),function(c){c.addEventListener('click',function(){openDrawer(c.dataset.sym);});});}
+  function buildSectors(){if(!document.getElementById('sectors'))return;SECTORS.forEach(function(s,i){setTimeout(function(){getStock(s[0]).then(function(d){if(d){secData[s[0]]=d;renderSectors();}});},i*280);});renderSectors();}
+  function boot(){reveals();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
