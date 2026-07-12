@@ -508,7 +508,8 @@
   function buildNews(){var wrap=document.getElementById('news-list'),pulse=document.getElementById('news-pulse'),meta=document.getElementById('news-meta');if(!wrap)return;
     fetch('/api/news').then(function(r){return r.json();}).then(function(j){var arts=((j&&j.articles)||[]).filter(function(a){return a.headline&&a.url;});
       if(!arts.length){wrap.innerHTML='<div class="loading">News feed updating — check back shortly.</div>';if(pulse){pulse.classList.remove('sk');pulse.textContent='The news wire is updating.';}if(meta)meta.textContent='';return;}
-      arts.forEach(function(a){a._img=goodImg(a.image);});
+      var ifreq={};arts.forEach(function(a){if(a.image)ifreq[a.image]=(ifreq[a.image]||0)+1;});
+      arts.forEach(function(a){a._img=goodImg(a.image)&&ifreq[a.image]===1;});
       arts.sort(function(a,b){return (b._img?1:0)-(a._img?1:0);});
       var top=arts.slice(0,9);
       wrap.innerHTML='<div class="newswrap">'+top.map(function(a,i){var when=timeAgo(a.datetime);
