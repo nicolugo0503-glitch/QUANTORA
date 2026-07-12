@@ -1,5 +1,5 @@
 // Quantora backend - News.
-//   GET  /api/news   -> latest market news WITH real photos (Finnhub general + company-news, logos stripped)
+//   GET  /api/news   -> latest market news with REAL article photos (Finnhub headlines + og:image from each article)
 //   POST /api/news {heads} -> AI "market pulse" summary of the supplied headlines (Groq)
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,13 +7,28 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
   if (req.method === 'OPTIONS') { res.statusCode = 200; res.end(); return; }
 
-  // ---- GET: fetch real market news (prefer real article photos over source logos) ----
+  // ---- GET: headlines from Finnhub, real photos from each article's og:image ----
   if (req.method === 'GET') {
     const FH = process.env.FINNHUB_KEY;
     if (!FH) { res.status(200).json({ error: 'no_key' }); return; }
-    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1800');
+    res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
     function isLogo(u) { u = (u || '') + ''; return !/^https?:\/\//.test(u) || /finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)/i.test(u); }
     function fmt(d) { return d.toISOString().slice(0, 10); }
+    async function ogImage(url) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(function () { ctrl.abort(); }, 3500);
+        const r = await fetch(url, { signal: ctrl.signal, headers: { 'user-agent': 'Mozilla/5.0 (compatible; QuantoraBot/1.0; +https://www.usequantora.com)', 'accept': 'text/html' } });
+        clearTimeout(t);
+        if (!r.ok) return '';
+        const html = (await r.text()).slice(0, 250000);
+        const m = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["'][^>]*content=["']([^"']+)["']/i)
+          || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i);
+        let u = m ? m[1] : '';
+        if (u.indexOf('//') === 0) u = 'https:' + u;
+        return /^https?:\/\//.test(u) ? u : '';
+      } catch (e) { return ''; }
+    }
     try {
       const to = new Date(), from = new Date(Date.now() - 3 * 864e5);
       const syms = ['AAPL', 'NVDA', 'TSLA', 'MSFT', 'AMZN', 'META', 'GOOGL', 'AMD'];
@@ -22,22 +37,25 @@ module.exports = async (req, res) => {
       const results = await Promise.all(urls.map(function (u) { return fetch(u).then(function (r) { return r.json(); }).catch(function () { return []; }); }));
       let all = [];
       results.forEach(function (arr) { if (Array.isArray(arr)) all = all.concat(arr); });
-      const seen = {}, withImg = [], noImg = [];
+      const seen = {}, items = [];
       all.forEach(function (a) {
-        if (!a || !a.headline || seen[a.headline]) return; seen[a.headline] = 1;
-        const item = {
-          headline: a.headline,
-          summary: (a.summary || '').toString().slice(0, 260),
-          image: (a.image || '').toString(),
-          source: (a.source || '').toString(),
-          url: (a.url || '').toString(),
-          datetime: +a.datetime || 0
-        };
-        if (isLogo(item.image)) { item.image = ''; noImg.push(item); } else { withImg.push(item); }
+        if (!a || !a.headline || !a.url || seen[a.headline]) return; seen[a.headline] = 1;
+        items.push({ headline: a.headline, summary: (a.summary || '').toString().slice(0, 260), image: (a.image || '').toString(), source: (a.source || '').toString(), url: (a.url || '').toString(), datetime: +a.datetime || 0 });
       });
-      withImg.sort(function (x, y) { return y.datetime - x.datetime; });
-      noImg.sort(function (x, y) { return y.datetime - x.datetime; });
-      const out = withImg.concat(noImg).slice(0, 24);
+      items.sort(function (x, y) { return y.datetime - x.datetime; });
+      const top = items.slice(0, 16);
+      // pull the real article photo (og:image) for each of the top stories, in parallel
+      await Promise.all(top.map(async function (it) {
+        const og = await ogImage(it.url);
+        if (og) it.image = og; else if (isLogo(it.image)) it.image = '';
+      }));
+      // strip any leftover logos + branding that repeats across stories
+      const ifreq = {};
+      top.forEach(function (it) { if (it.image && !isLogo(it.image)) ifreq[it.image] = (ifreq[it.image] || 0) + 1; });
+      top.forEach(function (it) { if (isLogo(it.image) || ifreq[it.image] > 1) it.image = ''; });
+      const withImg = top.filter(function (it) { return it.image; });
+      const noImg = top.filter(function (it) { return !it.image; });
+      const out = withImg.concat(noImg).slice(0, 18);
       res.status(200).json({ articles: out, photos: withImg.length });
     } catch (e) { res.status(200).json({ error: 'feed' }); }
     return;
