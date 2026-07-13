@@ -259,9 +259,63 @@
   .nh-dots i.on{width:26px;background:#fff}
   .newswrap.uniform{grid-auto-rows:160px}
   @media(prefers-reduced-motion:reduce){.nh-slide.on .nh-img{animation:none}}
+
+  /* =====================================================================
+     CINEMATIC PASS · whole page — ambient depth, spotlight cards, deeper
+     focus-in reveals, animated section rules. Stays OpenAI-white: soft,
+     premium, restrained. Motion is compositor-only (transform/opacity).
+     ===================================================================== */
+  /* ambient aurora — slow, soft, behind everything */
+  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:strict}
+  .atmos b{position:absolute;display:block;border-radius:50%;filter:blur(66px);opacity:.55;mix-blend-mode:multiply;will-change:transform}
+  .atmos .a1{width:54vw;height:54vw;left:-14vw;top:-16vw;background:radial-gradient(circle at 34% 34%,rgba(37,99,235,.16),transparent 62%);animation:drift1 36s var(--ez) infinite alternate}
+  .atmos .a2{width:48vw;height:48vw;right:-16vw;top:0;background:radial-gradient(circle at 62% 42%,rgba(122,90,248,.12),transparent 62%);animation:drift2 44s var(--ez) infinite alternate}
+  .atmos .a3{width:46vw;height:46vw;left:26vw;bottom:-20vw;background:radial-gradient(circle at 50% 50%,rgba(18,128,92,.09),transparent 60%);animation:drift3 52s var(--ez) infinite alternate}
+  @keyframes drift1{to{transform:translate3d(9vw,7vh,0) scale(1.14)}}
+  @keyframes drift2{to{transform:translate3d(-8vw,9vh,0) scale(1.16)}}
+  @keyframes drift3{to{transform:translate3d(7vw,-7vh,0) scale(1.1)}}
+
+  /* deeper reveal — rise, settle, focus in */
+  .reveal{transform:translateY(28px) scale(.985);filter:blur(7px);transition:opacity .72s var(--ez),transform .72s var(--ez),filter .72s var(--ez)}
+  .reveal.in{transform:none;filter:none}
+
+  /* section rules — glowing lead dot + a line that draws itself in */
+  .secttl::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-weak),0 0 12px 1px rgba(37,99,235,.55);flex:none}
+  .secttl::after{transform-origin:left center;animation:ttlrule 1.15s var(--ez) both}
+  @keyframes ttlrule{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}
+
+  /* premium cards — lift, float shadow, cursor spotlight */
+  .card{transition:transform .5s var(--ez),box-shadow .5s var(--ez)}
+  .card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .45s var(--ez);z-index:4;background:radial-gradient(360px circle at var(--mx,50%) var(--my,-20%),rgba(37,99,235,.08),transparent 60%)}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--pop)}
+  .card:hover::after{opacity:1}
+
+  /* the living-market hero — centerpiece glow */
+  .mkthero{box-shadow:var(--card),0 44px 90px -46px rgba(37,99,235,.32)}
+  .mkthero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(120% 78% at 82% -6%,rgba(37,99,235,.06),transparent 54%)}
+  .mkthero .big{text-shadow:0 6px 34px rgba(37,99,235,.14)}
+
+  /* ribbon — cinematic edge fade */
+  .rib{-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+
+  /* map + sectors + rows + CTA — responsive micro-motion */
+  .tcell{transition:filter .2s var(--ez),transform .2s var(--ez),box-shadow .2s var(--ez)}
+  .tcell:hover{filter:brightness(1.09) saturate(1.08);transform:scale(1.015);z-index:3;box-shadow:0 8px 22px rgba(10,12,20,.16)}
+  .seccell{transition:transform .2s var(--ez),box-shadow .2s var(--ez),filter .15s}
+  .seccell:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(10,12,20,.12)}
+  .mvrow,.mrow,.row{transition:background .2s var(--ez),transform .2s var(--ez)}
+  .mvrow:hover,.row:hover{transform:translateX(2px)}
+  .jump a.lk{transition:background .16s,transform .2s var(--ez)}
+  .jump a.lk:hover{transform:translateX(3px)}
+  .jump .cta{position:relative;overflow:hidden}
+  .jump .cta::after{content:"";position:absolute;top:0;left:-60%;width:42%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);animation:sheen 5.5s var(--ez) infinite}
+  @keyframes sheen{0%,74%{left:-60%}92%,100%{left:132%}}
+
+  @media(prefers-reduced-motion:reduce){.atmos b,.secttl::after,.jump .cta::after{animation:none}.reveal{filter:none;transform:none}.card:hover,.tcell:hover,.seccell:hover,.mvrow:hover,.row:hover,.jump a.lk:hover{transform:none}}
 </style>
 </head>
 <body>
+<div class="atmos" aria-hidden="true"><b class="a1"></b><b class="a2"></b><b class="a3"></b></div>
 <svg class="grain"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#g)"/></svg>
 <div id="qnav"></div>
 <script src="/nav.js"></script>
@@ -450,7 +504,8 @@
     return fetch('/api/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:'Write a tight 3-sentence market brief using ONLY the provided figures: equity tone, the standout name, and crypto. Confident, specific, no hype, no invented numbers.',context:'Live figures (EOD): '+(facts.join(', ')||'markets')+'. Use ONLY these figures.'})}).then(function(r){return r.json();});
   }).then(function(j){var el=document.getElementById('brief'),meta=document.getElementById('briefmeta');el.classList.remove('sk');if(j&&j.answer){el.innerHTML=esc(j.answer).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');meta.textContent='AI · '+time()+' · may be wrong · not advice';}else if(j&&j.error==='ai_key_needed'){el.textContent='The AI brief activates once an AI key is set in Vercel.';meta.textContent='AI not activated';}else{el.textContent='The market brief is updating.';meta.textContent='Brief updating';}}).catch(function(){document.getElementById('brief').classList.remove('sk');document.getElementById('brief').textContent='The market brief is updating.';});}
   function lazyVideo(){var box=document.getElementById('vidbox');if(!box)return;var mount=function(){if(box.dataset.on)return;box.dataset.on='1';box.innerHTML='<iframe src="https://www.youtube.com/embed/videoseries?list=UUEAZeUIeJs0IjQiqTCdVSIg&autoplay=1&mute=1&playsinline=1&rel=0&controls=0&modestbranding=1&disablekb=1&iv_load_policy=3" title="Market news" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="vc"></div>';};if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mount();io.disconnect();}});},{rootMargin:'250px'});io.observe(box);}else mount();}
-  function reveals(){var els=document.querySelectorAll('.reveal');if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.06,rootMargin:'0px 0px -5% 0px'});els.forEach(function(e,i){e.style.transitionDelay=(Math.min(i,6)*40)+'ms';io.observe(e);});}
+  function reveals(){var els=document.querySelectorAll('.reveal');if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in');});return;}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.05,rootMargin:'0px 0px -6% 0px'});els.forEach(function(e){var d=0;try{var sibs=e.parentNode.querySelectorAll(':scope > .reveal');d=Array.prototype.indexOf.call(sibs,e);}catch(x){}e.style.transitionDelay=(Math.max(0,Math.min(d,8))*60)+'ms';io.observe(e);});}
+  function spotlight(){document.addEventListener('pointermove',function(e){var c=e.target&&e.target.closest?e.target.closest('.card'):null;if(!c)return;var r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left).toFixed(0)+'px');c.style.setProperty('--my',(e.clientY-r.top).toFixed(0)+'px');},{passive:true});}
 
   /* WATCHLIST */
   function getWL(){try{var w=JSON.parse(localStorage.getItem('qz:wl')||'null');if(Array.isArray(w))return w;}catch(e){}return ['AAPL','NVDA','TSLA','BTC'];}
@@ -575,13 +630,13 @@
       var heads=feat.concat(grid).slice(0,10).map(function(a){return '- '+a.headline+(a.source?' ['+a.source+']':'');}).join('\n');
       fetch('/api/news',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({heads:heads})}).then(function(r){return r.json();}).then(function(p){if(!pulse)return;pulse.classList.remove('sk');if(p&&p.summary){pulse.textContent=p.summary;if(meta)meta.textContent='AI · Groq · '+time()+' · may be wrong · not advice';}else{pulse.textContent='Headlines are loaded — the AI pulse is updating.';if(meta)meta.textContent='pulse updating';}}).catch(function(){if(pulse){pulse.classList.remove('sk');pulse.textContent='Headlines loaded; AI pulse updating.';}});
     }).catch(function(){wrap.innerHTML='<div class="loading">News feed updating.</div>';if(pulse){pulse.classList.remove('sk');pulse.textContent='The news wire is updating.';}});}
-  function boot(){reveals();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);}
+  function boot(){reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 <script>
 /* Guarantee the hero-region cards render at full opacity. The site-wide hero.js/nav.js reveal "hold" (polls for any [class*="hero"] element) otherwise leaves this page's custom hero + brief frozen mid-fade. hero.js makes no .animate() calls and is not scroll-linked, so forcing opacity here sticks permanently. */
-(function(){function uf(){var els=document.querySelectorAll('.mkthero,.brief');for(var i=0;i<els.length;i++){var el=els[i];try{if(el.getAnimations)el.getAnimations().forEach(function(a){try{a.cancel();}catch(e){}});}catch(e){}el.style.setProperty('opacity','1','important');el.style.setProperty('transform','none','important');}}
+(function(){function uf(){var els=document.querySelectorAll('.mkthero,.brief');for(var i=0;i<els.length;i++){var el=els[i];try{if(el.getAnimations)el.getAnimations().forEach(function(a){try{a.cancel();}catch(e){}});}catch(e){}el.style.setProperty('opacity','1','important');el.style.setProperty('transform','none','important');el.style.setProperty('filter','none','important');}}
 [60,200,500,1000,1800,2800].forEach(function(t){setTimeout(uf,t);});var n=0;function loop(){uf();if(++n<60&&window.requestAnimationFrame)requestAnimationFrame(loop);}if(window.requestAnimationFrame)requestAnimationFrame(loop);})();
 </script>
 </body>
