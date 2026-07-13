@@ -1,5 +1,5 @@
 // Quantora backend - News.
-//   GET  /api/news   -> latest market news with REAL article photos (Finnhub headlines + og:image from each article)
+//   GET  /api/news   -> market news with real photos (Finnhub photo field first, og:image as a bonus)
 //   POST /api/news {heads} -> AI "market pulse" summary of the supplied headlines (Groq)
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,31 +7,31 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
   if (req.method === 'OPTIONS') { res.statusCode = 200; res.end(); return; }
 
-  // ---- GET: headlines from Finnhub, real photos from each article's og:image ----
   if (req.method === 'GET') {
     const FH = process.env.FINNHUB_KEY;
     if (!FH) { res.status(200).json({ error: 'no_key' }); return; }
-    res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
-    function isLogo(u) { u = (u || '') + ''; return !/^https?:\/\//.test(u) || /finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)/i.test(u); }
+    res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=7200');
+    // a bad image = a source logo or generic branding, not a real article photo
+    function isBad(u) { u = (u || '') + ''; return !/^https?:\/\//.test(u) || /finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)|placeholder|default-?(image|thumb)/i.test(u); }
     function fmt(d) { return d.toISOString().slice(0, 10); }
     async function ogImage(url) {
       try {
         const ctrl = new AbortController();
-        const t = setTimeout(function () { ctrl.abort(); }, 3500);
-        const r = await fetch(url, { signal: ctrl.signal, headers: { 'user-agent': 'Mozilla/5.0 (compatible; QuantoraBot/1.0; +https://www.usequantora.com)', 'accept': 'text/html' } });
+        const t = setTimeout(function () { ctrl.abort(); }, 4500);
+        const r = await fetch(url, { signal: ctrl.signal, redirect: 'follow', headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36', 'accept': 'text/html,application/xhtml+xml', 'accept-language': 'en-US,en;q=0.9' } });
         clearTimeout(t);
         if (!r.ok) return '';
-        const html = (await r.text()).slice(0, 250000);
+        const html = (await r.text()).slice(0, 300000);
         const m = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["'][^>]*content=["']([^"']+)["']/i)
           || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i);
         let u = m ? m[1] : '';
         if (u.indexOf('//') === 0) u = 'https:' + u;
-        return /^https?:\/\//.test(u) ? u : '';
+        return (/^https?:\/\//.test(u) && !isBad(u)) ? u : '';
       } catch (e) { return ''; }
     }
     try {
       const to = new Date(), from = new Date(Date.now() - 3 * 864e5);
-      const syms = ['AAPL', 'NVDA', 'TSLA', 'MSFT', 'AMZN', 'META', 'GOOGL', 'AMD'];
+      const syms = ['AAPL', 'NVDA', 'TSLA', 'MSFT', 'AMZN', 'META'];
       const urls = ['https://finnhub.io/api/v1/news?category=general&token=' + FH]
         .concat(syms.map(function (s) { return 'https://finnhub.io/api/v1/company-news?symbol=' + s + '&from=' + fmt(from) + '&to=' + fmt(to) + '&token=' + FH; }));
       const results = await Promise.all(urls.map(function (u) { return fetch(u).then(function (r) { return r.json(); }).catch(function () { return []; }); }));
@@ -42,17 +42,23 @@ module.exports = async (req, res) => {
         if (!a || !a.headline || !a.url || seen[a.headline]) return; seen[a.headline] = 1;
         items.push({ headline: a.headline, summary: (a.summary || '').toString().slice(0, 260), image: (a.image || '').toString(), source: (a.source || '').toString(), url: (a.url || '').toString(), datetime: +a.datetime || 0 });
       });
-      items.sort(function (x, y) { return y.datetime - x.datetime; });
-      const top = items.slice(0, 16);
-      // pull the real article photo (og:image) for each of the top stories, in parallel
+      // reliable photos already in the Finnhub image field (CNBC, Motley Fool, etc.): real + unique
+      const ffreq = {};
+      items.forEach(function (it) { if (it.image && !isBad(it.image)) ffreq[it.image] = (ffreq[it.image] || 0) + 1; });
+      items.forEach(function (it) { it.fh = (it.image && !isBad(it.image) && ffreq[it.image] === 1) ? it.image : ''; });
+      // put stories that already have a real photo first, then by recency
+      items.sort(function (a, b) { return (b.fh ? 1 : 0) - (a.fh ? 1 : 0) || b.datetime - a.datetime; });
+      const top = items.slice(0, 18);
+      // use the reliable photo where present; scrape og:image for the rest
       await Promise.all(top.map(async function (it) {
+        if (it.fh) { it.image = it.fh; return; }
         const og = await ogImage(it.url);
-        if (og) it.image = og; else if (isLogo(it.image)) it.image = '';
+        it.image = og || '';
       }));
-      // strip any leftover logos + branding that repeats across stories
+      // drop any image that ended up repeating (leftover branding)
       const ifreq = {};
-      top.forEach(function (it) { if (it.image && !isLogo(it.image)) ifreq[it.image] = (ifreq[it.image] || 0) + 1; });
-      top.forEach(function (it) { if (isLogo(it.image) || ifreq[it.image] > 1) it.image = ''; });
+      top.forEach(function (it) { if (it.image) ifreq[it.image] = (ifreq[it.image] || 0) + 1; });
+      top.forEach(function (it) { if (ifreq[it.image] > 1) it.image = ''; });
       const withImg = top.filter(function (it) { return it.image; });
       const noImg = top.filter(function (it) { return !it.image; });
       const out = withImg.concat(noImg).slice(0, 18);
