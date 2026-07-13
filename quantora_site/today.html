@@ -375,6 +375,31 @@
     #scrollbar{animation:none!important;transform:scaleX(0)!important}
   }
   @media(hover:none),(pointer:coarse){[data-tilt]{transform:none!important}#curglow{display:none!important}}
+
+  /* =====================================================================
+     ALIVE — the market moving THROUGH the page: live crypto ticks that
+     flash green/red, blinking live sparkline cursors, a heartbeat on the
+     live dot, a tape-reader shimmer over the hero chart, ticking countdown.
+     ===================================================================== */
+  @keyframes flup{0%{background:rgba(18,128,92,.24)}100%{background:transparent}}
+  @keyframes fldn{0%{background:rgba(229,72,77,.22)}100%{background:transparent}}
+  .row.flashup{animation:flup 1.25s var(--ez)}
+  .row.flashdn{animation:fldn 1.25s var(--ez)}
+  .row.flashup .px .v{color:var(--up)}
+  .row.flashdn .px .v{color:var(--down)}
+  .row .px .v{transition:color .5s var(--ez)}
+  /* live sparkline cursor — the blinking "we're streaming" tell */
+  #crypto .spk svg circle,.wl .spk svg circle{animation:livetip 1.7s ease-in-out infinite}
+  @keyframes livetip{0%,100%{opacity:1}50%{opacity:.28}}
+  /* heartbeat on the hero live dot (double-thump like a pulse) */
+  .mkthero .eyb .ldot{animation:qpulse 2.4s infinite,beat 2.4s ease-in-out infinite}
+  @keyframes beat{0%,52%,100%{transform:scale(1)}8%{transform:scale(1.42)}20%{transform:scale(1)}30%{transform:scale(1.28)}}
+  /* tape-reader shimmer sweeping the hero chart — reads as a live feed scan */
+  .heroR::after{content:"";position:absolute;top:0;bottom:0;width:34%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(37,99,235,.12),transparent);transform:translateX(-160%);animation:tape 7.5s ease-in-out infinite}
+  @keyframes tape{0%,68%{transform:translateX(-160%)}100%{transform:translateX(400%)}}
+  /* the LIVE eyebrow dot on the crypto card header pulses */
+  #crypto:before{content:none}
+  @media(prefers-reduced-motion:reduce){.row.flashup,.row.flashdn,#crypto .spk svg circle,.wl .spk svg circle,.mkthero .eyb .ldot,.heroR::after{animation:none!important}}
 </style>
 </head>
 <body>
@@ -470,7 +495,11 @@
   function tick(){try{var et=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));var h=et.getHours(),m=et.getMinutes(),s=et.getSeconds(),day=et.getDay();
     document.getElementById('clock').textContent=[h,m,s].map(function(x){return String(x).padStart(2,'0');}).join(':')+' ET';
     document.getElementById('date').textContent=et.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
-    var mins=h*60+m,open=(day>=1&&day<=5&&mins>=570&&mins<960);document.getElementById('mdot').className='dot '+(open?'on':'off');document.getElementById('mstat').textContent=open?'US markets open':'US markets closed';}catch(e){}}
+    var mins=h*60+m,open=(day>=1&&day<=5&&mins>=570&&mins<960);document.getElementById('mdot').className='dot '+(open?'on':'off');
+    var nowSec=(day*1440+mins)*60+s,ev=null;
+    if(open){ev={l:'closes in',t:(day*1440+960)*60-nowSec};}else{for(var _i=0;_i<9;_i++){var _d=(day+_i)%7;if(_d>=1&&_d<=5){var _ts=((day+_i)*1440+570)*60;if(_ts>nowSec){ev={l:'opens in',t:_ts-nowSec};break;}}}}
+    var cd='';if(ev&&ev.t>0){var H=Math.floor(ev.t/3600),M=Math.floor(ev.t%3600/60),SS=ev.t%60;cd=' · '+ev.l+' '+(H>0?H+'h ':'')+(H>0&&M<10?'0':'')+M+'m '+(SS<10?'0':'')+SS+'s';}
+    document.getElementById('mstat').textContent=(open?'US markets open':'US markets closed')+cd;}catch(e){}}
   tick();setInterval(tick,1000);
 
   var cache={},cgData={},cgLoaded={};
@@ -695,7 +724,15 @@
       var heads=feat.concat(grid).slice(0,10).map(function(a){return '- '+a.headline+(a.source?' ['+a.source+']':'');}).join('\n');
       fetch('/api/news',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({heads:heads})}).then(function(r){return r.json();}).then(function(p){if(!pulse)return;pulse.classList.remove('sk');if(p&&p.summary){pulse.textContent=p.summary;if(meta)meta.textContent='AI · Groq · '+time()+' · may be wrong · not advice';}else{pulse.textContent='Headlines are loaded — the AI pulse is updating.';if(meta)meta.textContent='pulse updating';}}).catch(function(){if(pulse){pulse.classList.remove('sk');pulse.textContent='Headlines loaded; AI pulse updating.';}});
     }).catch(function(){wrap.innerHTML='<div class="loading">News feed updating.</div>';if(pulse){pulse.classList.remove('sk');pulse.textContent='The news wire is updating.';}});}
-  function boot(){reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);}
+  /* ===== LIVE ENGINE — real 24/7 crypto streaming, in-place ticks that flash green/red ===== */
+  function flashCells(sym,up){Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(el){el.classList.remove('flashup','flashdn');void el.offsetWidth;el.classList.add(up?'flashup':'flashdn');setTimeout(function(){el.classList.remove('flashup','flashdn');},1250);});}
+  function updateRow(sym){var d=cgData[sym];if(!d)return;Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(row){var v=row.querySelector('.px .v'),cc=row.querySelector('.px .c'),spk=row.querySelector('.spk');if(v)v.textContent=money(d.price);if(cc){cc.className='c '+(num(d.chg)>=0?'up':'down');cc.innerHTML=arr(d.chg)+' '+pct(d.chg);}if(spk)spk.innerHTML=spark((d.closes||[]).slice(-30),70,24,true);});}
+  function liveTick(){if(document.hidden)return;var ids=['bitcoin','ethereum','solana'];getWL().forEach(function(sy){if(CRYPTO[sy]&&ids.indexOf(CRYPTO[sy])<0)ids.push(CRYPTO[sy]);});
+    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){if(!Array.isArray(a))return;
+      a.forEach(function(c){for(var k in CRYPTO){if(CRYPTO[k]===c.id){var old=cgData[k]?cgData[k].price:null;cgData[k]={sym:k,price:c.current_price,chg:c.price_change_percentage_24h,closes:(c.sparkline_in_7d&&c.sparkline_in_7d.price)||(cgData[k]&&cgData[k].closes)||[c.current_price],src:'CoinGecko · live'};cgLoaded[c.id]=1;heatData[k]={chg:cgData[k].chg};updateRow(k);if(old!=null&&Math.abs(c.current_price-old)>1e-9)flashCells(k,c.current_price>old);}}});
+    }).catch(function(){});}
+  function startLive(){liveTick();if(!window._qlive)window._qlive=setInterval(liveTick,9000);}
+  function boot(){reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
