@@ -535,7 +535,9 @@
       var ifreq={};arts.forEach(function(a){if(a.image)ifreq[a.image]=(ifreq[a.image]||0)+1;});
       arts.forEach(function(a){a._img=goodImg(a.image)&&ifreq[a.image]===1;});
       arts.sort(function(a,b){return (b._img?1:0)-(a._img?1:0);});
-      var top=arts.slice(0,9);
+      var photoArts=arts.filter(function(a){return a._img;});
+      var n=photoArts.length>=9?9:6;
+      var top=(photoArts.length>=n?photoArts:photoArts.concat(arts.filter(function(a){return !a._img;}))).slice(0,n);
       wrap.innerHTML='<div class="newswrap">'+top.map(function(a,i){var when=timeAgo(a.datetime);
         var inner='<div class="grad"></div><div class="m"><div class="hd">'+esc(a.headline)+'</div><div class="sr">'+esc(a.source||'')+(when?' · '+when:'')+'</div></div>';
         if(a._img)return '<a class="ncard'+(i===0?' lead':'')+'" href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(a.image)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\')">'+inner+'</a>';
