@@ -388,6 +388,10 @@
   .row.flashup .px .v{color:var(--up)}
   .row.flashdn .px .v{color:var(--down)}
   .row .px .v{transition:color .5s var(--ez)}
+  /* hero S&P number flashes its direction on a live tick */
+  .mkthero .big{transition:color .35s var(--ez),text-shadow .35s var(--ez)}
+  .mkthero .big.nfu{color:var(--up);text-shadow:0 6px 34px rgba(18,128,92,.24)}
+  .mkthero .big.nfd{color:var(--down);text-shadow:0 6px 34px rgba(229,72,77,.24)}
   /* live sparkline cursor — the blinking "we're streaming" tell */
   #crypto .spk svg circle,.wl .spk svg circle{animation:livetip 1.7s ease-in-out infinite}
   @keyframes livetip{0%,100%{opacity:1}50%{opacity:.28}}
@@ -724,14 +728,21 @@
       var heads=feat.concat(grid).slice(0,10).map(function(a){return '- '+a.headline+(a.source?' ['+a.source+']':'');}).join('\n');
       fetch('/api/news',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({heads:heads})}).then(function(r){return r.json();}).then(function(p){if(!pulse)return;pulse.classList.remove('sk');if(p&&p.summary){pulse.textContent=p.summary;if(meta)meta.textContent='AI · Groq · '+time()+' · may be wrong · not advice';}else{pulse.textContent='Headlines are loaded — the AI pulse is updating.';if(meta)meta.textContent='pulse updating';}}).catch(function(){if(pulse){pulse.classList.remove('sk');pulse.textContent='Headlines loaded; AI pulse updating.';}});
     }).catch(function(){wrap.innerHTML='<div class="loading">News feed updating.</div>';if(pulse){pulse.classList.remove('sk');pulse.textContent='The news wire is updating.';}});}
-  /* ===== LIVE ENGINE — real 24/7 crypto streaming, in-place ticks that flash green/red ===== */
+  /* ===== LIVE ENGINE — streaming crypto + live S&P, rolling digits & green/red flashes ===== */
+  function rollTo(el,to,fmt){fmt=fmt||money;var cur=parseFloat((el.textContent||'').replace(/[^0-9.\-]/g,''));var from=isFinite(cur)?cur:to;if(from===to||RM){el.textContent=fmt(to);return;}cancelAnimationFrame(el._rraf||0);var t0=performance.now(),dur=700;(function fr(now){var p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)el._rraf=requestAnimationFrame(fr);else el.textContent=fmt(to);})(performance.now());}
   function flashCells(sym,up){Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(el){el.classList.remove('flashup','flashdn');void el.offsetWidth;el.classList.add(up?'flashup':'flashdn');setTimeout(function(){el.classList.remove('flashup','flashdn');},1250);});}
-  function updateRow(sym){var d=cgData[sym];if(!d)return;Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(row){var v=row.querySelector('.px .v'),cc=row.querySelector('.px .c'),spk=row.querySelector('.spk');if(v)v.textContent=money(d.price);if(cc){cc.className='c '+(num(d.chg)>=0?'up':'down');cc.innerHTML=arr(d.chg)+' '+pct(d.chg);}if(spk)spk.innerHTML=spark((d.closes||[]).slice(-30),70,24,true);});}
+  function updateRow(sym){var d=cgData[sym];if(!d)return;Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(row){var v=row.querySelector('.px .v'),cc=row.querySelector('.px .c'),spk=row.querySelector('.spk');if(v)rollTo(v,d.price);if(cc){cc.className='c '+(num(d.chg)>=0?'up':'down');cc.innerHTML=arr(d.chg)+' '+pct(d.chg);}if(spk)spk.innerHTML=spark((d.closes||[]).slice(-30),70,24,true);});}
   function liveTick(){if(document.hidden)return;var ids=['bitcoin','ethereum','solana'];getWL().forEach(function(sy){if(CRYPTO[sy]&&ids.indexOf(CRYPTO[sy])<0)ids.push(CRYPTO[sy]);});
     fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){if(!Array.isArray(a))return;
       a.forEach(function(c){for(var k in CRYPTO){if(CRYPTO[k]===c.id){var old=cgData[k]?cgData[k].price:null;cgData[k]={sym:k,price:c.current_price,chg:c.price_change_percentage_24h,closes:(c.sparkline_in_7d&&c.sparkline_in_7d.price)||(cgData[k]&&cgData[k].closes)||[c.current_price],src:'CoinGecko · live'};cgLoaded[c.id]=1;heatData[k]={chg:cgData[k].chg};updateRow(k);if(old!=null&&Math.abs(c.current_price-old)>1e-9)flashCells(k,c.current_price>old);}}});
     }).catch(function(){});}
-  function startLive(){liveTick();if(!window._qlive)window._qlive=setInterval(liveTick,9000);}
+  var _eqErr=0,_eqPrev=null;
+  function liveEquity(){if(document.hidden||_eqErr>=3)return;
+    fetch('/api/fmp?type=quote&symbol=SPY').then(function(r){return r.json();}).then(function(j){var q=j&&j.data&&j.data[0];if(!q||!isFinite(+q.price)){_eqErr++;return;}_eqErr=0;var px=+q.price,ch=+q.changePercentage,pxEl=document.getElementById('hero-px'),chEl=document.getElementById('hero-chg');
+      if(pxEl){var up=_eqPrev==null||px>=_eqPrev;rollTo(pxEl,px);if(_eqPrev!=null&&Math.abs(px-_eqPrev)>1e-9){pxEl.classList.remove('nfu','nfd');void pxEl.offsetWidth;pxEl.classList.add(up?'nfu':'nfd');setTimeout(function(){pxEl.classList.remove('nfu','nfd');},1400);}_eqPrev=px;}
+      if(chEl&&isFinite(ch)){chEl.className='chg num '+(ch>=0?'up':'down');chEl.innerHTML=arr(ch)+' '+pct(ch)+' <span class="sub">today · live</span>';}
+    }).catch(function(){_eqErr++;});}
+  function startLive(){liveTick();liveEquity();if(!window._qlive)window._qlive=setInterval(liveTick,7000);if(!window._qleq)window._qleq=setInterval(liveEquity,30000);}
   function boot(){reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
