@@ -404,6 +404,33 @@
   /* the LIVE eyebrow dot on the crypto card header pulses */
   #crypto:before{content:none}
   @media(prefers-reduced-motion:reduce){.row.flashup,.row.flashdn,#crypto .spk svg circle,.wl .spk svg circle,.mkthero .eyb .ldot,.heroR::after{animation:none!important}}
+
+  /* =====================================================================
+     GLOBE HERO — the cinematic 3D centerpiece. A full-bleed dark viewport
+     with a rotating dot-globe, live arcs firing between financial centers,
+     and the giant live S&P number, flowing down into the white terminal.
+     ===================================================================== */
+  .ghero{position:relative;width:100vw;margin-left:calc(50% - 50vw);height:min(80vh,640px);min-height:460px;overflow:hidden;margin:6px 0 30px;background:radial-gradient(130% 120% at 62% 8%,#0d1730 0%,#070c1a 46%,#04060e 78%);box-shadow:inset 0 -60px 80px -40px #04060e,inset 0 46px 70px -46px rgba(0,0,0,.7)}
+  .ghero #globe{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+  .ghero-grad{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(4,6,14,.94) 0%,rgba(4,6,14,.7) 28%,rgba(4,6,14,.15) 50%,transparent 66%),radial-gradient(90% 70% at 74% 64%,transparent 40%,rgba(4,6,14,.55))}
+  .ghero-in{position:absolute;z-index:3;top:50%;left:max(24px,calc(50vw - 632px));transform:translateY(-50%);max-width:460px;color:#fff}
+  .ghero-eyb{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:#9db6e8;display:flex;align-items:center;gap:9px;margin-bottom:16px;font-weight:500}
+  .ghero-eyb .ldot{width:8px;height:8px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 0 4px rgba(46,230,166,.14),0 0 14px 2px rgba(46,230,166,.7);animation:qpulse 2.4s infinite}
+  .ghero-big{font-size:clamp(58px,8.4vw,110px);font-weight:780;letter-spacing:-.045em;line-height:.9;color:#fff;text-shadow:0 8px 70px rgba(45,110,255,.55)}
+  .ghero-chg{font-family:var(--mono);font-size:19px;font-weight:600;margin-top:12px;color:#fff}
+  .ghero-chg.up,.ghero-chg .up{color:#2ee6a6}.ghero-chg.down,.ghero-chg .down{color:#ff6b6b}.ghero-chg .sub{color:#7f8db0;font-size:12px;margin-left:7px;font-weight:400}
+  .ghero-sub{font-size:14.5px;color:#a9b5d4;margin-top:18px;line-height:1.5;max-width:370px}
+  .ghero-brief{margin-top:22px;font-size:13.5px;line-height:1.6;color:#cbd5ee;max-width:410px;border-left:2px solid rgba(74,160,255,.55);padding-left:14px;min-height:20px}
+  .ghero-brief b{color:#fff;font-weight:600}
+  .ghero-brief .meta{display:block;font-family:var(--mono);font-size:9px;color:#5f6c8c;margin-top:9px;letter-spacing:.04em}
+  .ghero-brief .bt.sk span{display:block;height:11px;border-radius:5px;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.15),rgba(255,255,255,.05));background-size:200% 100%;animation:shim 1.3s infinite;margin-bottom:9px}
+  .ghero-cue{position:absolute;z-index:3;bottom:20px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#6f7ea6;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .ghero-cue b{font-size:15px;color:#8ea0cc;animation:cuebob 1.9s ease-in-out infinite}
+  @keyframes cuebob{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(6px);opacity:1}}
+  .ghero.nogl{background:radial-gradient(120% 120% at 32% 16%,#14264f,#070c1a 60%,#04060e)}
+  .ghero.nogl #globe{display:none}
+  @media(max-width:820px){.ghero{height:64vh;min-height:400px}.ghero-in{left:20px;right:20px;max-width:none}.ghero-big{font-size:clamp(46px,13vw,70px)}.ghero-grad{background:linear-gradient(180deg,rgba(4,6,14,.35),rgba(4,6,14,.35) 40%,rgba(4,6,14,.9))}.ghero-sub,.ghero-brief{max-width:none}}
+  @media(prefers-reduced-motion:reduce){.ghero-cue b,.ghero-eyb .ldot{animation:none}}
 </style>
 </head>
 <body>
@@ -429,11 +456,18 @@
   <div class="think" id="think"><span class="sp"></span><span id="thinkmsg">Composing…</span></div>
   <div class="ans" id="ans"><div class="banner"><span class="d"></span><span id="banner">—</span></div><p class="narr" id="narr"></p><div class="bento" id="stage"></div></div>
 
-  <div class="secttl">The living market · today</div>
-  <div class="bento">
-    <div class="mkthero"><canvas class="field" id="field" aria-hidden="true"></canvas><div class="herogrid"><div class="heroL"><div class="eyb"><span class="ldot"></span>S&amp;P 500 · live</div><div class="big num" id="hero-px">—</div><div class="chg num" id="hero-chg"><span class="sub">today</span></div><div class="herostats" id="hero-stats"></div></div><div class="heroR"><span class="tag" id="hero-rng">6-month</span><canvas id="herochart"></canvas></div></div></div>
-    <div class="brief reveal"><div class="bh"><span class="dot"></span>The Brief · AI market read</div><div class="bt sk" id="brief"><span style="width:94%"></span><span style="width:84%"></span><span style="width:66%"></span></div><div class="meta" id="briefmeta">Reading the tape…</div></div>
-  </div>
+  <section class="ghero reveal" id="ghero">
+    <canvas id="globe" aria-hidden="true"></canvas>
+    <div class="ghero-grad"></div>
+    <div class="ghero-in">
+      <div class="ghero-eyb"><span class="ldot"></span>GLOBAL MARKETS · LIVE</div>
+      <div class="ghero-big num" id="hero-px">$—</div>
+      <div class="ghero-chg num" id="hero-chg"><span class="sub">today</span></div>
+      <div class="ghero-sub">S&amp;P 500 — the world's exchanges, streaming in real time.</div>
+      <div class="ghero-brief"><span class="bt sk" id="brief"><span style="width:92%"></span><span style="width:78%"></span></span><span class="meta" id="briefmeta"></span></div>
+    </div>
+    <div class="ghero-cue" aria-hidden="true"><span>the terminal</span><b>↓</b></div>
+  </section>
 
   <div class="secttl">Market news &amp; video · today</div>
   <div class="bento">
@@ -743,7 +777,7 @@
         Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(row){var v=row.querySelector('.px .v'),cc=row.querySelector('.px .c');if(v)rollTo(v,px);if(cc&&isFinite(ch)){cc.className='c '+(ch>=0?'up':'down');cc.innerHTML=arr(ch)+' '+pct(ch);}});
         if(moved)flashCells(sym,px>old);
         heatData[sym]={chg:ch};
-        if(sym==='SPY'){var pxEl=document.getElementById('hero-px'),chEl=document.getElementById('hero-chg');if(pxEl){rollTo(pxEl,px);if(moved){pxEl.classList.remove('nfu','nfd');void pxEl.offsetWidth;pxEl.classList.add(px>old?'nfu':'nfd');setTimeout(function(){pxEl.classList.remove('nfu','nfd');},1400);}}if(chEl&&isFinite(ch)){chEl.className='chg num '+(ch>=0?'up':'down');chEl.innerHTML=arr(ch)+' '+pct(ch)+' <span class="sub">today · live</span>';}}
+        if(sym==='SPY'){var pxEl=document.getElementById('hero-px'),chEl=document.getElementById('hero-chg');if(pxEl){rollTo(pxEl,px);if(moved){pxEl.classList.remove('nfu','nfd');void pxEl.offsetWidth;pxEl.classList.add(px>old?'nfu':'nfd');setTimeout(function(){pxEl.classList.remove('nfu','nfd');},1400);}}if(chEl&&isFinite(ch)){chEl.className='ghero-chg num '+(ch>=0?'up':'down');chEl.innerHTML=arr(ch)+' '+pct(ch)+' <span class="sub">today · live</span>';}}
         _eqPrev[sym]=px;});
     }).catch(function(){_eqErr++;});}
   function startCryptoWS(){if(!('WebSocket' in window))return;var map={BTCUSDT:'BTC',ETHUSDT:'ETH',SOLUSDT:'SOL'},ws=null,lastUpd={},lastPx={},lastFlash={};
@@ -928,6 +962,67 @@
       if(r.top<innerHeight&&r.bottom>0&&(!el.classList.contains('in')||getComputedStyle(el).opacity!=='1'))forceSettle(el);});}
     document.addEventListener('visibilitychange',function(){if(!document.hidden)requestAnimationFrame(settleAll);});
   })();
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ===== CINEMATIC GLOBE — 3D market-flows centerpiece (three.js r128) ===== */
+(function(){
+  var canvas=document.getElementById('globe'),host=document.getElementById('ghero');
+  if(!canvas||!host)return;
+  if(typeof THREE==='undefined'){host.classList.add('nogl');return;}
+  var RM=matchMedia('(prefers-reduced-motion:reduce)').matches,renderer;
+  try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true,powerPreference:'high-performance'});}catch(e){host.classList.add('nogl');return;}
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  var scene=new THREE.Scene(),R=100;
+  var camera=new THREE.PerspectiveCamera(32,1.6,1,3000);camera.position.set(0,16,R*3.7);
+  var group=new THREE.Group();group.rotation.z=-0.32;group.position.x=R*0.34;scene.add(group);
+  group.add(new THREE.Mesh(new THREE.SphereGeometry(R*0.985,64,64),new THREE.MeshBasicMaterial({color:0x070d1c})));
+  (function(){var N=2600,p=new Float32Array(N*3);for(var i=0;i<N;i++){var y=1-(i/(N-1))*2,rad=Math.sqrt(Math.max(0,1-y*y)),th=i*2.399963;p[i*3]=Math.cos(th)*rad*R;p[i*3+1]=y*R;p[i*3+2]=Math.sin(th)*rad*R;}
+    var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
+    group.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x315f9f,size:1.4,sizeAttenuation:true,transparent:true,opacity:.62})));})();
+  group.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.24,48,48),new THREE.ShaderMaterial({
+    uniforms:{c:{value:new THREE.Color(0x2f6bff)}},
+    vertexShader:'varying float vI;void main(){vec3 n=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vI=pow(1.0-abs(dot(n,normalize(mv.xyz))),2.6);gl_Position=projectionMatrix*mv;}',
+    fragmentShader:'uniform vec3 c;varying float vI;void main(){gl_FragColor=vec4(c,1.0)*vI*0.85;}',
+    blending:THREE.AdditiveBlending,side:THREE.BackSide,transparent:true,depthWrite:false})));
+  (function(){var N=520,p=new Float32Array(N*3);for(var i=0;i<N;i++){var r=700+Math.random()*500,u=Math.random()*2-1,t=Math.random()*6.2832,s=Math.sqrt(1-u*u);p[i*3]=r*s*Math.cos(t);p[i*3+1]=r*u;p[i*3+2]=r*s*Math.sin(t);}
+    var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
+    scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x9fb4e0,size:1.1,transparent:true,opacity:.5})));})();
+  function ll(lat,lon,r){var phi=(90-lat)*Math.PI/180,theta=(lon+180)*Math.PI/180;return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(theta),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(theta));}
+  var CITIES=[[40.7,-74],[51.5,-0.12],[35.68,139.7],[22.3,114.17],[1.35,103.82],[50.11,8.68],[-33.87,151.21],[19.08,72.88],[25.2,55.27],[37.77,-122.42],[-23.55,-46.63],[55.75,37.62],[31.23,121.47],[43.65,-79.38]];
+  (function(){var p=[];CITIES.forEach(function(c){var v=ll(c[0],c[1],R*1.006);p.push(v.x,v.y,v.z);});
+    var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));
+    group.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x74d0ff,size:5,transparent:true,opacity:.95,sizeAttenuation:true,blending:THREE.AdditiveBlending,depthWrite:false})));})();
+  var arcs=[],ARCMAX=RM?3:10,lastSpawn=0;
+  function spawnArc(){if(arcs.length>=ARCMAX)return;var a=CITIES[(Math.random()*CITIES.length)|0],b=CITIES[(Math.random()*CITIES.length)|0];if(a===b)return;
+    var va=ll(a[0],a[1],R),vb=ll(b[0],b[1],R),mid=va.clone().add(vb).multiplyScalar(0.5),d=va.distanceTo(vb);mid.setLength(R+d*0.5+10);
+    var curve=new THREE.QuadraticBezierCurve3(va,mid,vb),g=new THREE.BufferGeometry().setFromPoints(curve.getPoints(60));
+    var col=Math.random()<0.5?0x4aa0ff:0x2ee6c0;
+    var line=new THREE.Line(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));group.add(line);
+    var hg=new THREE.BufferGeometry();hg.setAttribute('position',new THREE.Float32BufferAttribute([va.x,va.y,va.z],3));
+    var head=new THREE.Points(hg,new THREE.PointsMaterial({color:0xffffff,size:7,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));group.add(head);
+    arcs.push({curve:curve,line:line,head:head,t:0,spd:0.35+Math.random()*0.3});}
+  var w=0,h=0;
+  function resize(){var r=host.getBoundingClientRect();w=Math.max(1,r.width);h=Math.max(1,r.height);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  resize();
+  var tx=0,ty=0,cx=0,cy=0;
+  host.addEventListener('pointermove',function(e){var r=host.getBoundingClientRect();tx=(e.clientX-r.left)/r.width-0.5;ty=(e.clientY-r.top)/r.height-0.5;},{passive:true});
+  var running=true,t0=performance.now();
+  function frame(now){if(!running)return;requestAnimationFrame(frame);var dt=Math.min(0.05,(now-t0)/1000);t0=now;
+    if(!RM)group.rotation.y+=dt*0.11;
+    cx+=(tx-cx)*0.05;cy+=(ty-cy)*0.05;
+    camera.position.x=cx*46;camera.position.y=16-cy*30;camera.lookAt(group.position.x*0.6,0,0);
+    if(now-lastSpawn>(RM?1600:480)){lastSpawn=now;spawnArc();}
+    for(var i=arcs.length-1;i>=0;i--){var A=arcs[i];A.t+=dt*A.spd;var pr=A.t,op=pr<0.14?pr/0.14:(pr>0.82?Math.max(0,1-(pr-0.82)/0.18):1);
+      A.line.material.opacity=op*0.68;
+      if(pr<1.02){var hp=A.curve.getPoint(Math.min(1,pr));A.head.geometry.attributes.position.setXYZ(0,hp.x,hp.y,hp.z);A.head.geometry.attributes.position.needsUpdate=true;A.head.material.opacity=op;}
+      if(pr>=1.08){group.remove(A.line);group.remove(A.head);A.line.geometry.dispose();A.line.material.dispose();A.head.geometry.dispose();A.head.material.dispose();arcs.splice(i,1);}}
+    renderer.render(scene,camera);}
+  requestAnimationFrame(frame);
+  addEventListener('resize',function(){clearTimeout(window._gr);window._gr=setTimeout(resize,150);},{passive:true});
+  document.addEventListener('visibilitychange',function(){if(document.hidden){running=false;}else if(!running){running=true;t0=performance.now();requestAnimationFrame(frame);}});
 })();
 </script>
 </body>
