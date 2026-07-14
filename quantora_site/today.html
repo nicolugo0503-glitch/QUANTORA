@@ -486,6 +486,63 @@
   .thero-cue b{font-size:15px;color:#8ea0cc;animation:cuebob 1.9s ease-in-out infinite}
   @media(max-width:820px){.thero{height:62vh;min-height:390px}.thero-big{font-size:clamp(50px,14vw,84px)}.tape .tk{font-size:12px}}
   @media(prefers-reduced-motion:reduce){.tape .tk{animation:none!important}.thero-cue b,.thero-eyb .ldot{animation:none}}
+
+  /* =====================================================================
+     PREMIUM LIGHT v3 — the data cards, elevated. Floating glass panels,
+     bigger bolder data, colored glow-pill badges, glowing sparklines +
+     gauge, more breathing room. Stays OpenAI-white; stops reading flat.
+     ===================================================================== */
+  .bento{gap:16px}
+  /* floating glass panels */
+  .card{background:linear-gradient(180deg,#ffffff 0%,#f7faff 100%)!important;border-radius:17px!important;padding:18px 19px 15px!important;
+    box-shadow:0 1px 2px rgba(28,40,85,.05),0 5px 12px -3px rgba(28,40,85,.07),0 20px 40px -16px rgba(28,40,95,.17),0 46px 74px -46px rgba(37,99,235,.24),inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(28,40,95,.055)!important}
+  .card:hover{transform:translateY(-6px)!important;box-shadow:0 2px 4px rgba(28,40,85,.06),0 12px 24px -6px rgba(28,40,85,.13),0 30px 58px -18px rgba(28,40,95,.26),0 66px 96px -52px rgba(37,99,235,.42),inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(37,99,235,.16)!important}
+  /* cinematic section headings */
+  .secttl{font-size:12px;letter-spacing:.15em;color:var(--ink);font-weight:700;margin:34px 2px 17px}
+  .secttl::before{width:6px;height:6px;box-shadow:0 0 0 4px var(--accent-weak),0 0 16px 2px rgba(37,99,235,.6)}
+  /* card headers */
+  .ch{margin-bottom:13px}
+  .ch h3{font-size:13.5px;font-weight:700;letter-spacing:-.012em}
+  /* bigger, bolder rows + glow pills */
+  .row{padding:10px 6px;gap:12px}
+  .row .sy{font-size:14px;font-weight:700}
+  .row .nm{font-size:10.5px}
+  .row .px .v{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.012em}
+  .row .px .c{font-size:11px;font-weight:700;display:inline-block;padding:2.5px 7px;border-radius:7px;margin-top:4px}
+  .row .px .c.up{background:rgba(18,128,92,.11);box-shadow:0 2px 12px -3px rgba(18,128,92,.45)}
+  .row .px .c.down{background:rgba(229,72,77,.11);box-shadow:0 2px 12px -3px rgba(229,72,77,.42)}
+  /* glowing sparklines */
+  .spk svg path[fill="none"]{filter:drop-shadow(0 1px 4px rgba(37,99,235,.32))}
+  .row .spk{width:76px}
+  /* Fear & Greed — glow */
+  #gauge{filter:drop-shadow(0 3px 15px rgba(245,166,35,.3))}
+  .gauge .gv{font-size:42px;font-weight:700;text-shadow:0 6px 28px rgba(37,99,235,.2);margin-top:-16px}
+  .gauge .gl{font-size:11px;letter-spacing:.09em}
+  /* rates / movers */
+  .mrow{padding:9px 3px}
+  .mrow .ml{font-size:13px;font-weight:600}
+  .mrow .mv{font-size:14.5px;font-weight:700}
+  .mrow .mc{font-size:10.5px;font-weight:700}
+  .mvrow{padding:6px 6px}
+  .mvrow .s{font-size:13px;font-weight:700}
+  .mvrow .p{font-size:12px;font-weight:700;padding:2px 7px;border-radius:6px}
+  .mvrow .p.up{background:rgba(18,128,92,.1)}.mvrow .p.down{background:rgba(229,72,77,.1)}
+  /* sectors — bolder, lift on hover */
+  .secgrid{gap:6px}
+  .seccell{min-height:54px;border-radius:9px;padding:9px 11px}
+  .seccell .sn{font-size:11.5px;font-weight:700}
+  .seccell .sp{font-size:12.5px;font-weight:700}
+  .seccell:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 24px -8px rgba(10,14,30,.24);filter:brightness(1.05) saturate(1.12)}
+  /* treemap — bolder labels + soft inner glow */
+  .tcell{border-radius:5px}
+  .tcell .ts{font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.12)}
+  .tcell .tc{font-weight:700}
+  .tmap{border-radius:11px}
+  /* compose stat cards bigger */
+  .statbig{font-size:34px;font-weight:700}
+  /* jump-in — premium CTA */
+  .jump .cta{height:46px;font-size:14px;font-weight:600;box-shadow:0 10px 26px -8px rgba(10,10,20,.5),0 0 0 1px rgba(255,255,255,.06) inset}
+  .jump a.lk{padding:11px 13px;font-size:13px;font-weight:600}
 </style>
 </head>
 <body>
