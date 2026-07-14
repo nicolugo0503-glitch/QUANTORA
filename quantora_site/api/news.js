@@ -10,6 +10,23 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     const FH = process.env.FINNHUB_KEY;
     if (!FH) { res.status(200).json({ error: 'no_key' }); return; }
+    // real-time single-quote route (Finnhub) — powers the live-ticking hero. e.g. /api/news?quote=SPY
+    if (req.query.quote) {
+      const syms = (req.query.quote + '').toUpperCase().replace(/[^A-Z0-9.,\-]/g, '').split(',').filter(Boolean).slice(0, 8);
+      res.setHeader('Cache-Control', 'no-store');
+      try {
+        const out = {};
+        await Promise.all(syms.map(async function (s) {
+          try {
+            const r = await fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(s) + '&token=' + FH);
+            const q = await r.json();
+            if (q && isFinite(q.c) && q.c > 0) out[s] = { price: q.c, chg: q.dp, prevClose: q.pc, high: q.h, low: q.l };
+          } catch (e) {}
+        }));
+        res.status(200).json({ quotes: out });
+      } catch (e) { res.status(200).json({ error: 'quote' }); }
+      return;
+    }
     res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=7200');
     // a bad image = a source logo or generic branding, not a real article photo
     function isBad(u) { u = (u || '') + ''; return !/^https?:\/\//.test(u) || /finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)|placeholder|default-?(image|thumb)/i.test(u); }
