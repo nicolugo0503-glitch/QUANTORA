@@ -736,13 +736,17 @@
     fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&sparkline=true&price_change_percentage=24h').then(function(r){return r.json();}).then(function(a){if(!Array.isArray(a))return;
       a.forEach(function(c){for(var k in CRYPTO){if(CRYPTO[k]===c.id){var old=cgData[k]?cgData[k].price:null;cgData[k]={sym:k,price:c.current_price,chg:c.price_change_percentage_24h,closes:(c.sparkline_in_7d&&c.sparkline_in_7d.price)||(cgData[k]&&cgData[k].closes)||[c.current_price],src:'CoinGecko · live'};cgLoaded[c.id]=1;heatData[k]={chg:cgData[k].chg};updateRow(k);if(old!=null&&Math.abs(c.current_price-old)>1e-9)flashCells(k,c.current_price>old);}}});
     }).catch(function(){});}
-  var _eqErr=0,_eqPrev=null;
-  function liveEquity(){if(document.hidden||_eqErr>=3)return;
-    fetch('/api/fmp?type=quote&symbol=SPY').then(function(r){return r.json();}).then(function(j){var q=j&&j.data&&j.data[0];if(!q||!isFinite(+q.price)){_eqErr++;return;}_eqErr=0;var px=+q.price,ch=+q.changePercentage,pxEl=document.getElementById('hero-px'),chEl=document.getElementById('hero-chg');
-      if(pxEl){var up=_eqPrev==null||px>=_eqPrev;rollTo(pxEl,px);if(_eqPrev!=null&&Math.abs(px-_eqPrev)>1e-9){pxEl.classList.remove('nfu','nfd');void pxEl.offsetWidth;pxEl.classList.add(up?'nfu':'nfd');setTimeout(function(){pxEl.classList.remove('nfu','nfd');},1400);}_eqPrev=px;}
-      if(chEl&&isFinite(ch)){chEl.className='chg num '+(ch>=0?'up':'down');chEl.innerHTML=arr(ch)+' '+pct(ch)+' <span class="sub">today · live</span>';}
+  var _eqErr=0,_eqPrev={};
+  function liveEquity(){if(document.hidden||_eqErr>=4)return;
+    fetch('/api/news?quote=SPY,QQQ,DIA,IWM,AAPL,NVDA,MSFT&_='+Date.now()).then(function(r){return r.json();}).then(function(j){var Q=j&&j.quotes;if(!Q||!Object.keys(Q).length){_eqErr++;return;}_eqErr=0;
+      Object.keys(Q).forEach(function(sym){var q=Q[sym];if(!q||!isFinite(+q.price))return;var px=+q.price,ch=+q.chg,old=_eqPrev[sym],moved=(old!=null&&Math.abs(px-old)>1e-9);
+        Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+esc(sym)+'"]'),function(row){var v=row.querySelector('.px .v'),cc=row.querySelector('.px .c');if(v)rollTo(v,px);if(cc&&isFinite(ch)){cc.className='c '+(ch>=0?'up':'down');cc.innerHTML=arr(ch)+' '+pct(ch);}});
+        if(moved)flashCells(sym,px>old);
+        heatData[sym]={chg:ch};
+        if(sym==='SPY'){var pxEl=document.getElementById('hero-px'),chEl=document.getElementById('hero-chg');if(pxEl){rollTo(pxEl,px);if(moved){pxEl.classList.remove('nfu','nfd');void pxEl.offsetWidth;pxEl.classList.add(px>old?'nfu':'nfd');setTimeout(function(){pxEl.classList.remove('nfu','nfd');},1400);}}if(chEl&&isFinite(ch)){chEl.className='chg num '+(ch>=0?'up':'down');chEl.innerHTML=arr(ch)+' '+pct(ch)+' <span class="sub">today · live</span>';}}
+        _eqPrev[sym]=px;});
     }).catch(function(){_eqErr++;});}
-  function startLive(){liveTick();liveEquity();if(!window._qlive)window._qlive=setInterval(liveTick,7000);if(!window._qleq)window._qleq=setInterval(liveEquity,30000);}
+  function startLive(){liveTick();liveEquity();if(!window._qlive)window._qlive=setInterval(liveTick,7000);if(!window._qleq)window._qleq=setInterval(liveEquity,15000);}
   function boot(){reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
