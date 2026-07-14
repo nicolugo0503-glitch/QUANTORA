@@ -747,7 +747,7 @@
         _eqPrev[sym]=px;});
     }).catch(function(){_eqErr++;});}
   function startCryptoWS(){if(!('WebSocket' in window))return;var map={BTCUSDT:'BTC',ETHUSDT:'ETH',SOLUSDT:'SOL'},ws=null,lastUpd={},lastPx={},lastFlash={};
-    function connect(){if(document.hidden)return;try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker');}catch(e){window._wsLive=false;return;}
+    function connect(){if(document.hidden)return;try{ws=new WebSocket('wss://data-stream.binance.vision/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker');}catch(e){window._wsLive=false;return;}
       ws.onopen=function(){window._wsLive=true;};
       ws.onmessage=function(ev){try{var d=JSON.parse(ev.data).data;if(!d)return;var sym=map[d.s];if(!sym)return;var px=+d.c,chg=+d.P,now=Date.now();if(now-(lastUpd[sym]||0)<950)return;lastUpd[sym]=now;var old=lastPx[sym];lastPx[sym]=px;if(cgData[sym]){cgData[sym].price=px;cgData[sym].chg=chg;heatData[sym]={chg:chg};}
         Array.prototype.forEach.call(document.querySelectorAll('.row[data-sym="'+sym+'"]'),function(row){var v=row.querySelector('.px .v'),cc=row.querySelector('.px .c');if(v)rollTo(v,px);if(cc){cc.className='c '+(chg>=0?'up':'down');cc.innerHTML=arr(chg)+' '+pct(chg);}});
