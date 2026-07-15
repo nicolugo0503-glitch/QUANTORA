@@ -545,49 +545,30 @@
   .jump a.lk{padding:11px 13px;font-size:13px;font-weight:600}
 
   /* =====================================================================
-     MIDNIGHT GLASS — dark, drifting-glow glass panel for the internals /
-     data section. Scoped to .mgband with high specificity so it wins over
-     both Treatment-B and the runtime-injected theme.css (no bump hack).
+     CINEMATIC WHITE — research synthesis (8 agents). White made cinematic
+     through LIGHT (a luminous colour aurora + soundstage vignette), DEPTH
+     (layered soft shadows + specular top-edge lift + luminous gradient
+     hairline so cards float), and SCALE. Never darkness. (.atmos/.card
+     aren't styled by theme.css, so these win without any cascade hack.)
      ===================================================================== */
-  .mgband{position:relative;border-radius:22px;margin:36px 0 26px;padding:8px 24px 30px;overflow:hidden;
-    background:radial-gradient(120% 120% at 18% 0%,#161f3e 0%,#0b1122 55%,#080c18 100%);
-    box-shadow:0 0 0 1px rgba(120,150,240,.11),inset 0 1px 0 rgba(255,255,255,.05),0 44px 96px -50px #000}
-  .mgband-glow{position:absolute;inset:0;z-index:0;pointer-events:none;
-    background:radial-gradient(34% 52% at 84% 4%,rgba(122,90,248,.34),transparent 60%),radial-gradient(42% 56% at 97% 96%,rgba(45,120,255,.3),transparent 60%),radial-gradient(30% 46% at 8% 92%,rgba(46,230,166,.15),transparent 60%);
-    filter:blur(26px);animation:mgdrift 26s ease-in-out infinite alternate;will-change:transform}
-  @keyframes mgdrift{to{transform:translate3d(-5%,4%,0) scale(1.1)}}
-  .mgband>*{position:relative;z-index:1}
-  .mgband .secttl{color:#e6edff!important}
-  .mgband .secttl::after{background:linear-gradient(90deg,rgba(150,175,235,.28),transparent)}
-  .mgband .secttl::before{box-shadow:0 0 0 4px rgba(91,140,255,.18),0 0 14px 2px rgba(91,140,255,.6)}
-  /* frosted glass cards */
-  .mgband .card{background:rgba(255,255,255,.055)!important;border-radius:15px!important;
-    box-shadow:inset 0 0 0 1px rgba(160,185,255,.13),inset 0 1px 0 rgba(255,255,255,.08),0 22px 46px -24px #000!important;
-    -webkit-backdrop-filter:blur(13px) saturate(135%);backdrop-filter:blur(13px) saturate(135%)}
-  .mgband .card:hover{transform:translateY(-5px)!important;box-shadow:inset 0 0 0 1px rgba(122,150,255,.42),inset 0 1px 0 rgba(255,255,255,.1),0 30px 60px -26px #000,0 0 44px -6px rgba(91,140,255,.42)!important}
-  .mgband .card::after{background:radial-gradient(340px circle at var(--mx,50%) var(--my,-20%),rgba(122,150,255,.17),transparent 60%)!important}
-  .mgband .ch h3{color:#eef3ff!important}
-  .mgband .ch .tag{color:rgba(150,170,220,.6)!important}
-  .mgband .row{border-bottom-color:rgba(160,185,255,.08)!important}
-  .mgband .row:hover{background:rgba(255,255,255,.045)!important}
-  .mgband .row .sy{color:#eef3ff!important}.mgband .row .nm{color:#8595bd!important}
-  .mgband .row .px .v{color:#fff!important}
-  .mgband .loading{color:#6b7aa0!important}
-  .mgband .row .px .c.up{background:rgba(52,227,155,.16)!important;box-shadow:0 2px 14px -3px rgba(52,227,155,.55)!important;color:#34e39b!important}
-  .mgband .row .px .c.down{background:rgba(255,107,138,.16)!important;box-shadow:0 2px 14px -3px rgba(255,107,138,.5)!important;color:#ff6b8a!important}
-  .mgband .gauge .gv{color:#fff!important}.mgband .gauge .gl{color:#8595bd!important}
-  .mgband .mvrow:hover{background:rgba(255,255,255,.045)!important}.mgband .mvrow .s{color:#eef3ff!important}
-  .mgband .mvrow .p.up{background:rgba(52,227,155,.14)!important;color:#34e39b!important}.mgband .mvrow .p.down{background:rgba(255,107,138,.14)!important;color:#ff6b8a!important}
-  .mgband .mvh{color:#6b7aa0!important}
-  .mgband .mrow{border-bottom-color:rgba(160,185,255,.08)!important}.mgband .mrow .ml{color:#eef3ff!important}.mgband .mrow .mv{color:#fff!important}
-  .mgband .wl-add{background:rgba(255,255,255,.06)!important}.mgband .wl-add input{color:#eef3ff!important}
-  .mgband .wl-add input::placeholder{color:#6b7aa0!important}
-  .mgband .wl-add button{background:#5b8cff!important}
-  .mgband .tmap{background:rgba(6,10,20,.5)!important}
-  .mgband .jump a.lk{background:rgba(255,255,255,.06)!important;color:#c3cfee!important}.mgband .jump a.lk:hover{background:rgba(255,255,255,.12)!important}
-  .mgband .jump .cta{background:#5b8cff!important}
-  .mgband .cstats .v{color:#fff!important}.mgband .cstats .k{color:#7a89b0!important}
-  @media(prefers-reduced-motion:reduce){.mgband-glow{animation:none}}
+  #aurora{display:none!important}              /* retire the whisper WebGL wash — colour aurora leads */
+  .atmos{opacity:1!important}
+  .atmos b{opacity:.72!important;filter:blur(74px)!important;mix-blend-mode:normal!important}
+  .atmos .a1{background:radial-gradient(circle at 34% 34%,rgba(120,152,255,.55),transparent 62%)!important}
+  .atmos .a2{background:radial-gradient(circle at 60% 42%,rgba(198,166,255,.46),transparent 62%)!important}
+  .atmos .a3{background:radial-gradient(circle at 50% 50%,rgba(150,236,214,.4),transparent 60%)!important}
+  .atmos::after{content:"";position:absolute;right:-12vw;bottom:-16vw;width:50vw;height:50vw;border-radius:50%;background:radial-gradient(circle,rgba(255,186,214,.4),transparent 62%);filter:blur(74px);animation:drift1 44s var(--ez,ease-in-out) infinite alternate;will-change:transform}
+  /* soundstage light + filmic vignette so #FAFAFA reads as a lit set */
+  body::after{background:radial-gradient(132% 128% at 50% 34%,transparent 52%,rgba(26,32,64,.07) 100%)!important;z-index:1}
+  /* layered depth + specular top-edge lift + luminous gradient hairline */
+  .card{border:1px solid transparent!important;border-radius:18px!important;
+    background:linear-gradient(#ffffff,#fcfdff) padding-box,linear-gradient(180deg,rgba(255,255,255,.96),rgba(66,108,222,.2) 55%,rgba(66,108,222,.05)) border-box!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 1px 2px rgba(26,34,70,.05),0 6px 14px -4px rgba(26,34,70,.08),0 20px 40px -16px rgba(26,34,70,.14),0 48px 80px -38px rgba(37,99,235,.18)!important}
+  .card:hover{transform:translateY(-6px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 8px 18px -6px rgba(26,34,70,.12),0 34px 58px -20px rgba(26,34,70,.22),0 66px 96px -44px rgba(37,99,235,.27)!important}
+  /* editorial section titles — more air + presence */
+  .secttl{font-size:12px!important;letter-spacing:.16em!important;margin:44px 4px 20px!important}
+  .secttl::before{box-shadow:0 0 0 4px rgba(37,99,235,.14),0 0 16px 3px rgba(37,99,235,.5)}
+
 </style>
 </head>
 <body>
@@ -633,7 +614,6 @@
     <div class="s12 reveal" id="news-list"><div class="loading"><span class="skb" style="width:100%"></span></div></div>
   </div>
 
-  <div class="mgband"><div class="mgband-glow" aria-hidden="true"></div>
   <div class="secttl">Maps, movers &amp; internals</div>
   <div class="bento">
     <div class="card s6 reveal"><div class="ch"><h3>Market Map</h3><span class="tag">Cap-weighted · % today</span></div><div class="tmap" id="tmap"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
@@ -654,7 +634,6 @@
     <div class="card s4 reveal"><div class="ch"><h3>Top movers</h3><span class="tag">US · today</span></div><div id="movers"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal"><div class="ch"><h3>Sectors</h3><span class="tag">SPDR · % today</span></div><div id="sectors"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
   </div>
-  </div><!--/mgband-->
 
   <p class="foot">Click any ticker for the full detail view. The map is market-cap weighted, colored by today's move; the living field encodes real breadth and volatility. Ask-panels &amp; the brief are AI-composed from real figures and may be wrong. Prices via Quantora proxy &amp; CoinGecko, delayed/EOD. Cones are illustrative Monte-Carlo, not forecasts. Educational only — not investment advice.</p>
 </div>
@@ -754,7 +733,7 @@
     while(i<rc.length){var row=[rc[i]],s=Math.min(w,h),j=i+1;while(j<rc.length&&worst(row.concat([rc[j]]),s)<=worst(row,s)){row.push(rc[j]);j++;}
       var A=0;row.forEach(function(r){A+=r.area;});if(w<=h){var d=A/w,cx=x;row.forEach(function(r){var cw=r.area/d;out.push({d:r.d,x:cx,y:y,w:cw,h:d});cx+=cw;});y+=d;h-=d;}else{var d2=A/h,cy=y;row.forEach(function(r){var chh=r.area/d2;out.push({d:r.d,x:x,y:cy,w:d2,h:chh});cy+=chh;});x+=d2;w-=d2;}i=j;}
     return out;}
-  function tmColor(p){var t=Math.max(-1,Math.min(1,p/3));if(Math.abs(t)<0.05)return{bg:'rgba(255,255,255,.05)',fg:'#93a0bd'};var flat=[26,34,52],up=[34,175,132],dn=[228,92,100],to=t>=0?up:dn,k=Math.abs(t);var c=[0,1,2].map(function(i){return Math.round(flat[i]+(to[i]-flat[i])*k);});return{bg:'rgb('+c.join(',')+')',fg:(k>0.4?'#fff':'#cdd6e8')};}
+  function tmColor(p){var t=Math.max(-1,Math.min(1,p/3));if(Math.abs(t)<0.05)return{bg:'#E9EBEE',fg:'#111'};var flat=[233,235,238],up=[18,128,92],dn=[201,64,55],to=t>=0?up:dn,k=Math.abs(t);var c=[0,1,2].map(function(i){return Math.round(flat[i]+(to[i]-flat[i])*k);});return{bg:'rgb('+c.join(',')+')',fg:(k>0.42?'#fff':'#111')};}
   function renderTmap(){var el=document.getElementById('tmap');if(!el)return;var items=MEGA.map(function(s){return heatData[s]?{sym:s,val:CAPS[s]||500,chg:heatData[s].chg}:null;}).filter(Boolean);if(items.length<4)return;
     var r=el.getBoundingClientRect(),W=r.width||600,H=r.height||270;items.sort(function(a,b){return b.val-a.val;});var cells=squarify(items,W,H);
     el.innerHTML=cells.map(function(c){var col=tmColor(c.d.chg),big=c.w>62&&c.h>34,fs=Math.max(10,Math.min(18,Math.sqrt(c.w*c.h)/7));
@@ -817,7 +796,7 @@
   function buildGauge(){fetch('https://api.alternative.me/fng/?limit=1').then(function(r){return r.json();}).then(function(j){var d=j&&j.data&&j.data[0],val=d?+d.value:null,lbl=d?d.value_classification:'',svg=document.getElementById('gauge'),cx=120,cy=132,R=100;
     function P(a){var r=a*Math.PI/180;return[cx+R*Math.cos(r),cy-R*Math.sin(r)];}function ar(a0,a1){var p0=P(a0),p1=P(a1),lg=(a0-a1)>180?1:0;return 'M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+R+' '+R+' 0 '+lg+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1);}
     svg.innerHTML='<defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E5484D"/><stop offset="0.5" stop-color="#F5A623"/><stop offset="1" stop-color="#12805C"/></linearGradient></defs><path d="'+ar(180,0)+'" fill="none" stroke="#EAECF0" stroke-width="15" stroke-linecap="round"/><path d="'+ar(180,0)+'" fill="none" stroke="url(#gg)" stroke-width="15" stroke-linecap="round" opacity="0.92"/>';
-    if(val!=null){var ang=180-val*1.8,np=P(ang),needle=document.createElementNS(NS,'line');needle.setAttribute('x1',cx);needle.setAttribute('y1',cy);needle.setAttribute('stroke','#e8edf8');needle.setAttribute('stroke-width','3');needle.setAttribute('stroke-linecap','round');var st=P(180);needle.setAttribute('x2',(RM?np:st)[0].toFixed(1));needle.setAttribute('y2',(RM?np:st)[1].toFixed(1));svg.appendChild(needle);var hub=document.createElementNS(NS,'circle');hub.setAttribute('cx',cx);hub.setAttribute('cy',cy);hub.setAttribute('r','6');hub.setAttribute('fill','#e8edf8');svg.appendChild(hub);if(!RM)requestAnimationFrame(function(){needle.style.transition='all 1s cubic-bezier(.16,1,.3,1)';needle.setAttribute('x2',np[0].toFixed(1));needle.setAttribute('y2',np[1].toFixed(1));});countUp(document.getElementById('gv'),val,1000,'','',0);document.getElementById('gl').textContent=lbl||'';}
+    if(val!=null){var ang=180-val*1.8,np=P(ang),needle=document.createElementNS(NS,'line');needle.setAttribute('x1',cx);needle.setAttribute('y1',cy);needle.setAttribute('stroke','#0A0A0A');needle.setAttribute('stroke-width','3');needle.setAttribute('stroke-linecap','round');var st=P(180);needle.setAttribute('x2',(RM?np:st)[0].toFixed(1));needle.setAttribute('y2',(RM?np:st)[1].toFixed(1));svg.appendChild(needle);var hub=document.createElementNS(NS,'circle');hub.setAttribute('cx',cx);hub.setAttribute('cy',cy);hub.setAttribute('r','6');hub.setAttribute('fill','#0A0A0A');svg.appendChild(hub);if(!RM)requestAnimationFrame(function(){needle.style.transition='all 1s cubic-bezier(.16,1,.3,1)';needle.setAttribute('x2',np[0].toFixed(1));needle.setAttribute('y2',np[1].toFixed(1));});countUp(document.getElementById('gv'),val,1000,'','',0);document.getElementById('gl').textContent=lbl||'';}
     else{document.getElementById('gv').textContent='—';document.getElementById('gl').textContent='unavailable';}}).catch(function(){document.getElementById('gv').textContent='—';document.getElementById('gl').textContent='unavailable';});}
   function buildRibbon(){Promise.all(INDICES.map(getStock)).then(function(rows){rows=rows.filter(Boolean);var track=document.getElementById('ribbon');['BTC','ETH'].forEach(function(k){if(cgData[k])rows.push(cgData[k]);});
     if(!rows.length){track.innerHTML='<span class="it"><span>Live market data updating…</span></span>';track.style.animation='none';return;}var html=rows.map(function(r){return '<span class="it"><b>'+esc(NAMES[r.sym]||r.sym)+'</b><span class="p">'+money(r.price)+'</span><span class="c '+(num(r.chg)>=0?'up':'down')+'">'+arr(r.chg)+' '+pct(r.chg)+'</span></span>';}).join('');track.innerHTML=html+html;if(RM)track.style.animation='none';});}
