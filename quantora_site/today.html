@@ -7,6 +7,9 @@
 <title>Quantora · Today — the living markets terminal</title>
 <meta name="description" content="A world-class markets command center. Living-market field, a squarified market-cap map, click-to-expand detail on any ticker, a watchlist, and ask anything to compose a live answer.">
 <link rel="stylesheet" href="/theme.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --canvas:#FAFAFA; --surface:#FFFFFF; --well:#F4F4F5; --hover:#F0F0F1;
@@ -18,11 +21,11 @@
     --accent:#2563EB; --accent-weak:rgba(37,99,235,.10);
     --up:#12805C; --down:#E5484D; --flat:#8E8E93;
     --up-bg:rgba(18,128,92,.09); --down-bg:rgba(229,72,77,.08);
-    --ez:cubic-bezier(.16,1,.3,1); --mono:'JetBrains Mono','Geist Mono',ui-monospace,monospace; --sans:'Inter','Geist',system-ui,sans-serif;
+    --ez:cubic-bezier(.16,1,.3,1); --mono:'JetBrains Mono','Geist Mono',ui-monospace,'SF Mono',monospace; --sans:'Inter','Inter var',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-    background-image:radial-gradient(110% 70% at 50% -8%, rgba(37,99,235,.045), transparent 58%);}
+  body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;letter-spacing:-.011em;
+    background-image:none;}
   ::selection{background:var(--accent-weak)}
   .grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.02;mix-blend-mode:multiply}
   .rc{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:14px 24px 100px}
@@ -648,13 +651,25 @@
   /* --- treemap cell gloss for depth --- */
   .deck .tmap .tcell{background-image:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 44%,rgba(0,0,0,.055))!important}
 
-  /* --- market-pulse EKG heartbeat line --- */
-  .ekg{position:relative;height:58px;border-radius:14px;overflow:hidden;margin:0 0 14px;border:1px solid transparent;
-    background:linear-gradient(180deg,#fff,#fbfcfe) padding-box,linear-gradient(90deg,rgba(66,108,222,.16),rgba(66,108,222,.04)) border-box;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 30px -22px rgba(37,99,235,.2)}
-  .ekg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .ekg-lb{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:2;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px;background:linear-gradient(90deg,#fff 55%,rgba(255,255,255,0));padding:6px 26px 6px 0}
-  .ekg-lb::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(18,128,92,.16);animation:qpulse 2.4s infinite}
+  /* --- U.S. session progress bar --- */
+  .sesbar{display:flex;align-items:center;gap:18px;padding:13px 18px;border-radius:14px;margin:0 0 14px;border:1px solid transparent;
+    background:linear-gradient(180deg,#fff,#fbfcfe) padding-box,linear-gradient(90deg,rgba(66,108,222,.14),rgba(66,108,222,.04)) border-box;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 30px -24px rgba(37,99,235,.16)}
+  .sesbar .ses-l{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+  .sesbar .ses-l b{color:var(--ink);font-weight:600}
+  .sesbar .ses-cd{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.01em}
+  .sesbar .sdot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(18,128,92,.16);animation:qpulse 2.4s infinite}
+  .sesbar .sdot.closed{background:var(--muted);box-shadow:0 0 0 3px rgba(142,142,147,.16);animation:none}
+  .sesbar .ses-track{flex:1;height:6px;border-radius:5px;background:rgba(17,17,17,.06);overflow:hidden;min-width:60px}
+  .sesbar .ses-track span{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,var(--accent),#5aa0ff);transition:width 1s var(--ez)}
+  @media(max-width:560px){.sesbar .ses-cd{display:none}}
+
+  /* --- OpenAI-style typography refinements --- */
+  h1,h2,h3{letter-spacing:-.02em}
+  .secttl-xl{font-weight:600!important;letter-spacing:-.026em!important}
+  .ch h3{letter-spacing:-.014em}
+  .pz .pv,.gauge .gv,.mkthero .big,.statbig,.dhead .dpx .v,.dgrid .g .v,#hero-px{letter-spacing:-.03em}
+  .ask input,.ask textarea,.wl-add input{letter-spacing:-.006em}
 
 </style>
 </head>
@@ -703,7 +718,7 @@
 
   <div class="secttl secttl-xl reveal">Market intelligence<span class="secsub">maps · movers · internals · live</span></div>
 
-  <div class="ekg reveal" id="ekg"><canvas id="ekgcv"></canvas><span class="ekg-lb">Market pulse · live</span></div>
+  <div class="sesbar reveal" id="sesbar"><div class="ses-l"><span class="sdot" id="ses-dot"></span><b id="ses-st">U.S. session</b><span class="ses-cd" id="ses-cd">loading…</span></div><div class="ses-track"><span id="ses-fill"></span></div></div>
 
   <div class="pulse reveal" id="pulseband">
     <div class="pz"><div class="pk"><span class="ldot"></span>S&amp;P 500 · live</div><div class="pv num" id="pb-spx">—</div><div class="pc num" id="pb-spxc">—</div></div>
@@ -1089,29 +1104,23 @@
     window._hrRender=render;render();[3000,5000,9000,14000].forEach(function(t){setTimeout(render,t);});
     if(!window._hriv)window._hriv=setInterval(render,30000);
   }
-  function startEKG(){
-    var cv=document.getElementById('ekgcv');if(!cv)return;var ctx=cv.getContext('2d');if(!ctx)return;
-    var dpr=Math.min(devicePixelRatio||1,2),W=0,H=0,N=200,pts=[],beatPos=0,running=true;
-    function size(){var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);N=Math.max(160,Math.round(W/2.4));}
-    function beat(x){if(x<0.10)return Math.sin(x/0.10*Math.PI)*0.09;if(x<0.15)return -0.10;if(x<0.21)return 1.0;if(x<0.27)return -0.34;if(x<0.44)return Math.sin((x-0.27)/0.17*Math.PI)*0.20;return 0;}
-    size();for(var i=0;i<N;i++)pts.push(0);
-    function draw(){
-      var breadth=(typeof MS!=='undefined'&&isFinite(MS.breadthT))?MS.breadthT:0.5;
-      var vol=(typeof MS!=='undefined'&&isFinite(MS.volT))?MS.volT:0.4;
-      var col=breadth>=0.5?'#12805C':'#E5484D',amp=H*0.30*(0.6+vol*0.9),midY=H*0.58;
-      ctx.clearRect(0,0,W,H);
-      ctx.strokeStyle='rgba(20,24,40,.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,midY);ctx.lineTo(W,midY);ctx.stroke();
-      ctx.beginPath();for(var i=0;i<pts.length;i++){var x=(i/(N-1))*W,yy=midY-pts[i]*amp;i===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);}
-      ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowColor=col;ctx.shadowBlur=11;ctx.strokeStyle=col;ctx.stroke();ctx.shadowBlur=0;
-      var ly=midY-pts[pts.length-1]*amp;ctx.beginPath();ctx.arc(W-2,ly,3,0,6.2832);ctx.fillStyle=col;ctx.fill();
-    }
-    if(typeof RM!=='undefined'&&RM){draw();return;}
-    function frame(){if(!running)return;var vol=(typeof MS!=='undefined'&&isFinite(MS.volT))?MS.volT:0.4;beatPos+=0.008+vol*0.016;if(beatPos>1)beatPos-=1;pts.push(beat(beatPos));if(pts.length>N)pts.shift();draw();requestAnimationFrame(frame);}
-    requestAnimationFrame(frame);
-    window.addEventListener('resize',function(){clearTimeout(window._ekgr);window._ekgr=setTimeout(function(){size();while(pts.length<N)pts.unshift(0);},180);},{passive:true});
-    document.addEventListener('visibilitychange',function(){if(document.hidden){running=false;}else if(!running){running=true;requestAnimationFrame(frame);}});
+  function sessionBar(){
+    var fill=document.getElementById('ses-fill'),cd=document.getElementById('ses-cd'),st=document.getElementById('ses-st'),dot=document.getElementById('ses-dot');if(!fill)return;
+    function upd(){try{
+      var now=new Date(),et=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+      var mins=et.getHours()*60+et.getMinutes(),open=570,close=960,span=390,day=et.getDay(),wk=day>=1&&day<=5,prog,label,isOpen=false;
+      if(!wk){prog=0;label='Weekend · opens Mon 9:30 ET';}
+      else if(mins<open){prog=0;var toO=open-mins;label='Pre-market · opens in '+Math.floor(toO/60)+'h '+String(toO%60).padStart(2,'0')+'m';}
+      else if(mins>=close){prog=1;label='Closed · 4:00 PM ET';}
+      else{prog=(mins-open)/span;var left=close-mins;label=Math.floor(left/60)+'h '+String(left%60).padStart(2,'0')+'m to close';isOpen=true;}
+      fill.style.width=(prog*100).toFixed(1)+'%';
+      if(cd)cd.textContent=label;
+      if(st)st.textContent=isOpen?'U.S. markets open':'U.S. markets';
+      if(dot)dot.className='sdot'+(isOpen?'':' closed');
+    }catch(e){}}
+    upd();if(!window._sesiv)window._sesiv=setInterval(upd,30000);
   }
-  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();startEKG();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
+  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
