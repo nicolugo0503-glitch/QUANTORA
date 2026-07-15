@@ -551,15 +551,10 @@
      hairline so cards float), and SCALE. Never darkness. (.atmos/.card
      aren't styled by theme.css, so these win without any cascade hack.)
      ===================================================================== */
-  #aurora{display:none!important}              /* retire the whisper WebGL wash — colour aurora leads */
-  .atmos{opacity:1!important}
-  .atmos b{opacity:.72!important;filter:blur(74px)!important;mix-blend-mode:normal!important}
-  .atmos .a1{background:radial-gradient(circle at 34% 34%,rgba(120,152,255,.55),transparent 62%)!important}
-  .atmos .a2{background:radial-gradient(circle at 60% 42%,rgba(198,166,255,.46),transparent 62%)!important}
-  .atmos .a3{background:radial-gradient(circle at 50% 50%,rgba(150,236,214,.4),transparent 60%)!important}
-  .atmos::after{content:"";position:absolute;right:-12vw;bottom:-16vw;width:50vw;height:50vw;border-radius:50%;background:radial-gradient(circle,rgba(255,186,214,.4),transparent 62%);filter:blur(74px);animation:drift1 44s var(--ez,ease-in-out) infinite alternate;will-change:transform}
-  /* soundstage light + filmic vignette so #FAFAFA reads as a lit set */
-  body::after{background:radial-gradient(132% 128% at 50% 34%,transparent 52%,rgba(26,32,64,.07) 100%)!important;z-index:1}
+  #aurora{display:none!important}
+  .atmos{display:none!important}   /* clean white — colour wash removed per request */
+  /* faint neutral vignette only (no colour) */
+  body::after{background:radial-gradient(132% 128% at 50% 32%,transparent 62%,rgba(18,20,28,.035) 100%)!important;z-index:1}
   /* layered depth + specular top-edge lift + luminous gradient hairline */
   .card{border:1px solid transparent!important;border-radius:18px!important;
     background:linear-gradient(#ffffff,#fcfdff) padding-box,linear-gradient(180deg,rgba(255,255,255,.96),rgba(66,108,222,.2) 55%,rgba(66,108,222,.05)) border-box!important;
@@ -653,6 +648,14 @@
   /* --- treemap cell gloss for depth --- */
   .deck .tmap .tcell{background-image:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 44%,rgba(0,0,0,.055))!important}
 
+  /* --- market-pulse EKG heartbeat line --- */
+  .ekg{position:relative;height:58px;border-radius:14px;overflow:hidden;margin:0 0 14px;border:1px solid transparent;
+    background:linear-gradient(180deg,#fff,#fbfcfe) padding-box,linear-gradient(90deg,rgba(66,108,222,.16),rgba(66,108,222,.04)) border-box;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 30px -22px rgba(37,99,235,.2)}
+  .ekg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .ekg-lb{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:2;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px;background:linear-gradient(90deg,#fff 55%,rgba(255,255,255,0));padding:6px 26px 6px 0}
+  .ekg-lb::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(18,128,92,.16);animation:qpulse 2.4s infinite}
+
 </style>
 </head>
 <body>
@@ -699,6 +702,8 @@
   </div>
 
   <div class="secttl secttl-xl reveal">Market intelligence<span class="secsub">maps · movers · internals · live</span></div>
+
+  <div class="ekg reveal" id="ekg"><canvas id="ekgcv"></canvas><span class="ekg-lb">Market pulse · live</span></div>
 
   <div class="pulse reveal" id="pulseband">
     <div class="pz"><div class="pk"><span class="ldot"></span>S&amp;P 500 · live</div><div class="pv num" id="pb-spx">—</div><div class="pc num" id="pb-spxc">—</div></div>
@@ -1084,7 +1089,29 @@
     window._hrRender=render;render();[3000,5000,9000,14000].forEach(function(t){setTimeout(render,t);});
     if(!window._hriv)window._hriv=setInterval(render,30000);
   }
-  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
+  function startEKG(){
+    var cv=document.getElementById('ekgcv');if(!cv)return;var ctx=cv.getContext('2d');if(!ctx)return;
+    var dpr=Math.min(devicePixelRatio||1,2),W=0,H=0,N=200,pts=[],beatPos=0,running=true;
+    function size(){var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);N=Math.max(160,Math.round(W/2.4));}
+    function beat(x){if(x<0.10)return Math.sin(x/0.10*Math.PI)*0.09;if(x<0.15)return -0.10;if(x<0.21)return 1.0;if(x<0.27)return -0.34;if(x<0.44)return Math.sin((x-0.27)/0.17*Math.PI)*0.20;return 0;}
+    size();for(var i=0;i<N;i++)pts.push(0);
+    function draw(){
+      var breadth=(typeof MS!=='undefined'&&isFinite(MS.breadthT))?MS.breadthT:0.5;
+      var vol=(typeof MS!=='undefined'&&isFinite(MS.volT))?MS.volT:0.4;
+      var col=breadth>=0.5?'#12805C':'#E5484D',amp=H*0.30*(0.6+vol*0.9),midY=H*0.58;
+      ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle='rgba(20,24,40,.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,midY);ctx.lineTo(W,midY);ctx.stroke();
+      ctx.beginPath();for(var i=0;i<pts.length;i++){var x=(i/(N-1))*W,yy=midY-pts[i]*amp;i===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);}
+      ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowColor=col;ctx.shadowBlur=11;ctx.strokeStyle=col;ctx.stroke();ctx.shadowBlur=0;
+      var ly=midY-pts[pts.length-1]*amp;ctx.beginPath();ctx.arc(W-2,ly,3,0,6.2832);ctx.fillStyle=col;ctx.fill();
+    }
+    if(typeof RM!=='undefined'&&RM){draw();return;}
+    function frame(){if(!running)return;var vol=(typeof MS!=='undefined'&&isFinite(MS.volT))?MS.volT:0.4;beatPos+=0.008+vol*0.016;if(beatPos>1)beatPos-=1;pts.push(beat(beatPos));if(pts.length>N)pts.shift();draw();requestAnimationFrame(frame);}
+    requestAnimationFrame(frame);
+    window.addEventListener('resize',function(){clearTimeout(window._ekgr);window._ekgr=setTimeout(function(){size();while(pts.length<N)pts.unshift(0);},180);},{passive:true});
+    document.addEventListener('visibilitychange',function(){if(document.hidden){running=false;}else if(!running){running=true;requestAnimationFrame(frame);}});
+  }
+  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();startEKG();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
