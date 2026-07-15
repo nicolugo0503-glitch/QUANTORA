@@ -671,6 +671,19 @@
   .pz .pv,.gauge .gv,.mkthero .big,.statbig,.dhead .dpx .v,.dgrid .g .v,#hero-px{letter-spacing:-.03em}
   .ask input,.ask textarea,.wl-add input{letter-spacing:-.006em}
 
+  /* --- premium assembly motion: sparklines draw in, rows stagger up, gauge arc sweeps on --- */
+  .spk svg path[fill="none"]{stroke-dasharray:230;stroke-dashoffset:230;animation:sparkdraw .9s var(--ez) forwards}
+  @keyframes sparkdraw{to{stroke-dashoffset:0}}
+  @keyframes rowin{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  #indices .row,#megacaps .row,#crypto .row,.wl .row{animation:rowin .5s var(--ez) both}
+  #indices .row:nth-child(2),#megacaps .row:nth-child(2),#crypto .row:nth-child(2),.wl .row:nth-child(2){animation-delay:.06s}
+  #indices .row:nth-child(3),#megacaps .row:nth-child(3),#crypto .row:nth-child(3),.wl .row:nth-child(3){animation-delay:.12s}
+  #indices .row:nth-child(4),#megacaps .row:nth-child(4),.wl .row:nth-child(4){animation-delay:.18s}
+  #megacaps .row:nth-child(5){animation-delay:.24s}#megacaps .row:nth-child(6){animation-delay:.30s}#megacaps .row:nth-child(7){animation-delay:.36s}
+  #gauge path[stroke^="url"]{stroke-dasharray:320;stroke-dashoffset:320;animation:gaugedraw 1.3s var(--ez) .15s forwards}
+  @keyframes gaugedraw{to{stroke-dashoffset:0}}
+  @media(prefers-reduced-motion:reduce){.spk svg path[fill="none"],#indices .row,#megacaps .row,#crypto .row,.wl .row,#gauge path[stroke^="url"]{animation:none!important;stroke-dashoffset:0!important;opacity:1!important;transform:none!important}}
+
 </style>
 </head>
 <body>
