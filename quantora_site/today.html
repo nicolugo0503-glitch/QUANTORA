@@ -671,6 +671,36 @@
   .pz .pv,.gauge .gv,.mkthero .big,.statbig,.dhead .dpx .v,.dgrid .g .v,#hero-px{letter-spacing:-.03em}
   .ask input,.ask textarea,.wl-add input{letter-spacing:-.006em}
 
+  /* --- interactive Chart Explorer --- */
+  .xplr{margin:0 0 14px;padding:18px 20px 16px}
+  .xplr-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .xplr-id{display:flex;align-items:center;gap:13px;min-width:0}
+  .xplr-logo{width:40px;height:40px;border-radius:10px;object-fit:contain;background:#fff;box-shadow:var(--ring);padding:4px}
+  .xplr-sym{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+  .xplr-nm{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+  .xplr-px{margin-left:4px;padding-left:16px;border-left:1px solid var(--line)}
+  .xplr-v{font-size:23px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.05}
+  .xplr-c{font-family:var(--mono);font-size:12.5px;font-weight:600;margin-top:2px}
+  .xplr-c.up{color:var(--up)}.xplr-c.down{color:var(--down)}
+  .xplr-ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .xplr-search{display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:9px;background:var(--well);color:var(--muted)}
+  .xplr-search input{border:0;outline:0;background:transparent;font-family:inherit;font-size:13px;color:var(--ink);width:132px;text-transform:uppercase;letter-spacing:.02em}
+  .xplr-search input::placeholder{color:var(--faint);text-transform:none;letter-spacing:0}
+  .xplr-tf{display:inline-flex;gap:2px;background:var(--well);border-radius:9px;padding:3px}
+  .xplr-tf button{border:0;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 9px;border-radius:6px;cursor:pointer;transition:color .15s,background .15s}
+  .xplr-tf button.on{background:#fff;color:var(--ink);box-shadow:var(--ring)}
+  .xplr-tf button:hover{color:var(--ink)}
+  .xplr-chips{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 2px}
+  .xchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px 0 8px;border-radius:8px;background:var(--well);border:0;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink2);transition:background .15s,color .15s,transform 34ms}
+  .xchip img{width:16px;height:16px;border-radius:4px;object-fit:contain}
+  .xchip:hover{background:var(--hover)}.xchip:active{transform:scale(.96)}
+  .xchip.on{background:var(--ink);color:#fff}
+  .xplr-chart{position:relative;height:272px;margin-top:12px}
+  .xplr-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+  .xplr-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+  .xplr-load.hide{display:none}
+  @media(max-width:680px){.xplr-chart{height:220px}.xplr-nm{max-width:120px}}
+
   /* --- premium assembly motion: sparklines draw in, rows stagger up, gauge arc sweeps on --- */
   .spk svg path[fill="none"]{stroke-dasharray:230;stroke-dashoffset:230;animation:sparkdraw .9s var(--ez) forwards}
   @keyframes sparkdraw{to{stroke-dashoffset:0}}
@@ -738,6 +768,22 @@
     <div class="pz"><div class="pk">Fear &amp; Greed</div><div class="pv num" id="pb-fng">—</div><div class="pc" id="pb-fngl">loading</div></div>
     <div class="pz"><div class="pk">Market breadth</div><div class="pv num" id="pb-brd">—</div><div class="pbar"><span id="pb-brdbar"></span></div></div>
     <div class="pz"><div class="pk">Session leader</div><div class="pv" id="pb-lead">—</div><div class="pc num" id="pb-leadc">—</div></div>
+  </div>
+
+  <div class="card xplr reveal" data-fx>
+    <div class="xplr-head">
+      <div class="xplr-id">
+        <img class="xplr-logo" id="xplr-logo" alt="" onerror="this.style.visibility='hidden'">
+        <div class="xplr-meta"><div class="xplr-sym" id="xplr-sym">—</div><div class="xplr-nm" id="xplr-nm">Interactive chart</div></div>
+        <div class="xplr-px"><div class="xplr-v num" id="xplr-v">—</div><div class="xplr-c num" id="xplr-c">—</div></div>
+      </div>
+      <div class="xplr-ctrl">
+        <div class="xplr-search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/></svg><input id="xplr-in" placeholder="Search any ticker…" maxlength="6" autocomplete="off" spellcheck="false"></div>
+        <div class="xplr-tf" id="xplr-tf"><button type="button" data-tf="21">1M</button><button type="button" data-tf="63">3M</button><button type="button" data-tf="126" class="on">6M</button><button type="button" data-tf="252">1Y</button><button type="button" data-tf="0">Max</button></div>
+      </div>
+    </div>
+    <div class="xplr-chips" id="xplr-chips"></div>
+    <div class="xplr-chart"><canvas id="xplr-cv"></canvas><div class="xplr-load" id="xplr-load">Loading chart…</div></div>
   </div>
 
   <div class="heatribbon reveal" id="heatribbon"><div class="hr-track" id="hr-track"><span class="hr-tok"><span class="hs">Loading live sector heat…</span></span></div></div>
@@ -1133,7 +1179,64 @@
     }catch(e){}}
     upd();if(!window._sesiv)window._sesiv=setInterval(upd,30000);
   }
-  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
+  /* ---- interactive Chart Explorer ---- */
+  var LOGO={AAPL:'apple.com',NVDA:'nvidia.com',TSLA:'tesla.com',MSFT:'microsoft.com',AMZN:'amazon.com',GOOGL:'abc.xyz',META:'meta.com',AVGO:'broadcom.com',NFLX:'netflix.com',AMD:'amd.com',JPM:'jpmorganchase.com',DIS:'disney.com',KO:'coca-cola.com',NKE:'nike.com',BTC:'bitcoin.org',ETH:'ethereum.org',SOL:'solana.com'};
+  var XPRESET=['AAPL','NVDA','TSLA','MSFT','AMZN','GOOGL','META','BTC','ETH'];
+  function explorerChart(cv,vals,up){
+    if(!cv)return;var ctx=cv.getContext('2d');if(!ctx||!vals||vals.length<2)return;
+    if(window._exraf)cancelAnimationFrame(window._exraf);
+    var dpr=Math.min(devicePixelRatio||1,2),r=cv.getBoundingClientRect(),W=r.width,H=r.height;
+    cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+    var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1,col=up?'#12805C':'#E5484D',n=vals.length;
+    var X=function(i){return (i/(n-1))*W;},Y=function(v){return H*0.90-((v-mn)/rg)*(H*0.76);};
+    var start=performance.now(),DUR=(typeof RM!=='undefined'&&RM)?1:900;
+    function frame(now){
+      var t=Math.min(1,(now-start)/DUR),e=1-Math.pow(1-t,3),upto=Math.max(1,Math.floor(e*(n-1)));
+      ctx.clearRect(0,0,W,H);
+      // baseline
+      ctx.strokeStyle='rgba(17,17,17,.05)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,H*0.90);ctx.lineTo(W,H*0.90);ctx.stroke();
+      // area
+      ctx.beginPath();ctx.moveTo(0,Y(vals[0]));for(var i=1;i<=upto;i++)ctx.lineTo(X(i),Y(vals[i]));ctx.lineTo(X(upto),H);ctx.lineTo(0,H);ctx.closePath();
+      var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,col+'2b');g.addColorStop(1,col+'00');ctx.fillStyle=g;ctx.fill();
+      // line
+      ctx.beginPath();ctx.moveTo(0,Y(vals[0]));for(i=1;i<=upto;i++)ctx.lineTo(X(i),Y(vals[i]));
+      ctx.lineWidth=2.4;ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowColor=col;ctx.shadowBlur=14;ctx.strokeStyle=col;ctx.stroke();ctx.shadowBlur=0;
+      // leading dot
+      var lx=X(upto),ly=Y(vals[upto]);ctx.beginPath();ctx.arc(lx,ly,4,0,6.2832);ctx.fillStyle=col;ctx.fill();ctx.beginPath();ctx.arc(lx,ly,1.7,0,6.2832);ctx.fillStyle='#fff';ctx.fill();
+      if(t<1)window._exraf=requestAnimationFrame(frame);
+    }
+    window._exraf=requestAnimationFrame(frame);
+  }
+  function xplrLoad(sym){
+    sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'');if(!sym)return;
+    var tf=window._xtf||126;
+    function paint(d){
+      var ld=document.getElementById('xplr-load');
+      if(!d||!d.closes||d.closes.length<2){if(ld){ld.textContent='No chart data for '+sym;ld.classList.remove('hide');}return;}
+      if(ld)ld.classList.add('hide');
+      var isC=(typeof cgData!=='undefined'&&cgData[sym]),closes=(tf>0&&!isC)?d.closes.slice(-tf):d.closes,up=closes[closes.length-1]>=closes[0],e;
+      if(e=document.getElementById('xplr-sym'))e.textContent=sym;
+      if(e=document.getElementById('xplr-nm'))e.textContent=(typeof NAMES!=='undefined'&&NAMES[sym])||d.name||(isC?'Cryptocurrency':'');
+      if(e=document.getElementById('xplr-v'))e.textContent=money(d.price);
+      if(e=document.getElementById('xplr-c')){e.textContent=arr(d.chg)+' '+pct(d.chg);e.className='xplr-c num '+(num(d.chg)>=0?'up':'down');}
+      var logo=document.getElementById('xplr-logo');if(logo){var dom=LOGO[sym];if(dom){logo.src='https://logo.clearbit.com/'+dom;logo.style.visibility='';}else{logo.style.visibility='hidden';}}
+      explorerChart(document.getElementById('xplr-cv'),closes,up);
+      Array.prototype.forEach.call(document.querySelectorAll('#xplr-chips .xchip'),function(b){b.classList.toggle('on',b.dataset.sym===sym);});
+      window._xcur=sym;
+    }
+    if(typeof cgData!=='undefined'&&cgData[sym]&&cgData[sym].closes&&cgData[sym].closes.length>2){paint(cgData[sym]);return;}
+    try{getStock(sym).then(paint).catch(function(){paint(null);});}catch(e){paint(null);}
+  }
+  function buildExplorer(){
+    var chips=document.getElementById('xplr-chips');if(!chips)return;window._xtf=126;
+    chips.innerHTML=XPRESET.map(function(s){var dom=LOGO[s];return '<button type="button" class="xchip" data-sym="'+s+'">'+(dom?'<img src="https://logo.clearbit.com/'+dom+'" alt="" onerror="this.remove()">':'')+'<span>'+s+'</span></button>';}).join('');
+    Array.prototype.forEach.call(chips.querySelectorAll('.xchip'),function(b){b.addEventListener('click',function(){xplrLoad(b.dataset.sym);});});
+    var tf=document.getElementById('xplr-tf');if(tf)Array.prototype.forEach.call(tf.querySelectorAll('button'),function(b){b.addEventListener('click',function(){window._xtf=+b.dataset.tf;Array.prototype.forEach.call(tf.querySelectorAll('button'),function(x){x.classList.remove('on');});b.classList.add('on');xplrLoad(window._xcur||'AAPL');});});
+    var inp=document.getElementById('xplr-in');if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter'){var v=inp.value.trim();if(v){xplrLoad(v);inp.value='';inp.blur();}}});
+    window.addEventListener('resize',function(){clearTimeout(window._xrr);window._xrr=setTimeout(function(){if(window._xcur)xplrLoad(window._xcur);},220);},{passive:true});
+    xplrLoad('AAPL');
+  }
+  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();buildExplorer();renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
