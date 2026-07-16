@@ -27,6 +27,23 @@ module.exports = async (req, res) => {
       } catch (e) { res.status(200).json({ error: 'quote' }); }
       return;
     }
+    // upcoming earnings for notable tickers (Finnhub calendar). e.g. /api/news?earnings=1
+    if (req.query.earnings) {
+      res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=21600');
+      try {
+        const fmt = d => d.toISOString().slice(0, 10);
+        const r = await fetch('https://finnhub.io/api/v1/calendar/earnings?from=' + fmt(new Date()) + '&to=' + fmt(new Date(Date.now() + 15 * 864e5)) + '&token=' + FH);
+        const j = await r.json();
+        const NOTE = ['AAPL','NVDA','MSFT','AMZN','GOOGL','GOOG','META','TSLA','AVGO','AMD','NFLX','JPM','V','MA','WMT','JNJ','PG','XOM','BAC','HD','CRM','ORCL','INTC','QCOM','CSCO','PEP','ADBE','PYPL','UBER','SHOP','COIN','PLTR','MU','BA','GS','C','WFC','DIS','KO','NKE','MCD','SBUX'];
+        let arr = (j && j.earningsCalendar) || [];
+        arr = arr.filter(function (e) { return e && e.symbol && NOTE.indexOf((e.symbol + '').toUpperCase()) >= 0; })
+                 .sort(function (a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+        const seen = {}, out = [];
+        arr.forEach(function (e) { const s = (e.symbol + '').toUpperCase(); if (!seen[s]) { seen[s] = 1; out.push({ symbol: s, date: e.date, hour: e.hour || '', epsEstimate: e.epsEstimate }); } });
+        res.status(200).json({ earnings: out.slice(0, 18) });
+      } catch (e) { res.status(200).json({ error: 'earnings' }); }
+      return;
+    }
     res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=7200');
     // a bad image = a source logo or generic branding, not a real article photo
     function isBad(u) { u = (u || '') + ''; return !/^https?:\/\//.test(u) || /finnhub\/logo|\/logo[\/._-]|logo\.(png|jpe?g|svg|gif)|placeholder|default-?(image|thumb)/i.test(u); }
