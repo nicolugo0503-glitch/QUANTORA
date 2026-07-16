@@ -795,7 +795,7 @@
   <div class="think" id="think"><span class="sp"></span><span id="thinkmsg">Composing…</span></div>
   <div class="ans" id="ans"><div class="banner"><span class="d"></span><span id="banner">—</span></div><p class="narr" id="narr"></p><div class="bento" id="stage"></div></div>
 
-  <section class="thero reveal" id="thero">
+  <section class="thero" id="thero">
     <div class="tape" id="tape" aria-hidden="true"></div>
     <div class="thero-scrim"></div>
     <div class="thero-in">
@@ -1388,7 +1388,7 @@
 </script>
 <script>
 /* Guarantee the hero-region cards render at full opacity. The site-wide hero.js/nav.js reveal "hold" (polls for any [class*="hero"] element) otherwise leaves this page's custom hero + brief frozen mid-fade. hero.js makes no .animate() calls and is not scroll-linked, so forcing opacity here sticks permanently. */
-(function(){function uf(){var els=document.querySelectorAll('.mkthero,.brief');for(var i=0;i<els.length;i++){var el=els[i];try{if(el.getAnimations)el.getAnimations().forEach(function(a){try{a.cancel();}catch(e){}});}catch(e){}el.style.setProperty('opacity','1','important');el.style.setProperty('transform','none','important');el.style.setProperty('filter','none','important');}}
+(function(){function uf(){var els=document.querySelectorAll('.mkthero,.brief,.thero');for(var i=0;i<els.length;i++){var el=els[i];try{if(el.getAnimations)el.getAnimations().forEach(function(a){try{a.cancel();}catch(e){}});}catch(e){}el.style.setProperty('opacity','1','important');el.style.setProperty('transform','none','important');el.style.setProperty('filter','none','important');}}
 [60,200,500,1000,1800,2800].forEach(function(t){setTimeout(uf,t);});var n=0;function loop(){uf();if(++n<60&&window.requestAnimationFrame)requestAnimationFrame(loop);}if(window.requestAnimationFrame)requestAnimationFrame(loop);})();
 </script>
 
