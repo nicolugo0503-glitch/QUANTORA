@@ -1205,14 +1205,14 @@
   var TAPE_ROWS=[['AAPL','NVDA','MSFT','GOOGL','AMZN','META','TSLA','AVGO'],['SPY','QQQ','DIA','IWM','BTC','ETH','SOL'],['XLK','XLF','XLV','XLY','XLC','XLI','XLP','XLE','XLU','XLRE','XLB'],['META','TSLA','NVDA','AMZN','BTC','ETH','GOOGL','AAPL','SPY']];
   function tapeData(sym){return cgData[sym]||heatData[sym]||(typeof secData!=='undefined'?secData[sym]:null)||null;}
   function buildTape(){var wall=document.getElementById('tape');if(!wall)return;
-    var W=Math.max(wall.getBoundingClientRect().width||0,window.innerWidth||0,1200)+140,SPD=[24,18,21,15];
+    var W=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0,1200)+180,SPD=[24,18,21,15];
     wall.innerHTML=TAPE_ROWS.map(function(syms,ri){var toks=syms.map(function(s){return '<span class="tok" data-sym="'+esc(s)+'">'+esc(s)+' <b>·</b></span>';}).join('');return '<div class="tk r'+(ri+1)+'">'+toks+'</div>';}).join('');
     Array.prototype.forEach.call(wall.querySelectorAll('.tk'),function(tk,ri){var one=tk.innerHTML,oneW=tk.getBoundingClientRect().width||500,reps=Math.max(1,Math.ceil(W/oneW)),seg='';for(var k=0;k<reps;k++)seg+=one;tk.innerHTML=seg+seg;tk.style.animationDuration=Math.max(24,Math.round(oneW*reps/(SPD[ri%4]||20)))+'s';});
     if(!window._tapeRz){window._tapeRz=1;addEventListener('resize',function(){clearTimeout(window._tprz);window._tprz=setTimeout(buildTape,320);},{passive:true});}
     refreshTape();}
   function refreshTape(){var wall=document.getElementById('tape');if(!wall)return;
     Array.prototype.forEach.call(wall.querySelectorAll('.tok'),function(el){var d=tapeData(el.getAttribute('data-sym')),b=el.querySelector('b');if(!b)return;if(d&&isFinite(d.chg)){b.textContent=(d.chg>=0?'+':'')+(+d.chg).toFixed(2)+'%';b.className=d.chg>=0?'up':'down';}});}
-  function fullbleed(){var el=document.getElementById('thero');if(!el)return;var p=el.parentNode,r=p.getBoundingClientRect(),pad=parseFloat(getComputedStyle(p).paddingLeft)||0,cw=document.documentElement.clientWidth;el.style.width=cw+'px';el.style.marginLeft=(-(r.left+pad)).toFixed(1)+'px';el.style.marginRight='0';}
+  function fullbleed(){var el=document.getElementById('thero');if(!el)return;el.style.marginLeft='0';el.style.marginRight='0';el.style.width='auto';var left=el.getBoundingClientRect().left,cw=document.documentElement.clientWidth;el.style.width=cw+'px';el.style.marginLeft=(-left).toFixed(1)+'px';el.style.marginRight='0';}
   function pzFlash(id,dir){var e=document.getElementById(id);if(!e||!e.closest)return;var z=e.closest('.pz');if(!z)return;z.classList.remove('fu','fd');void z.offsetWidth;z.classList.add(dir>=0?'fu':'fd');}
   function buildPulse(){
     var prev={spx:null,fng:null};
@@ -1382,7 +1382,7 @@
       Array.prototype.forEach.call(el.querySelectorAll('.ecard'),function(b){b.addEventListener('click',function(){openDrawer(b.dataset.sym);});});
     }).catch(function(){el.innerHTML='<div class="loading" style="padding:18px 4px">Earnings calendar unavailable.</div>';});
   }
-  function boot(){fullbleed();addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();buildExplorer();setTimeout(buildEarnings,1200);renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
+  function boot(){fullbleed();[80,300,800,1600,3000].forEach(function(t){setTimeout(fullbleed,t);});addEventListener('load',fullbleed);addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();buildExplorer();setTimeout(buildEarnings,1200);renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
