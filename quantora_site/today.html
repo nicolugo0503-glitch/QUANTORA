@@ -922,7 +922,8 @@
     ctx.beginPath();for(var i=0;i<vals.length;i++){var x=X(i),y=Y(vals[i]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.lineTo(X(vals.length-1),H-p);ctx.lineTo(X(0),H-p);ctx.closePath();var gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,c+'26');gr.addColorStop(1,c+'00');ctx.fillStyle=gr;ctx.fill();
     ctx.beginPath();for(i=0;i<vals.length;i++){var x2=X(i),y2=Y(vals[i]);i===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);}ctx.lineWidth=2;ctx.strokeStyle=c;ctx.lineJoin='round';ctx.stroke();}catch(e){}}
 
-  function tickerLogo(sym){sym=(sym||'').toUpperCase();var dom=(typeof LOGO!=='undefined')&&LOGO[sym],ini=esc(sym.charAt(0)||'?');return '<span class="tlogo" data-i="'+ini+'">'+(dom?'<img src="https://logo.clearbit.com/'+dom+'" alt="" loading="lazy" onerror="this.remove()">':'')+'</span>';}
+  function logoImg(dom){return '<img src="https://logo.clearbit.com/'+dom+'" alt="" loading="lazy" onerror="if(this.dataset.fb){this.remove()}else{this.dataset.fb=1;this.src=\'https://www.google.com/s2/favicons?domain='+dom+'&sz=64\'}">';}
+  function tickerLogo(sym){sym=(sym||'').toUpperCase();var dom=(typeof LOGO!=='undefined')&&LOGO[sym],ini=esc(sym.charAt(0)||'?');return '<span class="tlogo" data-i="'+ini+'">'+(dom?logoImg(dom):'')+'</span>';}
   function rowHTML(label,sym,price,chg,closes,rm){return '<div class="row" data-sym="'+esc(sym)+'"><span class="rnm">'+tickerLogo(sym)+'<span class="rt"><span class="sy">'+esc(sym)+'</span><div class="nm">'+esc(label)+'</div></span></span><span class="spk">'+spark((closes||[]).slice(-30),70,24,true)+'</span><span class="px"><div class="v">'+money(price)+'</div><div class="c '+(num(chg)>=0?'up':'down')+'">'+arr(chg)+' '+pct(chg)+'</div></span>'+(rm?'<span class="rm" data-rm="'+esc(sym)+'">×</span>':'')+'</div>';}
   function wireRows(el){Array.prototype.forEach.call(el.querySelectorAll('.row'),function(r){r.addEventListener('click',function(e){if(e.target&&e.target.dataset.rm){e.stopPropagation();removeWatch(e.target.dataset.rm);return;}openDrawer(r.dataset.sym);});});}
 
@@ -1307,7 +1308,7 @@
   }
   function buildExplorer(){
     var chips=document.getElementById('xplr-chips');if(!chips)return;window._xtf=126;
-    chips.innerHTML=XPRESET.map(function(s){var dom=LOGO[s];return '<button type="button" class="xchip" data-sym="'+s+'">'+(dom?'<img src="https://logo.clearbit.com/'+dom+'" alt="" onerror="this.remove()">':'')+'<span>'+s+'</span></button>';}).join('');
+    chips.innerHTML=XPRESET.map(function(s){var dom=LOGO[s];return '<button type="button" class="xchip" data-sym="'+s+'">'+(dom?logoImg(dom):'')+'<span>'+s+'</span></button>';}).join('');
     Array.prototype.forEach.call(chips.querySelectorAll('.xchip'),function(b){b.addEventListener('click',function(){xplrLoad(b.dataset.sym);});});
     var tf=document.getElementById('xplr-tf');if(tf)Array.prototype.forEach.call(tf.querySelectorAll('button'),function(b){b.addEventListener('click',function(){window._xtf=+b.dataset.tf;Array.prototype.forEach.call(tf.querySelectorAll('button'),function(x){x.classList.remove('on');});b.classList.add('on');xplrLoad(window._xcur||'AAPL');});});
     var inp=document.getElementById('xplr-in');if(inp)inp.addEventListener('keydown',function(e){if(e.key==='Enter'){var v=inp.value.trim();if(v){xplrLoad(v);inp.value='';inp.blur();}}});
@@ -1324,7 +1325,7 @@
       var now=new Date();now.setHours(0,0,0,0);
       el.innerHTML=arr.slice(0,18).map(function(e){var sym=(e.symbol||'').toUpperCase(),dom=(typeof LOGO!=='undefined')&&LOGO[sym],d=new Date(e.date+'T00:00:00'),days=Math.round((d-now)/864e5);
         var cd=days<=0?'today':(days===1?'tomorrow':'in '+days+'d'),dstr=isNaN(d.getTime())?'':d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-        return '<button type="button" class="ecard" data-sym="'+esc(sym)+'"><span class="tlogo" data-i="'+esc(sym.charAt(0)||'?')+'">'+(dom?'<img src="https://logo.clearbit.com/'+dom+'" alt="" loading="lazy" onerror="this.remove()">':'')+'</span><span class="esym">'+esc(sym)+'</span><span class="edate">'+dstr+'</span><span class="ecd'+(days<=1?' soon':'')+'">'+cd+'</span></button>';
+        return '<button type="button" class="ecard" data-sym="'+esc(sym)+'">'+tickerLogo(sym)+'<span class="esym">'+esc(sym)+'</span><span class="edate">'+dstr+'</span><span class="ecd'+(days<=1?' soon':'')+'">'+cd+'</span></button>';
       }).join('');
       Array.prototype.forEach.call(el.querySelectorAll('.ecard'),function(b){b.addEventListener('click',function(){openDrawer(b.dataset.sym);});});
     }).catch(function(){el.innerHTML='<div class="loading" style="padding:18px 4px">Earnings calendar unavailable.</div>';});
