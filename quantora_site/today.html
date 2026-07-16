@@ -718,6 +718,32 @@
   .xsv{font-size:15.5px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
   .xsv.up{color:var(--up)}.xsv.down{color:var(--down)}
   @media(max-width:560px){.xplr-stats{flex-wrap:wrap}.xstat{flex:1 1 42%;border-left:0!important;padding-left:0!important}}
+
+  /* --- big cinematic Market Leaders showcase --- */
+  .leaders{grid-column:span 12;margin:2px 0}
+  .lead-hd{display:flex;align-items:baseline;gap:12px;margin:0 2px 15px;flex-wrap:wrap}
+  .lead-hd h3{font-size:clamp(19px,2.1vw,28px);font-weight:700;letter-spacing:-.022em;margin:0;color:var(--ink)}
+  .lead-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  .lead-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:14px}
+  .lead{position:relative;overflow:hidden;text-align:left;border:1px solid transparent;border-radius:16px;padding:18px 18px 15px;cursor:pointer;font-family:inherit;
+    background:linear-gradient(180deg,#ffffff,#fcfdff) padding-box,linear-gradient(180deg,rgba(255,255,255,.9),rgba(66,108,222,.18) 60%,rgba(66,108,222,.04)) border-box;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 6px rgba(26,34,70,.05),0 24px 48px -28px rgba(37,99,235,.2);transition:transform .32s var(--ez),box-shadow .32s var(--ez)}
+  .lead:hover{transform:translateY(-7px);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 22px -8px rgba(26,34,70,.14),0 40px 70px -30px rgba(37,99,235,.34)}
+  .lead::before{content:"";position:absolute;top:0;left:-70%;width:55%;height:100%;z-index:2;pointer-events:none;opacity:0;transform:skewX(-16deg);background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent)}
+  .lead:hover::before{animation:decksheen 1.05s ease}
+  .lead-row1{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .lead .tlogo{width:46px;height:46px;border-radius:12px}
+  .lead .tlogo::before{font-size:18px}
+  .lead .lp{font-family:var(--mono);font-size:13px;font-weight:700;padding:5px 10px;border-radius:9px;white-space:nowrap}
+  .lead .lp.up{color:var(--up);background:var(--up-bg);box-shadow:0 2px 12px -3px rgba(18,128,92,.4)}
+  .lead .lp.down{color:var(--down);background:var(--down-bg);box-shadow:0 2px 12px -3px rgba(229,72,77,.36)}
+  .lead-sym{font-size:21px;font-weight:800;letter-spacing:-.022em;margin-top:15px;line-height:1;color:var(--ink)}
+  .lead-nm{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lead-px{font-size:25px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:11px;color:var(--ink)}
+  .lead-spk{height:46px;margin-top:10px}
+  .lead-spk svg{width:100%;height:100%}
+  .lead-spk svg path[fill="none"]{filter:drop-shadow(0 1px 5px rgba(37,99,235,.3));stroke-dasharray:260;stroke-dashoffset:260;animation:sparkdraw 1s var(--ez) forwards}
+  @media(prefers-reduced-motion:reduce){.lead-spk svg path[fill="none"]{animation:none;stroke-dashoffset:0}}
   @media(max-width:680px){.xplr-chart{height:220px}.xplr-nm{max-width:120px}}
   /* AI take button + output */
   .xplr-ai-btn{height:34px;padding:0 13px;border:0;border-radius:9px;background:var(--accent-weak);color:var(--accent);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s,transform 34ms;white-space:nowrap}
@@ -858,6 +884,7 @@
     <div class="card s8 feat reveal" data-fx><div class="ch"><h3>Market Map</h3><span class="tag">Cap-weighted · % today · live</span></div><div class="tmap" id="tmap"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 gaugefeat reveal" data-fx><div class="ch"><h3>Fear &amp; Greed</h3><span class="tag">Crypto · sentiment</span></div><div class="gauge"><svg id="gauge" viewBox="0 0 240 150"></svg><div class="gv num" id="gv">—</div><div class="gl" id="gl">loading</div></div></div>
 
+    <div class="s12 leaders reveal"><div class="lead-hd"><h3>Market leaders</h3><span class="lead-tag">Megacaps &amp; crypto · sorted by today · live</span></div><div class="lead-grid" id="lead-grid"><div class="loading" style="padding:30px 4px;color:var(--muted)">Loading market leaders…</div></div></div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Indices &amp; ETFs</h3><span class="tag">Live · EOD</span></div><div id="indices"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Megacaps</h3><span class="tag">Live · EOD</span></div><div id="megacaps"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Crypto</h3><span class="tag">24/7 · live</span></div><div id="crypto"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
@@ -1382,7 +1409,19 @@
       Array.prototype.forEach.call(el.querySelectorAll('.ecard'),function(b){b.addEventListener('click',function(){openDrawer(b.dataset.sym);});});
     }).catch(function(){el.innerHTML='<div class="loading" style="padding:18px 4px">Earnings calendar unavailable.</div>';});
   }
-  function boot(){fullbleed();[80,300,800,1600,3000].forEach(function(t){setTimeout(fullbleed,t);});addEventListener('load',fullbleed);addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();buildExplorer();setTimeout(buildEarnings,1200);renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
+  var LEAD_SYMS=['AAPL','NVDA','MSFT','GOOGL','AMZN','META','TSLA','AVGO','NFLX','AMD','JPM','BTC','ETH','SOL'];
+  function buildLeaders(){
+    var el=document.getElementById('lead-grid');if(!el)return;
+    Promise.all(LEAD_SYMS.map(function(s){return (typeof cgData!=='undefined'&&cgData[s]&&cgData[s].closes&&cgData[s].closes.length>2)?Promise.resolve(cgData[s]):getStock(s).then(function(d){return d;},function(){return null;});})).then(function(res){
+      var items=[];res.forEach(function(d,i){if(d&&isFinite(d.price)&&isFinite(d.chg)&&d.closes&&d.closes.length>2)items.push({sym:LEAD_SYMS[i],price:d.price,chg:d.chg,closes:d.closes});});
+      if(!items.length){el.innerHTML='<div class="loading" style="padding:30px 4px">Leaders updating…</div>';return;}
+      items.sort(function(a,b){return b.chg-a.chg;});
+      el.innerHTML=items.map(function(it){var up=it.chg>=0;return '<button type="button" class="lead" data-sym="'+esc(it.sym)+'"><div class="lead-row1">'+tickerLogo(it.sym)+'<span class="lp '+(up?'up':'down')+'">'+arr(it.chg)+' '+pct(it.chg)+'</span></div><div class="lead-sym">'+esc(it.sym)+'</div><div class="lead-nm">'+esc((typeof NAMES!=='undefined'&&NAMES[it.sym])||it.sym)+'</div><div class="lead-px num">'+money(it.price)+'</div><div class="lead-spk">'+spark(it.closes.slice(-40),200,46,true,up?'#12805C':'#E5484D')+'</div></button>';}).join('');
+      Array.prototype.forEach.call(el.querySelectorAll('.lead'),function(b){b.addEventListener('click',function(){openDrawer(b.dataset.sym);});});
+      if(!window._leadiv)window._leadiv=setInterval(buildLeaders,45000);
+    },function(){}).catch(function(){});
+  }
+  function boot(){fullbleed();[80,300,800,1600,3000].forEach(function(t){setTimeout(fullbleed,t);});setTimeout(buildLeaders,1500);addEventListener('load',fullbleed);addEventListener('resize',function(){clearTimeout(window._fbr);window._fbr=setTimeout(fullbleed,120);},{passive:true});reveals();spotlight();lazyVideo();buildHero();fillEquities('indices',INDICES);setTimeout(function(){fillEquities('megacaps',MEGA);},2400);buildCrypto();buildGauge();buildPulse();buildHeatRibbon();sessionBar();buildExplorer();setTimeout(buildEarnings,1200);renderWatch();setTimeout(buildRibbon,1600);setTimeout(buildBrief,900);buildMacro();setTimeout(buildMovers,1400);setTimeout(buildSectors,4200);setTimeout(buildNews,700);setTimeout(startLive,6000);setTimeout(function(){buildTape();if(!window._qtape)window._qtape=setInterval(refreshTape,2500);},1600);setTimeout(renderTmap,3200);addEventListener('resize',function(){clearTimeout(window._tmr);window._tmr=setTimeout(renderTmap,220);},{passive:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
