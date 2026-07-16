@@ -699,6 +699,13 @@
   .xplr-chart canvas{position:absolute;inset:0;width:100%;height:100%}
   .xplr-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.04em}
   .xplr-load.hide{display:none}
+  .xhair{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:3}
+  .xhair.on{opacity:1}
+  .xh-line{position:absolute;top:2px;bottom:2px;width:1px;background:rgba(17,17,17,.22)}
+  .xh-dot{position:absolute;width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.3);transform:translate(-50%,-50%);display:none;z-index:4}
+  .xh-tip{position:absolute;top:6px;pointer-events:none;opacity:0;transition:opacity .12s;z-index:5;background:var(--ink);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 9px;border-radius:7px;white-space:nowrap;transform:translateX(-50%);box-shadow:0 6px 18px -6px rgba(0,0,0,.45)}
+  .xh-tip.on{opacity:1}
+  .xh-tip b{font-weight:700}.xh-tip .up{color:#34e39b}.xh-tip .down{color:#ff6b8a}
   @media(max-width:680px){.xplr-chart{height:220px}.xplr-nm{max-width:120px}}
   /* AI take button + output */
   .xplr-ai-btn{height:34px;padding:0 13px;border:0;border-radius:9px;background:var(--accent-weak);color:var(--accent);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s,transform 34ms;white-space:nowrap}
@@ -823,7 +830,7 @@
     </div>
     <div class="xplr-chips" id="xplr-chips"></div>
     <div class="xplr-legend" id="xplr-legend"></div>
-    <div class="xplr-chart"><canvas id="xplr-cv"></canvas><div class="xplr-load" id="xplr-load">Loading chart…</div></div>
+    <div class="xplr-chart"><canvas id="xplr-cv"></canvas><div class="xhair" id="xhair" aria-hidden="true"><span class="xh-line" id="xh-line"></span><span class="xh-dot" id="xh-dot"></span><span class="xh-dot" id="xh-dot2"></span></div><div class="xh-tip" id="xh-tip"></div><div class="xplr-load" id="xplr-load">Loading chart…</div></div>
     <div class="xplr-ai" id="xplr-ai"></div>
   </div>
 
@@ -1297,14 +1304,29 @@
       if(e=document.getElementById('xplr-ai')){e.textContent='';e.className='xplr-ai';}
       if(window._xcmp&&window._xcmp!==sym){
         xplrResolve(window._xcmp).then(function(d2){
-          if(d2&&d2.closes&&d2.closes.length>2){var isC2=(typeof cgData!=='undefined'&&cgData[window._xcmp]),c2=(tf>0&&!isC2)?d2.closes.slice(-tf):d2.closes;compareChart(document.getElementById('xplr-cv'),{sym:sym,closes:closes},{sym:window._xcmp,closes:c2});}
-          else{window._xcmp=null;var lg=document.getElementById('xplr-legend');if(lg){lg.classList.remove('on');lg.innerHTML='';}var vx=document.getElementById('xplr-vs-x');if(vx)vx.style.display='none';explorerChart(document.getElementById('xplr-cv'),closes,up);}
+          if(d2&&d2.closes&&d2.closes.length>2){var isC2=(typeof cgData!=='undefined'&&cgData[window._xcmp]),c2=(tf>0&&!isC2)?d2.closes.slice(-tf):d2.closes;compareChart(document.getElementById('xplr-cv'),{sym:sym,closes:closes},{sym:window._xcmp,closes:c2});window._xhov={series:[{vals:closes,col:'#2563EB',sym:sym},{vals:c2,col:'#8B5CF6',sym:window._xcmp}],cmp:true};}
+          else{window._xcmp=null;var lg=document.getElementById('xplr-legend');if(lg){lg.classList.remove('on');lg.innerHTML='';}var vx=document.getElementById('xplr-vs-x');if(vx)vx.style.display='none';explorerChart(document.getElementById('xplr-cv'),closes,up);window._xhov={series:[{vals:closes,col:up?'#12805C':'#E5484D'}],cmp:false};}
         });
       } else {
         var lg=document.getElementById('xplr-legend');if(lg){lg.classList.remove('on');lg.innerHTML='';}
-        explorerChart(document.getElementById('xplr-cv'),closes,up);
+        explorerChart(document.getElementById('xplr-cv'),closes,up);window._xhov={series:[{vals:closes,col:up?'#12805C':'#E5484D'}],cmp:false};
       }
     });
+  }
+  function xhairHide(){var xh=document.getElementById('xhair'),tp=document.getElementById('xh-tip');if(xh)xh.classList.remove('on');if(tp)tp.classList.remove('on');}
+  function xhairMove(e){
+    var h=window._xhov;if(!h||!h.series||!h.series[0]||!h.series[0].vals)return;
+    var chart=e.currentTarget,r=chart.getBoundingClientRect(),W=r.width,H=r.height,mxp=e.clientX-r.left;
+    if(mxp<0||mxp>W)return;var n=h.series[0].vals.length;if(n<2)return;
+    var idx=Math.max(0,Math.min(n-1,Math.round(mxp/W*(n-1)))),lineX=(idx/(n-1))*W;
+    var plotted=h.series.map(function(s){return h.cmp?s.vals.map(function(v){return (v/s.vals[0]-1)*100;}):s.vals;});
+    var all=[];plotted.forEach(function(p){all=all.concat(p);});
+    var mn=Math.min.apply(null,all),mx=Math.max.apply(null,all),rg=(mx-mn)||1,top=h.cmp?0.9:0.90,span=h.cmp?0.8:0.76;
+    function Y(v){return H*top-((v-mn)/rg)*(H*span);}
+    var xh=document.getElementById('xhair'),line=document.getElementById('xh-line'),tp=document.getElementById('xh-tip');
+    if(xh)xh.classList.add('on');if(line)line.style.left=lineX.toFixed(1)+'px';
+    ['xh-dot','xh-dot2'].forEach(function(id,i){var dot=document.getElementById(id);if(!dot)return;if(i<plotted.length){dot.style.display='block';dot.style.left=lineX.toFixed(1)+'px';dot.style.top=Y(plotted[i][idx]).toFixed(1)+'px';dot.style.background=h.series[i].col;}else{dot.style.display='none';}});
+    if(tp){var txt;if(h.cmp){txt=h.series.map(function(s,i){var v=plotted[i][idx];return '<b>'+esc(s.sym)+'</b> <span class="'+(v>=0?'up':'down')+'">'+(v>=0?'+':'')+v.toFixed(1)+'%</span>';}).join('&nbsp;&nbsp;·&nbsp;&nbsp;');}else{txt=money(h.series[0].vals[idx]);}tp.innerHTML=txt;tp.classList.add('on');tp.style.left=Math.max(44,Math.min(W-44,lineX)).toFixed(1)+'px';}
   }
   function buildExplorer(){
     var chips=document.getElementById('xplr-chips');if(!chips)return;window._xtf=126;
@@ -1315,6 +1337,7 @@
     var vs=document.getElementById('xplr-vs-in');if(vs)vs.addEventListener('keydown',function(e){if(e.key==='Enter'){var v=vs.value.trim().toUpperCase();if(v){window._xcmp=v;var vx=document.getElementById('xplr-vs-x');if(vx)vx.style.display='';xplrLoad(window._xcur||'AAPL');vs.blur();}}});
     var vx=document.getElementById('xplr-vs-x');if(vx)vx.addEventListener('click',function(){window._xcmp=null;vx.style.display='none';if(vs)vs.value='';xplrLoad(window._xcur||'AAPL');});
     var aib=document.getElementById('xplr-ai-btn');if(aib)aib.addEventListener('click',xplrAI);
+    var chartEl=document.querySelector('.xplr-chart');if(chartEl&&!('ontouchstart' in window)){chartEl.addEventListener('mousemove',xhairMove,{passive:true});chartEl.addEventListener('mouseleave',xhairHide);}
     window.addEventListener('resize',function(){clearTimeout(window._xrr);window._xrr=setTimeout(function(){if(window._xcur)xplrLoad(window._xcur);},220);},{passive:true});
     xplrLoad('AAPL');
   }
