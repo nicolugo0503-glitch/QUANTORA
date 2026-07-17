@@ -785,6 +785,11 @@
   .cf-note{font-size:10.5px;color:var(--faint);margin-top:19px;line-height:1.5;max-width:310px}
   .cf-chart{flex:1;position:relative;min-height:288px}
   .cf-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+  .cfx-line{position:absolute;top:16px;height:calc(100% - 46px);width:1px;background:linear-gradient(180deg,rgba(37,99,235,.5),rgba(37,99,235,.12));opacity:0;transition:opacity .12s;pointer-events:none;z-index:2}
+  .cfx-dot{position:absolute;width:9px;height:9px;border-radius:50%;transform:translate(-4.5px,-4.5px);opacity:0;transition:opacity .12s;pointer-events:none;z-index:3;box-shadow:0 0 0 2px #fff}
+  #cfx-d0{background:#E5484D}#cfx-d1{background:#2563EB}#cfx-d2{background:#12805C}
+  .cfx-tip{position:absolute;top:4px;z-index:4;opacity:0;transition:opacity .12s;pointer-events:none;background:#0A0A0A;color:#fff;font-family:var(--mono);font-size:10px;line-height:1.5;padding:6px 9px;border-radius:8px;white-space:nowrap;transform:translateX(-50%);box-shadow:0 10px 26px -10px rgba(0,0,0,.5)}
+  .cfx-tip b{color:#8fb4ff}
   @media(max-width:760px){.cf-inner{flex-direction:column;gap:16px;padding:20px}.cf-info{width:auto}.cf-chart{min-height:220px}}
   /* movers: logo-led rows */
   .mvrow{justify-content:flex-start!important;gap:9px!important;padding:7px 6px!important}
@@ -962,9 +967,9 @@
         <div class="cf-spot"><span id="cf-spot">—</span><span class="cf-spotc" id="cf-spotc"></span></div>
         <div class="cf-med">Median path lands near <b id="cf-med">—</b></div>
         <div class="cf-rng"><div><div class="cf-rk">90% low</div><div class="cf-rv down" id="cf-lo">—</div></div><div><div class="cf-rk">90% high</div><div class="cf-rv up" id="cf-hi">—</div></div><div><div class="cf-rk">Prob. up</div><div class="cf-rv" id="cf-pu">—</div></div></div>
-        <div class="cf-note">Simulated from trailing drift &amp; volatility over the last 120 sessions. Illustrative — not a forecast.</div>
+        <div class="cf-note">Simulated from trailing drift &amp; volatility over the last 120 sessions. Hover the fan to inspect any session. Illustrative — not a forecast.</div>
       </div>
-      <div class="cf-chart"><canvas id="cf-cv"></canvas></div>
+      <div class="cf-chart"><canvas id="cf-cv"></canvas><div class="cfx-line" id="cfx-line"></div><div class="cfx-dot" id="cfx-d0"></div><div class="cfx-dot" id="cfx-d1"></div><div class="cfx-dot" id="cfx-d2"></div><div class="cfx-tip" id="cfx-tip"></div></div>
     </div>
   </div>
 
@@ -1132,6 +1137,18 @@
       if(p>0.72){var ea=Math.min(1,(p-0.72)/0.28),ex=X(total);ctx.globalAlpha=ea;ctx.textBaseline='middle';ctx.font='700 11.5px ui-monospace,SFMono-Regular,Menlo,monospace';
         [[(hi>=0?'+':'')+hi.toFixed(1)+'%',b.p95[H],'#12805C'],[(med>=0?'+':'')+med.toFixed(1)+'%',b.p50[H],'#2563EB'],[(lo>=0?'+':'')+lo.toFixed(1)+'%',b.p05[H],'#E5484D']].forEach(function(L){var yy=Y(L[1]);ctx.beginPath();ctx.arc(ex,yy,3.3,0,6.2832);ctx.fillStyle=L[2];ctx.fill();ctx.fillStyle=L[2];ctx.fillText(L[0],ex+7,yy);});ctx.globalAlpha=1;}
       if(p<1)requestAnimationFrame(frame);}
+    (function(){var host=cv.parentElement;if(!host)return;var line=document.getElementById('cfx-line'),tip=document.getElementById('cfx-tip'),d0=document.getElementById('cfx-d0'),d1=document.getElementById('cfx-d1'),d2=document.getElementById('cfx-d2');
+      function hide(){[line,tip,d0,d1,d2].forEach(function(x){if(x)x.style.opacity='0';});}
+      host.addEventListener('mousemove',function(ev){var r=cv.getBoundingClientRect(),mxp=ev.clientX-r.left,seg=(W-padL-padR)/total;if(seg<=0){hide();return;}
+        var s=Math.round((mxp-padL)/seg-(real.length-1));if(s<1||s>H){hide();return;}
+        var lx=X(real.length-1+s);
+        if(line){line.style.left=lx+'px';line.style.opacity='1';}
+        if(d0){d0.style.left=lx+'px';d0.style.top=Y(b.p05[s])+'px';d0.style.opacity='1';}
+        if(d1){d1.style.left=lx+'px';d1.style.top=Y(b.p50[s])+'px';d1.style.opacity='1';}
+        if(d2){d2.style.left=lx+'px';d2.style.top=Y(b.p95[s])+'px';d2.style.opacity='1';}
+        if(tip){var pm=(b.p50[s]/S0-1)*100;tip.innerHTML='<b>+'+s+'d</b> · med $'+Math.round(b.p50[s]).toLocaleString()+' ('+(pm>=0?'+':'')+pm.toFixed(1)+'%) · 90% $'+Math.round(b.p05[s]).toLocaleString()+'–$'+Math.round(b.p95[s]).toLocaleString();tip.style.left=Math.max(72,Math.min(W-72,lx))+'px';tip.style.opacity='1';}
+      },{passive:true});
+      host.addEventListener('mouseleave',hide,{passive:true});})();
     function play(){size();start=performance.now();running=true;requestAnimationFrame(frame);}
     play();
     window.addEventListener('resize',function(){clearTimeout(window._cfr);window._cfr=setTimeout(play,180);},{passive:true});
