@@ -862,6 +862,41 @@
   @keyframes gaugedraw{to{stroke-dashoffset:0}}
   @media(prefers-reduced-motion:reduce){.spk svg path[fill="none"],#indices .row,#megacaps .row,#crypto .row,.wl .row,#gauge path[stroke^="url"]{animation:none!important;stroke-dashoffset:0!important;opacity:1!important;transform:none!important}}
 
+  /* ===== OpenAI-fine typography — "Market intelligence" and everything below it ===== */
+  .fine{letter-spacing:-.01em}
+  .fine .secttl-xl{font-weight:500!important;letter-spacing:-.03em!important}
+  .fine .secttl-xl .secsub{font-weight:450!important;letter-spacing:.13em!important;color:var(--faint)!important}
+  .fine .ch h3{font-weight:500!important;letter-spacing:-.02em!important}
+  .fine .ch .tag{font-weight:450!important;letter-spacing:.06em!important}
+  .fine .row .sy{font-weight:500!important;letter-spacing:-.018em!important}
+  .fine .row .nm{font-weight:400!important}
+  .fine .row .px .v{font-weight:500!important;letter-spacing:-.02em!important}
+  .fine .row .px .c{font-weight:600!important}
+  .fine .lead-hd h3{font-weight:500!important;letter-spacing:-.028em!important}
+  .fine .lead-tag,.fine .lead-sym{font-weight:500!important}
+  .fine .lead-sym{letter-spacing:-.03em!important}
+  .fine .lead-px{font-weight:500!important;letter-spacing:-.032em!important}
+  .fine .lead-nm{font-weight:400!important}
+  .fine .lead .lp{font-weight:600!important}
+  .fine .ls-sym{font-weight:600!important;letter-spacing:-.034em!important}
+  .fine .ls-px{font-weight:600!important;letter-spacing:-.038em!important}
+  .fine .ls-nm{font-weight:400!important}
+  .fine .ls-lp,.fine .ls-badge{font-weight:500!important}
+  .fine .cf-ey{font-weight:500!important}
+  .fine #cf-spot{font-weight:600!important;letter-spacing:-.038em!important}
+  .fine .cf-rv{font-weight:600!important;letter-spacing:-.022em!important}
+  .fine .cf-med b{font-weight:600!important}
+  .fine .pk{font-weight:500!important}
+  .fine .pv{font-weight:500!important;letter-spacing:-.022em!important}
+  .fine .gv{font-weight:600!important;letter-spacing:-.032em!important}
+  .fine .seccell .sn{font-weight:500!important;letter-spacing:-.012em!important}
+  .fine .seccell .sp{font-weight:600!important}
+  .fine .mv-t .s{font-weight:500!important;letter-spacing:-.012em!important}
+  .fine .mvrow .p{font-weight:600!important}
+  .fine .ecard .esym{font-weight:500!important}
+  .fine .xplr-sym{font-weight:600!important;letter-spacing:-.03em!important}
+  .fine .xplr-v{font-weight:500!important}
+
 </style>
 </head>
 <body>
@@ -907,6 +942,7 @@
     <div class="s12 reveal" id="news-list"><div class="loading"><span class="skb" style="width:100%"></span></div></div>
   </div>
 
+  <div class="fine">
   <div class="secttl secttl-xl reveal">Market intelligence<span class="secsub">maps · movers · internals · live</span></div>
 
   <div class="sesbar reveal" id="sesbar"><div class="ses-l"><span class="sdot" id="ses-dot"></span><b id="ses-st">U.S. session</b><span class="ses-cd" id="ses-cd">loading…</span></div><div class="ses-track"><span id="ses-fill"></span></div></div>
@@ -978,6 +1014,7 @@
     <div class="card s4 reveal"><div class="ch"><h3>Rates &amp; macro</h3><span class="tag">FRED · daily</span></div><div id="macro"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal"><div class="ch"><h3>Top movers</h3><span class="tag">US · today</span></div><div id="movers"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal"><div class="ch"><h3>Sectors</h3><span class="tag">SPDR · % today</span></div><div id="sectors"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
+  </div>
   </div>
 
   <p class="foot">Click any ticker for the full detail view. The map is market-cap weighted, colored by today's move; the living field encodes real breadth and volatility. Ask-panels &amp; the brief are AI-composed from real figures and may be wrong. Prices via Quantora proxy &amp; CoinGecko, delayed/EOD. Cones are illustrative Monte-Carlo, not forecasts. Educational only — not investment advice.</p>
