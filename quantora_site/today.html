@@ -764,6 +764,28 @@
   .ls-px{font-size:clamp(30px,2.6vw,42px);font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin-top:12px;color:var(--ink)}
   .ls-chart{flex:1;position:relative;min-height:210px}
   .ls-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+  /* --- cinematic 21-day probability-cone feature banner --- */
+  .conef{position:relative;overflow:hidden;border:1px solid transparent;border-radius:20px;width:100%;margin:0 0 8px;
+    background:linear-gradient(150deg,#ffffff,#f7fbff) padding-box,linear-gradient(120deg,rgba(255,255,255,.9),rgba(66,108,222,.3) 86%) border-box;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 14px rgba(26,34,70,.06),0 48px 92px -48px rgba(37,99,235,.36)}
+  .conef::before{content:"";position:absolute;top:0;left:-70%;width:55%;height:100%;z-index:3;pointer-events:none;opacity:0;transform:skewX(-16deg);background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent)}
+  .conef:hover::before{animation:decksheen 1.15s ease}
+  .cf-inner{display:flex;gap:34px;align-items:stretch;padding:24px 28px;box-sizing:border-box;position:relative;z-index:1}
+  .cf-info{flex:none;width:330px;display:flex;flex-direction:column;justify-content:center}
+  .cf-ey{align-self:flex-start;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);background:var(--accent-weak);padding:5px 10px;border-radius:8px;font-weight:600}
+  .cf-spot{display:flex;align-items:baseline;gap:12px;margin-top:16px}
+  #cf-spot{font-size:clamp(30px,2.6vw,44px);font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;color:var(--ink);line-height:1}
+  .cf-spotc{font-family:var(--mono);font-size:13px;font-weight:700}
+  .cf-med{font-size:12.5px;color:var(--muted);margin-top:15px;line-height:1.5}
+  .cf-med b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums}
+  .cf-rng{display:flex;gap:26px;margin-top:19px;flex-wrap:wrap}
+  .cf-rk{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .cf-rv{font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:4px;color:var(--ink)}
+  .cf-rv.up{color:var(--up)}.cf-rv.down{color:var(--down)}
+  .cf-note{font-size:10.5px;color:var(--faint);margin-top:19px;line-height:1.5;max-width:310px}
+  .cf-chart{flex:1;position:relative;min-height:288px}
+  .cf-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+  @media(max-width:760px){.cf-inner{flex-direction:column;gap:16px;padding:20px}.cf-info{width:auto}.cf-chart{min-height:220px}}
   /* movers: logo-led rows */
   .mvrow{justify-content:flex-start!important;gap:9px!important;padding:7px 6px!important}
   .mvrow .tlogo{width:27px;height:27px;border-radius:7px;flex:none}
@@ -928,12 +950,25 @@
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Megacaps</h3><span class="tag">Live · EOD</span></div><div id="megacaps"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Crypto</h3><span class="tag">24/7 · live</span></div><div id="crypto"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
 
-    <div class="card s5 reveal" data-fx><div class="ch"><h3>Watchlist</h3><span class="tag">Yours · saved</span></div><div class="wl-add"><input id="wl-in" placeholder="Add a ticker (AAPL, BTC…)" maxlength="6"><button id="wl-go" type="button">Add</button></div><div class="wl" id="watchlist"><div class="loading">—</div></div></div>
-    <div class="card s4 reveal" data-fx><div class="ch"><h3>SPY · 21-day cone</h3><span class="tag">Monte Carlo</span></div><div class="cone"><canvas id="conecv"></canvas></div><div class="cstats"><div><div class="k">Median</div><div class="v num" id="cmed" style="color:var(--accent)">—</div></div><div><div class="k">90% range</div><div class="v num" id="cci" style="font-size:12px">—</div></div></div></div>
-    <div class="card s3 reveal" data-fx><div class="ch"><h3>Jump in</h3><span class="tag">⌘K</span></div><div class="jump"><a class="cta" href="/terminal.html">Open the terminal →</a><a class="lk" href="/track.html"><span>Track record</span><span class="ar">→</span></a><a class="lk" href="/cone.html"><span>Probability cone</span><span class="ar">→</span></a><a class="lk" href="/screener.html"><span>Screener</span><span class="ar">→</span></a></div></div>
+    <div class="card s8 reveal" data-fx><div class="ch"><h3>Watchlist</h3><span class="tag">Yours · saved</span></div><div class="wl-add"><input id="wl-in" placeholder="Add a ticker (AAPL, BTC…)" maxlength="6"><button id="wl-go" type="button">Add</button></div><div class="wl" id="watchlist"><div class="loading">—</div></div></div>
+    <div class="card s4 reveal" data-fx><div class="ch"><h3>Jump in</h3><span class="tag">⌘K</span></div><div class="jump"><a class="cta" href="/terminal.html">Open the terminal →</a><a class="lk" href="/track.html"><span>Track record</span><span class="ar">→</span></a><a class="lk" href="/cone.html"><span>Probability cone</span><span class="ar">→</span></a><a class="lk" href="/screener.html"><span>Screener</span><span class="ar">→</span></a></div></div>
   </div>
 
-  <div class="secttl">Across the market · rates, movers &amp; sectors</div>
+  <div class="secttl secttl-xl reveal">The 21-day outlook<span class="secsub">SPY · Monte-Carlo · live</span></div>
+  <div class="conef reveal" id="conef">
+    <div class="cf-inner">
+      <div class="cf-info">
+        <span class="cf-ey">Probability cone · 21 sessions</span>
+        <div class="cf-spot"><span id="cf-spot">—</span><span class="cf-spotc" id="cf-spotc"></span></div>
+        <div class="cf-med">Median path lands near <b id="cf-med">—</b></div>
+        <div class="cf-rng"><div><div class="cf-rk">90% low</div><div class="cf-rv down" id="cf-lo">—</div></div><div><div class="cf-rk">90% high</div><div class="cf-rv up" id="cf-hi">—</div></div><div><div class="cf-rk">Prob. up</div><div class="cf-rv" id="cf-pu">—</div></div></div>
+        <div class="cf-note">Simulated from trailing drift &amp; volatility over the last 120 sessions. Illustrative — not a forecast.</div>
+      </div>
+      <div class="cf-chart"><canvas id="cf-cv"></canvas></div>
+    </div>
+  </div>
+
+  <div class="secttl secttl-xl reveal">Across the market<span class="secsub">rates · movers · sectors · live</span></div>
   <div class="bento">
     <div class="card s4 reveal"><div class="ch"><h3>Rates &amp; macro</h3><span class="tag">FRED · daily</span></div><div id="macro"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal"><div class="ch"><h3>Top movers</h3><span class="tag">US · today</span></div><div id="movers"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
@@ -1060,6 +1095,41 @@
     fill(b.p95,b.p05,.08);fill(b.p75,b.p25,.15);ctx.setLineDash([4,3]);ctx.lineWidth=1.4;ctx.strokeStyle='rgba(37,99,235,.85)';ctx.beginPath();for(t=0;t<=H;t++){var xm=X(real.length-1+t);t===0?ctx.moveTo(xm,Y(b.p50[t])):ctx.lineTo(xm,Y(b.p50[t]));}ctx.stroke();ctx.setLineDash([]);
     ctx.lineWidth=2;ctx.strokeStyle='#0A0A0A';ctx.beginPath();for(i=0;i<real.length;i++){var xr=X(i),yr=Y(real[i]);i===0?ctx.moveTo(xr,yr):ctx.lineTo(xr,yr);}ctx.stroke();ctx.lineWidth=1;ctx.strokeStyle='rgba(11,15,25,.14)';ctx.beginPath();ctx.moveTo(X(real.length-1),8);ctx.lineTo(X(real.length-1),chh-8);ctx.stroke();
     var med=(b.p50[H]/S0-1)*100,lo=(b.p05[H]/S0-1)*100,hi=(b.p95[H]/S0-1)*100;if(medEl)medEl.textContent=(med>=0?'+':'')+med.toFixed(1)+'%';if(ciEl)ciEl.textContent=(lo>=0?'+':'')+lo.toFixed(0)+'% … '+(hi>=0?'+':'')+hi.toFixed(0)+'%';}catch(e){}}
+  function nCDF(x){var t=1/(1+0.2316419*Math.abs(x)),d=0.3989423*Math.exp(-x*x/2),p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function drawBigCone(cv,d,H){try{H=H||21;if(!cv)return;var c=d.closes;if(!c||c.length<20)return;
+    var rets=[],i;for(i=Math.max(1,c.length-120);i<c.length;i++)rets.push(Math.log(c[i]/c[i-1]));
+    var m=0;for(i=0;i<rets.length;i++)m+=rets[i];m/=rets.length;var vv=0;for(i=0;i<rets.length;i++)vv+=(rets[i]-m)*(rets[i]-m);vv/=Math.max(1,rets.length-1);var sig=Math.sqrt(vv);
+    var S0=c[c.length-1],b={p05:[],p25:[],p50:[],p75:[],p95:[]},t;
+    for(t=0;t<=H;t++){var dr=(m-.5*sig*sig)*t,sd=sig*Math.sqrt(t);b.p05.push(S0*Math.exp(dr-1.645*sd));b.p25.push(S0*Math.exp(dr-0.674*sd));b.p50.push(S0*Math.exp(dr));b.p75.push(S0*Math.exp(dr+0.674*sd));b.p95.push(S0*Math.exp(dr+1.645*sd));}
+    var real=c.slice(-20),med=(b.p50[H]/S0-1)*100,lo=(b.p05[H]/S0-1)*100,hi=(b.p95[H]/S0-1)*100,pu=nCDF(((m-.5*sig*sig)*Math.sqrt(H))/(sig||1e-9))*100;
+    var el;el=document.getElementById('cf-spot');if(el)el.textContent='$'+S0.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    el=document.getElementById('cf-spotc');if(el){var u=d.chg>=0;el.textContent=(u?'▲ ':'▼ ')+(d.chg>=0?'+':'')+(+d.chg).toFixed(2)+'%';el.style.color=u?'var(--up)':'var(--down)';}
+    el=document.getElementById('cf-med');if(el)el.textContent='$'+b.p50[H].toLocaleString(undefined,{maximumFractionDigits:0})+' ('+(med>=0?'+':'')+med.toFixed(1)+'%)';
+    el=document.getElementById('cf-lo');if(el)el.textContent=(lo>=0?'+':'')+lo.toFixed(1)+'%';
+    el=document.getElementById('cf-hi');if(el)el.textContent=(hi>=0?'+':'')+hi.toFixed(1)+'%';
+    el=document.getElementById('cf-pu');if(el)el.textContent=Math.round(pu)+'%';
+    var ctx=cv.getContext('2d');if(!ctx)return;var dpr=Math.min(devicePixelRatio||1,2),W=0,Hh=0;
+    function size(){var r=cv.getBoundingClientRect();W=r.width;Hh=r.height;cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,Hh*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+    size();var all=real.concat(b.p05,b.p95),mn=Math.min.apply(null,all),mx=Math.max.apply(null,all),pd=(mx-mn)*.1||1;mn-=pd;mx+=pd;
+    var padL=10,padR=66,padT=16,padB=26,total=real.length-1+H;
+    var X=function(idx){return padL+(W-padL-padR)*(idx/total);},Y=function(val){return padT+(Hh-padT-padB)*(1-(val-mn)/(mx-mn));};
+    var nowX=X(real.length-1),start=performance.now(),DUR=RM?1:1500,running=true;
+    function band(tp,bt,a,clipX){ctx.save();ctx.beginPath();ctx.rect(0,0,clipX,Hh);ctx.clip();ctx.beginPath();for(var k=0;k<=H;k++){var xx=X(real.length-1+k);k===0?ctx.moveTo(xx,Y(tp[k])):ctx.lineTo(xx,Y(tp[k]));}for(k=H;k>=0;k--)ctx.lineTo(X(real.length-1+k),Y(bt[k]));ctx.closePath();var g=ctx.createLinearGradient(0,padT,0,Hh-padB);g.addColorStop(0,'rgba(37,99,235,'+(a*1.35)+')');g.addColorStop(1,'rgba(37,99,235,'+(a*0.55)+')');ctx.fillStyle=g;ctx.fill();ctx.restore();}
+    function frame(now){if(!running)return;var p=Math.min(1,(now-start)/DUR),e=1-Math.pow(1-p,3),clipX=nowX+(W-padR-nowX+3)*e,k;
+      ctx.clearRect(0,0,W,Hh);
+      ctx.strokeStyle='rgba(11,15,25,.05)';ctx.lineWidth=1;for(k=0;k<=3;k++){var gy=padT+(Hh-padT-padB)*k/3;ctx.beginPath();ctx.moveTo(padL,gy);ctx.lineTo(W-padR,gy);ctx.stroke();}
+      band(b.p95,b.p05,.06,clipX);band(b.p75,b.p25,.11,clipX);
+      ctx.save();ctx.beginPath();ctx.rect(0,0,clipX,Hh);ctx.clip();ctx.setLineDash([5,4]);ctx.lineWidth=1.7;ctx.strokeStyle='rgba(37,99,235,.9)';ctx.shadowColor='rgba(37,99,235,.55)';ctx.shadowBlur=9;ctx.beginPath();for(k=0;k<=H;k++){var xm=X(real.length-1+k);k===0?ctx.moveTo(xm,Y(b.p50[k])):ctx.lineTo(xm,Y(b.p50[k]));}ctx.stroke();ctx.shadowBlur=0;ctx.setLineDash([]);ctx.restore();
+      ctx.lineWidth=2.4;ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle='#0A0A0A';ctx.beginPath();for(k=0;k<real.length;k++){var xr=X(k),yr=Y(real[k]);k===0?ctx.moveTo(xr,yr):ctx.lineTo(xr,yr);}ctx.stroke();
+      ctx.strokeStyle='rgba(11,15,25,.17)';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(nowX,padT);ctx.lineTo(nowX,Hh-padB);ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(nowX,Y(S0),3.6,0,6.2832);ctx.fillStyle='#0A0A0A';ctx.fill();
+      if(p>0.72){var ea=Math.min(1,(p-0.72)/0.28),ex=X(total);ctx.globalAlpha=ea;ctx.textBaseline='middle';ctx.font='700 11.5px ui-monospace,SFMono-Regular,Menlo,monospace';
+        [[(hi>=0?'+':'')+hi.toFixed(1)+'%',b.p95[H],'#12805C'],[(med>=0?'+':'')+med.toFixed(1)+'%',b.p50[H],'#2563EB'],[(lo>=0?'+':'')+lo.toFixed(1)+'%',b.p05[H],'#E5484D']].forEach(function(L){var yy=Y(L[1]);ctx.beginPath();ctx.arc(ex,yy,3.3,0,6.2832);ctx.fillStyle=L[2];ctx.fill();ctx.fillStyle=L[2];ctx.fillText(L[0],ex+7,yy);});ctx.globalAlpha=1;}
+      if(p<1)requestAnimationFrame(frame);}
+    requestAnimationFrame(frame);
+    window.addEventListener('resize',function(){clearTimeout(window._cfr);window._cfr=setTimeout(function(){size();start=performance.now();running=true;requestAnimationFrame(frame);},180);},{passive:true});
+    document.addEventListener('visibilitychange',function(){if(document.hidden){running=false;}else if(!running){running=true;start=performance.now();requestAnimationFrame(frame);}});
+  }catch(e){}}
   function countUp(el,target,dur,pre,suf,dec){if(!el)return;var f=function(){el.textContent=pre+target.toFixed(dec)+suf;};if(RM||HID()){f();return;}var t0=null;requestAnimationFrame(function s(t){if(t0===null)t0=t;var p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=pre+(target*e).toFixed(dec)+suf;if(p<1)requestAnimationFrame(s);else f();});}
   function drawCheroChart(cv,closes){
     var ctx=cv.getContext('2d');if(!ctx)return;var vals=closes.slice(-160);if(vals.length<3)return;
@@ -1098,7 +1168,7 @@
     var hc=document.getElementById('herochart');if(hc)areaChart(hc,c.slice(-126),up?'#12805C':'#E5484D');
     var chc=document.getElementById('cherochart');if(chc)drawCheroChart(chc,c);
     try{var rr=[];for(var i=Math.max(1,c.length-21);i<c.length;i++)rr.push(Math.log(c[i]/c[i-1]));var mm=0;rr.forEach(function(x){mm+=x;});mm/=rr.length;var vv=0;rr.forEach(function(x){vv+=(x-mm)*(x-mm);});vv/=Math.max(1,rr.length-1);MS.volT=Math.max(0.08,Math.min(1,Math.sqrt(vv)*Math.sqrt(252)/0.45));}catch(e){}
-    startField();drawConeInto(document.getElementById('conecv'),document.getElementById('cmed'),document.getElementById('cci'),s);document.getElementById('asof').textContent='as of '+time()+' · delayed · EOD';
+    startField();drawBigCone(document.getElementById('cf-cv'),s);document.getElementById('asof').textContent='as of '+time()+' · delayed · EOD';
     window.addEventListener('resize',function(){clearTimeout(window._hcr);window._hcr=setTimeout(function(){if(hc)areaChart(hc,c.slice(-126),up?'#12805C':'#E5484D');},240);},{passive:true});});}
   function buildGauge(){fetch('https://api.alternative.me/fng/?limit=1').then(function(r){return r.json();}).then(function(j){var d=j&&j.data&&j.data[0],val=d?+d.value:null,lbl=d?d.value_classification:'',svg=document.getElementById('gauge'),cx=120,cy=132,R=100;
     function P(a){var r=a*Math.PI/180;return[cx+R*Math.cos(r),cy-R*Math.sin(r)];}function ar(a0,a1){var p0=P(a0),p1=P(a1),lg=(a0-a1)>180?1:0;return 'M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+R+' '+R+' 0 '+lg+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1);}
