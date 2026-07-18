@@ -420,6 +420,7 @@ function plot(cv,series,opts){opts=opts||{};var s=csize(cv),ctx=s.ctx,W=s.W,H=s.
 
 /* ---------------- state + router ---------------- */
 var ST={sym:'',closes:[],dates:[],spyRets:[],q:null};
+var FUND={};
 var POP=['AAPL','NVDA','MSFT','GOOGL','AMZN','META','TSLA','AVGO','NFLX','AMD','JPM','V','WMT','XOM','JNJ','ORCL','COST','PLTR','COIN','UBER'];
 var NAMES={AAPL:'Apple',NVDA:'NVIDIA',MSFT:'Microsoft',GOOGL:'Alphabet',AMZN:'Amazon',META:'Meta Platforms',TSLA:'Tesla',AVGO:'Broadcom',NFLX:'Netflix',AMD:'Advanced Micro Devices',JPM:'JPMorgan Chase',V:'Visa',WMT:'Walmart',XOM:'Exxon Mobil',JNJ:'Johnson & Johnson',ORCL:'Oracle',COST:'Costco',PLTR:'Palantir',COIN:'Coinbase',UBER:'Uber'};
 
@@ -439,8 +440,8 @@ function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice
     } else { ST.closes=pp.closes;ST.dates=pp.dates; renderHeader();buildChart();buildTech();buildMC();buildRisk();buildDD();buildHist();buildSeas(); }
     if(r[0]&&r[0].limited&&!pp){renderHeaderLimited();}
   });
-  // fundamentals (independent, resilient)
-  loadOverview(sym);loadStats(sym);loadFinancials(sym);loadValuation(sym);loadHealth(sym);loadAnalyst(sym);loadOwnership(sym);loadPeers(sym);loadNews(sym);
+  // fundamentals (independent, resilient) — valuation & health render inside loadFinancials
+  loadOverview(sym);loadStats(sym);loadFinancials(sym);loadAnalyst(sym);loadOwnership(sym);loadPeers(sym);loadNews(sym);
   // reset AI
   $('ai-body').innerHTML='<div class="state"><span class="si">ready</span>Click generate — the analyst reads every panel and writes a bull / base / bear note grounded in the real figures.</div>';
   $('ai-btn').disabled=false;$('ai-btn').innerHTML='✦ Generate research note';
@@ -614,7 +615,7 @@ load(q0?decodeURIComponent(q0):'AAPL');
 function pick(o){for(var i=1;i<arguments.length;i++){var k=arguments[i];if(o&&o[k]!=null&&o[k]!==''&&isFinite(+o[k]))return +o[k];}return null;}
 function pickS(o){for(var i=1;i<arguments.length;i++){var k=arguments[i];if(o&&o[k]!=null&&o[k]!=='')return o[k];}return null;}
 function asPct(v){if(v==null)return null;return Math.abs(v)<=5?v*100:v;}
-var FUND={}; // stored statements for cross-module use
+/* FUND is declared with the app state near the top */
 
 function loadOverview(sym){var node=$('ov-body');
   api('profile',sym).then(function(r){if(r.limited){limMsg(node);return;}if(!r.ok){missMsg(node);return;}
@@ -886,4 +887,4 @@ function renderNote(txt,d){
   if(val)h+='<div class="ai-card"><div class="h" style="color:var(--accent)"><span class="dt" style="background:var(--accent)"></span>Valuation</div><p>'+esc(val)+'</p></div>';
   h+='</div>';
   if(risks||watch){h+='<div class="ai-cards" style="margin-top:12px">';if(risks)h+='<div class="ai-card"><div class="h"><span class="dt" style="background:var(--muted)"></span>Key risks</div>'+bullets(risks)+'</div>';if(watch)h+='<div class="ai-card"><div class="h"><span class="dt" style="background:var(--accent)"></span>What to watch</div>'+bullets(watch)+'</div>';h+='</div>';}
-  h+='<div class="ai-disc">Educational information only, not investment advice. AI-generated from the figures on this page and may contain errors — verify before trading.</div>';
+  h+='<div class="ai-disc">Educational information only, not investment advice. AI-generated from the figures on this page and may contain errors — 
