@@ -370,13 +370,15 @@ function num(v){v=parseFloat(v);return isFinite(v)?v:null;}
 /* ---------------- data layer (resilient) ---------------- */
 var CACHE={};
 function api(type,sym){var key=type+':'+sym;if(CACHE[key])return Promise.resolve(CACHE[key]);
-  return fetch('/api/fmp?type='+type+'&symbol='+encodeURIComponent(sym)).then(function(r){return r.text();}).then(function(t){
+  var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort();},13000);
+  return fetch('/api/fmp?type='+type+'&symbol='+encodeURIComponent(sym),{signal:ctrl.signal}).then(function(r){return r.text();}).then(function(t){clearTimeout(to);
     var limited=/Limit Reach|upgrade your plan/i.test(t);var j=null;try{j=JSON.parse(t);}catch(e){}
     var data=(j&&typeof j==='object'&&'data' in j)?j.data:j;
-    var errObj=data&&typeof data==='object'&&!Array.isArray(data)&&(data['Error Message']||data['error']);
-    var res={ok:!limited&&!errObj&&data!=null,limited:limited,data:data};
-    if(res.ok)CACHE[key]=res;return res;
-  }).catch(function(){return {ok:false,limited:false,data:null};});
+    var errObj=data&&typeof data==='object'&&!Array.isArray(data)&&(data['Error Message']||data['error']||data['Error']);
+    var ok=!limited&&!errObj&&data!=null;
+    var res={ok:ok,limited:limited,data:ok?data:null};
+    if(ok)CACHE[key]=res;return res;
+  }).catch(function(e){clearTimeout(to);return {ok:false,limited:/abort/i.test(''+e)?false:false,data:null};});
 }
 function quote(sym){return fetch('/api/news?quote='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){return (j&&j.quotes&&j.quotes[sym.toUpperCase()])||null;}).catch(function(){return null;});}
 function arrOf(d){return Array.isArray(d)?d:(d?[d]:[]);}
@@ -885,13 +887,3 @@ function renderNote(txt,d){
   h+='</div>';
   if(risks||watch){h+='<div class="ai-cards" style="margin-top:12px">';if(risks)h+='<div class="ai-card"><div class="h"><span class="dt" style="background:var(--muted)"></span>Key risks</div>'+bullets(risks)+'</div>';if(watch)h+='<div class="ai-card"><div class="h"><span class="dt" style="background:var(--accent)"></span>What to watch</div>'+bullets(watch)+'</div>';h+='</div>';}
   h+='<div class="ai-disc">Educational information only, not investment advice. AI-generated from the figures on this page and may contain errors — verify before trading.</div>';
-  return h;
-}
-
-function redrawFund(){if(FUND.income)renderFinChart();}
-window.renderFinTab=renderFinTab;window.genAI=genAI;window.redrawFund=redrawFund;
-/* END FUND */
-})();
-</script>
-</body>
-</html>
