@@ -887,4 +887,14 @@ function renderNote(txt,d){
   if(val)h+='<div class="ai-card"><div class="h" style="color:var(--accent)"><span class="dt" style="background:var(--accent)"></span>Valuation</div><p>'+esc(val)+'</p></div>';
   h+='</div>';
   if(risks||watch){h+='<div class="ai-cards" style="margin-top:12px">';if(risks)h+='<div class="ai-card"><div class="h"><span class="dt" style="background:var(--muted)"></span>Key risks</div>'+bullets(risks)+'</div>';if(watch)h+='<div class="ai-card"><div class="h"><span class="dt" style="background:var(--accent)"></span>What to watch</div>'+bullets(watch)+'</div>';h+='</div>';}
-  h+='<div class="ai-disc">Educational information only, not investment advice. AI-generated from the figures on this page and may contain errors — 
+  h+='<div class="ai-disc">Educational information only, not investment advice. AI-generated from the figures on this page and may contain errors — verify before trading.</div>';
+  return h;
+}
+
+function redrawFund(){if(FUND.income)renderFinChart();}
+window.renderFinTab=renderFinTab;window.genAI=genAI;window.redrawFund=redrawFund;
+/* END FUND */
+})();
+</script>
+</body>
+</html>
