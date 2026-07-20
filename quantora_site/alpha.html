@@ -126,6 +126,11 @@ a{color:inherit;text-decoration:none}
 .acx-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#2563EB;box-shadow:0 0 0 2px #fff;transform:translate(-4.5px,-4.5px);opacity:0;transition:opacity .1s;pointer-events:none;z-index:3}
 .acx-tip{position:absolute;top:6px;z-index:4;opacity:0;transition:opacity .1s;pointer-events:none;background:#0A0A0A;color:#fff;font-family:var(--mono);font-size:10.5px;line-height:1.5;padding:5px 9px;border-radius:8px;white-space:nowrap;transform:translateX(-50%);box-shadow:0 8px 22px -8px rgba(0,0,0,.4)}
 .acx-tip b{color:#8fb4ff}
+.cmp{display:flex;align-items:center;gap:4px;background:var(--well);border:1px solid var(--line2);border-radius:9px;padding:0 7px;height:30px}
+.cmp input{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink);width:66px;text-transform:uppercase;letter-spacing:.02em}
+.cmp input::placeholder{text-transform:none;letter-spacing:0;color:var(--faint);font-weight:400;font-family:var(--sans)}
+.cmpx{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;padding:0 2px}
+.cmpx:hover{color:var(--down)}
 
 /* gauges / scores */
 .scorewrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
@@ -252,7 +257,10 @@ a{color:inherit;text-decoration:none}
     <div class="panel sp8" id="p-chart">
       <div class="ph">
         <div class="seg" id="ac-tf"><button data-n="63">3M</button><button data-n="126">6M</button><button data-n="252" class="on">1Y</button><button data-n="756">3Y</button><button data-n="1300">Max</button></div>
+        <div style="display:flex;gap:8px;align-items:center">
         <div class="seg" id="ac-ov"><button data-ov="ma" class="on">MA</button><button data-ov="bb">Bollinger</button><button data-ov="rs">vs SPY</button></div>
+        <div class="cmp"><span class="cmpx" id="cmp-x" style="display:none">×</span><input id="cmp-in" placeholder="vs ticker" maxlength="8" autocomplete="off" spellcheck="false"></div>
+        </div>
       </div>
       <div class="chart" id="ac-chart" style="height:300px"><canvas id="ac-cv"></canvas>
         <div id="ac-hover" style="position:absolute;top:8px;left:10px;font-family:var(--mono);font-size:11px;color:var(--mid);pointer-events:none;z-index:1"></div>
@@ -440,7 +448,7 @@ var NAMES={AAPL:'Apple',NVDA:'NVIDIA',MSFT:'Microsoft',GOOGL:'Alphabet',AMZN:'Am
 function parsePrices(res){if(!res||!res.ok)return null;var a=arrOf(res.data);if(!a.length)return null;var chron=a.slice().reverse();var closes=[],dates=[];chron.forEach(function(d){var p=num(d.price!=null?d.price:d.close);if(p!=null){closes.push(p);dates.push(d.date);}});return closes.length?{closes:closes,dates:dates}:null;}
 
 function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,8);if(!sym)return;
-  ST.sym=sym;CACHE={};
+  ST.sym=sym;CACHE={};AC.cmp=null;ST._cmpClose=null;(function(){var x=$('cmp-x');if(x)x.style.display='none';var i=$('cmp-in');if(i)i.value='';})();
   $('cmd-in').value='';$('s-name').textContent=NAMES[sym]||sym;$('s-sub').textContent=sym;$('ai-h').textContent='Research note · '+sym;
   document.title='Quantora Alpha — '+sym;
   if(history.replaceState)history.replaceState(null,'','?sym='+sym);
@@ -450,7 +458,7 @@ function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice
     var spp=parsePrices(r[1]);ST.spyRets=spp?logrets(spp.closes):[];
     if(!pp){$('hd-price').textContent='—';missMsg($('hero-chart').parentElement||$('p-hero'),'No price history for '+sym+'.');
       // still try fundamentals
-    } else { ST.closes=pp.closes;ST.dates=pp.dates; renderHeader();buildChart();buildTech();buildMC();buildRisk();buildDD();buildHist();buildSeas(); }
+    } else { ST.closes=pp.closes;ST.dates=pp.dates; renderHeader();buildChart();buildTech();buildMC();buildRisk();buildDD();buildHist();buildSeas(); if(FUND.income||FUND.cashflow)renderValuation(); if(FUND._targ)renderTargets(FUND._targ,FUND._rat); }
     if(r[0]&&r[0].limited&&!pp){renderHeaderLimited();}
   });
   // fundamentals (independent, resilient) — valuation & health render inside loadFinancials
@@ -480,9 +488,18 @@ function renderHeader(){var c=ST.closes,q=ST.q,last=c[c.length-1];
 }
 
 /* ---------------- PRICE CHART + overlays ---------------- */
-var AC={n:252,ov:'ma',ind:'rsi'};
+var AC={n:252,ov:'ma',ind:'rsi',cmp:null};
+function cmpSet(sym2){sym2=(sym2||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,8);if(!sym2||sym2===ST.sym){AC.cmp=null;ST._cmpClose=null;var x=$('cmp-x');if(x)x.style.display='none';buildChart();return;}
+  api('prices',sym2).then(function(r){var p=parsePrices(r);if(!p){toast('No data for '+sym2);return;}ST._cmpClose=p.closes;AC.cmp=sym2;var x=$('cmp-x');if(x)x.style.display='';buildChart();});}
+function cmpChart(c,n){var m=Math.min(n,c.length,ST._cmpClose.length);var a=c.slice(c.length-m),b=ST._cmpClose.slice(ST._cmpClose.length-m);
+  var ra=a.map(function(v){return v/a[0]*100;}),rb=b.map(function(v){return v/b[0]*100;});
+  var g=plot($('ac-cv'),[{vals:ra,color:'#2563EB',width:2,dot:true},{vals:rb,color:'#E5A93B',width:2,dot:true}],{});
+  window._acGeo={geo:g,win:ra,dates:ST.dates.slice(ST.dates.length-m),n:m};
+  var pa=ra[m-1]-100,pb=rb[m-1]-100;
+  $('ac-hover').innerHTML='<span style="color:#2563EB;font-weight:600">'+ST.sym+' '+(pa>=0?'+':'')+pa.toFixed(1)+'%</span> &nbsp;vs&nbsp; <span style="color:#E5A93B;font-weight:600">'+AC.cmp+' '+(pb>=0?'+':'')+pb.toFixed(1)+'%</span> · rebased '+m+'d';}
 function buildChart(){var c=ST.closes;if(!c.length)return;
   var n=Math.min(AC.n,c.length);var win=c.slice(c.length-n);
+  if(AC.cmp&&ST._cmpClose){cmpChart(c,n);drawSub(c,n);return;}
   var series=[{vals:win,color:'#2563EB',area:'rgba(37,99,235,.13)',width:2,dot:true}];
   if(AC.ov==='ma'){var s50=sma(c,50).slice(c.length-n),s200=sma(c,200).slice(c.length-n);series.push({vals:s50,color:'#E5A93B',width:1.3});series.push({vals:s200,color:'#8B5CF6',width:1.3});}
   else if(AC.ov==='bb'){var m=sma(c,20),sd=[];for(var i=0;i<c.length;i++){if(i<19){sd.push(null);continue;}var w=c.slice(i-19,i+1);sd.push(std(w));}var up=[],dn=[];for(i=0;i<c.length;i++){up.push(m[i]!=null?m[i]+2*sd[i]:null);dn.push(m[i]!=null?m[i]-2*sd[i]:null);}series.push({vals:up.slice(c.length-n),color:'rgba(37,99,235,.4)',width:1,dash:[4,3]});series.push({vals:dn.slice(c.length-n),color:'rgba(37,99,235,.4)',width:1,dash:[4,3]});series.push({vals:m.slice(c.length-n),color:'#E5A93B',width:1.2});}
@@ -628,6 +645,8 @@ function renderSug(qy){var box=$('cmd-sug');qy=(qy||'').toUpperCase();var list=P
   $('ac-tf').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('ac-tf').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');AC.n=+b.getAttribute('data-n');buildChart();});
   $('ac-ov').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('ac-ov').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');AC.ov=b.getAttribute('data-ov');buildChart();});
   $('ac-ind').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('ac-ind').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');AC.ind=b.getAttribute('data-ind');buildChart();});
+  var _cmpi=$('cmp-in');if(_cmpi){_cmpi.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cmpSet(_cmpi.value.trim());}});}
+  var _cmpx=$('cmp-x');if(_cmpx){_cmpx.addEventListener('click',function(){if(_cmpi)_cmpi.value='';cmpSet('');});}
   (function(){var host=$('ac-chart');if(!host)return;var line=$('acx-line'),dot=$('acx-dot'),tip=$('acx-tip');function hide(){[line,dot,tip].forEach(function(x){if(x)x.style.opacity='0';});}
     host.addEventListener('mousemove',function(ev){var g=window._acGeo;if(!g||!g.geo)return;var cv=$('ac-cv'),rect=cv.getBoundingClientRect(),mx=ev.clientX-rect.left,geo=g.geo;var seg=(geo.W-geo.pl-geo.pr)/Math.max(1,g.n-1);if(seg<=0)return;var i=Math.round((mx-geo.pl)/seg);i=Math.max(0,Math.min(g.n-1,i));var val=g.win[i];if(val==null)return;var lx=geo.X(i),ly=geo.Y(val);if(line){line.style.left=lx+'px';line.style.opacity='1';}if(dot){dot.style.left=lx+'px';dot.style.top=ly+'px';dot.style.opacity='1';}if(tip){tip.innerHTML='<b>'+(g.dates[i]||'')+'</b> · '+(g.rs?val.toFixed(1):money(val));tip.style.left=Math.max(56,Math.min(geo.W-56,lx))+'px';tip.style.opacity='1';}},{passive:true});
     host.addEventListener('mouseleave',hide,{passive:true});})();
@@ -791,7 +810,7 @@ function gaugeHTML(id,val,max,col,lbl){var pct=Math.max(0,Math.min(1,val/max));v
 
 function loadAnalyst(sym){
   Promise.all([api('estimates',sym),api('targets',sym),api('ratings',sym)]).then(function(r){
-    renderEstimates(r[0]);renderTargets(r[1],r[2]);
+    FUND._targ=r[1];FUND._rat=r[2];renderEstimates(r[0]);renderTargets(r[1],r[2]);
   });
 }
 function renderEstimates(res){var node=$('est-body');if(res.limited){node.innerHTML='';limMsg(node);return;}var a=arrOf(res.data);if(!a.length){missMsg(node);return;}
