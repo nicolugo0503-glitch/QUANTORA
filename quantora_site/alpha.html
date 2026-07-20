@@ -778,6 +778,7 @@ function renderFinChart(){var inc=FUND.income;if(!inc||!inc.length){return;}var 
   $('fin-cap').innerHTML='<span style="color:var(--accent)">▮ revenue</span> &nbsp; <span style="color:var(--up)">— net margin</span>';
 }
 
+function dcfFairV(g,fcf,disc,term,sharesOut,netDebt){var f=fcf,pv=0;for(var y=1;y<=10;y++){var gy=y<=5?g:Math.max(term,g*(1-(y-5)/5));f=f*(1+gy);pv+=f/Math.pow(1+disc,y);}var tv=f*(1+term)/(disc-term);pv+=tv/Math.pow(1+disc,10);return (pv-netDebt)/sharesOut;}
 function renderValuation(){var node=$('val-body');var cf=FUND.cashflow,inc=FUND.income;
   if((!cf||!cf.length)&&(!inc||!inc.length)){if(FUND.finLimited){node.innerHTML='';limMsg(node);}else missMsg(node);return;}
   var price=(ST.q&&ST.q.price)||ST.closes[ST.closes.length-1];
@@ -794,12 +795,13 @@ function renderValuation(){var node=$('val-body');var cf=FUND.cashflow,inc=FUND.
   var disc=0.09,term=0.025,f=fcf,pv=0;for(var y=1;y<=10;y++){var gy=y<=5?g:Math.max(term,g*(1-(y-5)/5));f=f*(1+gy);pv+=f/Math.pow(1+disc,y);}
   var tv=f*(1+term)/(disc-term);pv+=tv/Math.pow(1+disc,10);
   var fair=(pv-(pick((FUND.balance||[])[0]||{},'netDebt')||0))/sharesOut;var up=(fair/price-1)*100;
+  var netDebt=pick((FUND.balance||[])[0]||{},'netDebt')||0;var impliedG=null,loG=-0.15,hiG=0.5;if(dcfFairV(loG,fcf,disc,term,sharesOut,netDebt)<price&&dcfFairV(hiG,fcf,disc,term,sharesOut,netDebt)>price){for(var it=0;it<44;it++){var mid=(loG+hiG)/2;if(dcfFairV(mid,fcf,disc,term,sharesOut,netDebt)<price)loG=mid;else hiG=mid;}impliedG=(loG+hiG)/2;}
   var lo=fair*0.8,hi=fair*1.25;var posp=Math.max(0,Math.min(100,(price-lo)/(hi-lo)*100));
   node.innerHTML='<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap"><div><div style="font-size:10.5px;color:var(--mid);font-weight:500">DCF fair value</div><div class="num" style="font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.03em">'+money(fair)+'</div></div>'
     +'<div class="pill '+sgn(up)+'" style="font-size:14px;padding:6px 12px">'+ar(up)+' '+pct(up,1)+' vs price</div></div>'
     +'<div class="rngbar" style="margin-top:16px"><div class="fill" style="width:'+posp+'%;background:linear-gradient(90deg,var(--up),var(--down))"></div><div class="now" style="left:'+posp+'%"></div></div>'
     +'<div class="rngbar-lbl"><span>'+money(lo)+'</span><span style="color:var(--accent)">price '+money(price)+'</span><span>'+money(hi)+'</span></div>'
-    +'<div class="kv" style="margin-top:14px"><div class="row"><span class="k">Base FCF (TTM/latest)</span><span class="v">'+usd(fcf)+'</span></div><div class="row"><span class="k">Assumed FCF growth (5y)</span><span class="v">'+pctp(g*100)+'</span></div><div class="row"><span class="k">Discount / terminal</span><span class="v">'+pctp(disc*100)+' / '+pctp(term*100)+'</span></div></div>'
+    +'<div class="kv" style="margin-top:14px"><div class="row"><span class="k">Base FCF (TTM/latest)</span><span class="v">'+usd(fcf)+'</span></div><div class="row"><span class="k">Assumed FCF growth (5y)</span><span class="v">'+pctp(g*100)+'</span></div>'+(impliedG!=null?'<div class="row"><span class="k">Market-implied growth</span><span class="v" style="color:var(--accent)">'+pctp(impliedG*100)+'</span></div>':'')+'<div class="row"><span class="k">Discount / terminal</span><span class="v">'+pctp(disc*100)+' / '+pctp(term*100)+'</span></div></div>'
     +'<div class="ai-disc">Illustrative 2-stage DCF from historical FCF — assumptions are simplistic; not a price forecast.</div>';
   FUND.val={fair:fair,up:up,g:g};
 }
