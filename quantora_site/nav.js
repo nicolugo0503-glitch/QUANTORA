@@ -34,6 +34,7 @@ var sj=document.createElement('script'); sj.src='/share.js?v=1'; sj.async=true; 
     { label: 'Pulse', href: '/pulse.html' },
     { label: 'Engines', href: '/engines.html' },
     { label: 'Terminal', href: '/terminal.html' },
+    { label: 'Alpha', href: '/alpha.html' },
     { label: 'Tools', href: '/tools.html' },
     { label: 'Intel', href: '/intel.html' },
     { label: 'Brief', href: '/brief.html' },
