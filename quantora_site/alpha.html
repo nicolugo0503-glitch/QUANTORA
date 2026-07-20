@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quantora Alpha Terminal — institutional research on any ticker</title>
 <meta name="description" content="Quantora Alpha Terminal: type any ticker for an institutional-grade research workstation — live chart, quant risk analytics, financials, valuation, analyst estimates, ownership, peers and an AI equity research note. Free, no login.">
+<link rel="canonical" href="https://usequantora.com/alpha.html">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Quantora">
+<meta property="og:title" content="Quantora Alpha Terminal — institutional research on any ticker">
+<meta property="og:description" content="Type any ticker for an institutional research workstation: live chart, quant risk, financials, DCF, health scores, estimates, peers and an AI equity analyst. Free, no login.">
+<meta property="og:url" content="https://usequantora.com/alpha.html">
+<meta property="og:image" content="https://usequantora.com/og-quantora.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Quantora Alpha Terminal">
+<meta name="twitter:description" content="Institutional research on any ticker — free, no login.">
+<meta name="twitter:image" content="https://usequantora.com/og-quantora.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -345,6 +357,10 @@ a{color:inherit;text-decoration:none}
     </div>
 
     <!-- OWNERSHIP + PEERS -->
+    <div class="secttl" id="s-earn" style="display:none"><h2>Earnings &amp; analyst activity</h2><span class="sub">surprises · upgrades &amp; downgrades</span><span class="rule"></span></div>
+    <div class="panel sp6" id="p-earn" style="display:none"><div class="ph"><h3>Earnings surprises</h3><span class="tag">actual vs estimate</span></div><div class="tblwrap"><div id="earn-body"></div></div></div>
+    <div class="panel sp6" id="p-grades" style="display:none"><div class="ph"><h3>Analyst activity</h3><span class="tag">recent rating changes</span></div><div id="grades-body"></div></div>
+
     <div class="secttl" id="s-own"><h2>Ownership &amp; peers</h2><span class="sub">OWN · RV · smart money</span><span class="rule"></span></div>
     <div class="panel sp5" id="p-own">
       <div class="ph"><h3>Insiders &amp; institutions</h3><span class="tag">recent activity</span></div>
@@ -465,7 +481,7 @@ var NAMES={AAPL:'Apple',NVDA:'NVIDIA',MSFT:'Microsoft',GOOGL:'Alphabet',AMZN:'Am
 function parsePrices(res){if(!res||!res.ok)return null;var a=arrOf(res.data);if(!a.length)return null;var chron=a.slice().reverse();var closes=[],dates=[];chron.forEach(function(d){var p=num(d.price!=null?d.price:d.close);if(p!=null){closes.push(p);dates.push(d.date);}});return closes.length?{closes:closes,dates:dates}:null;}
 
 function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,8);if(!sym)return;
-  ST.sym=sym;CACHE={};AC.cmp=null;ST._cmpClose=null;(function(){var x=$('cmp-x');if(x)x.style.display='none';var i=$('cmp-in');if(i)i.value='';})();
+  ST.sym=sym;CACHE={};AC.cmp=null;ST._cmpClose=null;(function(){var x=$('cmp-x');if(x)x.style.display='none';var i=$('cmp-in');if(i)i.value='';['s-earn','p-earn','p-grades'].forEach(function(id){var e=$(id);if(e)e.style.display='none';});})();
   $('cmd-in').value='';$('s-name').textContent=NAMES[sym]||sym;$('s-sub').textContent=sym;$('ai-h').textContent='Research note · '+sym;
   document.title='Quantora Alpha — '+sym;pushRecent(sym);
   if(history.replaceState)history.replaceState(null,'','?sym='+sym);
@@ -479,7 +495,7 @@ function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice
     if(r[0]&&r[0].limited&&!pp){renderHeaderLimited();}
   });
   // fundamentals (independent, resilient) — valuation & health render inside loadFinancials
-  loadOverview(sym);loadStats(sym);loadFinancials(sym);loadAnalyst(sym);loadOwnership(sym);loadPeers(sym);loadCorr(sym);loadNews(sym);
+  loadOverview(sym);loadStats(sym);loadFinancials(sym);loadAnalyst(sym);loadOwnership(sym);loadPeers(sym);loadCorr(sym);loadEarnSurprise(sym);loadGrades(sym);loadNews(sym);
   // reset AI
   $('ai-body').innerHTML='<div class="state"><span class="si">ready</span>Click generate — the analyst reads every panel and writes a bull / base / bear note grounded in the real figures.</div>';
   $('ai-btn').disabled=false;$('ai-btn').innerHTML='✦ Generate research note';
@@ -922,6 +938,19 @@ function drawSnow(axes){var node=$('snow-body');if(!node)return;var N=axes.lengt
   var overall=Math.round(axes.reduce(function(a,b){return a+b[1];},0)/N);
   node.innerHTML='<div style="display:flex;gap:26px;align-items:center;flex-wrap:wrap"><div style="flex:none">'+svg+'</div><div style="flex:1;min-width:200px"><div style="font-size:10.5px;color:var(--mid);font-weight:500">Composite quality</div><div style="font-family:var(--mono);font-size:32px;font-weight:600;letter-spacing:-.02em">'+overall+'<span style="font-size:15px;color:var(--faint)"> / 100</span></div><div style="margin-top:10px">'+axes.map(function(x){var col=x[1]>=66?'var(--up)':(x[1]>=40?'var(--accent)':'var(--down)');return '<div style="display:flex;align-items:center;gap:9px;padding:3px 0"><span style="font-size:11.5px;color:var(--mid);width:70px">'+x[0]+'</span><div style="flex:1;height:5px;background:var(--well);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.round(x[1])+'%;background:'+col+'"></span></div><span style="font-family:var(--mono);font-size:11px;font-weight:600;width:22px;text-align:right">'+Math.round(x[1])+'</span></div>';}).join('')+'</div><div style="font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.5">Relative 0-100 scores from live fundamentals &amp; price. Illustrative composite, not a rating.</div></div></div>';
 }
+function showEarnSec(){var e=$('s-earn');if(e)e.style.display='';}
+function loadEarnSurprise(sym){api('earnings',sym).then(function(r){var a=arrOf(r.data);if(!a.length)return;
+    a=a.slice().sort(function(x,y){return (pickS(x,'date')||'')<(pickS(y,'date')||'')?1:-1;}).slice(0,6);
+    var rows=a.map(function(e){var act=pick(e,'epsActual','eps'),est=pick(e,'epsEstimated','epsEstimate','estimatedEps');var surp=(act!=null&&est!=null&&est!==0)?(act-est)/Math.abs(est)*100:null;var beat=surp!=null&&surp>=0;
+      return '<tr><td class="rlbl">'+esc((''+pickS(e,'date')).slice(0,10))+'</td><td>'+(act!=null?'$'+act.toFixed(2):'<span class="miss">—</span>')+'</td><td>'+(est!=null?'$'+est.toFixed(2):'<span class="miss">—</span>')+'</td><td class="'+(surp!=null?(beat?'up':'down'):'')+'">'+(surp!=null?((beat?'▲ ':'▼ ')+(surp>=0?'+':'')+surp.toFixed(0)+'%'):'—')+'</td></tr>';}).join('');
+    $('earn-body').innerHTML='<table class="tbl"><thead><tr><th>Report</th><th>EPS actual</th><th>EPS est.</th><th>Surprise</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    $('p-earn').style.display='';showEarnSec();
+  });}
+function loadGrades(sym){api('grades',sym).then(function(r){var a=arrOf(r.data);if(!a.length)return;a=a.slice(0,10);
+    var rows=a.map(function(g){var act=pickS(g,'action')||'update',co=pickS(g,'gradingCompany','company')||'',pg=pickS(g,'previousGrade')||'',ng=pickS(g,'newGrade')||'';var down=/down|sell|underweight|underperform|reduce/i.test(act+' '+ng);
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-family:var(--mono);font-size:10px;color:var(--faint);width:66px;flex:none">'+esc((''+pickS(g,'date')).slice(0,10))+'</span><span style="flex:1;min-width:0;font-size:12.5px"><b>'+esc(co)+'</b> '+(pg?esc(pg)+' → ':'')+'<span style="color:var(--accent)">'+esc(ng)+'</span></span><span class="pill '+(down?'down':'up')+'">'+esc(act)+'</span></div>';}).join('');
+    $('grades-body').innerHTML=rows;$('p-grades').style.display='';showEarnSec();
+  });}
 function loadCorr(sym){var node=$('corr-body');
   api('peers',sym).then(function(r){var peers=[],d=r.data;
     if(Array.isArray(d)){d.forEach(function(x){if(typeof x==='string')peers.push(x);else if(x&&x.symbol)peers.push(x.symbol);else if(x&&x.peers)peers=peers.concat(Array.isArray(x.peers)?x.peers:(''+x.peers).split(','));});}
