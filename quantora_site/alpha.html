@@ -131,6 +131,10 @@ a{color:inherit;text-decoration:none}
 .cmp input::placeholder{text-transform:none;letter-spacing:0;color:var(--faint);font-weight:400;font-family:var(--sans)}
 .cmpx{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;padding:0 2px}
 .cmpx:hover{color:var(--down)}
+.corr{display:grid;gap:2px;min-width:100%}
+.corr .ch{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--mid);display:flex;align-items:center;justify-content:center;padding:3px 2px;text-align:center}
+.corr .rl{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ink2);display:flex;align-items:center;padding:0 6px 0 2px}
+.corr .cc{font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;height:34px;border-radius:5px}
 
 /* gauges / scores */
 .scorewrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
@@ -343,6 +347,11 @@ a{color:inherit;text-decoration:none}
       <div class="tblwrap"><div id="peers-body"><div class="state"><span class="si">loading peers</span></div></div></div>
     </div>
 
+    <div class="panel sp12" id="p-corr">
+      <div class="ph"><h3>Correlation matrix</h3><span class="tag">daily returns &middot; 1Y &middot; peers &amp; SPY</span></div>
+      <div id="corr-body"><div class="state"><span class="si">building correlation</span></div></div>
+    </div>
+
     <!-- AI RESEARCH -->
     <div class="secttl" id="s-ai"><h2>AI equity research</h2><span class="sub">grounded in the figures above</span><span class="rule"></span></div>
     <div class="panel sp12" id="p-ai">
@@ -462,7 +471,7 @@ function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice
     if(r[0]&&r[0].limited&&!pp){renderHeaderLimited();}
   });
   // fundamentals (independent, resilient) — valuation & health render inside loadFinancials
-  loadOverview(sym);loadStats(sym);loadFinancials(sym);loadAnalyst(sym);loadOwnership(sym);loadPeers(sym);loadNews(sym);
+  loadOverview(sym);loadStats(sym);loadFinancials(sym);loadAnalyst(sym);loadOwnership(sym);loadPeers(sym);loadCorr(sym);loadNews(sym);
   // reset AI
   $('ai-body').innerHTML='<div class="state"><span class="si">ready</span>Click generate — the analyst reads every panel and writes a bull / base / bear note grounded in the real figures.</div>';
   $('ai-btn').disabled=false;$('ai-btn').innerHTML='✦ Generate research note';
@@ -855,6 +864,27 @@ function loadOwnership(sym){
   });
 }
 
+function corr(x,y){var n=Math.min(x.length,y.length);if(n<10)return null;var xs=x.slice(x.length-n),ys=y.slice(y.length-n);var mx=mean(xs),my=mean(ys),sxy=0,sx=0,sy=0;for(var i=0;i<n;i++){var dx=xs[i]-mx,dy=ys[i]-my;sxy+=dx*dy;sx+=dx*dx;sy+=dy*dy;}return (sx&&sy)?sxy/Math.sqrt(sx*sy):null;}
+function corrColor(v){if(v==null)return 'var(--well)';var neg=[229,72,77],mid=[241,242,244],pos=[18,128,92],cc;if(v>=0){cc=[Math.round(mid[0]+(pos[0]-mid[0])*v),Math.round(mid[1]+(pos[1]-mid[1])*v),Math.round(mid[2]+(pos[2]-mid[2])*v)];}else{var av=-v;cc=[Math.round(mid[0]+(neg[0]-mid[0])*av),Math.round(mid[1]+(neg[1]-mid[1])*av),Math.round(mid[2]+(neg[2]-mid[2])*av)];}return 'rgb('+cc[0]+','+cc[1]+','+cc[2]+')';}
+function loadCorr(sym){var node=$('corr-body');
+  api('peers',sym).then(function(r){var peers=[],d=r.data;
+    if(Array.isArray(d)){d.forEach(function(x){if(typeof x==='string')peers.push(x);else if(x&&x.symbol)peers.push(x.symbol);else if(x&&x.peers)peers=peers.concat(Array.isArray(x.peers)?x.peers:(''+x.peers).split(','));});}
+    else if(d&&d.peersList)peers=d.peersList;else if(d&&d.peers)peers=Array.isArray(d.peers)?d.peers:(''+d.peers).split(',');
+    peers=peers.map(function(x){return (''+x).toUpperCase().trim();}).filter(function(x){return x&&x!==sym;}).slice(0,5);
+    var syms=[sym].concat(peers);syms.push('SPY');
+    Promise.all(syms.map(function(x){return api('prices',x).then(function(rr){return parsePrices(rr);});})).then(function(all){
+      var series=[],names=[];for(var i=0;i<all.length;i++){if(all[i]&&all[i].closes.length>60){series.push(all[i].closes);names.push(syms[i]);}}
+      if(series.length<2){missMsg(node,'Not enough data for a correlation matrix.');return;}
+      var minLen=Math.min.apply(null,series.map(function(x){return x.length;}));minLen=Math.min(minLen,252);
+      var rets=series.map(function(x){return logrets(x.slice(x.length-minLen));});
+      var N=names.length,mat=[],a,b;for(a=0;a<N;a++){mat[a]=[];for(b=0;b<N;b++)mat[a][b]=corr(rets[a],rets[b]);}
+      var html='<div class="corr" style="grid-template-columns:58px repeat('+N+',minmax(46px,1fr))">';
+      html+='<div class="ch"></div>';for(b=0;b<N;b++)html+='<div class="ch">'+esc(names[b])+'</div>';
+      for(a=0;a<N;a++){html+='<div class="rl">'+esc(names[a])+'</div>';for(b=0;b<N;b++){var v=mat[a][b];html+='<div class="cc" style="background:'+corrColor(v)+';color:'+(v!=null&&Math.abs(v)>0.55?'#fff':'#0A0A0A')+'">'+(v==null?'\u2014':v.toFixed(2))+'</div>';}}
+      html+='</div>';node.innerHTML='<div class="tblwrap">'+html+'</div>';
+    });
+  });
+}
 function loadPeers(sym){var node=$('peers-body');
   api('peers',sym).then(function(r){
     var peers=[];var d=r.data;
