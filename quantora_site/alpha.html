@@ -122,6 +122,10 @@ a{color:inherit;text-decoration:none}
 /* charts */
 .chart{position:relative;width:100%}
 .chart canvas{position:absolute;inset:0;width:100%;height:100%}
+.acx{position:absolute;top:0;bottom:0;width:1px;background:rgba(37,99,235,.42);opacity:0;transition:opacity .1s;pointer-events:none;z-index:2}
+.acx-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#2563EB;box-shadow:0 0 0 2px #fff;transform:translate(-4.5px,-4.5px);opacity:0;transition:opacity .1s;pointer-events:none;z-index:3}
+.acx-tip{position:absolute;top:6px;z-index:4;opacity:0;transition:opacity .1s;pointer-events:none;background:#0A0A0A;color:#fff;font-family:var(--mono);font-size:10.5px;line-height:1.5;padding:5px 9px;border-radius:8px;white-space:nowrap;transform:translateX(-50%);box-shadow:0 8px 22px -8px rgba(0,0,0,.4)}
+.acx-tip b{color:#8fb4ff}
 
 /* gauges / scores */
 .scorewrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
@@ -250,9 +254,12 @@ a{color:inherit;text-decoration:none}
         <div class="seg" id="ac-tf"><button data-n="63">3M</button><button data-n="126">6M</button><button data-n="252" class="on">1Y</button><button data-n="756">3Y</button><button data-n="1300">Max</button></div>
         <div class="seg" id="ac-ov"><button data-ov="ma" class="on">MA</button><button data-ov="bb">Bollinger</button><button data-ov="rs">vs SPY</button></div>
       </div>
-      <div class="chart" id="ac-chart" style="height:340px"><canvas id="ac-cv"></canvas>
-        <div id="ac-hover" style="position:absolute;top:8px;left:10px;font-family:var(--mono);font-size:11px;color:var(--mid);pointer-events:none"></div>
+      <div class="chart" id="ac-chart" style="height:300px"><canvas id="ac-cv"></canvas>
+        <div id="ac-hover" style="position:absolute;top:8px;left:10px;font-family:var(--mono);font-size:11px;color:var(--mid);pointer-events:none;z-index:1"></div>
+        <div class="acx" id="acx-line"></div><div class="acx-dot" id="acx-dot"></div><div class="acx-tip" id="acx-tip"></div>
       </div>
+      <div class="seg" id="ac-ind" style="margin:10px 0 5px"><button data-ind="rsi" class="on">RSI</button><button data-ind="macd">MACD</button><button data-ind="none">Hide</button></div>
+      <div class="chart" id="ac-subchart" style="height:82px"><canvas id="ac-sub"></canvas></div>
     </div>
     <div class="panel sp4" id="p-tech">
       <div class="ph"><h3>Technical signals</h3><span class="tag">momentum</span></div>
@@ -369,16 +376,22 @@ function num(v){v=parseFloat(v);return isFinite(v)?v:null;}
 
 /* ---------------- data layer (resilient) ---------------- */
 var CACHE={};
+function TTL(type){if(type==='quote')return 120000;if(type==='prices')return 3600000;return 21600000;}
+function lsGet(key){try{var raw=localStorage.getItem('qa:'+key);return raw?JSON.parse(raw):null;}catch(e){return null;}}
+function lsSet(key,data,ttl){try{localStorage.setItem('qa:'+key,JSON.stringify({t:Date.now(),ttl:ttl,d:data}));}catch(e){}}
 function api(type,sym){var key=type+':'+sym;if(CACHE[key])return Promise.resolve(CACHE[key]);
+  var lc=lsGet(key);
+  if(lc&&(Date.now()-lc.t)<lc.ttl){var rf={ok:true,limited:false,data:lc.d,cached:true};CACHE[key]=rf;return Promise.resolve(rf);}
   var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort();},13000);
   return fetch('/api/fmp?type='+type+'&symbol='+encodeURIComponent(sym),{signal:ctrl.signal}).then(function(r){return r.text();}).then(function(t){clearTimeout(to);
     var limited=/Limit Reach|upgrade your plan/i.test(t);var j=null;try{j=JSON.parse(t);}catch(e){}
     var data=(j&&typeof j==='object'&&'data' in j)?j.data:j;
     var errObj=data&&typeof data==='object'&&!Array.isArray(data)&&(data['Error Message']||data['error']||data['Error']);
     var ok=!limited&&!errObj&&data!=null;
-    var res={ok:ok,limited:limited,data:ok?data:null};
-    if(ok)CACHE[key]=res;return res;
-  }).catch(function(e){clearTimeout(to);return {ok:false,limited:/abort/i.test(''+e)?false:false,data:null};});
+    if(ok){var res={ok:true,limited:false,data:data};CACHE[key]=res;lsSet(key,data,TTL(type));return res;}
+    if(lc)return {ok:true,limited:false,data:lc.d,cached:true,stale:true};
+    return {ok:false,limited:limited,data:null};
+  }).catch(function(e){clearTimeout(to);if(lc)return {ok:true,limited:false,data:lc.d,cached:true,stale:true};return {ok:false,limited:false,data:null};});
 }
 function quote(sym){return fetch('/api/news?quote='+encodeURIComponent(sym)).then(function(r){return r.json();}).then(function(j){return (j&&j.quotes&&j.quotes[sym.toUpperCase()])||null;}).catch(function(){return null;});}
 function arrOf(d){return Array.isArray(d)?d:(d?[d]:[]);}
@@ -467,15 +480,32 @@ function renderHeader(){var c=ST.closes,q=ST.q,last=c[c.length-1];
 }
 
 /* ---------------- PRICE CHART + overlays ---------------- */
-var AC={n:252,ov:'ma'};
+var AC={n:252,ov:'ma',ind:'rsi'};
 function buildChart(){var c=ST.closes;if(!c.length)return;
   var n=Math.min(AC.n,c.length);var win=c.slice(c.length-n);
   var series=[{vals:win,color:'#2563EB',area:'rgba(37,99,235,.13)',width:2,dot:true}];
   if(AC.ov==='ma'){var s50=sma(c,50).slice(c.length-n),s200=sma(c,200).slice(c.length-n);series.push({vals:s50,color:'#E5A93B',width:1.3});series.push({vals:s200,color:'#8B5CF6',width:1.3});}
   else if(AC.ov==='bb'){var m=sma(c,20),sd=[];for(var i=0;i<c.length;i++){if(i<19){sd.push(null);continue;}var w=c.slice(i-19,i+1);sd.push(std(w));}var up=[],dn=[];for(i=0;i<c.length;i++){up.push(m[i]!=null?m[i]+2*sd[i]:null);dn.push(m[i]!=null?m[i]-2*sd[i]:null);}series.push({vals:up.slice(c.length-n),color:'rgba(37,99,235,.4)',width:1,dash:[4,3]});series.push({vals:dn.slice(c.length-n),color:'rgba(37,99,235,.4)',width:1,dash:[4,3]});series.push({vals:m.slice(c.length-n),color:'#E5A93B',width:1.2});}
-  else if(AC.ov==='rs'){/* handled with dual: show RS line rebased */var rs=relStrength(n);if(rs){plot($('ac-cv'),[{vals:rs,color:'#2563EB',area:'rgba(37,99,235,.1)',width:2,dot:true}],{});$('ac-hover').textContent=ST.sym+' relative to SPY (rebased 100)';return;}}
-  plot($('ac-cv'),series,{});
-  var lbl=ST.sym+' · '+n+'d';if(AC.ov==='ma')lbl+=' · MA50 (gold) · MA200 (violet)';if(AC.ov==='bb')lbl+=' · Bollinger 20,2';$('ac-hover').textContent=lbl;
+  else if(AC.ov==='rs'){var rs=relStrength(n);if(rs){var g2=plot($('ac-cv'),[{vals:rs,color:'#2563EB',area:'rgba(37,99,235,.1)',width:2,dot:true}],{});window._acGeo={geo:g2,win:rs,dates:ST.dates.slice(ST.dates.length-n),n:n,rs:true};$('ac-hover').textContent=ST.sym+' relative to SPY (rebased 100)';drawSub(c,n);return;}}
+  var g=plot($('ac-cv'),series,{});
+  window._acGeo={geo:g,win:win,dates:ST.dates.slice(ST.dates.length-n),n:n};
+  var lbl=ST.sym+' · '+n+'d';if(AC.ov==='ma')lbl+=' · MA50 · MA200';if(AC.ov==='bb')lbl+=' · Bollinger 20,2';$('ac-hover').textContent=lbl;
+  drawSub(c,n);
+}
+function drawSub(c,n){var cv=$('ac-sub');if(!cv)return;var s=csize(cv),ctx=s.ctx,W=s.W,H=s.H;ctx.clearRect(0,0,W,H);if(AC.ind==='none')return;
+  var pl=6,pr=6,pt=6,pb=6,i;var X=function(k){return pl+(W-pl-pr)*(n<2?0:k/(n-1));};
+  if(AC.ind==='rsi'){var rv=rsi(c,14).slice(c.length-n);var Y=function(v){return pt+(H-pt-pb)*(1-v/100);};
+    ctx.fillStyle='rgba(229,72,77,.05)';ctx.fillRect(pl,Y(100),W-pl-pr,Y(70)-Y(100));ctx.fillStyle='rgba(18,128,92,.05)';ctx.fillRect(pl,Y(30),W-pl-pr,Y(0)-Y(30));
+    [30,50,70].forEach(function(lv){ctx.strokeStyle='rgba(11,15,25,.09)';ctx.setLineDash(lv===50?[]:[3,3]);ctx.beginPath();ctx.moveTo(pl,Y(lv));ctx.lineTo(W-pr,Y(lv));ctx.stroke();ctx.setLineDash([]);});
+    ctx.beginPath();ctx.lineWidth=1.5;ctx.strokeStyle='#7C3AED';ctx.lineJoin='round';var st=false;for(i=0;i<rv.length;i++){if(rv[i]==null){st=false;continue;}var xx=X(i),yy=Y(rv[i]);if(!st){ctx.moveTo(xx,yy);st=true;}else ctx.lineTo(xx,yy);}ctx.stroke();
+    ctx.fillStyle='#9CA3AF';ctx.font='600 9px ui-monospace,monospace';ctx.textBaseline='top';ctx.fillText('RSI 14',pl+2,pt);
+  } else if(AC.ind==='macd'){var md=macd(c),line=md.line.slice(c.length-n),sig=md.sig.slice(c.length-n),hist=md.hist.slice(c.length-n);
+    var all=[];line.concat(sig,hist).forEach(function(v){if(v!=null)all.push(v);});if(!all.length)return;var mn=Math.min.apply(null,all),mx=Math.max.apply(null,all),pad=(mx-mn)*.12||1;mn-=pad;mx+=pad;
+    var Y=function(v){return pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));};var bw=(W-pl-pr)/n;
+    for(i=0;i<hist.length;i++){if(hist[i]==null)continue;var y0=Y(0),y1=Y(hist[i]);ctx.fillStyle=hist[i]>=0?'rgba(18,128,92,.5)':'rgba(229,72,77,.5)';ctx.fillRect(X(i)-bw*.3,Math.min(y0,y1),Math.max(1,bw*.6),Math.abs(y1-y0));}
+    function dl(a,col){ctx.beginPath();ctx.lineWidth=1.3;ctx.strokeStyle=col;ctx.lineJoin='round';var st=false;for(var k=0;k<a.length;k++){if(a[k]==null){st=false;continue;}var xx=X(k),yy=Y(a[k]);if(!st){ctx.moveTo(xx,yy);st=true;}else ctx.lineTo(xx,yy);}ctx.stroke();}
+    dl(line,'#2563EB');dl(sig,'#E5A93B');ctx.fillStyle='#9CA3AF';ctx.font='600 9px ui-monospace,monospace';ctx.textBaseline='top';ctx.fillText('MACD 12,26,9',pl+2,pt);
+  }
 }
 function relStrength(n){var c=ST.closes;if(!ST._spyClose){return null;}var s=ST._spyClose;var m=Math.min(n,c.length,s.length);var cw=c.slice(c.length-m),sw=s.slice(s.length-m);var base=cw[0]/sw[0];var o=[];for(var i=0;i<m;i++)o.push((cw[i]/sw[i])/base*100);return o;}
 
@@ -597,6 +627,10 @@ function renderSug(qy){var box=$('cmd-sug');qy=(qy||'').toUpperCase();var list=P
   // chart controls
   $('ac-tf').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('ac-tf').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');AC.n=+b.getAttribute('data-n');buildChart();});
   $('ac-ov').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('ac-ov').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');AC.ov=b.getAttribute('data-ov');buildChart();});
+  $('ac-ind').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('ac-ind').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');AC.ind=b.getAttribute('data-ind');buildChart();});
+  (function(){var host=$('ac-chart');if(!host)return;var line=$('acx-line'),dot=$('acx-dot'),tip=$('acx-tip');function hide(){[line,dot,tip].forEach(function(x){if(x)x.style.opacity='0';});}
+    host.addEventListener('mousemove',function(ev){var g=window._acGeo;if(!g||!g.geo)return;var cv=$('ac-cv'),rect=cv.getBoundingClientRect(),mx=ev.clientX-rect.left,geo=g.geo;var seg=(geo.W-geo.pl-geo.pr)/Math.max(1,g.n-1);if(seg<=0)return;var i=Math.round((mx-geo.pl)/seg);i=Math.max(0,Math.min(g.n-1,i));var val=g.win[i];if(val==null)return;var lx=geo.X(i),ly=geo.Y(val);if(line){line.style.left=lx+'px';line.style.opacity='1';}if(dot){dot.style.left=lx+'px';dot.style.top=ly+'px';dot.style.opacity='1';}if(tip){tip.innerHTML='<b>'+(g.dates[i]||'')+'</b> · '+(g.rs?val.toFixed(1):money(val));tip.style.left=Math.max(56,Math.min(geo.W-56,lx))+'px';tip.style.opacity='1';}},{passive:true});
+    host.addEventListener('mouseleave',hide,{passive:true});})();
   $('fin-tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('fin-tabs').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');window.__finTab=b.getAttribute('data-t');if(window.renderFinTab)window.renderFinTab();});
   $('ai-btn').addEventListener('click',function(){if(window.genAI)window.genAI();});
   window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(function(){if(ST.closes.length){renderHeader();buildChart();buildMC();buildDD();buildHist();}if(window.redrawFund)window.redrawFund();},220);},{passive:true});
