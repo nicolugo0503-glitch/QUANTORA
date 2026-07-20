@@ -331,6 +331,9 @@ a{color:inherit;text-decoration:none}
     </div>
 
     <!-- ANALYST -->
+    <div class="secttl" id="s-snow"><h2>Quality snowflake</h2><span class="sub">value · growth · profitability · health · momentum</span><span class="rule"></span></div>
+    <div class="panel sp12" id="p-snow"><div id="snow-body"><div class="state"><span class="si">scoring quality</span></div></div></div>
+
     <div class="secttl" id="s-analyst"><h2>Analyst estimates</h2><span class="sub">ANR · targets · ratings</span><span class="rule"></span></div>
     <div class="panel sp7" id="p-est">
       <div class="ph"><h3>Forward estimates</h3><span class="tag">revenue &amp; EPS</span></div>
@@ -472,7 +475,7 @@ function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice
     var spp=parsePrices(r[1]);ST.spyRets=spp?logrets(spp.closes):[];
     if(!pp){$('hd-price').textContent='—';missMsg($('hero-chart').parentElement||$('p-hero'),'No price history for '+sym+'.');
       // still try fundamentals
-    } else { ST.closes=pp.closes;ST.dates=pp.dates; renderHeader();buildChart();buildTech();buildMC();buildRisk();buildDD();buildHist();buildSeas(); if(FUND.income||FUND.cashflow)renderValuation(); if(FUND._targ)renderTargets(FUND._targ,FUND._rat); }
+    } else { ST.closes=pp.closes;ST.dates=pp.dates; renderHeader();buildChart();buildTech();buildMC();buildRisk();buildDD();buildHist();buildSeas(); if(FUND.income||FUND.cashflow)renderValuation(); if(FUND._targ)renderTargets(FUND._targ,FUND._rat); loadSnow(); }
     if(r[0]&&r[0].limited&&!pp){renderHeaderLimited();}
   });
   // fundamentals (independent, resilient) — valuation & health render inside loadFinancials
@@ -733,7 +736,7 @@ function loadStats(sym){var node=$('stat-grid');node.innerHTML='<div class="stat
     var dy=asPct(pick(ra,'dividendYield'));g.push(tile('Div yield',dy!=null&&dy>0?pctp(dy):'—'));
     var nd=pick(me,'netDebtToEBITDA');g.push(tile('Net debt/EBITDA',nd!=null?nd.toFixed(1)+'×':'—','',nd!=null?(nd>3?'down':'up'):''));
     node.innerHTML=g.join('');
-    FUND.ratios=ra;FUND.metrics=me;
+    FUND.ratios=ra;FUND.metrics=me;loadSnow();
   });
 }
 
@@ -743,7 +746,7 @@ function loadFinancials(sym){
     FUND.income=inc;FUND.balance=bal;FUND.cashflow=cf;FUND.finLimited=r[0].limited;
     window.__finTab=window.__finTab||'income';renderFinTab();renderFinChart();
     // dependent modules
-    renderHealth();renderValuation();
+    renderHealth();renderValuation();loadSnow();
   });
 }
 function renderFinTab(){var node=$('fin-body');var tab=window.__finTab||'income';var data=FUND[tab];
@@ -888,6 +891,35 @@ function loadOwnership(sym){
 
 function corr(x,y){var n=Math.min(x.length,y.length);if(n<10)return null;var xs=x.slice(x.length-n),ys=y.slice(y.length-n);var mx=mean(xs),my=mean(ys),sxy=0,sx=0,sy=0;for(var i=0;i<n;i++){var dx=xs[i]-mx,dy=ys[i]-my;sxy+=dx*dy;sx+=dx*dx;sy+=dy*dy;}return (sx&&sy)?sxy/Math.sqrt(sx*sy):null;}
 function corrColor(v){if(v==null)return 'var(--well)';var neg=[229,72,77],mid=[241,242,244],pos=[18,128,92],cc;if(v>=0){cc=[Math.round(mid[0]+(pos[0]-mid[0])*v),Math.round(mid[1]+(pos[1]-mid[1])*v),Math.round(mid[2]+(pos[2]-mid[2])*v)];}else{var av=-v;cc=[Math.round(mid[0]+(neg[0]-mid[0])*av),Math.round(mid[1]+(neg[1]-mid[1])*av),Math.round(mid[2]+(neg[2]-mid[2])*av)];}return 'rgb('+cc[0]+','+cc[1]+','+cc[2]+')';}
+function lin(x,a,b){if(x==null||!isFinite(x))return null;return Math.max(0,Math.min(100,(x-a)/(b-a)*100));}
+function avgN(a){var v=[];a.forEach(function(x){if(x!=null&&isFinite(x))v.push(x);});return v.length?v.reduce(function(p,c){return p+c;},0)/v.length:50;}
+function loadSnow(){var node=$('snow-body');if(!node)return;
+  var ra=FUND.ratios||{},me=FUND.metrics||{},inc=FUND.income||[],h=FUND.health||{},c=ST.closes||[];
+  var pe=pick(ra,'priceToEarningsRatio','peRatio'),eveb=pick(me,'evToEBITDA','enterpriseValueOverEBITDA'),fcy=asPct(pick(me,'freeCashFlowYield')),ps=pick(ra,'priceToSalesRatio');
+  var value=avgN([lin(pe,45,10),lin(eveb,35,8),lin(fcy,0,8),lin(ps,15,1)]);
+  var revg=(inc.length>=2&&pick(inc[1],'revenue'))?(pick(inc[0],'revenue')/pick(inc[1],'revenue')-1)*100:null;
+  var epsg=(inc.length>=2&&pick(inc[1],'epsdiluted','eps'))?(pick(inc[0],'epsdiluted','eps')/pick(inc[1],'epsdiluted','eps')-1)*100:null;
+  var fwd=(FUND.estimates&&FUND.estimates.rev&&FUND.estimates.rev.length>1&&FUND.estimates.rev[0])?(FUND.estimates.rev[FUND.estimates.rev.length-1]/FUND.estimates.rev[0]-1)*100/(FUND.estimates.rev.length-1):null;
+  var growth=avgN([lin(revg,-5,35),lin(epsg,-10,45),lin(fwd,0,25)]);
+  var nm=asPct(pick(ra,'netProfitMargin','netIncomeMargin')),roe=asPct(pick(me,'returnOnEquity')),roic=asPct(pick(me,'returnOnInvestedCapital','roic')),gm=asPct(pick(ra,'grossProfitMargin'));
+  var prof=avgN([lin(nm,0,30),lin(roe,0,45),lin(roic,0,30),lin(gm,20,80)]);
+  var health=avgN([h.f!=null?lin(h.f,0,9):null,h.z!=null?lin(h.z,1.5,6):null]);
+  var mom=50;if(c.length>60){var price=c[c.length-1];var b1=c.length>252?c[c.length-253]:c[0];var r1=(price/b1-1)*100;var b6=c.length>126?c[c.length-127]:c[0];var r6=(price/b6-1)*100;var s2=sma(c,200);var above=s2[s2.length-1]?(price/s2[s2.length-1]-1)*100:0;var rv=rsi(c,14);var rr=rv[rv.length-1];mom=avgN([lin(r1,-30,60),lin(r6,-20,40),lin(above,-15,25),rr!=null?lin(rr,30,70):null]);}
+  drawSnow([['Value',value],['Growth',growth],['Profit',prof],['Health',health],['Momentum',mom]]);
+}
+function drawSnow(axes){var node=$('snow-body');if(!node)return;var N=axes.length,cx=105,cy=100,R=64;
+  function pt(i,r){var a=(-90+i*360/N)*Math.PI/180;return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+  var svg='<svg viewBox="0 0 210 205" style="width:100%;max-width:250px">',i,p;
+  [0.25,0.5,0.75,1].forEach(function(fac){var pts='';for(i=0;i<N;i++){p=pt(i,R*fac);pts+=p[0].toFixed(1)+','+p[1].toFixed(1)+' ';}svg+='<polygon points="'+pts+'" fill="none" stroke="rgba(11,15,25,.06)" stroke-width="1"/>';});
+  for(i=0;i<N;i++){p=pt(i,R);svg+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="rgba(11,15,25,.06)"/>';}
+  var dp='';for(i=0;i<N;i++){p=pt(i,R*Math.max(3,axes[i][1])/100);dp+=p[0].toFixed(1)+','+p[1].toFixed(1)+' ';}
+  svg+='<polygon points="'+dp+'" fill="rgba(37,99,235,.16)" stroke="#2563EB" stroke-width="2"/>';
+  for(i=0;i<N;i++){p=pt(i,R*Math.max(3,axes[i][1])/100);svg+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.6" fill="#2563EB"/>';}
+  for(i=0;i<N;i++){p=pt(i,R+16);svg+='<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+3).toFixed(1)+'" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" font-weight="600" fill="#6B7280">'+axes[i][0]+'</text>';}
+  svg+='</svg>';
+  var overall=Math.round(axes.reduce(function(a,b){return a+b[1];},0)/N);
+  node.innerHTML='<div style="display:flex;gap:26px;align-items:center;flex-wrap:wrap"><div style="flex:none">'+svg+'</div><div style="flex:1;min-width:200px"><div style="font-size:10.5px;color:var(--mid);font-weight:500">Composite quality</div><div style="font-family:var(--mono);font-size:32px;font-weight:600;letter-spacing:-.02em">'+overall+'<span style="font-size:15px;color:var(--faint)"> / 100</span></div><div style="margin-top:10px">'+axes.map(function(x){var col=x[1]>=66?'var(--up)':(x[1]>=40?'var(--accent)':'var(--down)');return '<div style="display:flex;align-items:center;gap:9px;padding:3px 0"><span style="font-size:11.5px;color:var(--mid);width:70px">'+x[0]+'</span><div style="flex:1;height:5px;background:var(--well);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.round(x[1])+'%;background:'+col+'"></span></div><span style="font-family:var(--mono);font-size:11px;font-weight:600;width:22px;text-align:right">'+Math.round(x[1])+'</span></div>';}).join('')+'</div><div style="font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.5">Relative 0-100 scores from live fundamentals &amp; price. Illustrative composite, not a rating.</div></div></div>';
+}
 function loadCorr(sym){var node=$('corr-body');
   api('peers',sym).then(function(r){var peers=[],d=r.data;
     if(Array.isArray(d)){d.forEach(function(x){if(typeof x==='string')peers.push(x);else if(x&&x.symbol)peers.push(x.symbol);else if(x&&x.peers)peers=peers.concat(Array.isArray(x.peers)?x.peers:(''+x.peers).split(','));});}
