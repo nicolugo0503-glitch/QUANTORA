@@ -724,7 +724,7 @@ function loadStats(sym){var node=$('stat-grid');node.innerHTML='<div class="stat
     g.push(tile('P/B',mult(pick(ra,'priceToBookRatio','priceBookValueRatio'))));
     g.push(tile('EV/EBITDA',mult(pick(me,'evToEBITDA','enterpriseValueOverEBITDA'))));
     g.push(tile('EV/Sales',mult(pick(me,'evToSales','enterpriseValueOverRevenue'))));
-    var roe=asPct(pick(ra,'returnOnEquity'));g.push(tile('ROE',roe!=null?pctp(roe):'—','',roe!=null?sgn(roe):''));
+    var roe=asPct(pick(me,'returnOnEquity')||pick(ra,'returnOnEquity'));g.push(tile('ROE',roe!=null?pctp(roe):'—','',roe!=null?sgn(roe):''));
     var roic=asPct(pick(me,'returnOnInvestedCapital','roic'));g.push(tile('ROIC',roic!=null?pctp(roic):'—','',roic!=null?sgn(roic):''));
     var gm=asPct(pick(ra,'grossProfitMargin'));g.push(tile('Gross margin',gm!=null?pctp(gm):'—'));
     var om=asPct(pick(ra,'operatingProfitMargin','operatingIncomeMargin'));g.push(tile('Op margin',om!=null?pctp(om):'—'));
@@ -790,7 +790,7 @@ function renderValuation(){var node=$('val-body');var cf=FUND.cashflow,inc=FUND.
   // simple 2-stage DCF
   var disc=0.09,term=0.025,f=fcf,pv=0;for(var y=1;y<=10;y++){var gy=y<=5?g:Math.max(term,g*(1-(y-5)/5));f=f*(1+gy);pv+=f/Math.pow(1+disc,y);}
   var tv=f*(1+term)/(disc-term);pv+=tv/Math.pow(1+disc,10);
-  var fair=pv/sharesOut;var up=(fair/price-1)*100;
+  var fair=(pv-(pick((FUND.balance||[])[0]||{},'netDebt')||0))/sharesOut;var up=(fair/price-1)*100;
   var lo=fair*0.8,hi=fair*1.25;var posp=Math.max(0,Math.min(100,(price-lo)/(hi-lo)*100));
   node.innerHTML='<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap"><div><div style="font-size:10.5px;color:var(--mid);font-weight:500">DCF fair value</div><div class="num" style="font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.03em">'+money(fair)+'</div></div>'
     +'<div class="pill '+sgn(up)+'" style="font-size:14px;padding:6px 12px">'+ar(up)+' '+pct(up,1)+' vs price</div></div>'
@@ -938,6 +938,7 @@ function loadNews(sym){var node=$('news-body');
 function genAI(){var btn=$('ai-btn'),body=$('ai-body');btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:shim 0s;vertical-align:-1px"></span> Analyzing…';
   body.innerHTML='<div class="state"><span class="si">the analyst is reading the page…</span></div>';
   var price=(ST.q&&ST.q.price)||ST.closes[ST.closes.length-1];
+  if(!isFinite(price)){body.innerHTML='<div class="state"><span class="si">no price</span>Load a ticker with price history first.</div>';btn.disabled=false;btn.innerHTML='✦ Generate research note';return;}
   var c=ST.closes,r=logrets(c);var base1y=c.length>252?c[c.length-253]:c[0];
   var payload={ticker:ST.sym,name:(FUND.profile&&pickS(FUND.profile,'companyName'))||NAMESAFE(ST.sym),
     sector:(FUND.profile&&pickS(FUND.profile,'sector'))||null,
@@ -948,7 +949,7 @@ function genAI(){var btn=$('ai-btn'),body=$('ai-body');btn.disabled=true;btn.inn
     evEbitda:FUND.metrics?pick(FUND.metrics,'evToEBITDA','enterpriseValueOverEBITDA'):null,
     grossMargin:FUND.ratios?round1(asPct(pick(FUND.ratios,'grossProfitMargin'))):null,
     netMargin:FUND.ratios?round1(asPct(pick(FUND.ratios,'netProfitMargin','netIncomeMargin'))):null,
-    roe:FUND.ratios?round1(asPct(pick(FUND.ratios,'returnOnEquity'))):null,
+    roe:round1(asPct(pick(FUND.metrics||{},'returnOnEquity')||pick(FUND.ratios||{},'returnOnEquity'))),
     revGrowth:(function(){var i=FUND.income;if(i&&i.length>=2){var a=pick(i[0],'revenue'),b=pick(i[1],'revenue');if(a&&b)return +((a/b-1)*100).toFixed(1);}return null;})(),
     dcfFair:FUND.val?+FUND.val.fair.toFixed(2):null,dcfUpside:FUND.val?+FUND.val.up.toFixed(1):null,
     targetConsensus:FUND.targets?FUND.targets.con:null,targetUpside:FUND.targets?round1(FUND.targets.up):null,rating:FUND.targets?FUND.targets.rating:null,
