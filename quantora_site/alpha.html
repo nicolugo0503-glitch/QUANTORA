@@ -135,6 +135,9 @@ a{color:inherit;text-decoration:none}
 .corr .ch{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--mid);display:flex;align-items:center;justify-content:center;padding:3px 2px;text-align:center}
 .corr .rl{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ink2);display:flex;align-items:center;padding:0 6px 0 2px}
 .corr .cc{font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;height:34px;border-radius:5px}
+.cmd-sug .sg-lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:9px 11px 4px}
+.cmd-share{flex:none;font-family:var(--sans);font-size:11px;font-weight:500;color:var(--mid);background:var(--well);border:1px solid var(--line2);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all .15s}
+.cmd-share:hover{color:var(--ink);border-color:#D8DAE0}
 
 /* gauges / scores */
 .scorewrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
@@ -223,6 +226,7 @@ a{color:inherit;text-decoration:none}
   <nav class="cmd-mnem">
     <a data-jump="chart">GP</a><a data-jump="quant">QNT</a><a data-jump="fin">FA</a><a data-jump="val">DCF</a><a data-jump="analyst">ANR</a><a data-jump="own">OWN</a><a data-jump="peers">RV</a><a data-jump="ai">AI</a>
   </nav>
+  <button class="cmd-share" id="cmd-share" title="Copy a link to this ticker view">Share</button>
   <div class="cmd-live"><span class="dot"></span><span id="asof">live</span></div>
 </header>
 
@@ -245,6 +249,7 @@ a{color:inherit;text-decoration:none}
       <div class="rngbar" id="hd-rngbar" style="display:none"><div class="fill" id="hd-rngfill"></div><div class="now" id="hd-rngnow"></div></div>
       <div class="rngbar-lbl" id="hd-rnglbl" style="display:none"></div>
       <div class="chart" id="hero-chart" style="height:150px;margin-top:14px"><canvas id="hero-cv"></canvas></div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-top:12px"><button class="ai-btn" id="why-btn" style="height:32px;padding:0 14px;font-size:12.5px;flex:none">✦ Why is it moving?</button><span id="why-out" style="font-size:12.5px;color:var(--ink2);line-height:1.55;flex:1;align-self:center"></span></div>
     </div>
 
     <div class="panel sp4" id="p-ov">
@@ -459,7 +464,7 @@ function parsePrices(res){if(!res||!res.ok)return null;var a=arrOf(res.data);if(
 function load(sym){sym=(sym||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,8);if(!sym)return;
   ST.sym=sym;CACHE={};AC.cmp=null;ST._cmpClose=null;(function(){var x=$('cmp-x');if(x)x.style.display='none';var i=$('cmp-in');if(i)i.value='';})();
   $('cmd-in').value='';$('s-name').textContent=NAMES[sym]||sym;$('s-sub').textContent=sym;$('ai-h').textContent='Research note · '+sym;
-  document.title='Quantora Alpha — '+sym;
+  document.title='Quantora Alpha — '+sym;pushRecent(sym);
   if(history.replaceState)history.replaceState(null,'','?sym='+sym);
   // price-driven core
   Promise.all([api('prices',sym),api('prices',SPYSYM),quote(sym)]).then(function(r){
@@ -636,10 +641,25 @@ function buildSeas(){var c=ST.closes,d=ST.dates;if(c.length<260){$('seas-grid').
 window.__ALPHA={$:$,api:api,arrOf:arrOf,limMsg:limMsg,missMsg:missMsg,tile:tile,plot:plot,csize:csize,grid:grid,ST:ST,num:num,abbr:abbr,usd:usd,money:money,pct:pct,pctp:pctp,mult:mult,sgn:sgn,ar:ar,esc:esc,mean:mean,std:std,percentile:percentile,toast:toast};
 
 /* ---------------- SEARCH / ⌘K ---------------- */
-function renderSug(qy){var box=$('cmd-sug');qy=(qy||'').toUpperCase();var list=POP.filter(function(s){return s.indexOf(qy)===0||(NAMES[s]||'').toUpperCase().indexOf(qy)>=0;}).slice(0,8);
-  if(!qy){list=POP.slice(0,8);}
-  box.innerHTML=list.map(function(s){return '<div class="si" data-s="'+s+'"><span class="t">'+s+'</span><span class="n">'+esc(NAMES[s]||'')+'</span><span class="x">↵</span></div>';}).join('')||'<div class="si"><span class="n" style="color:var(--faint)">Press ↵ to open '+esc(qy)+'</span></div>';
-  box.classList.add('on');
+function pushRecent(sym){try{var r=JSON.parse(localStorage.getItem('qa:recents')||'[]');r=r.filter(function(x){return x!==sym;});r.unshift(sym);r=r.slice(0,10);localStorage.setItem('qa:recents',JSON.stringify(r));}catch(e){}}
+function getRecents(){try{return JSON.parse(localStorage.getItem('qa:recents')||'[]');}catch(e){return [];}}
+function explainMove(){var btn=$('why-btn'),out=$('why-out');if(!btn)return;btn.disabled=true;out.style.color='var(--muted)';out.textContent='Reading the tape…';
+  var c=ST.closes;if(!c||!c.length){btn.disabled=false;out.textContent='No price data yet.';return;}
+  var price=(ST.q&&ST.q.price)||c[c.length-1];var chg=(ST.q&&isFinite(ST.q.chg))?ST.q.chg:(c.length>1?(c[c.length-1]/c[c.length-2]-1)*100:0);
+  var base1y=c.length>252?c[c.length-253]:c[0];var y1=(price/base1y-1)*100;
+  fetch('/api/news').then(function(r){return r.json();}).then(function(j){var arts=(j&&j.articles)||[];var heads=arts.slice(0,8).map(function(a){return a.headline;}).join(' | ');
+    var q='Stock '+ST.sym+' is '+(chg>=0?'up':'down')+' '+Math.abs(chg).toFixed(1)+'% today, 1-year return '+y1.toFixed(0)+'%. Latest market headlines: '+heads+'. In 1-2 concise sentences explain the most likely driver of '+ST.sym+' today, citing a specific headline if relevant, otherwise say it looks like broad market or sector action. Plain text, no preamble.';
+    aiCall(q).then(function(txt){btn.disabled=false;if(!txt){out.textContent='Could not fetch an explanation right now.';return;}out.style.color='var(--ink2)';out.textContent=(''+txt).trim();});
+  }).catch(function(){btn.disabled=false;out.textContent='Could not reach the news feed.';});
+}
+function renderSug(qy){var box=$('cmd-sug');qy=(qy||'').toUpperCase();
+  var rec=getRecents().filter(function(s){return !qy||s.indexOf(qy)===0;});
+  var pop=POP.filter(function(s){return (!qy||s.indexOf(qy)===0||(NAMES[s]||'').toUpperCase().indexOf(qy)>=0)&&rec.indexOf(s)<0;}).slice(0,8);
+  var html='';
+  if(rec.length)html+='<div class="sg-lbl">Recent</div>'+rec.slice(0,6).map(function(s){return '<div class="si" data-s="'+s+'"><span class="t">'+s+'</span><span class="n">'+esc(NAMES[s]||'')+'</span><span class="x">recent</span></div>';}).join('');
+  if(pop.length)html+=(rec.length?'<div class="sg-lbl">Popular</div>':'')+pop.map(function(s){return '<div class="si" data-s="'+s+'"><span class="t">'+s+'</span><span class="n">'+esc(NAMES[s]||'')+'</span><span class="x">↵</span></div>';}).join('');
+  if(!html)html='<div class="si"><span class="n" style="color:var(--faint)">Press ↵ to open '+esc(qy)+'</span></div>';
+  box.innerHTML=html;box.classList.add('on');
 }
 (function initSearch(){var inp=$('cmd-in'),box=$('cmd-sug');
   inp.addEventListener('input',function(){renderSug(inp.value);});
@@ -661,6 +681,8 @@ function renderSug(qy){var box=$('cmd-sug');qy=(qy||'').toUpperCase();var list=P
     host.addEventListener('mouseleave',hide,{passive:true});})();
   $('fin-tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$('fin-tabs').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');window.__finTab=b.getAttribute('data-t');if(window.renderFinTab)window.renderFinTab();});
   $('ai-btn').addEventListener('click',function(){if(window.genAI)window.genAI();});
+  var _why=$('why-btn');if(_why)_why.addEventListener('click',explainMove);
+  var _sh=$('cmd-share');if(_sh)_sh.addEventListener('click',function(){var url=location.origin+'/alpha.html?sym='+ST.sym;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(function(){toast('Link copied · '+ST.sym);}).catch(function(){toast(url);});}else{toast(url);}});
   window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(function(){if(ST.closes.length){renderHeader();buildChart();buildMC();buildDD();buildHist();}if(window.redrawFund)window.redrawFund();},220);},{passive:true});
 })();
 
