@@ -987,6 +987,51 @@
     <div class="card s4 gaugefeat reveal" data-fx><div class="ch"><h3>Fear &amp; Greed</h3><span class="tag">Crypto · sentiment</span></div><div class="gauge"><svg id="gauge" viewBox="0 0 240 150"></svg><div class="gv num" id="gv">—</div><div class="gl" id="gl">loading</div></div></div>
 
     <div class="s12 leaders reveal"><div class="lead-hd"><h3>Market leaders</h3><span class="lead-tag">Megacaps &amp; crypto · sorted by today · live</span></div><div class="lead-spot" id="lead-spot"></div><div class="lead-grid" id="lead-grid"><div class="loading" style="padding:30px 4px;color:var(--muted)">Loading market leaders…</div></div></div>
+  <style>
+  .mbreadth{position:relative;overflow:hidden;border-radius:18px;padding:24px 30px 22px;min-height:228px;background:radial-gradient(130% 170% at 12% -10%,#111a2e 0%,#0a1020 46%,#06080f 100%);box-shadow:0 12px 34px rgba(6,9,16,.3),0 54px 96px -46px rgba(6,9,16,.72);color:#fff;isolation:isolate;margin:8px 0}
+  .mbreadth::before{content:"";position:absolute;inset:-45%;z-index:-1;background:radial-gradient(38% 40% at 22% 34%,rgba(37,99,235,.55),transparent 60%),radial-gradient(36% 38% at 80% 66%,rgba(16,185,129,.4),transparent 62%),radial-gradient(32% 34% at 62% 16%,rgba(139,92,246,.34),transparent 60%);filter:blur(34px);animation:bbaur 22s ease-in-out infinite alternate;opacity:.82}
+  @keyframes bbaur{0%{transform:translate3d(-3%,-2%,0) scale(1)}50%{transform:translate3d(3%,2%,0) scale(1.09)}100%{transform:translate3d(-2%,3%,0) scale(1.04)}}
+  .mbreadth::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:100% 28px;opacity:.5;-webkit-mask:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent);mask:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent)}
+  .bb-eyb{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:9px}
+  .bb-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:bbpulse 2.6s ease-out infinite}
+  @keyframes bbpulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}100%{box-shadow:0 0 0 13px rgba(34,197,94,0)}}
+  .bb-grid{display:grid;grid-template-columns:minmax(206px,286px) 1fr;gap:34px;align-items:center;margin-top:18px}
+  @media(max-width:840px){.bb-grid{grid-template-columns:1fr;gap:22px}}
+  .bb-tone{font-size:clamp(30px,3.8vw,50px);font-weight:700;letter-spacing:-.032em;line-height:1;margin-bottom:12px;transition:color .5s}
+  .bb-tone.pos{color:#34d399}.bb-tone.neu{color:#e8ebf0}.bb-tone.neg{color:#fb7185}
+  .bb-statrow{display:flex;align-items:baseline;gap:9px;margin-bottom:11px}
+  .bb-pct{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:-.02em;color:#fff}
+  .bb-pctl{font-size:12px;color:rgba(255,255,255,.58)}
+  .bb-sub{font-size:13px;line-height:1.45;color:rgba(255,255,255,.72);max-width:268px}
+  .bb-counts{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:rgba(255,255,255,.55);margin-bottom:9px}
+  .bb-mid{color:rgba(255,255,255,.4)}
+  .bb-meter{height:7px;border-radius:6px;overflow:hidden;display:flex;background:rgba(255,255,255,.08);margin-bottom:17px}
+  .bb-up{background:linear-gradient(90deg,#059669,#34d399);height:100%;width:0;transition:width 1.2s cubic-bezier(.22,.61,.36,1)}
+  .bb-dn{background:linear-gradient(90deg,#fb7185,#dc2626);height:100%;width:0;transition:width 1.2s cubic-bezier(.22,.61,.36,1)}
+  .bb-bars{display:flex;align-items:flex-end;gap:2%;height:118px}
+  .bb-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:7px;min-width:0}
+  .bb-bar{width:100%;max-width:24px;min-height:5px;border-radius:5px 5px 2px 2px;transform-origin:bottom;animation:bbrise .85s cubic-bezier(.22,.61,.36,1) both;transition:height .9s cubic-bezier(.22,.61,.36,1),background .4s,box-shadow .4s}
+  .bb-bar.u{background:linear-gradient(180deg,#34d399,#059669);box-shadow:0 0 15px rgba(16,185,129,.4)}
+  .bb-bar.d{background:linear-gradient(180deg,#fb7185,#e11d48);box-shadow:0 0 15px rgba(244,63,94,.34)}
+  .bb-sym{font-family:var(--mono);font-size:8.5px;letter-spacing:.01em;color:rgba(255,255,255,.5);white-space:nowrap}
+  @keyframes bbrise{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
+  @media(prefers-reduced-motion:reduce){.mbreadth::before{animation:none}.bb-dot{animation:none}.bb-bar{animation:none}}
+  </style>
+  <div class="s12 mbreadth reveal" id="mbreadth">
+    <div class="bb-eyb"><span class="bb-dot"></span>The tape · market breadth · live</div>
+    <div class="bb-grid">
+      <div class="bb-left">
+        <div class="bb-tone neu" id="bb-tone">Reading the tape…</div>
+        <div class="bb-statrow"><span class="bb-pct" id="bb-pct">—</span><span class="bb-pctl">of leaders advancing</span></div>
+        <div class="bb-sub" id="bb-sub">Live breadth across indices, megacaps &amp; crypto.</div>
+      </div>
+      <div class="bb-right">
+        <div class="bb-counts"><span id="bb-adv">▲ — advancing</span><span class="bb-mid">market floor · 15 assets</span><span id="bb-dec">▼ — declining</span></div>
+        <div class="bb-meter"><span class="bb-up" id="bb-up"></span><span class="bb-dn" id="bb-dn"></span></div>
+        <div class="bb-bars" id="bb-bars"></div>
+      </div>
+    </div>
+  </div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Indices &amp; ETFs</h3><span class="tag">Live · EOD</span></div><div id="indices"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Megacaps</h3><span class="tag">Live · EOD</span></div><div id="megacaps"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
     <div class="card s4 reveal" data-fx><div class="ch"><h3>Crypto</h3><span class="tag">24/7 · live</span></div><div id="crypto"><div class="loading"><span class="skb" style="width:100%"></span></div></div></div>
@@ -1092,7 +1137,32 @@
 
   /* market state + field */
   var MS={breadth:0.5,breadthT:0.5,vol:0.32,volT:0.32},heatData={};
-  function updateBreadth(){var order=['SPY','QQQ','DIA','IWM','AAPL','NVDA','MSFT','TSLA','GOOGL','AMZN','META','AVGO','BTC','ETH','SOL'],up=0,n=0;order.forEach(function(s){if(heatData[s]){n++;if(heatData[s].chg>=0)up++;}});if(n)MS.breadthT=up/n;}
+  function updateBreadth(){var order=['SPY','QQQ','DIA','IWM','AAPL','NVDA','MSFT','TSLA','GOOGL','AMZN','META','AVGO','BTC','ETH','SOL'],up=0,n=0;order.forEach(function(s){if(heatData[s]){n++;if(heatData[s].chg>=0)up++;}});if(n)MS.breadthT=up/n;try{buildBreadthBand();}catch(e){}}
+  function bbCountUp(el,target){var t0=null;function fr(ts){if(!t0)t0=ts;var p=Math.min(1,(ts-t0)/1000);var e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e)+'%';if(p<1)requestAnimationFrame(fr);}requestAnimationFrame(fr);}
+  var _bbInit=false,_bbBuilt=false;
+  function buildBreadthBand(){var band=document.getElementById('mbreadth');if(!band)return;
+    var order=['SPY','QQQ','DIA','IWM','AAPL','NVDA','MSFT','TSLA','GOOGL','AMZN','META','AVGO','BTC','ETH','SOL'];
+    var items=order.map(function(s){return heatData[s]?{sym:s,chg:+heatData[s].chg}:null;}).filter(function(x){return x&&isFinite(x.chg);});
+    if(items.length<4)return;
+    var up=items.filter(function(x){return x.chg>=0;}).length,n=items.length,dn=n-up,pct=Math.round(up/n*100);
+    var bars=document.getElementById('bb-bars');
+    function barH(chg){var mag=Math.min(1,Math.abs(chg)/2.6);return (12+mag*84).toFixed(0);}
+    if(bars&&!_bbBuilt){
+      bars.innerHTML=items.map(function(x,i){return '<div class="bb-col"><div class="bb-bar '+(x.chg>=0?'u':'d')+'" style="height:'+barH(x.chg)+'%;animation-delay:'+(i*45)+'ms"></div><div class="bb-sym">'+x.sym+'</div></div>';}).join('');
+      _bbBuilt=true;
+    }else if(bars){
+      var cols=bars.children;items.forEach(function(x,i){var col=cols[i];if(!col)return;var bar=col.firstChild;if(!bar)return;bar.style.height=barH(x.chg)+'%';bar.className='bb-bar '+(x.chg>=0?'u':'d');});
+    }
+    var tone=pct>=62?'Risk-on':pct>=46?'Mixed tape':'Risk-off';
+    var toneEl=document.getElementById('bb-tone');if(toneEl){toneEl.textContent=tone;toneEl.className='bb-tone '+(pct>=62?'pos':pct>=46?'neu':'neg');}
+    var sub=document.getElementById('bb-sub');if(sub){sub.textContent=up+' of '+n+' leaders green — '+(pct>=62?'buyers in control across the board.':pct>=46?'no clear hand on the tape.':'sellers pressing the market.');}
+    var pctEl=document.getElementById('bb-pct');if(pctEl){if(!_bbInit)bbCountUp(pctEl,pct);else pctEl.textContent=pct+'%';}
+    var ub=document.getElementById('bb-up'),db=document.getElementById('bb-dn');if(ub)ub.style.width=pct+'%';if(db)db.style.width=(100-pct)+'%';
+    var adv=document.getElementById('bb-adv'),dec=document.getElementById('bb-dec');if(adv)adv.textContent='▲ '+up+' advancing';if(dec)dec.textContent='▼ '+dn+' declining';
+    _bbInit=true;
+  }
+  setTimeout(function(){try{buildBreadthBand();}catch(e){}},1900);
+  if(!window._qbb)window._qbb=setInterval(function(){try{buildBreadthBand();}catch(e){}},5000);
   function startField(){var cv=document.getElementById('field');if(!cv||cv.dataset.on)return;cv.dataset.on='1';var ctx=cv.getContext('2d'),W=0,H=0,dpr=Math.min(devicePixelRatio||1,2),parts=[],N=520,t=0,vis=true;
     function size(){var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=Math.max(1,W*dpr);cv.height=Math.max(1,H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}size();
     for(var i=0;i<N;i++){var x=Math.random()*W,y=Math.random()*H;parts.push({x:x,y:y,px:x,py:y,up:Math.random()<MS.breadth});}
