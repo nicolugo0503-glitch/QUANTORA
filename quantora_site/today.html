@@ -988,34 +988,33 @@
 
     <div class="s12 leaders reveal"><div class="lead-hd"><h3>Market leaders</h3><span class="lead-tag">Megacaps &amp; crypto · sorted by today · live</span></div><div class="lead-spot" id="lead-spot"></div><div class="lead-grid" id="lead-grid"><div class="loading" style="padding:30px 4px;color:var(--muted)">Loading market leaders…</div></div></div>
   <style>
-  .mbreadth{position:relative;overflow:hidden;border-radius:18px;padding:24px 30px 22px;min-height:228px;background:radial-gradient(130% 170% at 12% -10%,#111a2e 0%,#0a1020 46%,#06080f 100%);box-shadow:0 12px 34px rgba(6,9,16,.3),0 54px 96px -46px rgba(6,9,16,.72);color:#fff;isolation:isolate;margin:8px 0}
-  .mbreadth::before{content:"";position:absolute;inset:-45%;z-index:-1;background:radial-gradient(38% 40% at 22% 34%,rgba(37,99,235,.55),transparent 60%),radial-gradient(36% 38% at 80% 66%,rgba(16,185,129,.4),transparent 62%),radial-gradient(32% 34% at 62% 16%,rgba(139,92,246,.34),transparent 60%);filter:blur(34px);animation:bbaur 22s ease-in-out infinite alternate;opacity:.82}
-  @keyframes bbaur{0%{transform:translate3d(-3%,-2%,0) scale(1)}50%{transform:translate3d(3%,2%,0) scale(1.09)}100%{transform:translate3d(-2%,3%,0) scale(1.04)}}
-  .mbreadth::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:100% 28px;opacity:.5;-webkit-mask:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent);mask:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent)}
-  .bb-eyb{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:9px}
-  .bb-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:bbpulse 2.6s ease-out infinite}
-  @keyframes bbpulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}100%{box-shadow:0 0 0 13px rgba(34,197,94,0)}}
-  .bb-grid{display:grid;grid-template-columns:minmax(206px,286px) 1fr;gap:34px;align-items:center;margin-top:18px}
-  @media(max-width:840px){.bb-grid{grid-template-columns:1fr;gap:22px}}
-  .bb-tone{font-size:clamp(30px,3.8vw,50px);font-weight:700;letter-spacing:-.032em;line-height:1;margin-bottom:12px;transition:color .5s}
-  .bb-tone.pos{color:#34d399}.bb-tone.neu{color:#e8ebf0}.bb-tone.neg{color:#fb7185}
-  .bb-statrow{display:flex;align-items:baseline;gap:9px;margin-bottom:11px}
-  .bb-pct{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:-.02em;color:#fff}
-  .bb-pctl{font-size:12px;color:rgba(255,255,255,.58)}
-  .bb-sub{font-size:13px;line-height:1.45;color:rgba(255,255,255,.72);max-width:268px}
-  .bb-counts{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:rgba(255,255,255,.55);margin-bottom:9px}
-  .bb-mid{color:rgba(255,255,255,.4)}
-  .bb-meter{height:7px;border-radius:6px;overflow:hidden;display:flex;background:rgba(255,255,255,.08);margin-bottom:17px}
-  .bb-up{background:linear-gradient(90deg,#059669,#34d399);height:100%;width:0;transition:width 1.2s cubic-bezier(.22,.61,.36,1)}
-  .bb-dn{background:linear-gradient(90deg,#fb7185,#dc2626);height:100%;width:0;transition:width 1.2s cubic-bezier(.22,.61,.36,1)}
-  .bb-bars{display:flex;align-items:flex-end;gap:2%;height:118px}
-  .bb-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:7px;min-width:0}
-  .bb-bar{width:100%;max-width:24px;min-height:5px;border-radius:5px 5px 2px 2px;transform-origin:bottom;animation:bbrise .85s cubic-bezier(.22,.61,.36,1) both;transition:height .9s cubic-bezier(.22,.61,.36,1),background .4s,box-shadow .4s}
-  .bb-bar.u{background:linear-gradient(180deg,#34d399,#059669);box-shadow:0 0 15px rgba(16,185,129,.4)}
-  .bb-bar.d{background:linear-gradient(180deg,#fb7185,#e11d48);box-shadow:0 0 15px rgba(244,63,94,.34)}
-  .bb-sym{font-family:var(--mono);font-size:8.5px;letter-spacing:.01em;color:rgba(255,255,255,.5);white-space:nowrap}
+  .mbreadth{position:relative;overflow:hidden;border-radius:18px;padding:26px 30px 24px;min-height:220px;background:linear-gradient(180deg,#fff,#fcfcfd);box-shadow:var(--card);color:var(--ink);margin:8px 0}
+  .mbreadth::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,rgba(37,99,235,.5),rgba(18,128,92,.34),transparent 72%)}
+  .bb-eyb{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink2);font-weight:600;display:flex;align-items:center;gap:9px}
+  .bb-dot{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(18,128,92,.15);animation:qpulse 2.4s infinite}
+  .bb-grid{display:grid;grid-template-columns:minmax(206px,288px) 1fr;gap:38px;align-items:center;margin-top:20px}
+  @media(max-width:840px){.bb-grid{grid-template-columns:1fr;gap:24px}}
+  .bb-tone{font-size:clamp(31px,3.9vw,52px);font-weight:700;letter-spacing:-.038em;line-height:.98;margin-bottom:14px;color:var(--ink);transition:color .5s}
+  .bb-tone.pos{color:var(--up)}.bb-tone.neu{color:var(--ink)}.bb-tone.neg{color:var(--down)}
+  .bb-statrow{display:flex;align-items:baseline;gap:9px;margin-bottom:12px}
+  .bb-pct{font-family:var(--mono);font-size:31px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+  .bb-pctl{font-size:12px;color:var(--muted)}
+  .bb-sub{font-size:13px;line-height:1.5;color:var(--ink2);max-width:262px}
+  .bb-counts{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .bb-counts span:first-child{color:var(--up)}
+  .bb-counts span:last-child{color:var(--down)}
+  .bb-mid{color:var(--faint)!important}
+  .bb-meter{height:6px;border-radius:6px;overflow:hidden;display:flex;background:var(--line2);margin-bottom:18px}
+  .bb-up{background:var(--up);height:100%;width:0;transition:width 1.2s var(--ez)}
+  .bb-dn{background:var(--down);height:100%;width:0;transition:width 1.2s var(--ez)}
+  .bb-bars{display:flex;align-items:flex-end;gap:2%;height:110px}
+  .bb-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px;min-width:0}
+  .bb-bar{width:100%;max-width:22px;min-height:4px;border-radius:4px 4px 2px 2px;transform-origin:bottom;animation:bbrise .85s var(--ez) both;transition:height .9s var(--ez),background .4s}
+  .bb-bar.u{background:var(--up)}
+  .bb-bar.d{background:var(--down)}
+  .bb-sym{font-family:var(--mono);font-size:8.5px;letter-spacing:.02em;color:var(--faint);white-space:nowrap}
   @keyframes bbrise{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
-  @media(prefers-reduced-motion:reduce){.mbreadth::before{animation:none}.bb-dot{animation:none}.bb-bar{animation:none}}
+  @media(prefers-reduced-motion:reduce){.bb-dot{animation:none}.bb-bar{animation:none}}
   </style>
   <div class="s12 mbreadth reveal" id="mbreadth">
     <div class="bb-eyb"><span class="bb-dot"></span>The tape · market breadth · live</div>
