@@ -1147,7 +1147,7 @@
     var up=items.filter(function(x){return x.chg>=0;}).length,n=items.length,dn=n-up,pct=Math.round(up/n*100);
     var bars=document.getElementById('bb-bars');
     function barH(chg){var mag=Math.min(1,Math.abs(chg)/2.6);return (12+mag*84).toFixed(0);}
-    if(bars&&!_bbBuilt){
+    if(bars&&(!_bbBuilt||bars.children.length!==items.length)){
       bars.innerHTML=items.map(function(x,i){return '<div class="bb-col"><div class="bb-bar '+(x.chg>=0?'u':'d')+'" style="height:'+barH(x.chg)+'%;animation-delay:'+(i*45)+'ms"></div><div class="bb-sym">'+x.sym+'</div></div>';}).join('');
       _bbBuilt=true;
     }else if(bars){
