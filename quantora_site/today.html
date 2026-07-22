@@ -270,7 +270,7 @@
      ===================================================================== */
   /* ambient aurora — slow, soft, behind everything */
   .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:strict}
-  .atmos b{position:absolute;display:block;border-radius:50%;filter:blur(66px);opacity:.55;mix-blend-mode:multiply;will-change:transform}
+  .atmos b{position:absolute;display:block;border-radius:50%;filter:blur(52px);opacity:.4;will-change:transform;transform:translateZ(0)}
   .atmos .a1{width:54vw;height:54vw;left:-14vw;top:-16vw;background:radial-gradient(circle at 34% 34%,rgba(37,99,235,.16),transparent 62%);animation:drift1 36s var(--ez) infinite alternate}
   .atmos .a2{width:48vw;height:48vw;right:-16vw;top:0;background:radial-gradient(circle at 62% 42%,rgba(122,90,248,.12),transparent 62%);animation:drift2 44s var(--ez) infinite alternate}
   .atmos .a3{width:46vw;height:46vw;left:26vw;bottom:-20vw;background:radial-gradient(circle at 50% 50%,rgba(18,128,92,.09),transparent 60%);animation:drift3 52s var(--ez) infinite alternate}
@@ -278,9 +278,11 @@
   @keyframes drift2{to{transform:translate3d(-8vw,9vh,0) scale(1.16)}}
   @keyframes drift3{to{transform:translate3d(7vw,-7vh,0) scale(1.1)}}
 
+  /* perf: skip painting off-screen heavy blocks while scrolling */
+  .card,.newshero,.newswrap,.mbreadth,.leaders,.conef,.heatribbon,.rib{content-visibility:auto;contain-intrinsic-size:auto 360px}
   /* deeper reveal — rise, settle, focus in */
-  .reveal{transform:translateY(34px) scale(.976);filter:blur(9px);transition:opacity .82s var(--ez),transform .82s var(--ez),filter .82s var(--ez)}
-  .reveal.in{transform:none;filter:none}
+  .reveal{transform:translateY(26px) scale(.99);transition:opacity .66s var(--ez),transform .66s var(--ez)}
+  .reveal.in{transform:none}
 
   /* section rules — glowing lead dot + a line that draws itself in */
   .secttl::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-weak),0 0 12px 1px rgba(37,99,235,.55);flex:none}
