@@ -270,7 +270,7 @@
      ===================================================================== */
   /* ambient aurora — slow, soft, behind everything */
   .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:strict}
-  .atmos b{position:absolute;display:block;border-radius:50%;filter:blur(52px);opacity:.4;will-change:transform;transform:translateZ(0)}
+  .atmos b{position:absolute;display:block;border-radius:50%;filter:blur(58px);opacity:.5;mix-blend-mode:multiply;isolation:isolate;will-change:transform;transform:translateZ(0)}
   .atmos .a1{width:54vw;height:54vw;left:-14vw;top:-16vw;background:radial-gradient(circle at 34% 34%,rgba(37,99,235,.16),transparent 62%);animation:drift1 36s var(--ez) infinite alternate}
   .atmos .a2{width:48vw;height:48vw;right:-16vw;top:0;background:radial-gradient(circle at 62% 42%,rgba(122,90,248,.12),transparent 62%);animation:drift2 44s var(--ez) infinite alternate}
   .atmos .a3{width:46vw;height:46vw;left:26vw;bottom:-20vw;background:radial-gradient(circle at 50% 50%,rgba(18,128,92,.09),transparent 60%);animation:drift3 52s var(--ez) infinite alternate}
@@ -281,8 +281,8 @@
   /* perf: skip painting off-screen heavy blocks while scrolling */
   .card,.newshero,.newswrap,.mbreadth,.leaders,.conef,.heatribbon,.rib{content-visibility:auto;contain-intrinsic-size:auto 360px}
   /* deeper reveal — rise, settle, focus in */
-  .reveal{transform:translateY(26px) scale(.99);transition:opacity .66s var(--ez),transform .66s var(--ez)}
-  .reveal.in{transform:none}
+  .reveal{transform:translateY(32px) scale(.978);filter:blur(8px);transition:opacity .8s var(--ez),transform .8s var(--ez),filter .8s var(--ez);will-change:transform,opacity,filter}
+  .reveal.in{transform:none;filter:none;will-change:auto}
 
   /* section rules — glowing lead dot + a line that draws itself in */
   .secttl::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-weak),0 0 12px 1px rgba(37,99,235,.55);flex:none}
@@ -1196,7 +1196,7 @@
       for(var i=0;i<parts.length;i++){var p=parts[i],a=Math.sin(p.x*0.005+t)*1.4+Math.cos(p.y*0.006-t*0.6)*1.4+Math.sin((p.x+p.y)*0.003+t*0.4);p.x+=Math.cos(a)*speed;p.y+=Math.sin(a)*speed-(p.up?buoy:-buoy);
         if(p.x<-4||p.x>W+4||p.y<-4||p.y>H+4){p.x=Math.random()*W;p.y=Math.random()*H;p.px=p.x;p.py=p.y;p.up=Math.random()<MS.breadth;continue;}
         ctx.strokeStyle=p.up?'rgba(18,128,92,0.075)':'rgba(229,72,77,0.065)';ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(p.x,p.y);ctx.stroke();p.px=p.x;p.py=p.y;}}
-    function frame(){if(vis&&!HID())step();requestAnimationFrame(frame);}if(RM){for(var k=0;k<160;k++)step();}else frame();
+    var _lf=0;function frame(ts){ts=ts||0;if(vis&&!HID()&&(ts-_lf)>=30){step();_lf=ts;}requestAnimationFrame(frame);}if(RM){for(var k=0;k<160;k++)step();}else requestAnimationFrame(frame);
     var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(size,220);},{passive:true});if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting;}).observe(cv);}
 
   /* dashboard rows */
