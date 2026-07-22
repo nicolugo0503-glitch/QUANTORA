@@ -6,10 +6,10 @@
 
 /* ---- ambient aurora (soft drifting light, behind content) ---- */
 .qc-atmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:strict}
-.qc-atmos b{position:absolute;display:block;border-radius:50%;filter:blur(60px);opacity:.42;will-change:transform;transform:translateZ(0)}
-.qc-atmos .qa1{width:52vw;height:52vw;left:-13vw;top:-15vw;background:radial-gradient(circle at 34% 34%,rgba(37,99,235,.20),transparent 62%);animation:qcd1 44s ease-in-out infinite alternate}
-.qc-atmos .qa2{width:46vw;height:46vw;right:-15vw;top:-4vw;background:radial-gradient(circle at 62% 42%,rgba(124,92,248,.17),transparent 62%);animation:qcd2 52s ease-in-out infinite alternate}
-.qc-atmos .qa3{width:44vw;height:44vw;left:22vw;bottom:-20vw;background:radial-gradient(circle at 50% 50%,rgba(16,150,110,.14),transparent 60%);animation:qcd3 60s ease-in-out infinite alternate}
+.qc-atmos b{position:absolute;display:block;border-radius:50%;filter:blur(66px);opacity:.6;will-change:transform;transform:translateZ(0)}
+.qc-atmos .qa1{width:58vw;height:58vw;left:-12vw;top:-16vw;background:radial-gradient(circle at 38% 38%,rgba(37,99,235,.30),transparent 66%);animation:qcd1 44s ease-in-out infinite alternate}
+.qc-atmos .qa2{width:52vw;height:52vw;right:-14vw;top:-2vw;background:radial-gradient(circle at 60% 44%,rgba(124,92,248,.26),transparent 66%);animation:qcd2 52s ease-in-out infinite alternate}
+.qc-atmos .qa3{width:50vw;height:50vw;left:24vw;bottom:-24vw;background:radial-gradient(circle at 50% 50%,rgba(16,150,110,.22),transparent 64%);animation:qcd3 60s ease-in-out infinite alternate}
 @keyframes qcd1{to{transform:translate3d(8vw,6vh,0) scale(1.14)}}
 @keyframes qcd2{to{transform:translate3d(-7vw,8vh,0) scale(1.16)}}
 @keyframes qcd3{to{transform:translate3d(6vw,-6vh,0) scale(1.10)}}
