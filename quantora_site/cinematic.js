@@ -117,7 +117,14 @@
     document.addEventListener('mouseleave', reset);
   }
 
-  function pass(){ try{ applyMedia(); applyReveals(); }catch(e){ revealAllNow(); } }
+  /* sweep in-view cards for numbers that loaded in AFTER their reveal (async data) */
+  function sweepCountUp(){ if(RM) return; try{
+    var cards=document.querySelectorAll('.qc-card'), vh=window.innerHeight;
+    for(var i=0;i<cards.length;i++){ var c=cards[i]; var r=c.getBoundingClientRect(); if(r.bottom<0||r.top>vh) continue;
+      var els=c.querySelectorAll('*'); for(var j=0;j<els.length && j<200;j++){ if(els[j].children.length===0 && !els[j].__qcu) countUpEl(els[j]); }
+    }
+  }catch(e){} }
+  function pass(){ try{ applyMedia(); applyReveals(); sweepCountUp(); }catch(e){ revealAllNow(); } }
 
   ready(function(){
     try{
