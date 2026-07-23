@@ -22,8 +22,8 @@ var css =
 '@media(max-width:820px){.qnav .qright{display:none}}';
 var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
 var lk = document.createElement('link'); lk.rel='stylesheet'; lk.href='/theme.css?v=5'; (document.head || document.documentElement).appendChild(lk);
-var ccss = document.createElement('link'); ccss.rel='stylesheet'; ccss.href='/cinematic.css?v=4'; (document.head || document.documentElement).appendChild(ccss);
-var cij = document.createElement('script'); cij.src='/cinematic.js?v=4'; cij.async=true; (document.head || document.documentElement).appendChild(cij);
+var ccss = document.createElement('link'); ccss.rel='stylesheet'; ccss.href='/cinematic.css?v=5'; (document.head || document.documentElement).appendChild(ccss);
+var cij = document.createElement('script'); cij.src='/cinematic.js?v=5'; cij.async=true; (document.head || document.documentElement).appendChild(cij);
 var hj=document.createElement('script'); hj.src='/hero.js?v=2'; hj.async=false; (document.head || document.documentElement).appendChild(hj);
 var cj=document.createElement('script'); cj.src='/compliance.js?v=1'; cj.async=true; (document.head || document.documentElement).appendChild(cj);
 var sj=document.createElement('script'); sj.src='/share.js?v=1'; sj.async=true; (document.head || document.documentElement).appendChild(sj);
