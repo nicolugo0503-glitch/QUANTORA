@@ -72,8 +72,7 @@
       /* Skip pages that already ship their own cinematic system (today/alpha/index). */
       if(document.querySelector('.atmos')||document.querySelector('.reveal')||document.body.classList.contains('gl-on')||document.getElementById('field')) return;
       document.body.classList.add('qc-on');
-
-      if(!RM){ var at=document.createElement('div'); at.className='qc-atmos'; at.setAttribute('aria-hidden','true'); at.innerHTML='<b class="qa1"></b><b class="qa2"></b><b class="qa3"></b>'; document.body.insertBefore(at, document.body.firstChild); }
+      /* aurora background removed — keep the clean white surface */
 
       var sT; addEventListener('scroll',function(){ window.__qscroll=true; clearTimeout(sT); sT=setTimeout(function(){ window.__qscroll=false; },150); },{passive:true});
 
